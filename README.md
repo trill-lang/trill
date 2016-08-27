@@ -55,8 +55,24 @@ func main() {
 }
 ```
 
+## Building and Using
+
+Trill currently is only supported on macOS.
+
+To build and create Trill programs, you need to open the Xcode project and
+build the `trill` scheme.
+Then, you'll need to symlink the trill runtime and headers:
+
+```bash
+ln -s /path/to/Trill_DerivedData/libtrillRuntime.a /usr/local/lib/libtrillRuntime.a
+mkdir /usr/local/include/trill
+ln -s /path/to/Trill/Sources/Runtime/*.h /usr/local/include/trill/.
+```
+
 ## Outstanding issues
 
+- The LLVM JIT doesn't currently work when linking the trill runtime. I'm trying to fix this with little luck.
+  - You'll need to compile trill programs using the Makefile in the `examples/` directory.
 - Closures are entirely unsupported in the LLVM backend. Closures are very much still in progress.
 - There are no generics. I’m still speccing out the generics system, but I’m thinking it’ll be fairly similar to C++’s [Concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)) proposal — everything verified before being explicitly instantiated.
 - There are no `enum` s, like in Swift. `enum`s from C are currently imported as global constants
