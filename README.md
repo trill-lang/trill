@@ -2,6 +2,10 @@
 
 Trill is a simple, type-safe, compiled programming language. Partially inspired by Swift, Trill has most simple language features one would expect (functions, structures, pointers) and some more high-level language features, like types with methods, garbage collected types, overloading,  tuples/multiple returns, and closures.
 
+## Why did you make this?
+
+Really, it's an exercise to learn compiler design, code generation to LLVM,
+and how to make a language that's actually fun to write.
 
 ## Example
 
