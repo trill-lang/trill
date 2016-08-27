@@ -1,0 +1,8 @@
+func takesFunc(_ f: () -> Void) {
+  f()
+}
+func main() {
+  var m: () -> Void = main
+  printf("Recursion!\n")
+  takesFunc(m)
+}

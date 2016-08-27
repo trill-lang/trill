@@ -1,0 +1,8 @@
+/*
+ * Does a thing!
+ */
+
+// foo
+func main() {
+  var x = 4; // sets x to '4'
+}

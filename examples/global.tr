@@ -1,0 +1,6 @@
+var x = 100
+
+func main() {
+  x += 10
+  printf("%d\n", x)
+}

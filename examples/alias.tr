@@ -1,0 +1,7 @@
+type Foo = Int
+type Bar = Foo
+type Baz = Bar
+
+func foo(_ b: Baz) -> Bar { return b }
+
+func main() { printf("%d\n", foo(100)) }

@@ -1,0 +1,10 @@
+type Butthole {
+  let value: Int
+}
+
+func main() {
+  let butthole = Butthole(value: 10)
+  let y = 188 as Int32
+  let x = y as Int
+  printf("x: %d, y: %d\n", x, y)
+}

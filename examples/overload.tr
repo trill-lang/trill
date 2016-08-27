@@ -1,0 +1,22 @@
+type Foo {
+  func bar() {
+    printf("bar()\n")
+  }
+  func bar(a: Int) {
+    printf("bar(a: %d)\n", a)
+  }
+  func bar(_ a: Int) {
+    printf("bar(_ a: %d)\n", a)
+  }
+  func bar(_ a: Int, b: Int) {
+    printf("bar(_ a: %d, b: %d)", a, b)
+  }
+}
+
+func main() {
+  var f = Foo()
+  f.bar()
+  f.bar(a: 10)
+  f.bar(10)
+  f.bar(10, b: 100)
+}

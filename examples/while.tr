@@ -1,0 +1,23 @@
+func println(_ val: Int) { printf("%d\n", val); }
+
+func fact(_ n: Int) -> Int {
+  if n == 0 { return 1; }
+  return n * fact(n - 1);
+}
+
+func factWhile(_ n: Int) -> Int {
+  var n = n
+  var accum = 1
+  while n > 0 {
+    accum *= n
+    n -= 1
+  }
+  return accum
+}
+
+func main() {
+  println(fact(5));
+  println(factWhile(5));
+}
+
+

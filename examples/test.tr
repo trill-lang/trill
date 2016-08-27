@@ -1,0 +1,35 @@
+func println(_ val: Int) {
+  printf("%d\n", val);
+}
+
+type Job {
+  var salary: Int;
+  var isExecutive: Bool;
+  func isUnderpaid() -> Bool {
+    return (self.salary < 100_000) && self.isExecutive;
+  }
+}
+type Person {
+  var age: Int;
+  var job: Job;
+}
+
+extension Bool {
+  func toInt() -> Int {
+    if self {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+}
+
+func main() {
+  var president = Job(salary: 400_000, isExecutive: true);
+  var obama = Person(age: 55, job: president);
+  println(obama.job.isUnderpaid().toInt());
+  obama.job.salary = 50_000;
+  println(obama.job.isUnderpaid().toInt());
+}
+
+

@@ -1,0 +1,94 @@
+//
+//  runtime.c
+//  Trill
+//
+
+#include "runtime.h"
+#include "demangle.h"
+#include <assert.h>
+#include <dlfcn.h>
+#include <execinfo.h>
+#include <libgen.h>
+#include <inttypes.h>
+#include <string>
+#include <cxxabi.h>
+#include <signal.h>
+
+#define GC_PRINT_MSGS
+#include <gc/gc.h>
+#undef GC_PRINT_MSGS
+
+namespace trill {
+
+#define MAX_STACK_DEPTH 256
+
+std::string demangle(std::string symbol) {
+  std::string out;
+  if (demangle(symbol, out))
+    return out;
+  
+  int status;
+  if (auto result = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, &status)) {
+    out = result;
+    free(result);
+    return out;
+  }
+  out = symbol;
+  return out;
+}
+
+void print_stacktrace() {
+  void *symbols[MAX_STACK_DEPTH];
+  int frames = backtrace(symbols, MAX_STACK_DEPTH);
+  fputs("Current stack trace:\n", stderr);
+  for (int i = 0; i < frames; i++) {
+    Dl_info handle;
+    if (dladdr(symbols[i], &handle) == 0) {
+      continue;
+    }
+    auto base = basename((char *)handle.dli_fname);
+    
+    auto symbol = demangle(handle.dli_sname);
+    fprintf(stderr, "%-4d %-34s 0x%016" PRIxPTR " %s + %ld\n", i, base,
+            (long)handle.dli_saddr, symbol.c_str(),
+            (intptr_t)symbols[i] - (intptr_t)handle.dli_saddr);
+  }
+}
+
+TRILL_NORETURN
+void crash() {
+  print_stacktrace();
+  abort();
+}
+  
+TRILL_NORETURN
+void trill_fatalError(const char *_Nonnull message) {
+  fprintf(stderr, "fatal error: %s\n", message);
+  crash();
+}
+
+void *trill_alloc(size_t size) {
+  void *ptr = GC_MALLOC(size);
+  if (!ptr) {
+    trill_fatalError((char *)"malloc failed");
+  }
+  return ptr;
+}
+
+void trill_registerDeinitializer(void *object, void (*deinitializer)(void *)) {
+  GC_register_finalizer_no_order(object, (GC_finalization_proc)deinitializer, NULL, NULL, NULL);
+}
+  
+void trill_handleSignal(int signal) {
+  fprintf(stderr, "%s\n", strsignal(signal));
+  print_stacktrace();
+  abort();
+}
+  
+void trill_init() {
+  signal(SIGSEGV, trill_handleSignal);
+  signal(SIGILL, trill_handleSignal);
+  GC_INIT();
+}
+
+}

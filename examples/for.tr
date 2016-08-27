@@ -1,0 +1,15 @@
+func println(_ val: Int) { printf("%d\n", val); }
+
+func main() {
+  var y = 0;
+  for
+    for var x = 10; x < 100; x += 1 {
+      println(x);
+    }; y < 10; y += 1 {
+      println(y);
+  }
+}
+
+
+
+

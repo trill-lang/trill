@@ -1,0 +1,22 @@
+func pred(_ n: Int) -> Int {
+  return n - 1
+}
+
+func buildStackIntermediate(counter: *Int, _ f: (Int) -> Int) {
+  printf("%s\n", #function)
+  buildStack(counter: counter, f)
+}
+
+func buildStack(counter: *Int, _ f: (Int) -> Int) {
+  printf("%s\n", #function)
+  if *counter == 0 {
+    trill_fatalError("Noooooooo")
+  }
+  let c = f(*counter)
+  buildStackIntermediate(counter: &c, f)
+}
+
+func main() {
+  let n = 10
+  buildStack(counter: &n, pred)
+}

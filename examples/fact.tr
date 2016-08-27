@@ -1,0 +1,27 @@
+// fact :: Z+ -> Z+
+// fact 0 = 1
+// fact n = n * fact (n - 1)
+
+func println(_ val: Int) { printf("%d\n", val) }
+
+func fact(_ n: Int) -> Int {
+  var n = n
+  var accum = 1
+  while n > 0 {
+    accum *= n
+    n -= 1
+  }
+  return accum
+}
+
+func factRec(_ n: Int) -> Int {
+  if n == 0 {
+    return 1
+  } else {
+    return n * fact(n - 1)
+  }
+}
+
+func main() {
+  println(fact(10))
+}

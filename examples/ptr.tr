@@ -1,0 +1,36 @@
+type Foo8 {
+  var bar: Int;
+}
+
+type Foo7 {
+  var foo: Foo8;
+}
+
+type Foo6 {
+  var foo: Foo7;
+}
+
+type Foo5 {
+  var foo: Foo6;
+}
+
+type Foo4 {
+  var foo: Foo5;
+}
+
+type Foo3 {
+  var foo: Foo4;
+}
+
+type Foo2 {
+  var foo: Foo3;
+}
+
+type Foo1 {
+  var foo: Foo2;
+}
+
+func main() {
+  var f = Foo1(foo: Foo2(foo: Foo3(foo: Foo4(foo: Foo5(foo: Foo6(foo: Foo7(foo: Foo8(bar: 232344))))))));
+  printf("f.foo.foo.foo.foo.foo.foo.foo.bar = %d\n", f.foo.foo.foo.foo.foo.foo.foo.bar);
+}

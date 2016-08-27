@@ -1,0 +1,16 @@
+type Foo {
+  var callback: (Foo) -> Void
+}
+
+func doCallback(_ f: Foo) {
+  cnt += 1
+  printf("[%s %s %d] %d\n", #file, #function, #line, cnt)
+  f.callback(f)
+}
+
+var cnt = 0
+
+func main() {
+  var f = Foo(callback: doCallback)
+  f.callback(f)
+}

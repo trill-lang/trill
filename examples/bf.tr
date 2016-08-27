@@ -1,0 +1,235 @@
+foreign func calloc(_: Int, _: Int) -> *Int8
+foreign func malloc(_: Int) -> *Int8
+foreign func fopen(_: *Int8, _: *Int8) -> *FILE
+
+let SEEK_END = 2 as Int32
+let SEEK_SET = 0 as Int32
+
+func min(_ x: Int, _ y: Int) -> Int {
+  return x < y ? x : y
+}
+
+let NUL = 0 as Int8
+let EOF = -1 as Int8
+let MaxStackDepth = 256
+
+
+type Instruction {
+  let operator: Int8
+  var operand: Int
+}
+
+indirect type Program {
+  let instructions: *Instruction
+  let count: Int
+  var memory: *Int8
+  func dump() {
+    for var i = 0; i < self.count; i += 1 {
+        switch self.instructions[i].operator {
+        case '+': puts("Add")
+        case '-': puts("Sub")
+        case '<': puts("Left")
+        case '>': puts("Right")
+        case '[': puts("LoopStart")
+        case ']': puts("LoopEnd")
+        case ',': puts("Input")
+        case '.': puts("Output")
+        default: break
+        }
+    }
+  }
+  func dumpMemory(count: Int) {
+    for var i = 0; i < count; i += 4 {
+      let n = min(count - i, 4)
+      for var j = i; j < i + n; j += 1 {
+        printf("0x%x: %d", j, self.memory[j])
+        if j != (i + n - 1) {
+          printf(", ")
+        }
+      }
+      printf("\n")
+    }
+  }
+  deinit {
+    free(self.instructions as *Int8)
+    free(self.memory)
+  }
+  mutating func execute() {
+    var pc = 0
+    var p = 0
+    while pc < self.count {
+      let instr = self.instructions[pc]
+      switch instr.operator {
+      case '+':
+        self.memory[p] += 1
+      case '-':
+        self.memory[p] -= 1
+      case '<':
+        p -= 1
+      case '>':
+        p += 1
+      case '.':
+        putchar(self.memory[p] as Int32)
+      case ',':
+        self.memory[p] = getchar() as Int8
+      case '[':
+        if self.memory[p] == 0 {
+          pc = instr.operand + 1
+          continue
+        }
+      case ']':
+        if self.memory[p] != 0 {
+          pc = instr.operand
+          continue
+        }
+      }
+      pc += 1
+    }
+  }
+  func printC() {
+    puts("#include <stdio.h>")
+    puts("int main() {")
+    puts("char memory[30000];")
+    puts("char *p = memory;")
+    for var i = 0; i < self.count; i += 1 {
+      let instr = self.instructions[i]
+      switch instr.operator {
+      case '+':
+        puts("++*p;")
+      case '-':
+        puts("--*p;")
+      case '<':
+        puts("--p;")
+      case '>':
+        puts("++p;")
+      case '.':
+        puts("putchar(*p);")
+      case ',':
+        puts("*p = getchar();")
+      case '[':
+        puts("while (*p) {")
+      case ']':
+        puts("}")
+      }
+    }
+    puts("return 0;")
+    puts("}")
+  }
+
+  func printTrill() {
+    puts("foreign func calloc(_: Int, _: Int) -> *Int8")
+    puts("func main() {")
+    puts("  var memory = calloc(30000, sizeof(Int8))")
+    puts("  var p = 0")
+    for var i = 0; i < self.count; i += 1 {
+      let instr = self.instructions[i]
+      switch instr.operator {
+      case '+':
+        puts("  memory[p] += 1")
+      case '-':
+        puts("  memory[p] -= 1")
+      case '<':
+        puts("  p -= 1")
+      case '>':
+        puts("  p += 1")
+      case '.':
+        puts("  putchar(memory[p] as Int32)")
+      case ',':
+        puts("  memory[p] = getchar() as Int8")
+      case '[':
+        puts("  while memory[p] != 0 {")
+      case ']':
+        puts("  }")
+      }
+    }
+    puts("}")
+  }
+
+  init(input: *Int8) {
+    let length = strlen(input) as Int
+    var pc = 0
+    var instructions = calloc(length as Int, sizeof(Instruction)) as *Instruction
+    if instructions == nil {
+      printf("could not calloc length %d", length)
+      abort()
+    }
+    var stack = calloc(MaxStackDepth, sizeof(Int)) as *Int
+    if stack == nil {
+      printf("could not calloc length %d", MaxStackDepth)
+      abort()
+    }
+    var sp = 0
+    while pc < length && input[pc] != NUL {
+      let c = input[pc]
+      if c == '[' {
+        if sp == MaxStackDepth - 1 {
+          printf("Max stack depth exceeded.")
+          abort()
+        }
+        instructions[pc] = Instruction(operator: c, operand: 0)
+        stack[sp] = pc
+        sp += 1
+      } else if c == ']' {
+        if sp == 0 {
+          printf("Imbalanced loops.")
+          abort()
+        }
+        sp -= 1
+        let jmpPC = stack[sp]
+        instructions[pc] = Instruction(operator: c, operand: jmpPC)
+        instructions[jmpPC].operand = pc
+      } else {
+        instructions[pc] = Instruction(operator: c, operand: 0)
+      }
+      pc += 1
+    }
+    free(stack as *Int8)
+    self.instructions = instructions
+    self.memory = calloc(30000, sizeof(Int8)) as *Int8
+    self.count = length as Int
+  }
+}
+
+func readFile(filename: *Int8) -> *Int8 {
+  let file = fopen(filename, "r")
+  if file == nil {
+    return nil
+  }
+  fseek(file, 0, SEEK_END)
+  let length = ftell(file)
+  fseek(file, 0, SEEK_SET)
+  var program = malloc(length + 1)
+  if program == nil {
+    return nil
+  }
+  fread(program, 1 as size_t, length as size_t, file)
+  program[length] = NUL
+  fclose(file)
+  return program
+}
+
+func main(argc: Int, argv: **Int8) -> Int {
+  if argc < 2 {
+    printf("usage: bf [file]")
+    return 1
+  }
+  let str = readFile(filename: argv[1])
+  if str == nil {
+    printf("unable to open '%s'", argv[1])
+    return 1
+  }
+  var prog = Program(input: str)
+  free(str)
+  if argc > 2 {
+    if strcmp(argv[2], "c") == 0 {
+      prog.printC()
+    } else if strcmp(argv[2], "trill") == 0 {
+      prog.printTrill()
+    } else if strcmp(argv[2], "dump") == 0 {
+      prog.dump()
+    }
+  } else {
+    prog.execute()
+  }
+  return 0
+}

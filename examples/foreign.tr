@@ -1,0 +1,42 @@
+foreign func malloc(_: Int) -> *Int8
+foreign func sleep(_: Int)
+
+func println(_ val: Int) {
+  printf("%d\n", val);
+}
+
+type Person {
+  var name: *Int8;
+  func printName() {
+    printf("%s\n", self.name);
+  }
+}
+
+type Foo {
+  var bar: Int;
+  func fooBar() -> Int {
+    return self.bar;
+  }
+}
+
+func reassign(_ n: *Int) {
+  var n = n
+  *n = 10;
+}
+
+func main() {
+  var x = "hello, world";
+  printf("%s\n", "foo");
+  var foo = Foo(bar: 9);
+  println(foo.fooBar());
+  var billy = Person(name: "Billy");
+  billy.printName();
+
+  var f = 20;
+  println(f);
+  reassign(&f);
+  println(f);
+
+  printf("%f\n", 100);
+}
+

@@ -1,0 +1,7 @@
+type Foo = Baz
+type Baz = Bar
+type Bar = Int
+
+func main() {
+  var f: Bar = 10
+}

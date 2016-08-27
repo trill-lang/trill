@@ -1,0 +1,44 @@
+foreign func malloc(_: Int) -> *Int8
+foreign func fopen(_: *Int8, _: *Int8) -> *FILE
+foreign func usleep(_: Int)
+foreign var stdout: *FILE
+
+
+let SEEK_END = 2 as Int32
+let SEEK_SET = 0 as Int32
+
+let NUL = 0 as Int8
+let EOF = -1 as Int8
+
+func readFile(filename: *Int8) -> (*Int8, Int) {
+  let file = fopen(filename, "r")
+  if file == nil {
+    return (nil, 0)
+  }
+  fseek(file, 0, SEEK_END)
+  let length = ftell(file)
+  fseek(file, 0, SEEK_SET)
+  var program = malloc(length + 1)
+  if program == nil {
+    return (nil, 0)
+  }
+  fread(program, 1 as size_t, length as size_t, file)
+  program[length] = NUL
+  fclose(file)
+  return (program, length)
+}
+
+func main(argc: Int, argv: **Int8) -> Int {
+    if argc < 2 {
+        puts("usage: same [file]")
+        return -1
+    }
+    let file = readFile(filename: argv[1])
+    for var i = 0; i < file.1; i += 1 {
+        putchar(file.0[i] as Int32)
+        fflush(stdout)
+        usleep(10000 + (rand() % 3000) as Int)
+    }
+    free(file.0)
+    return 0
+}

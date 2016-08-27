@@ -1,0 +1,9 @@
+extension Bool {
+  func toInt() -> Int {
+    return self ? 1 : 0
+  }
+}
+func main() {
+  printf("false: %d\n", false.toInt())
+  printf("true:  %d\n", true.toInt())
+}

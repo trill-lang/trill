@@ -1,0 +1,23 @@
+#error "After the war I went back to New York"
+
+#warning "A-after the war, I went back to New York"
+
+type Foo {
+  #warning "I finished up my studies and I practiced Law"
+#error "I practiced law; Burr worked next door"
+}
+
+func foo() {
+  #warning "Even though we started at the very same time"
+  #error "Alexander Hamilton began to climb"
+}
+
+func bar() {
+  if true {
+    #warning "How to account for his rise to the top?"
+  }
+}
+
+func main() {
+  #error "Man, the man is non-stop!"
+}

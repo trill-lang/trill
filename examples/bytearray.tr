@@ -1,0 +1,142 @@
+foreign func calloc(_: Int, _: Int) -> *Int8
+foreign func realloc(_: *Int8, _: Int) -> *Int8
+
+func assert(_ fact: Bool, _ message: *Int8) {
+    if !fact {
+        trill_fatalError(message)
+    }
+}
+
+type ByteArray {
+    var bytes: *Int8
+    var count: Int
+    var capacity: Int
+    init(capacity: Int) {
+        assert(capacity > 0, "Cannot initialize an array with 0 capacity")
+        self.bytes = calloc(capacity, sizeof(Int8))
+        self.capacity = capacity
+        self.count = 0
+        self.dump()
+    }
+    init(string: *Int8) {
+        let length = strlen(string)
+        self.capacity = (length as Double * 1.5) as Int
+        self.bytes = calloc(self.capacity, sizeof(Int8))
+        self.count = length as Int
+        strncpy(self.bytes, string, length)
+    }
+    mutating func _growIfNeeded() {
+        if self.load() > 0.75 {
+            printf("growing from %d to %d\n", self.capacity, self.capacity * 2)
+            self.capacity *= 2
+            self.bytes = realloc(self.bytes, self.capacity)
+        }
+    }
+    mutating func _shrinkIfNeeded() {
+        if self.load() < 0.5 {
+            printf("shrinking from %d to %d\n", self.capacity, self.capacity / 2)
+            self.capacity /= 2
+            self.bytes = realloc(self.bytes, self.capacity)
+        }
+    }
+    func _boundsCheck(_ index: Int) {
+        if index > self.count {
+            trill_fatalError("index out of bounds")
+        }
+    }
+    mutating func append(_ element: Int8) {
+        printf("Capacity: %d\n", self.capacity)
+        self.bytes[self.count] = element
+        self.count += 1
+        self._growIfNeeded()
+    }
+    mutating func append(_ string: *Int8) {
+        self.insert(string, at: self.count)
+    }
+    mutating func append(_ array: ByteArray) {
+        self.insert(array.bytes, length: array.count, at: self.count)
+    }
+    mutating func insert(_ string: *Int8, at index: Int) {
+        self.insert(string, length: strlen(string) as Int, at: index)
+    }
+    mutating func insert(_ string: *Int8, length: Int, at index: Int) {
+        self._boundsCheck(index)
+        self.count += length
+        self._growIfNeeded()
+        memmove(&self.bytes[index + length], &self.bytes[index], length as Int32)
+        strncpy(&self.bytes[index], string, length as Int32)
+    }
+    mutating func insert(_ element: Int8, at index: Int) {
+        self._boundsCheck(index)
+        self.count += 1
+        self._growIfNeeded()
+        memmove(&self.bytes[index + 1], &self.bytes[index], 1)
+        self.bytes[index] = element
+    }
+    mutating func insert(_ array: ByteArray, at index: Int) {
+        self.insert(array.bytes, length: array.count, at: index)
+    }
+    mutating func remove(at index: Int) -> Int8 {
+        self._boundsCheck(index)
+        self._shrinkIfNeeded()
+        self.count -= 1
+        memmove(&self.bytes[index], &self.bytes[index + 1], 1)
+        return self.bytes[self.count + 1]
+    }
+    func get(_ index: Int) -> Int8 {
+        self._boundsCheck(index)
+        return self.bytes[index]
+    }
+    mutating func set(_ element: Int8, at index: Int) {
+        self._boundsCheck(index)
+        self.bytes[index] = element
+    }
+    func load() -> Double {
+        return self.count as Double / self.capacity as Double
+    }
+    func dump() {
+        printf("capacity: %d, count: %d (load %f)\n", self.capacity, self.count, self.load())
+        putchar('[' as Int32)
+        for var i = 0; i < self.count; i += 1 {
+            printf("0x%x", self.bytes[i] as Int)
+            if i != self.count - 1 {
+                printf(", ")
+            }
+        }
+        puts("]")
+    }
+    func printString() {
+        puts(self.bytes)
+    }
+    func isEmpty() -> Bool {
+        return self.count == 0
+    }
+    func destroy() {
+        free(self.bytes)
+    }
+}
+
+func main() {
+    var arr = ByteArray(capacity: 20)
+    for var i: Int8 = 0; i < 30; i += 1 {
+        arr.append(i * 4)
+        arr.dump()
+    }
+
+    printf("index 14: %d\n", arr.get(14))
+    while !arr.isEmpty() {
+        arr.remove(at: arr.count - 1)
+        arr.dump()
+    }
+    arr.destroy()
+
+    var strArr = ByteArray(string: "Hello, world!")
+    strArr.dump()
+    strArr.append("\n\nfoo")
+    strArr.dump()
+    strArr.printString()
+    strArr.destroy()
+
+    ByteArray(capacity: 0)
+}
+

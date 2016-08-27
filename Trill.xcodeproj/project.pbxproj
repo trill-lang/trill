@@ -1,0 +1,1337 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DC02C5E21D5836E200FE8374 /* libLLVMCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D11D5836E200FE8374 /* libLLVMCodeGen.a */; };
+		DC02C5E31D5836E200FE8374 /* libLLVMCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D21D5836E200FE8374 /* libLLVMCore.a */; };
+		DC02C5E41D5836E200FE8374 /* libLLVMExecutionEngine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D31D5836E200FE8374 /* libLLVMExecutionEngine.a */; };
+		DC02C5E51D5836E200FE8374 /* libLLVMInstrumentation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D41D5836E200FE8374 /* libLLVMInstrumentation.a */; };
+		DC02C5E61D5836E200FE8374 /* libLLVMIRReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D51D5836E200FE8374 /* libLLVMIRReader.a */; };
+		DC02C5E71D5836E200FE8374 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D61D5836E200FE8374 /* libLLVMMC.a */; };
+		DC02C5E81D5836E200FE8374 /* libLLVMMCDisassembler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D71D5836E200FE8374 /* libLLVMMCDisassembler.a */; };
+		DC02C5E91D5836E200FE8374 /* libLLVMMCJIT.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D81D5836E200FE8374 /* libLLVMMCJIT.a */; };
+		DC02C5EA1D5836E200FE8374 /* libLLVMMCParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5D91D5836E200FE8374 /* libLLVMMCParser.a */; };
+		DC02C5EB1D5836E200FE8374 /* libLLVMObject.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DA1D5836E200FE8374 /* libLLVMObject.a */; };
+		DC02C5EC1D5836E200FE8374 /* libLLVMOption.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DB1D5836E200FE8374 /* libLLVMOption.a */; };
+		DC02C5ED1D5836E200FE8374 /* libLLVMPasses.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DC1D5836E200FE8374 /* libLLVMPasses.a */; };
+		DC02C5EE1D5836E200FE8374 /* libLLVMProfileData.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DD1D5836E200FE8374 /* libLLVMProfileData.a */; };
+		DC02C5EF1D5836E200FE8374 /* libLLVMRuntimeDyld.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DE1D5836E200FE8374 /* libLLVMRuntimeDyld.a */; };
+		DC02C5F01D5836E200FE8374 /* libLLVMScalarOpts.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5DF1D5836E200FE8374 /* libLLVMScalarOpts.a */; };
+		DC02C5F11D5836E200FE8374 /* libLLVMSupport.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5E01D5836E200FE8374 /* libLLVMSupport.a */; };
+		DC02C5F21D5836E200FE8374 /* libLLVMTarget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5E11D5836E200FE8374 /* libLLVMTarget.a */; };
+		DC02C5F71D58370100FE8374 /* libLLVMAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5F31D58370100FE8374 /* libLLVMAsmParser.a */; };
+		DC02C5F81D58370100FE8374 /* libLLVMAsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5F41D58370100FE8374 /* libLLVMAsmPrinter.a */; };
+		DC02C5F91D58370100FE8374 /* libLLVMBitReader.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5F51D58370100FE8374 /* libLLVMBitReader.a */; };
+		DC02C5FA1D58370100FE8374 /* libLLVMBitWriter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5F61D58370100FE8374 /* libLLVMBitWriter.a */; };
+		DC02C5FE1D58370700FE8374 /* libLLVMX86AsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5FB1D58370700FE8374 /* libLLVMX86AsmParser.a */; };
+		DC02C5FF1D58370700FE8374 /* libLLVMX86AsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5FC1D58370700FE8374 /* libLLVMX86AsmPrinter.a */; };
+		DC02C6001D58370700FE8374 /* libLLVMX86CodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C5FD1D58370700FE8374 /* libLLVMX86CodeGen.a */; };
+		DC02C6051D58371200FE8374 /* libLLVMX86Desc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6011D58371200FE8374 /* libLLVMX86Desc.a */; };
+		DC02C6061D58371200FE8374 /* libLLVMX86Disassembler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6021D58371200FE8374 /* libLLVMX86Disassembler.a */; };
+		DC02C6071D58371200FE8374 /* libLLVMX86Info.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6031D58371200FE8374 /* libLLVMX86Info.a */; };
+		DC02C6081D58371200FE8374 /* libLLVMX86Utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6041D58371200FE8374 /* libLLVMX86Utils.a */; };
+		DC02C60A1D58371E00FE8374 /* libLLVMMIRParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6091D58371E00FE8374 /* libLLVMMIRParser.a */; };
+		DC02C60C1D58372B00FE8374 /* libLLVMInstCombine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C60B1D58372B00FE8374 /* libLLVMInstCombine.a */; };
+		DC02C60E1D58373800FE8374 /* libLLVMAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C60D1D58373800FE8374 /* libLLVMAnalysis.a */; };
+		DC02C6101D58375500FE8374 /* libLLVMLibDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C60F1D58375500FE8374 /* libLLVMLibDriver.a */; };
+		DC02C6141D58377200FE8374 /* libLLVMOrcJIT.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6111D58377200FE8374 /* libLLVMOrcJIT.a */; };
+		DC02C6151D58377200FE8374 /* libLLVMSelectionDAG.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6121D58377200FE8374 /* libLLVMSelectionDAG.a */; };
+		DC02C6161D58377200FE8374 /* libLLVMSymbolize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6131D58377200FE8374 /* libLLVMSymbolize.a */; };
+		DC02C6181D5837BE00FE8374 /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6171D5837BE00FE8374 /* libLLVMTransformUtils.a */; };
+		DC02C61A1D58380A00FE8374 /* libLLVMipo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6191D58380A00FE8374 /* libLLVMipo.a */; };
+		DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
+		DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
+		DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
+		DC176FF91D6911A200FEFB85 /* BaseExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* BaseExprs.swift */; };
+		DC176FFA1D6911A200FEFB85 /* FunctionExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */; };
+		DC176FFB1D6911A200FEFB85 /* OperatorExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */; };
+		DC176FFC1D6911A200FEFB85 /* StatementExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* StatementExprs.swift */; };
+		DC176FFD1D6911A200FEFB85 /* TypeExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* TypeExprs.swift */; };
+		DC176FFE1D6911A200FEFB85 /* ValueExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* ValueExprs.swift */; };
+		DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD91D6911A200FEFB85 /* ClangImporter.swift */; };
+		DC1770001D6911A200FEFB85 /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */; };
+		DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */; };
+		DC1770021D6911A200FEFB85 /* Driver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDD1D6911A200FEFB85 /* Driver.swift */; };
+		DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */; };
+		DC1770051D6911A200FEFB85 /* BaseIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */; };
+		DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */; };
+		DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */; };
+		DC17700B1D6911A200FEFB85 /* StatementIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */; };
+		DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FE91D6911A200FEFB85 /* TypeIRGen.swift */; };
+		DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FEA1D6911A200FEFB85 /* ValueIRGen.swift */; };
+		DC1770101D6911A200FEFB85 /* LLVMWrappers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */; };
+		DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF11D6911A200FEFB85 /* Mangler.swift */; };
+		DC1770121D6911A200FEFB85 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF21D6911A200FEFB85 /* Sema.swift */; };
+		DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF31D6911A200FEFB85 /* TypeChecker.swift */; };
+		DC1770191D69128500FEFB85 /* demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770141D69128500FEFB85 /* demangle.cpp */; };
+		DC17701A1D69128500FEFB85 /* demangle.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770151D69128500FEFB85 /* demangle.h */; };
+		DC17701B1D69128500FEFB85 /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770161D69128500FEFB85 /* runtime.cpp */; };
+		DC17701C1D69128500FEFB85 /* runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770171D69128500FEFB85 /* runtime.h */; };
+		DC17701D1D69128500FEFB85 /* trill.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770181D69128500FEFB85 /* trill.h */; };
+		DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17701E1D6912E300FEFB85 /* Utilities.swift */; };
+		DC1770301D69130700FEFB85 /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */; };
+		DC1770311D69130700FEFB85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770221D69130700FEFB85 /* AppDelegate.swift */; };
+		DC1770321D69130700FEFB85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC1770231D69130700FEFB85 /* Assets.xcassets */; };
+		DC1770331D69130700FEFB85 /* AttributedStringConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */; };
+		DC1770341D69130700FEFB85 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1770251D69130700FEFB85 /* Main.storyboard */; };
+		DC1770351D69130700FEFB85 /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770271D69130700FEFB85 /* DocumentViewController.swift */; };
+		DC1770371D69130700FEFB85 /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770291D69130700FEFB85 /* InputViewController.swift */; };
+		DC1770381D69130700FEFB85 /* JavaScriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702A1D69130700FEFB85 /* JavaScriptRunner.swift */; };
+		DC1770391D69130700FEFB85 /* NavController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702B1D69130700FEFB85 /* NavController.swift */; };
+		DC17703A1D69130700FEFB85 /* RunViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702C1D69130700FEFB85 /* RunViewController.swift */; };
+		DC17703B1D69130700FEFB85 /* SourceAnnotator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */; };
+		DC17703C1D69130700FEFB85 /* SourceDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702E1D69130700FEFB85 /* SourceDocument.swift */; };
+		DC17703D1D69130700FEFB85 /* TimingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17702F1D69130700FEFB85 /* TimingViewController.swift */; };
+		DC17703E1D69134B00FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
+		DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
+		DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
+		DC1770431D69134B00FEFB85 /* BaseExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* BaseExprs.swift */; };
+		DC1770441D69134B00FEFB85 /* FunctionExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */; };
+		DC1770451D69134B00FEFB85 /* OperatorExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */; };
+		DC1770461D69134B00FEFB85 /* StatementExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* StatementExprs.swift */; };
+		DC1770471D69134B00FEFB85 /* TypeExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* TypeExprs.swift */; };
+		DC1770481D69134B00FEFB85 /* ValueExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* ValueExprs.swift */; };
+		DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704A1D69139900FEFB85 /* ASTDumper.swift */; };
+		DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704B1D69139900FEFB85 /* ASTPrinter.swift */; };
+		DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */; };
+		DC1770501D6913AA00FEFB85 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */; };
+		DC1770511D6913AC00FEFB85 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704A1D69139900FEFB85 /* ASTDumper.swift */; };
+		DC1770521D6913B700FEFB85 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17701E1D6912E300FEFB85 /* Utilities.swift */; };
+		DC1770531D6913B700FEFB85 /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */; };
+		DC1770541D6913B700FEFB85 /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */; };
+		DC1770551D6913B700FEFB85 /* Driver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDD1D6911A200FEFB85 /* Driver.swift */; };
+		DC1770561D6913B700FEFB85 /* TableFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */; };
+		DC1770571D6913CA00FEFB85 /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF11D6911A200FEFB85 /* Mangler.swift */; };
+		DC1770581D6913CA00FEFB85 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF21D6911A200FEFB85 /* Sema.swift */; };
+		DC1770591D6913CA00FEFB85 /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF31D6911A200FEFB85 /* TypeChecker.swift */; };
+		DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705B1D6913EF00FEFB85 /* BaseParser.swift */; };
+		DC1770611D6913EF00FEFB85 /* BaseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705B1D6913EF00FEFB85 /* BaseParser.swift */; };
+		DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */; };
+		DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */; };
+		DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705D1D6913EF00FEFB85 /* Lexer.swift */; };
+		DC1770651D6913EF00FEFB85 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705D1D6913EF00FEFB85 /* Lexer.swift */; };
+		DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705E1D6913EF00FEFB85 /* StatementParser.swift */; };
+		DC1770671D6913EF00FEFB85 /* StatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705E1D6913EF00FEFB85 /* StatementParser.swift */; };
+		DC1770681D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
+		DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
+		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
+		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
+		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
+		DC98BBBB1D59A31400677C66 /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E01D1FBF52003A8DED /* libclangAST.a */; };
+		DC98BBBC1D59A31500677C66 /* libclangParse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E41D1FBF52003A8DED /* libclangParse.a */; };
+		DC98BBBD1D59A31700677C66 /* libclangSema.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E61D1FBF52003A8DED /* libclangSema.a */; };
+		DC98BBBE1D59A32700677C66 /* libclangBasic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E21D1FBF52003A8DED /* libclangBasic.a */; };
+		DC98BBBF1D59A32700677C66 /* libclangDriver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38FA1D1FBF70003A8DED /* libclangDriver.a */; };
+		DC98BBC01D59A32E00677C66 /* libclangAnalysis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38FC1D1FBF73003A8DED /* libclangAnalysis.a */; };
+		DC98BBC11D59A32E00677C66 /* libclangASTMatchers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E11D1FBF52003A8DED /* libclangASTMatchers.a */; };
+		DC98BBC21D59A32F00677C66 /* libclangIndex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E31D1FBF52003A8DED /* libclangIndex.a */; };
+		DC98BBC31D59A33200677C66 /* libclangLex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38F61D1FBF69003A8DED /* libclangLex.a */; };
+		DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC98BBC51D5EE92F00677C66 /* libtinygc.a */; };
+		DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
+		DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */; };
+		DCAEBC541C90095500B84E25 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC531C90095500B84E25 /* libLLVMMC.a */; };
+		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
+		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
+		DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCA97C81D58581900883183 /* libLLVMLinker.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DC2BC1751D3B030E00A6C7CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC3D7D171C78338C0076EED6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC2BC16B1D3B02CA00A6C7CC;
+			remoteInfo = TrillRuntime;
+		};
+		DC98BBE51D60129300677C66 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC3D7D171C78338C0076EED6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC2BC16B1D3B02CA00A6C7CC;
+			remoteInfo = trillRuntime;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DC2162B01CE458D300D78292 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC217A021D4EAD3000729DF0 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		DC3D7D1D1C78338C0076EED6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		DC02C5CB1D56C06E00FE8374 /* libgc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgc.a; path = "../../../../usr/local/Cellar/bdw-gc/7.4.2/lib/libgc.a"; sourceTree = "<group>"; };
+		DC02C5D11D5836E200FE8374 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
+		DC02C5D21D5836E200FE8374 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMCore.a"; sourceTree = "<group>"; };
+		DC02C5D31D5836E200FE8374 /* libLLVMExecutionEngine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMExecutionEngine.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMExecutionEngine.a"; sourceTree = "<group>"; };
+		DC02C5D41D5836E200FE8374 /* libLLVMInstrumentation.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstrumentation.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMInstrumentation.a"; sourceTree = "<group>"; };
+		DC02C5D51D5836E200FE8374 /* libLLVMIRReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMIRReader.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMIRReader.a"; sourceTree = "<group>"; };
+		DC02C5D61D5836E200FE8374 /* libLLVMMC.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMC.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMMC.a"; sourceTree = "<group>"; };
+		DC02C5D71D5836E200FE8374 /* libLLVMMCDisassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCDisassembler.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMMCDisassembler.a"; sourceTree = "<group>"; };
+		DC02C5D81D5836E200FE8374 /* libLLVMMCJIT.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCJIT.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMMCJIT.a"; sourceTree = "<group>"; };
+		DC02C5D91D5836E200FE8374 /* libLLVMMCParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCParser.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMMCParser.a"; sourceTree = "<group>"; };
+		DC02C5DA1D5836E200FE8374 /* libLLVMObject.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMObject.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMObject.a"; sourceTree = "<group>"; };
+		DC02C5DB1D5836E200FE8374 /* libLLVMOption.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOption.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMOption.a"; sourceTree = "<group>"; };
+		DC02C5DC1D5836E200FE8374 /* libLLVMPasses.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMPasses.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMPasses.a"; sourceTree = "<group>"; };
+		DC02C5DD1D5836E200FE8374 /* libLLVMProfileData.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMProfileData.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMProfileData.a"; sourceTree = "<group>"; };
+		DC02C5DE1D5836E200FE8374 /* libLLVMRuntimeDyld.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRuntimeDyld.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMRuntimeDyld.a"; sourceTree = "<group>"; };
+		DC02C5DF1D5836E200FE8374 /* libLLVMScalarOpts.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMScalarOpts.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMScalarOpts.a"; sourceTree = "<group>"; };
+		DC02C5E01D5836E200FE8374 /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMSupport.a"; sourceTree = "<group>"; };
+		DC02C5E11D5836E200FE8374 /* libLLVMTarget.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTarget.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMTarget.a"; sourceTree = "<group>"; };
+		DC02C5F31D58370100FE8374 /* libLLVMAsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmParser.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMAsmParser.a"; sourceTree = "<group>"; };
+		DC02C5F41D58370100FE8374 /* libLLVMAsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmPrinter.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMAsmPrinter.a"; sourceTree = "<group>"; };
+		DC02C5F51D58370100FE8374 /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMBitReader.a"; sourceTree = "<group>"; };
+		DC02C5F61D58370100FE8374 /* libLLVMBitWriter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitWriter.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMBitWriter.a"; sourceTree = "<group>"; };
+		DC02C5FB1D58370700FE8374 /* libLLVMX86AsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86AsmParser.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86AsmParser.a"; sourceTree = "<group>"; };
+		DC02C5FC1D58370700FE8374 /* libLLVMX86AsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86AsmPrinter.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86AsmPrinter.a"; sourceTree = "<group>"; };
+		DC02C5FD1D58370700FE8374 /* libLLVMX86CodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86CodeGen.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86CodeGen.a"; sourceTree = "<group>"; };
+		DC02C6011D58371200FE8374 /* libLLVMX86Desc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Desc.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86Desc.a"; sourceTree = "<group>"; };
+		DC02C6021D58371200FE8374 /* libLLVMX86Disassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Disassembler.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86Disassembler.a"; sourceTree = "<group>"; };
+		DC02C6031D58371200FE8374 /* libLLVMX86Info.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Info.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86Info.a"; sourceTree = "<group>"; };
+		DC02C6041D58371200FE8374 /* libLLVMX86Utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Utils.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMX86Utils.a"; sourceTree = "<group>"; };
+		DC02C6091D58371E00FE8374 /* libLLVMMIRParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMIRParser.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMMIRParser.a"; sourceTree = "<group>"; };
+		DC02C60B1D58372B00FE8374 /* libLLVMInstCombine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstCombine.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMInstCombine.a"; sourceTree = "<group>"; };
+		DC02C60D1D58373800FE8374 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMAnalysis.a"; sourceTree = "<group>"; };
+		DC02C60F1D58375500FE8374 /* libLLVMLibDriver.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLibDriver.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMLibDriver.a"; sourceTree = "<group>"; };
+		DC02C6111D58377200FE8374 /* libLLVMOrcJIT.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOrcJIT.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMOrcJIT.a"; sourceTree = "<group>"; };
+		DC02C6121D58377200FE8374 /* libLLVMSelectionDAG.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSelectionDAG.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMSelectionDAG.a"; sourceTree = "<group>"; };
+		DC02C6131D58377200FE8374 /* libLLVMSymbolize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSymbolize.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMSymbolize.a"; sourceTree = "<group>"; };
+		DC02C6171D5837BE00FE8374 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMTransformUtils.a"; sourceTree = "<group>"; };
+		DC02C6191D58380A00FE8374 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMipo.a"; sourceTree = "<group>"; };
+		DC0FE9321CE3061A00224874 /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC176FCD1D6911A200FEFB85 /* ASTContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTContext.swift; sourceTree = "<group>"; };
+		DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTTransformer.swift; path = ../Base/ASTTransformer.swift; sourceTree = "<group>"; };
+		DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTVisitor.swift; path = ../Base/ASTVisitor.swift; sourceTree = "<group>"; };
+		DC176FD21D6911A200FEFB85 /* BaseExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseExprs.swift; sourceTree = "<group>"; };
+		DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionExprs.swift; sourceTree = "<group>"; };
+		DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OperatorExprs.swift; sourceTree = "<group>"; };
+		DC176FD51D6911A200FEFB85 /* StatementExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementExprs.swift; sourceTree = "<group>"; };
+		DC176FD61D6911A200FEFB85 /* TypeExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeExprs.swift; sourceTree = "<group>"; };
+		DC176FD71D6911A200FEFB85 /* ValueExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueExprs.swift; sourceTree = "<group>"; };
+		DC176FD91D6911A200FEFB85 /* ClangImporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClangImporter.swift; sourceTree = "<group>"; };
+		DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticConsumer.swift; sourceTree = "<group>"; };
+		DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
+		DC176FDD1D6911A200FEFB85 /* Driver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Driver.swift; sourceTree = "<group>"; };
+		DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFormatter.swift; sourceTree = "<group>"; };
+		DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseIRGen.swift; sourceTree = "<group>"; };
+		DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionIRGen.swift; sourceTree = "<group>"; };
+		DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuntimeIRGen.swift; sourceTree = "<group>"; };
+		DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementIRGen.swift; sourceTree = "<group>"; };
+		DC176FE91D6911A200FEFB85 /* TypeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeIRGen.swift; sourceTree = "<group>"; };
+		DC176FEA1D6911A200FEFB85 /* ValueIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueIRGen.swift; sourceTree = "<group>"; };
+		DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LLVMWrappers.cpp; sourceTree = "<group>"; };
+		DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLVMWrappers.h; sourceTree = "<group>"; };
+		DC176FF11D6911A200FEFB85 /* Mangler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mangler.swift; sourceTree = "<group>"; };
+		DC176FF21D6911A200FEFB85 /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
+		DC176FF31D6911A200FEFB85 /* TypeChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeChecker.swift; sourceTree = "<group>"; };
+		DC1770141D69128500FEFB85 /* demangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = demangle.cpp; path = Sources/Runtime/demangle.cpp; sourceTree = SOURCE_ROOT; };
+		DC1770151D69128500FEFB85 /* demangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = demangle.h; path = Sources/Runtime/demangle.h; sourceTree = SOURCE_ROOT; };
+		DC1770161D69128500FEFB85 /* runtime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Sources/Runtime/runtime.cpp; sourceTree = SOURCE_ROOT; };
+		DC1770171D69128500FEFB85 /* runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = Sources/Runtime/runtime.h; sourceTree = SOURCE_ROOT; };
+		DC1770181D69128500FEFB85 /* trill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trill.h; path = Sources/Runtime/trill.h; sourceTree = SOURCE_ROOT; };
+		DC17701E1D6912E300FEFB85 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotatedTextStorage.swift; sourceTree = "<group>"; };
+		DC1770221D69130700FEFB85 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DC1770231D69130700FEFB85 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributedStringConsumer.swift; sourceTree = "<group>"; };
+		DC1770261D69130700FEFB85 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DC1770271D69130700FEFB85 /* DocumentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentViewController.swift; sourceTree = "<group>"; };
+		DC1770281D69130700FEFB85 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DC1770291D69130700FEFB85 /* InputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputViewController.swift; sourceTree = "<group>"; };
+		DC17702A1D69130700FEFB85 /* JavaScriptRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptRunner.swift; sourceTree = "<group>"; };
+		DC17702B1D69130700FEFB85 /* NavController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavController.swift; sourceTree = "<group>"; };
+		DC17702C1D69130700FEFB85 /* RunViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RunViewController.swift; sourceTree = "<group>"; };
+		DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceAnnotator.swift; sourceTree = "<group>"; };
+		DC17702E1D69130700FEFB85 /* SourceDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceDocument.swift; sourceTree = "<group>"; };
+		DC17702F1D69130700FEFB85 /* TimingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimingViewController.swift; sourceTree = "<group>"; };
+		DC17704A1D69139900FEFB85 /* ASTDumper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTDumper.swift; sourceTree = "<group>"; };
+		DC17704B1D69139900FEFB85 /* ASTPrinter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTPrinter.swift; sourceTree = "<group>"; };
+		DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptGen.swift; sourceTree = "<group>"; };
+		DC17705B1D6913EF00FEFB85 /* BaseParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseParser.swift; sourceTree = "<group>"; };
+		DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionParser.swift; sourceTree = "<group>"; };
+		DC17705D1D6913EF00FEFB85 /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
+		DC17705E1D6913EF00FEFB85 /* StatementParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementParser.swift; sourceTree = "<group>"; };
+		DC17705F1D6913EF00FEFB85 /* ValueParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueParser.swift; sourceTree = "<group>"; };
+		DC17C8C31CDC509D00779D66 /* libstdc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libstdc++.tbd"; path = "usr/lib/libstdc++.tbd"; sourceTree = SDKROOT; };
+		DC217A041D4EAD3000729DF0 /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC217A061D4EAD3000729DF0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtrillRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
+		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; };
+		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC5F38DE1D1FBC98003A8DED /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../../../usr/local/llvm/lib/libclang.dylib; sourceTree = "<group>"; };
+		DC5F38E01D1FBF52003A8DED /* libclangAST.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangAST.a; path = ../../../../usr/local/llvm/lib/libclangAST.a; sourceTree = "<group>"; };
+		DC5F38E11D1FBF52003A8DED /* libclangASTMatchers.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangASTMatchers.a; path = ../../../../usr/local/llvm/lib/libclangASTMatchers.a; sourceTree = "<group>"; };
+		DC5F38E21D1FBF52003A8DED /* libclangBasic.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangBasic.a; path = ../../../../usr/local/llvm/lib/libclangBasic.a; sourceTree = "<group>"; };
+		DC5F38E31D1FBF52003A8DED /* libclangIndex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangIndex.a; path = ../../../../usr/local/llvm/lib/libclangIndex.a; sourceTree = "<group>"; };
+		DC5F38E41D1FBF52003A8DED /* libclangParse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangParse.a; path = ../../../../usr/local/llvm/lib/libclangParse.a; sourceTree = "<group>"; };
+		DC5F38E51D1FBF52003A8DED /* libclangQuery.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangQuery.a; path = ../../../../usr/local/llvm/lib/libclangQuery.a; sourceTree = "<group>"; };
+		DC5F38E61D1FBF52003A8DED /* libclangSema.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangSema.a; path = ../../../../usr/local/llvm/lib/libclangSema.a; sourceTree = "<group>"; };
+		DC5F38E71D1FBF52003A8DED /* libclangTooling.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTooling.a; path = ../../../../usr/local/llvm/lib/libclangTooling.a; sourceTree = "<group>"; };
+		DC5F38E81D1FBF52003A8DED /* libclangToolingCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangToolingCore.a; path = ../../../../usr/local/llvm/lib/libclangToolingCore.a; sourceTree = "<group>"; };
+		DC5F38F21D1FBF61003A8DED /* libclangSerialization.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangSerialization.a; path = ../../../../usr/local/llvm/lib/libclangSerialization.a; sourceTree = "<group>"; };
+		DC5F38F41D1FBF65003A8DED /* libclangRename.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangRename.a; path = ../../../../usr/local/llvm/lib/libclangRename.a; sourceTree = "<group>"; };
+		DC5F38F61D1FBF69003A8DED /* libclangLex.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangLex.a; path = ../../../../usr/local/llvm/lib/libclangLex.a; sourceTree = "<group>"; };
+		DC5F38F81D1FBF6D003A8DED /* libclangFormat.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFormat.a; path = ../../../../usr/local/llvm/lib/libclangFormat.a; sourceTree = "<group>"; };
+		DC5F38FA1D1FBF70003A8DED /* libclangDriver.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangDriver.a; path = ../../../../usr/local/llvm/lib/libclangDriver.a; sourceTree = "<group>"; };
+		DC5F38FC1D1FBF73003A8DED /* libclangAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangAnalysis.a; path = ../../../../usr/local/llvm/lib/libclangAnalysis.a; sourceTree = "<group>"; };
+		DC5F38FE1D1FBF98003A8DED /* libclangDynamicASTMatchers.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangDynamicASTMatchers.a; path = ../../../../usr/local/llvm/lib/libclangDynamicASTMatchers.a; sourceTree = "<group>"; };
+		DC5F39001D1FBF9E003A8DED /* libclangEdit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangEdit.a; path = ../../../../usr/local/llvm/lib/libclangEdit.a; sourceTree = "<group>"; };
+		DC5F39021D1FBFA2003A8DED /* libclangFrontendTool.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontendTool.a; path = ../../../../usr/local/llvm/lib/libclangFrontendTool.a; sourceTree = "<group>"; };
+		DC5F39041D1FBFAA003A8DED /* libclangStaticAnalyzerCheckers.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerCheckers.a; path = ../../../../usr/local/llvm/lib/libclangStaticAnalyzerCheckers.a; sourceTree = "<group>"; };
+		DC5F39051D1FBFAA003A8DED /* libclangStaticAnalyzerCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerCore.a; path = ../../../../usr/local/llvm/lib/libclangStaticAnalyzerCore.a; sourceTree = "<group>"; };
+		DC5F39061D1FBFAA003A8DED /* libclangStaticAnalyzerFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangStaticAnalyzerFrontend.a; path = ../../../../usr/local/llvm/lib/libclangStaticAnalyzerFrontend.a; sourceTree = "<group>"; };
+		DC5F390A1D1FBFAC003A8DED /* libclangTidy.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidy.a; path = ../../../../usr/local/llvm/lib/libclangTidy.a; sourceTree = "<group>"; };
+		DC5F390C1D1FBFDD003A8DED /* libclangApplyReplacements.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangApplyReplacements.a; path = ../../../../usr/local/llvm/lib/libclangApplyReplacements.a; sourceTree = "<group>"; };
+		DC5F390D1D1FBFDD003A8DED /* libclangARCMigrate.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangARCMigrate.a; path = ../../../../usr/local/llvm/lib/libclangARCMigrate.a; sourceTree = "<group>"; };
+		DC5F390E1D1FBFDD003A8DED /* libclangCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangCodeGen.a; path = ../../../../usr/local/llvm/lib/libclangCodeGen.a; sourceTree = "<group>"; };
+		DC5F390F1D1FBFDD003A8DED /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = ../../../../usr/local/llvm/lib/libclangFrontend.a; sourceTree = "<group>"; };
+		DC5F39101D1FBFDD003A8DED /* libclangRewrite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangRewrite.a; path = ../../../../usr/local/llvm/lib/libclangRewrite.a; sourceTree = "<group>"; };
+		DC5F39111D1FBFDD003A8DED /* libclangRewriteFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangRewriteFrontend.a; path = ../../../../usr/local/llvm/lib/libclangRewriteFrontend.a; sourceTree = "<group>"; };
+		DC5F39121D1FBFDD003A8DED /* libclangTidyCERTModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyCERTModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyCERTModule.a; sourceTree = "<group>"; };
+		DC5F39131D1FBFDD003A8DED /* libclangTidyCppCoreGuidelinesModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyCppCoreGuidelinesModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyCppCoreGuidelinesModule.a; sourceTree = "<group>"; };
+		DC5F39141D1FBFDD003A8DED /* libclangTidyGoogleModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyGoogleModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyGoogleModule.a; sourceTree = "<group>"; };
+		DC5F39151D1FBFDD003A8DED /* libclangTidyLLVMModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyLLVMModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyLLVMModule.a; sourceTree = "<group>"; };
+		DC5F39161D1FBFDD003A8DED /* libclangTidyMiscModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyMiscModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyMiscModule.a; sourceTree = "<group>"; };
+		DC5F39171D1FBFDD003A8DED /* libclangTidyModernizeModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyModernizeModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyModernizeModule.a; sourceTree = "<group>"; };
+		DC5F39181D1FBFDD003A8DED /* libclangTidyPerformanceModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyPerformanceModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyPerformanceModule.a; sourceTree = "<group>"; };
+		DC5F39191D1FBFDD003A8DED /* libclangTidyReadabilityModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyReadabilityModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyReadabilityModule.a; sourceTree = "<group>"; };
+		DC5F391A1D1FBFDD003A8DED /* libclangTidyUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyUtils.a; path = ../../../../usr/local/llvm/lib/libclangTidyUtils.a; sourceTree = "<group>"; };
+		DC5F394F1D1FC016003A8DED /* libclang_rt.osx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclang_rt.osx.a; path = ../../../../usr/local/llvm/lib/clang/3.8.0/lib/darwin/libclang_rt.osx.a; sourceTree = "<group>"; };
+		DC98BBC51D5EE92F00677C66 /* libtinygc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtinygc.a; path = ../../../../usr/local/lib/libtinygc.a; sourceTree = "<group>"; };
+		DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
+		DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = /usr/local/llvm/lib/libLLVMCodeGen.a; sourceTree = "<absolute>"; };
+		DCAEBC381C9007E300B84E25 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = /usr/local/llvm/lib/libLLVMCore.a; sourceTree = "<absolute>"; };
+		DCAEBC391C9007E300B84E25 /* libLLVMObject.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMObject.a; path = /usr/local/llvm/lib/libLLVMObject.a; sourceTree = "<absolute>"; };
+		DCAEBC3A1C9007E300B84E25 /* libLLVMOption.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOption.a; path = /usr/local/llvm/lib/libLLVMOption.a; sourceTree = "<absolute>"; };
+		DCAEBC3B1C9007E300B84E25 /* libLLVMOrcJIT.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMOrcJIT.a; path = /usr/local/llvm/lib/libLLVMOrcJIT.a; sourceTree = "<absolute>"; };
+		DCAEBC3C1C9007E300B84E25 /* libLLVMPasses.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMPasses.a; path = /usr/local/llvm/lib/libLLVMPasses.a; sourceTree = "<absolute>"; };
+		DCAEBC3D1C9007E300B84E25 /* libLLVMSupport.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSupport.a; path = /usr/local/llvm/lib/libLLVMSupport.a; sourceTree = "<absolute>"; };
+		DCAEBC3E1C9007E300B84E25 /* libLLVMTarget.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTarget.a; path = /usr/local/llvm/lib/libLLVMTarget.a; sourceTree = "<absolute>"; };
+		DCAEBC471C9007FD00B84E25 /* libLLVMAsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAsmPrinter.a; path = /usr/local/llvm/lib/libLLVMAsmPrinter.a; sourceTree = "<absolute>"; };
+		DCAEBC491C90090D00B84E25 /* libLLVMMCJIT.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCJIT.a; path = /usr/local/llvm/lib/libLLVMMCJIT.a; sourceTree = "<absolute>"; };
+		DCAEBC4B1C90091A00B84E25 /* libLLVMExecutionEngine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMExecutionEngine.a; path = /usr/local/llvm/lib/libLLVMExecutionEngine.a; sourceTree = "<absolute>"; };
+		DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurses.dylib; path = /usr/lib/libcurses.dylib; sourceTree = "<absolute>"; };
+		DCAEBC4F1C90094500B84E25 /* libLLVMX86AsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86AsmPrinter.a; path = /usr/local/llvm/lib/libLLVMX86AsmPrinter.a; sourceTree = "<absolute>"; };
+		DCAEBC511C90094700B84E25 /* libLLVMX86CodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86CodeGen.a; path = /usr/local/llvm/lib/libLLVMX86CodeGen.a; sourceTree = "<absolute>"; };
+		DCAEBC531C90095500B84E25 /* libLLVMMC.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMC.a; path = /usr/local/llvm/lib/libLLVMMC.a; sourceTree = "<absolute>"; };
+		DCAEBC551C90096400B84E25 /* libLLVMX86Desc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Desc.a; path = /usr/local/llvm/lib/libLLVMX86Desc.a; sourceTree = "<absolute>"; };
+		DCAEBC561C90096400B84E25 /* libLLVMX86Info.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Info.a; path = /usr/local/llvm/lib/libLLVMX86Info.a; sourceTree = "<absolute>"; };
+		DCAEBC571C90096400B84E25 /* libLLVMX86Utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMX86Utils.a; path = /usr/local/llvm/lib/libLLVMX86Utils.a; sourceTree = "<absolute>"; };
+		DCAEBC5B1C90097300B84E25 /* libLLVMRuntimeDyld.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRuntimeDyld.a; path = /usr/local/llvm/lib/libLLVMRuntimeDyld.a; sourceTree = "<absolute>"; };
+		DCAEBC5D1C90099300B84E25 /* libLLVMSelectionDAG.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSelectionDAG.a; path = /usr/local/llvm/lib/libLLVMSelectionDAG.a; sourceTree = "<absolute>"; };
+		DCAEBC5F1C90099A00B84E25 /* libLLVMMCDisassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCDisassembler.a; path = /usr/local/llvm/lib/libLLVMMCDisassembler.a; sourceTree = "<absolute>"; };
+		DCAEBC611C90099D00B84E25 /* libLLVMMCParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMCParser.a; path = /usr/local/llvm/lib/libLLVMMCParser.a; sourceTree = "<absolute>"; };
+		DCAEBC631C9009B000B84E25 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		DCAEBC651C9009BD00B84E25 /* libLLVMAnalysis.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAnalysis.a; path = /usr/local/llvm/lib/libLLVMAnalysis.a; sourceTree = "<absolute>"; };
+		DCAEBC671C9009C000B84E25 /* libLLVMBitWriter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitWriter.a; path = /usr/local/llvm/lib/libLLVMBitWriter.a; sourceTree = "<absolute>"; };
+		DCAEBC691C9009C100B84E25 /* libLLVMBitReader.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMBitReader.a; path = /usr/local/llvm/lib/libLLVMBitReader.a; sourceTree = "<absolute>"; };
+		DCAEBC6B1C9009CF00B84E25 /* libLLVMInstCombine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstCombine.a; path = /usr/local/llvm/lib/libLLVMInstCombine.a; sourceTree = "<absolute>"; };
+		DCAEBC6C1C9009CF00B84E25 /* libLLVMInstrumentation.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInstrumentation.a; path = /usr/local/llvm/lib/libLLVMInstrumentation.a; sourceTree = "<absolute>"; };
+		DCAEBC6F1C9009D200B84E25 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = /usr/local/llvm/lib/libLLVMipo.a; sourceTree = "<absolute>"; };
+		DCAEBC711C9009D400B84E25 /* libLLVMInterpreter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMInterpreter.a; path = /usr/local/llvm/lib/libLLVMInterpreter.a; sourceTree = "<absolute>"; };
+		DCAEBC731C9009D600B84E25 /* libLLVMLTO.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLTO.a; path = /usr/local/llvm/lib/libLLVMLTO.a; sourceTree = "<absolute>"; };
+		DCAEBC751C9009E700B84E25 /* libLLVMScalarOpts.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMScalarOpts.a; path = /usr/local/llvm/lib/libLLVMScalarOpts.a; sourceTree = "<absolute>"; };
+		DCAEBC771C9009EB00B84E25 /* libLLVMSymbolize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSymbolize.a; path = /usr/local/llvm/lib/libLLVMSymbolize.a; sourceTree = "<absolute>"; };
+		DCAEBC791C9009ED00B84E25 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = /usr/local/llvm/lib/libLLVMTransformUtils.a; sourceTree = "<absolute>"; };
+		DCC4EF471D690D3D00E1CF5B /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		DCCA97C81D58581900883183 /* libLLVMLinker.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLinker.a; path = ../../../../usr/local/llvm/lib/libLLVMLinker.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DC0FE92F1CE3061A00224874 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC217A011D4EAD3000729DF0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC2BC1691D3B02CA00A6C7CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC3D7D1C1C78338C0076EED6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */,
+				DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */,
+				DC02C5E41D5836E200FE8374 /* libLLVMExecutionEngine.a in Frameworks */,
+				DC02C5E61D5836E200FE8374 /* libLLVMIRReader.a in Frameworks */,
+				DC02C5F71D58370100FE8374 /* libLLVMAsmParser.a in Frameworks */,
+				DC02C5F81D58370100FE8374 /* libLLVMAsmPrinter.a in Frameworks */,
+				DC02C60E1D58373800FE8374 /* libLLVMAnalysis.a in Frameworks */,
+				DC02C5E31D5836E200FE8374 /* libLLVMCore.a in Frameworks */,
+				DC02C5F91D58370100FE8374 /* libLLVMBitReader.a in Frameworks */,
+				DC02C5E21D5836E200FE8374 /* libLLVMCodeGen.a in Frameworks */,
+				DC02C6101D58375500FE8374 /* libLLVMLibDriver.a in Frameworks */,
+				DC02C5FA1D58370100FE8374 /* libLLVMBitWriter.a in Frameworks */,
+				DC02C5E71D5836E200FE8374 /* libLLVMMC.a in Frameworks */,
+				DC02C5E81D5836E200FE8374 /* libLLVMMCDisassembler.a in Frameworks */,
+				DC02C5E91D5836E200FE8374 /* libLLVMMCJIT.a in Frameworks */,
+				DC02C5EA1D5836E200FE8374 /* libLLVMMCParser.a in Frameworks */,
+				DC02C60A1D58371E00FE8374 /* libLLVMMIRParser.a in Frameworks */,
+				DC02C5EB1D5836E200FE8374 /* libLLVMObject.a in Frameworks */,
+				DC02C5EC1D5836E200FE8374 /* libLLVMOption.a in Frameworks */,
+				DC02C5EE1D5836E200FE8374 /* libLLVMProfileData.a in Frameworks */,
+				DC02C5EF1D5836E200FE8374 /* libLLVMRuntimeDyld.a in Frameworks */,
+				DC02C6141D58377200FE8374 /* libLLVMOrcJIT.a in Frameworks */,
+				DC02C6151D58377200FE8374 /* libLLVMSelectionDAG.a in Frameworks */,
+				DC02C6161D58377200FE8374 /* libLLVMSymbolize.a in Frameworks */,
+				DC02C5F11D5836E200FE8374 /* libLLVMSupport.a in Frameworks */,
+				DC02C5FF1D58370700FE8374 /* libLLVMX86AsmPrinter.a in Frameworks */,
+				DC02C60C1D58372B00FE8374 /* libLLVMInstCombine.a in Frameworks */,
+				DC02C5E51D5836E200FE8374 /* libLLVMInstrumentation.a in Frameworks */,
+				DC02C6001D58370700FE8374 /* libLLVMX86CodeGen.a in Frameworks */,
+				DC02C6051D58371200FE8374 /* libLLVMX86Desc.a in Frameworks */,
+				DC02C6061D58371200FE8374 /* libLLVMX86Disassembler.a in Frameworks */,
+				DC02C6071D58371200FE8374 /* libLLVMX86Info.a in Frameworks */,
+				DC02C6081D58371200FE8374 /* libLLVMX86Utils.a in Frameworks */,
+				DC02C61A1D58380A00FE8374 /* libLLVMipo.a in Frameworks */,
+				DC02C5FE1D58370700FE8374 /* libLLVMX86AsmParser.a in Frameworks */,
+				DC02C6181D5837BE00FE8374 /* libLLVMTransformUtils.a in Frameworks */,
+				DC02C5ED1D5836E200FE8374 /* libLLVMPasses.a in Frameworks */,
+				DC02C5F21D5836E200FE8374 /* libLLVMTarget.a in Frameworks */,
+				DC02C5F01D5836E200FE8374 /* libLLVMScalarOpts.a in Frameworks */,
+				DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */,
+				DC98BBBB1D59A31400677C66 /* libclangAST.a in Frameworks */,
+				DC98BBC31D59A33200677C66 /* libclangLex.a in Frameworks */,
+				DC98BBBE1D59A32700677C66 /* libclangBasic.a in Frameworks */,
+				DC98BBBF1D59A32700677C66 /* libclangDriver.a in Frameworks */,
+				DC98BBC01D59A32E00677C66 /* libclangAnalysis.a in Frameworks */,
+				DC98BBC21D59A32F00677C66 /* libclangIndex.a in Frameworks */,
+				DC98BBC11D59A32E00677C66 /* libclangASTMatchers.a in Frameworks */,
+				DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */,
+				DC98BBBD1D59A31700677C66 /* libclangSema.a in Frameworks */,
+				DC98BBBC1D59A31500677C66 /* libclangParse.a in Frameworks */,
+				DCAEBC541C90095500B84E25 /* libLLVMMC.a in Frameworks */,
+				DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DC176FCC1D6911A200FEFB85 /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FCD1D6911A200FEFB85 /* ASTContext.swift */,
+				DC176FD21D6911A200FEFB85 /* BaseExprs.swift */,
+				DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */,
+				DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */,
+				DC176FD51D6911A200FEFB85 /* StatementExprs.swift */,
+				DC176FD61D6911A200FEFB85 /* TypeExprs.swift */,
+				DC176FD71D6911A200FEFB85 /* ValueExprs.swift */,
+			);
+			name = Base;
+			path = Sources/Base;
+			sourceTree = SOURCE_ROOT;
+		};
+		DC176FD81D6911A200FEFB85 /* Import */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FD91D6911A200FEFB85 /* ClangImporter.swift */,
+			);
+			name = Import;
+			path = Sources/Import;
+			sourceTree = SOURCE_ROOT;
+		};
+		DC176FDA1D6911A200FEFB85 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */,
+				DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */,
+				DC17701E1D6912E300FEFB85 /* Utilities.swift */,
+				DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */,
+				DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */,
+				DC176FDD1D6911A200FEFB85 /* Driver.swift */,
+				DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */,
+			);
+			name = Infrastructure;
+			path = Sources/Infrastructure;
+			sourceTree = SOURCE_ROOT;
+		};
+		DC176FE01D6911A200FEFB85 /* IRGen */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */,
+				DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */,
+				DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */,
+				DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */,
+				DC176FE91D6911A200FEFB85 /* TypeIRGen.swift */,
+				DC176FEA1D6911A200FEFB85 /* ValueIRGen.swift */,
+			);
+			name = IRGen;
+			path = Sources/IRGen;
+			sourceTree = SOURCE_ROOT;
+		};
+		DC176FEC1D6911A200FEFB85 /* LLVM Wrappers */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */,
+				DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */,
+			);
+			name = "LLVM Wrappers";
+			path = "Sources/LLVM Wrappers";
+			sourceTree = SOURCE_ROOT;
+		};
+		DC176FF01D6911A200FEFB85 /* Semantic Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FF11D6911A200FEFB85 /* Mangler.swift */,
+				DC176FF21D6911A200FEFB85 /* Sema.swift */,
+				DC176FF31D6911A200FEFB85 /* TypeChecker.swift */,
+			);
+			name = "Semantic Analysis";
+			path = "Sources/Semantic Analysis";
+			sourceTree = SOURCE_ROOT;
+		};
+		DC1770201D69130700FEFB85 /* iOS App */ = {
+			isa = PBXGroup;
+			children = (
+				DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */,
+				DC1770221D69130700FEFB85 /* AppDelegate.swift */,
+				DC1770231D69130700FEFB85 /* Assets.xcassets */,
+				DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */,
+				DC1770251D69130700FEFB85 /* Main.storyboard */,
+				DC1770271D69130700FEFB85 /* DocumentViewController.swift */,
+				DC1770281D69130700FEFB85 /* Info.plist */,
+				DC1770291D69130700FEFB85 /* InputViewController.swift */,
+				DC17702A1D69130700FEFB85 /* JavaScriptRunner.swift */,
+				DC17702B1D69130700FEFB85 /* NavController.swift */,
+				DC17702C1D69130700FEFB85 /* RunViewController.swift */,
+				DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */,
+				DC17702E1D69130700FEFB85 /* SourceDocument.swift */,
+				DC17702F1D69130700FEFB85 /* TimingViewController.swift */,
+			);
+			path = "iOS App";
+			sourceTree = SOURCE_ROOT;
+		};
+		DC1770491D69139900FEFB85 /* Utility Passes */ = {
+			isa = PBXGroup;
+			children = (
+				DC17704A1D69139900FEFB85 /* ASTDumper.swift */,
+				DC17704B1D69139900FEFB85 /* ASTPrinter.swift */,
+				DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */,
+			);
+			name = "Utility Passes";
+			path = "Sources/Utility Passes";
+			sourceTree = SOURCE_ROOT;
+		};
+		DC17705A1D6913EF00FEFB85 /* Parse */ = {
+			isa = PBXGroup;
+			children = (
+				DC17705B1D6913EF00FEFB85 /* BaseParser.swift */,
+				DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */,
+				DC17705D1D6913EF00FEFB85 /* Lexer.swift */,
+				DC17705E1D6913EF00FEFB85 /* StatementParser.swift */,
+				DC17705F1D6913EF00FEFB85 /* ValueParser.swift */,
+			);
+			name = Parse;
+			path = Sources/Parse;
+			sourceTree = SOURCE_ROOT;
+		};
+		DC217A051D4EAD3000729DF0 /* trill-demangle */ = {
+			isa = PBXGroup;
+			children = (
+				DC217A061D4EAD3000729DF0 /* main.swift */,
+				DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */,
+			);
+			path = "trill-demangle";
+			sourceTree = "<group>";
+		};
+		DC2BC1701D3B02E400A6C7CC /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+				DC1770141D69128500FEFB85 /* demangle.cpp */,
+				DC1770151D69128500FEFB85 /* demangle.h */,
+				DC1770161D69128500FEFB85 /* runtime.cpp */,
+				DC1770171D69128500FEFB85 /* runtime.h */,
+				DC1770181D69128500FEFB85 /* trill.h */,
+			);
+			name = Runtime;
+			path = "Trill OS XUITests";
+			sourceTree = "<group>";
+		};
+		DC3D7D161C78338C0076EED6 = {
+			isa = PBXGroup;
+			children = (
+				DCAEBC7D1C900A2000B84E25 /* libLLVM */,
+				DC3D7D211C78338C0076EED6 /* Trill */,
+				DC1770201D69130700FEFB85 /* iOS App */,
+				DC2BC1701D3B02E400A6C7CC /* Runtime */,
+				DC217A051D4EAD3000729DF0 /* trill-demangle */,
+				DC3D7D201C78338C0076EED6 /* Products */,
+				DC5F38DD1D1FBC98003A8DED /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		DC3D7D201C78338C0076EED6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC3D7D1F1C78338C0076EED6 /* trill */,
+				DC0FE9321CE3061A00224874 /* Trill iOS.app */,
+				DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */,
+				DC217A041D4EAD3000729DF0 /* trill-demangle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DC3D7D211C78338C0076EED6 /* Trill */ = {
+			isa = PBXGroup;
+			children = (
+				DC176FCC1D6911A200FEFB85 /* Base */,
+				DC176FD81D6911A200FEFB85 /* Import */,
+				DC176FDA1D6911A200FEFB85 /* Infrastructure */,
+				DC176FE01D6911A200FEFB85 /* IRGen */,
+				DC1770491D69139900FEFB85 /* Utility Passes */,
+				DC176FEC1D6911A200FEFB85 /* LLVM Wrappers */,
+				DC17705A1D6913EF00FEFB85 /* Parse */,
+				DC176FF01D6911A200FEFB85 /* Semantic Analysis */,
+				DC31C1071C82681E00F85807 /* BridgingHeader.h */,
+				DC31C10A1C82681E00F85807 /* main.swift */,
+			);
+			path = Trill;
+			sourceTree = "<group>";
+		};
+		DC5F38DD1D1FBC98003A8DED /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DCC4EF471D690D3D00E1CF5B /* libc++.tbd */,
+				DC98BBC51D5EE92F00677C66 /* libtinygc.a */,
+				DCCA97C81D58581900883183 /* libLLVMLinker.a */,
+				DC02C6191D58380A00FE8374 /* libLLVMipo.a */,
+				DC02C6171D5837BE00FE8374 /* libLLVMTransformUtils.a */,
+				DC02C6111D58377200FE8374 /* libLLVMOrcJIT.a */,
+				DC02C6121D58377200FE8374 /* libLLVMSelectionDAG.a */,
+				DC02C6131D58377200FE8374 /* libLLVMSymbolize.a */,
+				DC02C60F1D58375500FE8374 /* libLLVMLibDriver.a */,
+				DC02C60D1D58373800FE8374 /* libLLVMAnalysis.a */,
+				DC02C60B1D58372B00FE8374 /* libLLVMInstCombine.a */,
+				DC02C6091D58371E00FE8374 /* libLLVMMIRParser.a */,
+				DC02C6011D58371200FE8374 /* libLLVMX86Desc.a */,
+				DC02C6021D58371200FE8374 /* libLLVMX86Disassembler.a */,
+				DC02C6031D58371200FE8374 /* libLLVMX86Info.a */,
+				DC02C6041D58371200FE8374 /* libLLVMX86Utils.a */,
+				DC02C5FB1D58370700FE8374 /* libLLVMX86AsmParser.a */,
+				DC02C5FC1D58370700FE8374 /* libLLVMX86AsmPrinter.a */,
+				DC02C5FD1D58370700FE8374 /* libLLVMX86CodeGen.a */,
+				DC02C5F31D58370100FE8374 /* libLLVMAsmParser.a */,
+				DC02C5F41D58370100FE8374 /* libLLVMAsmPrinter.a */,
+				DC02C5F51D58370100FE8374 /* libLLVMBitReader.a */,
+				DC02C5F61D58370100FE8374 /* libLLVMBitWriter.a */,
+				DC02C5D11D5836E200FE8374 /* libLLVMCodeGen.a */,
+				DC02C5D21D5836E200FE8374 /* libLLVMCore.a */,
+				DC02C5D31D5836E200FE8374 /* libLLVMExecutionEngine.a */,
+				DC02C5D41D5836E200FE8374 /* libLLVMInstrumentation.a */,
+				DC02C5D51D5836E200FE8374 /* libLLVMIRReader.a */,
+				DC02C5D61D5836E200FE8374 /* libLLVMMC.a */,
+				DC02C5D71D5836E200FE8374 /* libLLVMMCDisassembler.a */,
+				DC02C5D81D5836E200FE8374 /* libLLVMMCJIT.a */,
+				DC02C5D91D5836E200FE8374 /* libLLVMMCParser.a */,
+				DC02C5DA1D5836E200FE8374 /* libLLVMObject.a */,
+				DC02C5DB1D5836E200FE8374 /* libLLVMOption.a */,
+				DC02C5DC1D5836E200FE8374 /* libLLVMPasses.a */,
+				DC02C5DD1D5836E200FE8374 /* libLLVMProfileData.a */,
+				DC02C5DE1D5836E200FE8374 /* libLLVMRuntimeDyld.a */,
+				DC02C5DF1D5836E200FE8374 /* libLLVMScalarOpts.a */,
+				DC02C5E01D5836E200FE8374 /* libLLVMSupport.a */,
+				DC02C5E11D5836E200FE8374 /* libLLVMTarget.a */,
+				DC02C5CB1D56C06E00FE8374 /* libgc.a */,
+				DC5F394F1D1FC016003A8DED /* libclang_rt.osx.a */,
+				DC5F390C1D1FBFDD003A8DED /* libclangApplyReplacements.a */,
+				DC5F390D1D1FBFDD003A8DED /* libclangARCMigrate.a */,
+				DC5F390E1D1FBFDD003A8DED /* libclangCodeGen.a */,
+				DC5F390F1D1FBFDD003A8DED /* libclangFrontend.a */,
+				DC5F39101D1FBFDD003A8DED /* libclangRewrite.a */,
+				DC5F39111D1FBFDD003A8DED /* libclangRewriteFrontend.a */,
+				DC5F39121D1FBFDD003A8DED /* libclangTidyCERTModule.a */,
+				DC5F39131D1FBFDD003A8DED /* libclangTidyCppCoreGuidelinesModule.a */,
+				DC5F39141D1FBFDD003A8DED /* libclangTidyGoogleModule.a */,
+				DC5F39151D1FBFDD003A8DED /* libclangTidyLLVMModule.a */,
+				DC5F39161D1FBFDD003A8DED /* libclangTidyMiscModule.a */,
+				DC5F39171D1FBFDD003A8DED /* libclangTidyModernizeModule.a */,
+				DC5F39181D1FBFDD003A8DED /* libclangTidyPerformanceModule.a */,
+				DC5F39191D1FBFDD003A8DED /* libclangTidyReadabilityModule.a */,
+				DC5F391A1D1FBFDD003A8DED /* libclangTidyUtils.a */,
+				DC5F390A1D1FBFAC003A8DED /* libclangTidy.a */,
+				DC5F39041D1FBFAA003A8DED /* libclangStaticAnalyzerCheckers.a */,
+				DC5F39051D1FBFAA003A8DED /* libclangStaticAnalyzerCore.a */,
+				DC5F39061D1FBFAA003A8DED /* libclangStaticAnalyzerFrontend.a */,
+				DC5F39021D1FBFA2003A8DED /* libclangFrontendTool.a */,
+				DC5F39001D1FBF9E003A8DED /* libclangEdit.a */,
+				DC5F38FE1D1FBF98003A8DED /* libclangDynamicASTMatchers.a */,
+				DC5F38FC1D1FBF73003A8DED /* libclangAnalysis.a */,
+				DC5F38FA1D1FBF70003A8DED /* libclangDriver.a */,
+				DC5F38F81D1FBF6D003A8DED /* libclangFormat.a */,
+				DC5F38F61D1FBF69003A8DED /* libclangLex.a */,
+				DC5F38F41D1FBF65003A8DED /* libclangRename.a */,
+				DC5F38F21D1FBF61003A8DED /* libclangSerialization.a */,
+				DC5F38E01D1FBF52003A8DED /* libclangAST.a */,
+				DC5F38E11D1FBF52003A8DED /* libclangASTMatchers.a */,
+				DC5F38E21D1FBF52003A8DED /* libclangBasic.a */,
+				DC5F38E31D1FBF52003A8DED /* libclangIndex.a */,
+				DC5F38E41D1FBF52003A8DED /* libclangParse.a */,
+				DC5F38E51D1FBF52003A8DED /* libclangQuery.a */,
+				DC5F38E61D1FBF52003A8DED /* libclangSema.a */,
+				DC5F38E71D1FBF52003A8DED /* libclangTooling.a */,
+				DC5F38E81D1FBF52003A8DED /* libclangToolingCore.a */,
+				DC5F38DE1D1FBC98003A8DED /* libclang.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DCAEBC7D1C900A2000B84E25 /* libLLVM */ = {
+			isa = PBXGroup;
+			children = (
+				DC17C8C31CDC509D00779D66 /* libstdc++.tbd */,
+				DCAEBC791C9009ED00B84E25 /* libLLVMTransformUtils.a */,
+				DCAEBC771C9009EB00B84E25 /* libLLVMSymbolize.a */,
+				DCAEBC751C9009E700B84E25 /* libLLVMScalarOpts.a */,
+				DCAEBC731C9009D600B84E25 /* libLLVMLTO.a */,
+				DCAEBC711C9009D400B84E25 /* libLLVMInterpreter.a */,
+				DCAEBC6F1C9009D200B84E25 /* libLLVMipo.a */,
+				DCAEBC6B1C9009CF00B84E25 /* libLLVMInstCombine.a */,
+				DCAEBC6C1C9009CF00B84E25 /* libLLVMInstrumentation.a */,
+				DCAEBC691C9009C100B84E25 /* libLLVMBitReader.a */,
+				DCAEBC671C9009C000B84E25 /* libLLVMBitWriter.a */,
+				DCAEBC651C9009BD00B84E25 /* libLLVMAnalysis.a */,
+				DCAEBC631C9009B000B84E25 /* libz.dylib */,
+				DCAEBC611C90099D00B84E25 /* libLLVMMCParser.a */,
+				DCAEBC5F1C90099A00B84E25 /* libLLVMMCDisassembler.a */,
+				DCAEBC5D1C90099300B84E25 /* libLLVMSelectionDAG.a */,
+				DCAEBC5B1C90097300B84E25 /* libLLVMRuntimeDyld.a */,
+				DCAEBC551C90096400B84E25 /* libLLVMX86Desc.a */,
+				DCAEBC561C90096400B84E25 /* libLLVMX86Info.a */,
+				DCAEBC571C90096400B84E25 /* libLLVMX86Utils.a */,
+				DCAEBC531C90095500B84E25 /* libLLVMMC.a */,
+				DCAEBC511C90094700B84E25 /* libLLVMX86CodeGen.a */,
+				DCAEBC4F1C90094500B84E25 /* libLLVMX86AsmPrinter.a */,
+				DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */,
+				DCAEBC4B1C90091A00B84E25 /* libLLVMExecutionEngine.a */,
+				DCAEBC491C90090D00B84E25 /* libLLVMMCJIT.a */,
+				DCAEBC471C9007FD00B84E25 /* libLLVMAsmPrinter.a */,
+				DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */,
+				DCAEBC381C9007E300B84E25 /* libLLVMCore.a */,
+				DCAEBC391C9007E300B84E25 /* libLLVMObject.a */,
+				DCAEBC3A1C9007E300B84E25 /* libLLVMOption.a */,
+				DCAEBC3B1C9007E300B84E25 /* libLLVMOrcJIT.a */,
+				DCAEBC3C1C9007E300B84E25 /* libLLVMPasses.a */,
+				DCAEBC3D1C9007E300B84E25 /* libLLVMSupport.a */,
+				DCAEBC3E1C9007E300B84E25 /* libLLVMTarget.a */,
+			);
+			name = libLLVM;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		DC2BC16A1D3B02CA00A6C7CC /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC17701D1D69128500FEFB85 /* trill.h in Headers */,
+				DC17701A1D69128500FEFB85 /* demangle.h in Headers */,
+				DC17701C1D69128500FEFB85 /* runtime.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		DC0FE9311CE3061A00224874 /* Trill iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0FE95D1CE3061B00224874 /* Build configuration list for PBXNativeTarget "Trill iOS" */;
+			buildPhases = (
+				DC0FE92E1CE3061A00224874 /* Sources */,
+				DC0FE92F1CE3061A00224874 /* Frameworks */,
+				DC0FE9301CE3061A00224874 /* Resources */,
+				DC2162B01CE458D300D78292 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Trill iOS";
+			productName = "Trill iOS";
+			productReference = DC0FE9321CE3061A00224874 /* Trill iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DC217A031D4EAD3000729DF0 /* trill-demangle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC217A0A1D4EAD3000729DF0 /* Build configuration list for PBXNativeTarget "trill-demangle" */;
+			buildPhases = (
+				DC217A001D4EAD3000729DF0 /* Sources */,
+				DC217A011D4EAD3000729DF0 /* Frameworks */,
+				DC217A021D4EAD3000729DF0 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC98BBE61D60129300677C66 /* PBXTargetDependency */,
+			);
+			name = "trill-demangle";
+			productName = "trill-demangle";
+			productReference = DC217A041D4EAD3000729DF0 /* trill-demangle */;
+			productType = "com.apple.product-type.tool";
+		};
+		DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC2BC16D1D3B02CA00A6C7CC /* Build configuration list for PBXNativeTarget "trillRuntime" */;
+			buildPhases = (
+				DC2BC1681D3B02CA00A6C7CC /* Sources */,
+				DC2BC1691D3B02CA00A6C7CC /* Frameworks */,
+				DC2BC16A1D3B02CA00A6C7CC /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = trillRuntime;
+			productName = TrillRuntime;
+			productReference = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		DC3D7D1E1C78338C0076EED6 /* trill */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC3D7D261C78338C0076EED6 /* Build configuration list for PBXNativeTarget "trill" */;
+			buildPhases = (
+				DC3D7D1B1C78338C0076EED6 /* Sources */,
+				DC3D7D1C1C78338C0076EED6 /* Frameworks */,
+				DC3D7D1D1C78338C0076EED6 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DC2BC1761D3B030E00A6C7CC /* PBXTargetDependency */,
+			);
+			name = trill;
+			productName = Trill;
+			productReference = DC3D7D1F1C78338C0076EED6 /* trill */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DC3D7D171C78338C0076EED6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0800;
+				LastUpgradeCheck = 0800;
+				ORGANIZATIONNAME = Harlan;
+				TargetAttributes = {
+					DC0FE9311CE3061A00224874 = {
+						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = W7GJMYD5A4;
+						LastSwiftMigration = 0800;
+					};
+					DC217A031D4EAD3000729DF0 = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = W7GJMYD5A4;
+						DevelopmentTeamName = "Harlan Haskins";
+						ProvisioningStyle = Automatic;
+					};
+					DC2BC16B1D3B02CA00A6C7CC = {
+						CreatedOnToolsVersion = 8.0;
+						DevelopmentTeam = W7GJMYD5A4;
+						DevelopmentTeamName = "Harlan Haskins";
+						ProvisioningStyle = Automatic;
+					};
+					DC3D7D1E1C78338C0076EED6 = {
+						CreatedOnToolsVersion = 7.2.1;
+						LastSwiftMigration = 0800;
+					};
+				};
+			};
+			buildConfigurationList = DC3D7D1A1C78338C0076EED6 /* Build configuration list for PBXProject "Trill" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DC3D7D161C78338C0076EED6;
+			productRefGroup = DC3D7D201C78338C0076EED6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DC3D7D1E1C78338C0076EED6 /* trill */,
+				DC0FE9311CE3061A00224874 /* Trill iOS */,
+				DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */,
+				DC217A031D4EAD3000729DF0 /* trill-demangle */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DC0FE9301CE3061A00224874 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC1770321D69130700FEFB85 /* Assets.xcassets in Resources */,
+				DC1770341D69130700FEFB85 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DC0FE92E1CE3061A00224874 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC17703E1D69134B00FEFB85 /* ASTContext.swift in Sources */,
+				DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */,
+				DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */,
+				DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
+				DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */,
+				DC1770431D69134B00FEFB85 /* BaseExprs.swift in Sources */,
+				DC1770521D6913B700FEFB85 /* Utilities.swift in Sources */,
+				DC1770531D6913B700FEFB85 /* DiagnosticConsumer.swift in Sources */,
+				DC1770541D6913B700FEFB85 /* DiagnosticEngine.swift in Sources */,
+				DC1770611D6913EF00FEFB85 /* BaseParser.swift in Sources */,
+				DC1770551D6913B700FEFB85 /* Driver.swift in Sources */,
+				DC1770561D6913B700FEFB85 /* TableFormatter.swift in Sources */,
+				DC1770571D6913CA00FEFB85 /* Mangler.swift in Sources */,
+				DC1770671D6913EF00FEFB85 /* StatementParser.swift in Sources */,
+				DC1770581D6913CA00FEFB85 /* Sema.swift in Sources */,
+				DC1770591D6913CA00FEFB85 /* TypeChecker.swift in Sources */,
+				DC1770441D69134B00FEFB85 /* FunctionExprs.swift in Sources */,
+				DC1770451D69134B00FEFB85 /* OperatorExprs.swift in Sources */,
+				DC1770651D6913EF00FEFB85 /* Lexer.swift in Sources */,
+				DC1770461D69134B00FEFB85 /* StatementExprs.swift in Sources */,
+				DC1770511D6913AC00FEFB85 /* ASTDumper.swift in Sources */,
+				DC1770471D69134B00FEFB85 /* TypeExprs.swift in Sources */,
+				DC1770501D6913AA00FEFB85 /* JavaScriptGen.swift in Sources */,
+				DC1770481D69134B00FEFB85 /* ValueExprs.swift in Sources */,
+				DC17703D1D69130700FEFB85 /* TimingViewController.swift in Sources */,
+				DC1770381D69130700FEFB85 /* JavaScriptRunner.swift in Sources */,
+				DC1770391D69130700FEFB85 /* NavController.swift in Sources */,
+				DC1770331D69130700FEFB85 /* AttributedStringConsumer.swift in Sources */,
+				DC17703C1D69130700FEFB85 /* SourceDocument.swift in Sources */,
+				DC1770371D69130700FEFB85 /* InputViewController.swift in Sources */,
+				DC17703B1D69130700FEFB85 /* SourceAnnotator.swift in Sources */,
+				DC1770351D69130700FEFB85 /* DocumentViewController.swift in Sources */,
+				DC1770311D69130700FEFB85 /* AppDelegate.swift in Sources */,
+				DC17703A1D69130700FEFB85 /* RunViewController.swift in Sources */,
+				DC1770301D69130700FEFB85 /* AnnotatedTextStorage.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC217A001D4EAD3000729DF0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC217A071D4EAD3000729DF0 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC2BC1681D3B02CA00A6C7CC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC17701B1D69128500FEFB85 /* runtime.cpp in Sources */,
+				DC1770191D69128500FEFB85 /* demangle.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DC3D7D1B1C78338C0076EED6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC1770101D6911A200FEFB85 /* LLVMWrappers.cpp in Sources */,
+				DC1770051D6911A200FEFB85 /* BaseIRGen.swift in Sources */,
+				DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */,
+				DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */,
+				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
+				DC176FF91D6911A200FEFB85 /* BaseExprs.swift in Sources */,
+				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
+				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
+				DC1770021D6911A200FEFB85 /* Driver.swift in Sources */,
+				DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */,
+				DC1770121D6911A200FEFB85 /* Sema.swift in Sources */,
+				DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */,
+				DC1770681D6913EF00FEFB85 /* ValueParser.swift in Sources */,
+				DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */,
+				DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */,
+				DC31C10E1C82681E00F85807 /* main.swift in Sources */,
+				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
+				DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */,
+				DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */,
+				DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */,
+				DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
+				DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */,
+				DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */,
+				DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */,
+				DC176FFB1D6911A200FEFB85 /* OperatorExprs.swift in Sources */,
+				DC17700B1D6911A200FEFB85 /* StatementIRGen.swift in Sources */,
+				DC176FFE1D6911A200FEFB85 /* ValueExprs.swift in Sources */,
+				DC1770001D6911A200FEFB85 /* DiagnosticConsumer.swift in Sources */,
+				DC176FFC1D6911A200FEFB85 /* StatementExprs.swift in Sources */,
+				DC176FFD1D6911A200FEFB85 /* TypeExprs.swift in Sources */,
+				DC176FFA1D6911A200FEFB85 /* FunctionExprs.swift in Sources */,
+				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
+				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
+				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DC2BC1761D3B030E00A6C7CC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */;
+			targetProxy = DC2BC1751D3B030E00A6C7CC /* PBXContainerItemProxy */;
+		};
+		DC98BBE61D60129300677C66 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */;
+			targetProxy = DC98BBE51D60129300677C66 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		DC1770251D69130700FEFB85 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC1770261D69130700FEFB85 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DC0FE9571CE3061B00224874 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = "iOS App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DC0FE9581CE3061B00224874 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				INFOPLIST_FILE = "iOS App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DC217A081D4EAD3000729DF0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "trill-demangle/DemangleBridgingHeader.h";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		DC217A091D4EAD3000729DF0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "trill-demangle/DemangleBridgingHeader.h";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		DC2BC16E1D3B02CA00A6C7CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_STATIC_ANALYZER_MODE = shallow;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = /usr/lib/include;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/lib/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "";
+				PRIVATE_HEADERS_FOLDER_PATH = /usr/local/include;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
+			};
+			name = Debug;
+		};
+		DC2BC16F1D3B02CA00A6C7CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_STATIC_ANALYZER_MODE = shallow;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = /usr/lib/include;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/lib/,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				OTHER_LDFLAGS = "";
+				PRIVATE_HEADERS_FOLDER_PATH = /usr/local/include;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
+			};
+			name = Release;
+		};
+		DC3D7D241C78338C0076EED6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DC3D7D251C78338C0076EED6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		DC3D7D271C78338C0076EED6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = /usr/local/llvm/include;
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/llvm/lib,
+				);
+				OTHER_CFLAGS = "";
+				OTHER_SWIFT_FLAGS = "-DXCODE";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/Sources/BridgingHeader.h;
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		DC3D7D281C78338C0076EED6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_ENABLE_CPP_RTTI = NO;
+				HEADER_SEARCH_PATHS = /usr/local/llvm/include;
+				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/llvm/lib,
+				);
+				OTHER_CFLAGS = "";
+				OTHER_SWIFT_FLAGS = "-DXCODE";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/Sources/BridgingHeader.h;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DC0FE95D1CE3061B00224874 /* Build configuration list for PBXNativeTarget "Trill iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0FE9571CE3061B00224874 /* Debug */,
+				DC0FE9581CE3061B00224874 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC217A0A1D4EAD3000729DF0 /* Build configuration list for PBXNativeTarget "trill-demangle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC217A081D4EAD3000729DF0 /* Debug */,
+				DC217A091D4EAD3000729DF0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC2BC16D1D3B02CA00A6C7CC /* Build configuration list for PBXNativeTarget "trillRuntime" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC2BC16E1D3B02CA00A6C7CC /* Debug */,
+				DC2BC16F1D3B02CA00A6C7CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC3D7D1A1C78338C0076EED6 /* Build configuration list for PBXProject "Trill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC3D7D241C78338C0076EED6 /* Debug */,
+				DC3D7D251C78338C0076EED6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC3D7D261C78338C0076EED6 /* Build configuration list for PBXNativeTarget "trill" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC3D7D271C78338C0076EED6 /* Debug */,
+				DC3D7D281C78338C0076EED6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DC3D7D171C78338C0076EED6 /* Project object */;
+}

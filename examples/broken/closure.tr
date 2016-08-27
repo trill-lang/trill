@@ -1,0 +1,12 @@
+foreign type Console {
+  foreign func log(_: ...)
+}
+foreign var console: Console
+
+func main() {
+  var foo = { (a: Int, b: Bool) in
+    console.log(a, b ? "true" : "false")
+  }
+  foo(10, false)
+}
+

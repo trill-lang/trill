@@ -1,0 +1,11 @@
+func maybe() -> Bool {
+  return false
+}
+func main() {
+  if true {
+    if maybe() {
+    } else {
+        printf("false?")
+    }
+  }
+}

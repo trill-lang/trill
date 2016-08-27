@@ -1,0 +1,36 @@
+foreign func malloc(_: Int) -> *Int8
+
+func compare(_ _a: *Int8, _ _b: *Int8) -> Int {
+  var a = *(_a as *Int)
+  var b = *(_b as *Int)
+  if a == b { return 0 }
+  if a < b { return -1 }
+  return 1
+}
+
+func print(_ name: *Int8) {
+  printf("%s\n", name)
+}
+
+func print(_ nums: *Int, _ count: Int) {
+  printf("[")
+  for var i = 0; i < count; i += 1 {
+    printf("%d", nums[i])
+    if i < count - 1 {
+      printf(", ")
+    }
+  }
+  printf("]\n")
+}
+
+func main() {
+  var count = 10
+  var nums = malloc(count * sizeof(Int)) as *Int
+  for var i = 0; i < count; i += 1 {
+    nums[i] = arc4random_uniform(count as Int32) as Int
+  }
+  print(nums, count)
+  qsort(nums as *Int8, count as Int32, sizeof(Int) as Int32, compare as **Int8)
+  print(nums, count)
+  free(nums as *Int8)
+}

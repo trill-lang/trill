@@ -1,0 +1,18 @@
+foreign type Console {
+  foreign func log(_: ...)
+}
+foreign var console: Console
+
+extension Int {
+  func times(do f: () -> Void) {
+    for var i = 0; i < self; i += 1 {
+      f()
+    }
+  }
+}
+
+func main() {
+  100.times(do: { () -> Void in
+      console.log("Hello, world.")
+  })
+}

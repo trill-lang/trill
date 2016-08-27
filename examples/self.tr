@@ -1,0 +1,54 @@
+func println(_ val: Int) {
+  printf("%d\n", val)
+}
+
+type Job {
+  var salary: Int
+  var isExecutive: Bool
+  func isUnderpaid() -> Bool {
+    return self.isExecutive && (self.salary < 100_000)
+  }
+}
+
+type Person {
+  let isAlive: Bool
+  var job: Job
+  var age: Int
+  mutating func growUp() {
+    self.age += 1
+  }
+  func age(offsetBy offset: Int) -> Int {
+    return self.age + offset
+  }
+  func isChild() -> Bool {
+    return self.age < 25
+  }
+  func returnsSelf() -> Person {
+    return self
+  }
+}
+
+extension Int {
+  func isPositive() -> Bool {
+    return self > 0
+  }
+}
+
+extension Bool {
+  func toInt() -> Int {
+    return self ? 1 : 0
+  }
+}
+
+func main() {
+  var president = Job(salary: 400_000, isExecutive: true)
+  var danny = Person(isAlive: true, job: president, age: 10)
+  while danny.isChild() {
+    danny.growUp()
+    println(danny.age)
+  }
+  println(danny.isChild().toInt())
+  println(danny.job.salary)
+  danny.job.salary += ""
+  println(danny.job.salary)
+}

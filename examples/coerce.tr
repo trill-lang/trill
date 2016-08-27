@@ -1,0 +1,8 @@
+func main(argc: Int, argv: **Int8) -> Int {
+  var argv = argv
+  for var i = 1; i < argc; i += 1 {
+    argv[i][0] = 0x52 as Int8
+    printf("%s\n", argv[i])
+  }
+  return 0
+}
