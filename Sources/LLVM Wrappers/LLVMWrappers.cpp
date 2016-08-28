@@ -14,6 +14,9 @@
 #include "llvm/Transforms/IPO.h"
 #include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/RTDyldMemoryManager.h"
+#include "llvm/ExecutionEngine/OrcMCJITReplacement.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
 #include "llvm/Object/ObjectFile.h"
 #include "llvm/Object/Archive.h"
 
@@ -40,6 +43,20 @@ char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename)
                                                    std::move(buf.get()));
   engine->addArchive(std::move(bin));
   return NULL;
+}
+
+std::string GlobalJITError;
+
+const char *LLVMGetJITError() {
+  return GlobalJITError.c_str();
+}
+
+LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef module) {
+  EngineBuilder builder(std::unique_ptr<Module>(unwrap(module)));
+  builder.setMCJITMemoryManager(make_unique<SectionMemoryManager>());
+  builder.setErrorStr(&GlobalJITError);
+  builder.setUseOrcMCJITReplacement(true);
+  return wrap(builder.create());
 }
 
 RawOptions ParseArguments(int argc, char **argv) {

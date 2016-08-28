@@ -76,9 +76,6 @@ class IRGenerator: ASTVisitor, Pass {
   
   typealias Result = LLVMValueRef?
   
-  /// The LLVM MCJIT that executes this code
-  var jit: LLVMExecutionEngineRef?
-  
   /// The LLVM module currently being generated
   let module: LLVMModuleRef
   
@@ -170,14 +167,6 @@ class IRGenerator: ASTVisitor, Pass {
     
     LLVMSetDataLayout(module, "e")
     
-    LLVMLinkInMCJIT()
-    var err: UnsafeMutablePointer<Int8>?
-    LLVMCreateMCJITCompilerForModule(&jit, module, nil, 0, &err)
-    
-    guard err == nil else {
-      fatalError(String(cString: err!))
-    }
-    
     self.context = context
   }
   
@@ -200,9 +189,11 @@ class IRGenerator: ASTVisitor, Pass {
   /// - parameters:
   ///   - args: The command line arguments that will be sent to the JIT main.
   func execute(_ args: [String]) throws -> Int32 {
-    guard let jit = self.jit else { throw LLVMError.brokenJIT }
-    try addArchive(at: "/usr/local/lib/libtrillRuntime.a")
-    let main = try codegenMain()
+    guard let jit = LLVMCreateOrcMCJITReplacementForModule(module) else {
+      throw LLVMError.brokenJIT
+    }
+    try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit)
+    let main = try codegenMain(forJIT: true)
     finalizeGlobalInit()
     try validateModule()
     
@@ -215,8 +206,8 @@ class IRGenerator: ASTVisitor, Pass {
   /// - parameters:
   ///   - path: The file path of the library to link.
   /// - throws: LLVMError.couldNotLink if the archive failed to link.
-  func addArchive(at path: String) throws {
-    if let err = LLVMAddArchive(jit!, path) {
+  func addArchive(at path: String, to jit: LLVMExecutionEngineRef) throws {
+    if let err = LLVMAddArchive(jit, path) {
       defer { free(err) }
       throw LLVMError.couldNotLink(path, String(cString: err))
     }
@@ -232,7 +223,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// ```
   /// - throws: LLVMError.noMainFunction if there wasn't a user-supplied main.
   @discardableResult
-  func codegenMain() throws -> Result {
+  func codegenMain(forJIT: Bool) throws -> Result {
     guard
       let mainFunction = mainFunction,
       let mainFuncDecl = context.mainFunction,
@@ -248,7 +239,9 @@ class IRGenerator: ASTVisitor, Pass {
     defer { free(params) }
     let mainType = LLVMFunctionType(ret, params, 2, 0)
     
-    let function = LLVMAddFunction(module, "main", mainType)
+    // The JIT can't use 'main' because then it'll resolve to the main from Swift.
+    let mainName = forJIT ? "trill_main" : "main"
+    let function = LLVMAddFunction(module, mainName, mainType)
     let entry = LLVMAppendBasicBlockInContext(llvmContext, function, "entry")
     LLVMPositionBuilderAtEnd(builder, entry)
     
@@ -277,7 +270,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will not generate a main entry point if there was no user-defined main.
   func serialize() throws -> String {
     if let mainFunction = mainFunction {
-      try codegenMain()
+      try codegenMain(forJIT: false)
     }
     finalizeGlobalInit()
     try validateModule()

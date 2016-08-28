@@ -31,7 +31,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  
+
 _Pragma("clang assume_nonnull begin")
   
 typedef enum RawMode {
@@ -52,6 +52,9 @@ typedef struct RawOptions {
   size_t argCount;
 } RawOptions;
 
+_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef module);
+void LLVMLinkInOrcMCJITReplacement(void);
+const char *LLVMGetJITError();
 int clang_isNoReturn(CXCursor cursor);
 char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename);
 RawOptions ParseArguments(int argc, char *_Nullable *_Nullable argv);
