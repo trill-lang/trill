@@ -43,7 +43,7 @@ enum LLVMError: Error, CustomStringConvertible {
 struct FunctionState {
   
   /// The AST node of the current function being codegenned.
-  let function: FuncDeclExpr?
+  let function: FuncDecl?
   
   /// The LLVMValueRef of the current function being codegenned.
   let functionRef: LLVMValueRef?
@@ -303,22 +303,22 @@ class IRGenerator: ASTVisitor, Pass {
       codegenFunctionPrototype(function)
     }
     for type in context.types {
-      visitTypeDeclExpr(type)
+      visitTypeDecl(type)
     }
     for ext in context.extensions {
-      visitExtensionExpr(ext)
+      visitExtensionDecl(ext)
     }
     for function in context.functions where !function.has(attribute: .foreign) {
-      _ = visitFuncDeclExpr(function)
+      _ = visitFuncDecl(function)
     }
   }
 
   @discardableResult
-  func visitCompoundExpr(_ expr: CompoundExpr)  -> Result {
-    for (idx, subExpr) in expr.exprs.enumerated() {
+  func visitCompoundStmt(_ stmt: CompoundStmt)  -> Result {
+    for (idx, subExpr) in stmt.exprs.enumerated() {
       visit(subExpr)
-      let isBreak = subExpr is BreakExpr
-      let isReturn = subExpr is ReturnExpr
+      let isBreak = subExpr is BreakStmt
+      let isReturn = subExpr is ReturnStmt
       let isNoReturnFuncCall: Bool = {
         if let c = subExpr as? FuncCallExpr {
           return c.decl?.has(attribute: .noreturn) == true
@@ -326,7 +326,7 @@ class IRGenerator: ASTVisitor, Pass {
         return false
       }()
       if (isBreak || isReturn || isNoReturnFuncCall) &&
-          idx != (expr.exprs.endIndex - 1) {
+          idx != (stmt.exprs.endIndex - 1) {
         break
       }
     }
@@ -400,7 +400,7 @@ class IRGenerator: ASTVisitor, Pass {
       return (shouldLoad, binding)
     } else if let global = context.global(named: expr.name) {
       return (true, visitGlobal(global))
-    } else if let funcDecl = expr.decl as? FuncDeclExpr {
+    } else if let funcDecl = expr.decl as? FuncDecl {
       let mangled = Mangler.mangle(funcDecl)
       if let function = LLVMGetNamedFunction(module, mangled) {
         return (false, VarBinding(ref: function, storage: .value))

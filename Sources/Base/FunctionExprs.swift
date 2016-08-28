@@ -14,8 +14,8 @@ enum FunctionKind {
 
 struct Argument: Equatable {
   let label: Identifier?
-  let val: ValExpr
-  init(val: ValExpr, label: Identifier? = nil) {
+  let val: Expr
+  init(val: Expr, label: Identifier? = nil) {
     self.val = val
     self.label = label
   }
@@ -25,41 +25,42 @@ func ==(lhs: Argument, rhs: Argument) -> Bool {
   return lhs.label == rhs.label && lhs.val.equals(rhs.val)
 }
 
-class FuncCallExpr: ValExpr {
-  let lhs: ValExpr
+class FuncCallExpr: Expr {
+  let lhs: Expr
   let args: [Argument]
-  var decl: FuncDeclExpr? = nil
-  init(lhs: ValExpr, args: [Argument], sourceRange: SourceRange? = nil) {
+  var decl: FuncDecl? = nil
+  init(lhs: Expr, args: [Argument], sourceRange: SourceRange? = nil) {
     self.lhs = lhs
     self.args = args
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? FuncCallExpr else { return false }
-    return lhs == expr.lhs && args == expr.args
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? FuncCallExpr else { return false }
+    return lhs == node.lhs && args == node.args
   }
 }
 
-class FuncDeclExpr: DeclExpr { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
-  let args: [FuncArgumentAssignExpr]
-  let body: CompoundExpr?
+class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
+  let args: [FuncArgumentAssignDecl]
+  let name: Identifier
+  let body: CompoundStmt?
   let returnType: TypeRefExpr
   let hasVarArgs: Bool
   let kind: FunctionKind
   init(name: Identifier, returnType: TypeRefExpr,
-       args: [FuncArgumentAssignExpr],
+       args: [FuncArgumentAssignDecl],
        kind: FunctionKind = .free,
-       body: CompoundExpr? = nil,
+       body: CompoundStmt? = nil,
        attributes: [DeclAttribute] = [],
        hasVarArgs: Bool = false,
        sourceRange: SourceRange? = nil) {
     self.args = args
     self.body = body
     self.kind = kind
+    self.name = name
     self.returnType = returnType
     self.hasVarArgs = hasVarArgs
-    super.init(name: name,
-               type: .function(args: args.map { $0.type }, returnType: returnType.type!),
+    super.init(type: .function(args: args.map { $0.type }, returnType: returnType.type!),
                attributes: attributes,
                sourceRange: sourceRange)
   }
@@ -115,21 +116,21 @@ class FuncDeclExpr: DeclExpr { // func <id>(<id>: <type-id>) -> <type-id> { <exp
     }
     return s
   }
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? FuncDeclExpr else { return false }
-    return name == expr.name && returnType == expr.returnType
-        && args == expr.args && body == expr.body
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? FuncDecl else { return false }
+    return name == node.name && returnType == node.returnType
+        && args == node.args && body == node.body
   }
   
-  func addingImplicitSelf(_ type: DataType) -> FuncDeclExpr {
+  func addingImplicitSelf(_ type: DataType) -> FuncDecl {
     var args = self.args
     let typeName = Identifier(name: "\(type)")
     let typeRef = TypeRefExpr(type: type, name: typeName)
-    let arg = FuncArgumentAssignExpr(name: "self", type: typeRef)
+    let arg = FuncArgumentAssignDecl(name: "self", type: typeRef)
     arg.isImplicitSelf = true
     arg.mutable = has(attribute: .mutating)
     args.insert(arg, at: 0)
-    return FuncDeclExpr(name: name,
+    return FuncDecl(name: name,
                         returnType: returnType,
                         args: args,
                         kind: kind,
@@ -140,51 +141,39 @@ class FuncDeclExpr: DeclExpr { // func <id>(<id>: <type-id>) -> <type-id> { <exp
   }
 }
 
-class FuncArgumentAssignExpr: VarAssignExpr {
+class FuncArgumentAssignDecl: VarAssignDecl {
   var isImplicitSelf = false
   let externalName: Identifier?
   init(name: Identifier,
        type: TypeRefExpr?,
        externalName: Identifier? = nil,
-       rhs: ValExpr? = nil,
+       rhs: Expr? = nil,
        sourceRange: SourceRange? = nil) {
     self.externalName = externalName
     super.init(name: name, typeRef: type, rhs: rhs, mutable: false, sourceRange: sourceRange)
   }
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? FuncArgumentAssignExpr else { return false }
-    return name == expr.name && externalName == expr.externalName && rhs == expr.rhs
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? FuncArgumentAssignDecl else { return false }
+    return name == node.name && externalName == node.externalName && rhs == node.rhs
   }
 }
 
-class ClosureExpr: ValExpr {
-  let args: [FuncArgumentAssignExpr]
+class ClosureExpr: Expr {
+  let args: [FuncArgumentAssignDecl]
   let returnType: TypeRefExpr
-  let body: CompoundExpr
+  let body: CompoundStmt
   
-  private(set) var captures = Set<Expr>()
+  private(set) var captures = Set<ASTNode>()
   
-  init(args: [FuncArgumentAssignExpr], returnType: TypeRefExpr,
-       body: CompoundExpr, sourceRange: SourceRange? = nil) {
+  init(args: [FuncArgumentAssignDecl], returnType: TypeRefExpr,
+       body: CompoundStmt, sourceRange: SourceRange? = nil) {
     self.args = args
     self.returnType = returnType
     self.body = body
     super.init(sourceRange: sourceRange)
   }
   
-  func add(capture: Expr) {
+  func add(capture: ASTNode) {
     captures.insert(capture)
-  }
-}
-
-class ReturnExpr: Expr { // return <expr>;
-  let value: ValExpr
-  init(value: ValExpr, sourceRange: SourceRange? = nil) {
-    self.value = value
-    super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? ReturnExpr else { return false }
-    return value == expr.value
   }
 }

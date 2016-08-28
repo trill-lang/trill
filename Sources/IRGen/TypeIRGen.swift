@@ -10,9 +10,9 @@ extension IRGenerator {
   /// Declares the prototypes of all methods and initializers,
   /// and deinitializer, in a type.
   /// - parameters:
-  ///   - expr: The TypeDeclExpr to declare.
+  ///   - expr: The TypeDecl to declare.
   @discardableResult
-  func codegenTypePrototype(_ expr: TypeDeclExpr) -> LLVMTypeRef {
+  func codegenTypePrototype(_ expr: TypeDecl) -> LLVMTypeRef {
     let existing = LLVMGetTypeByName(module, expr.name.name)
     if existing != nil { return existing! }
     let structure = LLVMStructCreateNamed(llvmContext, expr.name.name)
@@ -38,36 +38,36 @@ extension IRGenerator {
   
   /// Declares the prototypes of all methods in an extension.
   /// - parameters:
-  ///   - expr: The ExtensionExpr to declare.
+  ///   - expr: The ExtensionDecl to declare.
   @discardableResult
-  func codegenExtensionPrototype(_ expr: ExtensionExpr) {
+  func codegenExtensionPrototype(_ expr: ExtensionDecl) {
     for method in expr.methods {
       codegenFunctionPrototype(method)
     }
   }
   
   @discardableResult
-  func visitTypeDeclExpr(_ expr: TypeDeclExpr) -> Result {
+  func visitTypeDecl(_ expr: TypeDecl) -> Result {
     let structure = codegenTypePrototype(expr)
     
     if expr.has(attribute: .foreign) { return structure }
     
-    _ = expr.initializers.map(visitFuncDeclExpr)
-    _ = expr.methods.map(visitFuncDeclExpr)
-    _ = expr.deinitializer.map(visitFuncDeclExpr)
+    _ = expr.initializers.map(visitFuncDecl)
+    _ = expr.methods.map(visitFuncDecl)
+    _ = expr.deinitializer.map(visitFuncDecl)
     
     return structure
   }
   
   @discardableResult
-  func visitExtensionExpr(_ expr: ExtensionExpr) -> Result {
+  func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
     for method in expr.methods {
       _ = visit(method)
     }
     return nil
   }
   
-  /// Gives a valid pointer to any given ValExpr.
+  /// Gives a valid pointer to any given Expr.
   /// FieldLookupExpr: it will yield a getelementptr instruction.
   /// VarExpr: it'll look through any variable bindings to find the
   ///          pointer that represents the value. For reference bindings, it'll
@@ -79,7 +79,7 @@ extension IRGenerator {
   /// Anything else: It will create a new stack object and return that pointer.
   ///                This allows you to call a method on an rvalue, even though
   ///                it doesn't necessarily have a stack variable.
-  func resolvePtr(_ expr: ValExpr) -> Result {
+  func resolvePtr(_ expr: Expr) -> Result {
     switch expr {
     case let expr as FieldLookupExpr:
       return elementPtr(expr)

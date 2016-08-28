@@ -172,7 +172,7 @@ class Parser {
         context.add(try parseFuncDecl(attrs))
       case .type:
         let expr = try parseTypeDecl(attrs)
-        if let typeDecl = expr as? TypeDeclExpr {
+        if let typeDecl = expr as? TypeDecl {
           context.add(typeDecl)
         } else if let alias = expr as? TypeAliasExpr {
           context.add(alias)
@@ -235,7 +235,7 @@ class Parser {
     return attrs
   }
   
-  func parseExtensionDecl() throws -> ExtensionExpr {
+  func parseExtensionDecl() throws -> ExtensionDecl {
     let startLoc = sourceLoc
     try consume(.extension)
     let type = try parseType()
@@ -243,7 +243,7 @@ class Parser {
       throw unexpectedToken()
     }
     consumeToken()
-    var methods = [FuncDeclExpr]()
+    var methods = [FuncDecl]()
     while true {
       if case .rightBrace = peek() {
         consumeToken()
@@ -256,7 +256,7 @@ class Parser {
       }
       methods.append(try parseFuncDecl(attrs, forType: type.type))
     }
-    return ExtensionExpr(type: type, methods: methods,
+    return ExtensionDecl(type: type, methods: methods,
                          sourceRange: range(start: startLoc))
   }
   
@@ -265,7 +265,7 @@ class Parser {
   /// type-decl ::= type <typename> {
   ///   [<field-decl> | <func-decl>]*
   /// }
-  func parseTypeDecl(_ attributes: [DeclAttribute]) throws -> Expr {
+  func parseTypeDecl(_ attributes: [DeclAttribute]) throws -> ASTNode {
     try consume(.type)
     let startLoc = sourceLoc
     let name = try parseIdentifier()
@@ -278,10 +278,10 @@ class Parser {
                            sourceRange: range(start: startLoc))
     }
     try consume(.leftBrace)
-    var fields = [VarAssignExpr]()
-    var methods = [FuncDeclExpr]()
-    var initializers = [FuncDeclExpr]()
-    var deinitializer: FuncDeclExpr?
+    var fields = [VarAssignDecl]()
+    var methods = [FuncDecl]()
+    var initializers = [FuncDecl]()
+    var deinitializer: FuncDecl?
     let type = DataType(name: name.name)
     loop: while true {
       if case .rightBrace = peek() {
@@ -308,7 +308,7 @@ class Parser {
       }
       try consumeAtLeastOneLineSeparator()
     }
-    return TypeDeclExpr(name: name, fields: fields, methods: methods,
+    return TypeDecl(name: name, fields: fields, methods: methods,
                         initializers: initializers,
                         attributes: attributes,
                         deinit: deinitializer,
@@ -318,22 +318,22 @@ class Parser {
   /// Braced Expression Block
   ///
   /// { [<if-expr> | <while-expr> | <var-assign-expr> | <return-expr> | <val-expr>];* }
-  func parseCompoundExpr() throws -> CompoundExpr {
+  func parseCompoundExpr() throws -> CompoundStmt {
     let startLoc = sourceLoc
     try consume(.leftBrace)
     let exprs = try parseStatementExprs(terminators: [.rightBrace])
     consumeToken()
-    return CompoundExpr(exprs: exprs, sourceRange: range(start: startLoc))
+    return CompoundStmt(exprs: exprs, sourceRange: range(start: startLoc))
   }
   
-  func parseStatementExprs(terminators: [TokenKind]) throws -> [Expr] {
-    var exprs = [Expr]()
+  func parseStatementExprs(terminators: [TokenKind]) throws -> [ASTNode] {
+    var exprs = [ASTNode]()
     while !terminators.contains(peek()) {
       let expr = try parseStatementExpr()
       if !terminators.contains(peek()) {
         try consumeAtLeastOneLineSeparator()
       }
-      if let diag = expr as? PoundDiagnosticExpr {
+      if let diag = expr as? PoundDiagnosticStmt {
         context.add(diag)
       } else {
         exprs.append(expr)
@@ -342,7 +342,7 @@ class Parser {
     return exprs
   }
   
-  func parseStatementExpr() throws -> Expr {
+  func parseStatementExpr() throws -> ASTNode {
     let tok = peek()
     switch tok {
     case .if:
@@ -356,9 +356,9 @@ class Parser {
     case .var, .let:
       return try parseVarAssignDecl()
     case .break:
-      return try parseBreakExpr()
+      return try parseBreakStmt()
     case .continue:
-      return try parseContinueExpr()
+      return try parseContinueStmt()
     case .return:
       return try parseReturnExpr()
     case .poundError, .poundWarning:

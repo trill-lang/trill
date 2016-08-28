@@ -124,27 +124,28 @@ func ==(lhs: DataType, rhs: DataType) -> Bool {
   }
 }
 
-class DeclExpr: BindingExpr {
+class Decl: ASTNode {
   var type: DataType
   let attributes: Set<DeclAttribute>
   func has(attribute: DeclAttribute) -> Bool {
     return attributes.contains(attribute)
   }
-  init(name: Identifier, type: DataType, attributes: [DeclAttribute], sourceRange: SourceRange?) {
-    self.type = type
+  init(type: DataType, attributes: [DeclAttribute], sourceRange: SourceRange?) {
     self.attributes = Set(attributes)
-    super.init(name: name, sourceRange: sourceRange)
+    self.type = type
+    super.init(sourceRange: sourceRange)
   }
 }
 
-class TypeDeclExpr: DeclExpr {
-  private(set) var fields: [VarAssignExpr]
-  private(set) var methods = [FuncDeclExpr]()
-  private(set) var initializers = [FuncDeclExpr]()
+class TypeDecl: Decl {
+  private(set) var fields: [VarAssignDecl]
+  private(set) var methods = [FuncDecl]()
+  private(set) var initializers = [FuncDecl]()
   private var fieldDict = [String: DataType]()
-  private var methodDict = [String: [FuncDeclExpr]]()
+  private var methodDict = [String: [FuncDecl]]()
   
-  let deinitializer: FuncDeclExpr?
+  let name: Identifier
+  let deinitializer: FuncDecl?
   
   func indexOf(fieldName: Identifier) -> Int? {
     return fields.index { field in
@@ -152,11 +153,11 @@ class TypeDeclExpr: DeclExpr {
     }
   }
   
-  func addInitializer(_ expr: FuncDeclExpr) {
+  func addInitializer(_ expr: FuncDecl) {
     self.initializers.append(expr)
   }
   
-  func addMethod(_ expr: FuncDeclExpr, named name: String) {
+  func addMethod(_ expr: FuncDecl, named name: String) {
     let decl = expr.hasImplicitSelf ? expr : expr.addingImplicitSelf(self.type)
     self.methods.append(decl)
     var methods = methodDict[name] ?? []
@@ -164,16 +165,16 @@ class TypeDeclExpr: DeclExpr {
     methodDict[name] = methods
   }
   
-  func addField(_ field: VarAssignExpr) {
+  func addField(_ field: VarAssignDecl) {
     fields.append(field)
     fieldDict[field.name.name] = field.type
   }
   
-  func methods(named name: String) -> [FuncDeclExpr] {
+  func methods(named name: String) -> [FuncDecl] {
     return methodDict[name] ?? []
   }
   
-  func field(named name: String) -> VarAssignExpr? {
+  func field(named name: String) -> VarAssignDecl? {
     for field in fields where field.name.name == name { return field }
     return nil
   }
@@ -186,38 +187,38 @@ class TypeDeclExpr: DeclExpr {
     return TypeRefExpr(type: self.type, name: self.name)
   }
   
-  static func synthesizeInitializer(fields: [VarAssignExpr], name: Identifier, attributes: [DeclAttribute]) -> FuncDeclExpr {
+  static func synthesizeInitializer(fields: [VarAssignDecl], name: Identifier, attributes: [DeclAttribute]) -> FuncDecl {
     let type = DataType(name: name.name)
     let typeRef = TypeRefExpr(type: type, name: name)
     let initFields = fields.map { field in
-      FuncArgumentAssignExpr(name: field.name, type: field.typeRef, externalName: field.name)
+      FuncArgumentAssignDecl(name: field.name, type: field.typeRef, externalName: field.name)
     }
-    return FuncDeclExpr(
+    return FuncDecl(
       name: name,
       returnType: typeRef,
       args: initFields,
       kind: .initializer(type: type),
-      body: CompoundExpr(exprs: []),
+      body: CompoundStmt(exprs: []),
       attributes: attributes)
   }
   
   init(name: Identifier,
-       fields: [VarAssignExpr],
-       methods: [FuncDeclExpr] = [],
-       initializers: [FuncDeclExpr] = [],
+       fields: [VarAssignDecl],
+       methods: [FuncDecl] = [],
+       initializers: [FuncDecl] = [],
        attributes: [DeclAttribute] = [],
-       deinit: FuncDeclExpr? = nil,
+       deinit: FuncDecl? = nil,
        sourceRange: SourceRange? = nil) {
     self.fields = fields
     self.initializers = initializers
     let type = DataType(name: name.name)
     self.deinitializer = `deinit`?.addingImplicitSelf(type)
-    let synthInit = TypeDeclExpr.synthesizeInitializer(fields: fields,
+    let synthInit = TypeDecl.synthesizeInitializer(fields: fields,
                                                        name: name,
                                                        attributes: attributes)
     self.initializers.append(synthInit)
-    super.init(name: name, type: type,
-               attributes: attributes, sourceRange: sourceRange)
+    self.name = name
+    super.init(type: type, attributes: attributes, sourceRange: sourceRange)
     for method in methods {
       self.addMethod(method, named: method.name.name)
     }
@@ -230,8 +231,8 @@ class TypeDeclExpr: DeclExpr {
     return has(attribute: .indirect)
   }
   
-  override func equals(_ rhs: Expr) -> Bool {
-    guard let rhs = rhs as? TypeDeclExpr else { return false }
+  override func equals(_ rhs: ASTNode) -> Bool {
+    guard let rhs = rhs as? TypeDecl else { return false }
     guard type == rhs.type else { return false }
     guard fields == rhs.fields else { return false }
     guard methods == rhs.methods else { return false }
@@ -239,7 +240,14 @@ class TypeDeclExpr: DeclExpr {
   }
 }
 
-class TypeAliasExpr: DeclRefExpr<TypeDeclExpr> {
+class DeclRefExpr<DeclType: Decl>: Expr {
+  weak var decl: DeclType? = nil
+  override init(sourceRange: SourceRange?) {
+    super.init(sourceRange: sourceRange)
+  }
+}
+
+class TypeAliasExpr: DeclRefExpr<TypeDecl> {
   let name: Identifier
   let bound: TypeRefExpr
   init(name: Identifier, bound: TypeRefExpr, sourceRange: SourceRange? = nil) {
@@ -247,20 +255,13 @@ class TypeAliasExpr: DeclRefExpr<TypeDeclExpr> {
     self.bound = bound
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ rhs: Expr) -> Bool {
+  override func equals(_ rhs: ASTNode) -> Bool {
     guard let rhs = rhs as? TypeAliasExpr else { return false }
     return name == rhs.name && bound == rhs.bound
   }
 }
 
-class DeclRefExpr<DeclType: DeclExpr>: ValExpr {
-  weak var decl: DeclType? = nil
-  override init(sourceRange: SourceRange?) {
-    super.init(sourceRange: sourceRange)
-  }
-}
-
-class TypeRefExpr: DeclRefExpr<TypeDeclExpr> {
+class TypeRefExpr: DeclRefExpr<TypeDecl> {
   let name: Identifier
   init(type: DataType, name: Identifier, sourceRange: SourceRange? = nil) {
     self.name = name
@@ -330,22 +331,3 @@ func ==(lhs: DataType, rhs: TypeRefExpr) -> Bool {
 func !=(lhs: DataType, rhs: TypeRefExpr) -> Bool {
   return lhs != rhs.type
 }
-
-class FieldLookupExpr: ValExpr {
-  let lhs: ValExpr
-  var decl: Expr? = nil
-  var typeDecl: TypeDeclExpr? = nil
-  let name: Identifier
-  init(lhs: ValExpr, name: Identifier, sourceRange: SourceRange? = nil) {
-    self.lhs = lhs
-    self.name = name
-    super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ rhs: Expr) -> Bool {
-    guard let rhs = rhs as? FieldLookupExpr else { return false }
-    guard name == rhs.name else { return false }
-    guard lhs == rhs.lhs else { return false }
-    return true
-  }
-}
-

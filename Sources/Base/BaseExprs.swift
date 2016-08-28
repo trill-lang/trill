@@ -114,14 +114,14 @@ func ==(lhs: Identifier, rhs: Identifier) -> Bool {
   return lhs.name == rhs.name
 }
 
-class Expr: Equatable, Hashable {
+class ASTNode: Equatable, Hashable {
   let sourceRange: SourceRange?
   init(sourceRange: SourceRange? = nil) {
     self.sourceRange = sourceRange
   }
   func startLoc() -> SourceLocation? { return sourceRange?.start }
   func endLoc() -> SourceLocation? { return sourceRange?.end }
-  func equals(_ rhs: Expr) -> Bool {
+  func equals(_ rhs: ASTNode) -> Bool {
     return false
   }
   
@@ -131,18 +131,6 @@ class Expr: Equatable, Hashable {
   }
 }
 
-func ==(lhs: Expr, rhs: Expr) -> Bool {
+func ==(lhs: ASTNode, rhs: ASTNode) -> Bool {
   return lhs.equals(rhs)
-}
-
-class BindingExpr: Expr {
-  let name: Identifier
-  init(name: Identifier, sourceRange: SourceRange? = nil) {
-    self.name = name
-    super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ rhs: Expr) -> Bool {
-    guard let rhs = rhs as? BindingExpr else { return false }
-    return name == rhs.name
-  }
 }

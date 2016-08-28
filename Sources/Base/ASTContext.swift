@@ -63,29 +63,29 @@ public class ASTContext {
     diag.warning(msg, loc: loc, highlights: highlights)
   }
   
-  var functions = [FuncDeclExpr]()
-  var types = [TypeDeclExpr]()
-  var extensions = [ExtensionExpr]()
-  var diagnostics = [PoundDiagnosticExpr]()
-  var globals = [VarAssignExpr]()
+  var functions = [FuncDecl]()
+  var types = [TypeDecl]()
+  var extensions = [ExtensionDecl]()
+  var diagnostics = [PoundDiagnosticStmt]()
+  var globals = [VarAssignDecl]()
   var typeAliases = [TypeAliasExpr]()
   
-  private var funcDeclMap = [String: [FuncDeclExpr]]()
-  private var typeDeclMap: [DataType: TypeDeclExpr] = [
-    .int8: TypeDeclExpr(name: "Int8",  fields: []),
-    .int16: TypeDeclExpr(name: "Int16",  fields: []),
-    .int32: TypeDeclExpr(name: "Int32",  fields: []),
-    .int64: TypeDeclExpr(name: "Int",  fields: []),
-    .bool: TypeDeclExpr(name: "Bool", fields: []),
-    .void: TypeDeclExpr(name: "Void", fields: [])
+  private var funcDeclMap = [String: [FuncDecl]]()
+  private var typeDeclMap: [DataType: TypeDecl] = [
+    .int8: TypeDecl(name: "Int8",  fields: []),
+    .int16: TypeDecl(name: "Int16",  fields: []),
+    .int32: TypeDecl(name: "Int32",  fields: []),
+    .int64: TypeDecl(name: "Int",  fields: []),
+    .bool: TypeDecl(name: "Bool", fields: []),
+    .void: TypeDecl(name: "Void", fields: [])
   ]
-  private var globalDeclMap = [String: VarAssignExpr]()
+  private var globalDeclMap = [String: VarAssignDecl]()
   private var typeAliasMap = [String: TypeAliasExpr]()
   
-  private(set) var mainFunction: FuncDeclExpr? = nil
+  private(set) var mainFunction: FuncDecl? = nil
   private(set) var mainFlags: MainFuncFlags? = nil
   
-  func setMain(_ main: FuncDeclExpr) {
+  func setMain(_ main: FuncDecl) {
     guard mainFunction == nil else {
       error(ASTError.duplicateMain,
             loc: main.startLoc(),
@@ -118,7 +118,7 @@ public class ASTContext {
     mainFunction = main
   }
   
-  func add(_ funcDecl: FuncDeclExpr) {
+  func add(_ funcDecl: FuncDecl) {
     functions.append(funcDecl)
     
     if funcDecl.name == "main" {
@@ -140,7 +140,7 @@ public class ASTContext {
   }
   
   @discardableResult
-  func add(_ typeDecl: TypeDeclExpr) -> Bool {
+  func add(_ typeDecl: TypeDecl) -> Bool {
     guard decl(for: typeDecl.type) == nil else {
       error(ASTError.duplicateType(name: typeDecl.name),
             loc: typeDecl.startLoc(),
@@ -153,7 +153,7 @@ public class ASTContext {
   }
   
   @discardableResult
-  func add(_ global: VarAssignExpr) -> Bool {
+  func add(_ global: VarAssignDecl) -> Bool {
     guard globalDeclMap[global.name.name] == nil else {
       error(ASTError.duplicateVar(name: global.name),
             loc: global.startLoc(),
@@ -167,11 +167,11 @@ public class ASTContext {
     return true
   }
   
-  func add(_ extensionExpr: ExtensionExpr) {
+  func add(_ extensionExpr: ExtensionDecl) {
     extensions.append(extensionExpr)
   }
   
-  func add(_ diagnosticExpr: PoundDiagnosticExpr) {
+  func add(_ diagnosticExpr: PoundDiagnosticStmt) {
     diagnostics.append(diagnosticExpr)
   }
   
@@ -193,7 +193,7 @@ public class ASTContext {
     return true
   }
   
-  func decl(for type: DataType, canonicalized: Bool = true) -> TypeDeclExpr? {
+  func decl(for type: DataType, canonicalized: Bool = true) -> TypeDecl? {
     let root = canonicalized ? canonicalType(type) : type
     return typeDeclMap[root]
   }
@@ -206,7 +206,7 @@ public class ASTContext {
     return true
   }
   
-  func isIntrinsic(decl: DeclExpr) -> Bool {
+  func isIntrinsic(decl: Decl) -> Bool {
     return decl.has(attribute: .foreign) || decl.sourceRange == nil
   }
   
@@ -233,7 +233,7 @@ public class ASTContext {
     return false
   }
   
-  func containsInLayout(type: DataType, typeDecl: TypeDeclExpr, base: Bool = false) -> Bool {
+  func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
     if !base && matches(typeDecl.type, type) { return true }
     for field in typeDecl.fields {
       if case .pointer = field.type { continue }
@@ -246,7 +246,7 @@ public class ASTContext {
     return false
   }
   
-  func isCircularType(_ typeDecl: TypeDeclExpr) -> Bool {
+  func isCircularType(_ typeDecl: TypeDecl) -> Bool {
     return containsInLayout(type: typeDecl.type, typeDecl: typeDecl, base: true)
   }
   
@@ -264,32 +264,32 @@ public class ASTContext {
     }
   }
   
-  func functions(named name: Identifier) -> [FuncDeclExpr] {
+  func functions(named name: Identifier) -> [FuncDecl] {
     return funcDeclMap[name.name] ?? []
   }
   
-  func global(named name: Identifier) -> VarAssignExpr? {
+  func global(named name: Identifier) -> VarAssignDecl? {
     return globalDeclMap[name.name]
   }
   
-  func global(named name: String) -> VarAssignExpr? {
+  func global(named name: String) -> VarAssignDecl? {
     return globalDeclMap[name]
   }
   
-  func mutability(of expr: Expr) -> Mutability {
-    switch expr {
-    case let expr as VarExpr:
-      return mutability(of: expr)
-    case let expr as FieldLookupExpr:
-      return mutability(of: expr)
-    case let expr as SubscriptExpr:
-      return mutability(of: expr.lhs)
-    case let expr as ParenExpr:
-      return mutability(of: expr.value)
-    case let expr as PrefixOperatorExpr:
-      return mutability(of: expr.rhs)
-    case let expr as TupleFieldLookupExpr:
-      return mutability(of: expr.lhs)
+  func mutability(of node: ASTNode) -> Mutability {
+    switch node {
+    case let node as VarExpr:
+      return mutability(of: node)
+    case let node as FieldLookupExpr:
+      return mutability(of: node)
+    case let node as SubscriptExpr:
+      return mutability(of: node.lhs)
+    case let node as ParenExpr:
+      return mutability(of: node.value)
+    case let node as PrefixOperatorExpr:
+      return mutability(of: node.rhs)
+    case let node as TupleFieldLookupExpr:
+      return mutability(of: node.lhs)
     default:
       return .immutable(culprit: nil)
     }
@@ -307,9 +307,9 @@ public class ASTContext {
   func mutability(of expr: VarExpr) -> Mutability {
     guard let decl = expr.decl else { fatalError("no decl in mutability check") }
     switch decl {
-    case let decl as VarAssignExpr:
+    case let decl as VarAssignDecl:
       return decl.mutable ? .mutable : .immutable(culprit: expr.name)
-    case let decl as FuncDeclExpr:
+    case let decl as FuncDecl:
       return decl.has(attribute: .mutating) ? .mutable : .immutable(culprit: expr.name)
     default:
       return .immutable(culprit: nil)
@@ -323,9 +323,9 @@ public class ASTContext {
       return lhsMutability
     }
     switch decl {
-    case let decl as VarAssignExpr:
+    case let decl as VarAssignDecl:
       return decl.mutable ? .mutable : .immutable(culprit: expr.name)
-    case let decl as FuncDeclExpr:
+    case let decl as FuncDecl:
       return decl.has(attribute: .mutating) ? .mutable : .immutable(culprit: expr.name)
     default:
       return .immutable(culprit: nil)

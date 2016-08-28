@@ -39,12 +39,12 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override public func run(in context: ASTContext) {
-    var topLevel = [Expr]()
-    topLevel.append(contentsOf: context.globals as [Expr])
-    topLevel.append(contentsOf: context.types as [Expr])
-    topLevel.append(contentsOf: context.functions as [Expr])
-    topLevel.append(contentsOf: context.typeAliases as [Expr])
-    topLevel.append(contentsOf: context.extensions as [Expr])
+    var topLevel = [ASTNode]()
+    topLevel.append(contentsOf: context.globals as [ASTNode])
+    topLevel.append(contentsOf: context.types as [ASTNode])
+    topLevel.append(contentsOf: context.functions as [ASTNode])
+    topLevel.append(contentsOf: context.typeAliases as [ASTNode])
+    topLevel.append(contentsOf: context.extensions as [ASTNode])
     topLevel.sort { e1, e2 in
       // foreign and implicit decls show up first
       guard
@@ -79,31 +79,31 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("\(expr.value)")
   }
   
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) {
-    for attribute in expr.attributes {
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    for attribute in decl.attributes {
       stream.write(attribute.rawValue + " ")
     }
-    let tok = expr.mutable ? "var" : "let"
-    stream.write("\(tok) \(expr.name)")
-    if let type = expr.typeRef?.type {
+    let tok = decl.mutable ? "var" : "let"
+    stream.write("\(tok) \(decl.name)")
+    if let type = decl.typeRef?.type {
       stream.write(": \(type)")
     }
-    if let rhs = expr.rhs {
+    if let rhs = decl.rhs {
       stream.write(" = ")
       visit(rhs)
     }
   }
   
-  override func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result {
-    if let externalName = expr.externalName {
+  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+    if let externalName = decl.externalName {
       stream.write(externalName.name)
     } else {
       stream.write("_")
     }
-    if !expr.name.name.isEmpty && expr.name != expr.externalName {
-      stream.write(" " + expr.name.name)
+    if !decl.name.name.isEmpty && decl.name != decl.externalName {
+      stream.write(" " + decl.name.name)
     }
-    if let type = expr.typeRef {
+    if let type = decl.typeRef {
       stream.write(": " + type.name.name)
     }
   }
@@ -123,7 +123,7 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write(")")
   }
   
-  override func visitFuncDeclExpr(_ expr: FuncDeclExpr) -> Result {
+  override func visitFuncDecl(_ expr: FuncDecl) -> Result {
     for attribute in expr.attributes {
       stream.write(attribute.rawValue + " ")
     }
@@ -134,13 +134,13 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     }
     writeSignature(args: expr.args, ret: expr.returnType, hasVarArgs: expr.hasVarArgs)
     stream.write(" ")
-    if let body = expr.body { visitCompoundExpr(body) }
+    if let body = expr.body { visitCompoundStmt(body) }
   }
   
-  func writeSignature(args: [FuncArgumentAssignExpr], ret: TypeRefExpr, hasVarArgs: Bool) {
+  func writeSignature(args: [FuncArgumentAssignDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
     stream.write("(")
     for (idx, arg) in args.enumerated() {
-      visitFuncArgumentAssignExpr(arg)
+      visitFuncArgumentAssignDecl(arg)
       if idx != args.count - 1 || hasVarArgs {
         stream.write(", ")
       }
@@ -169,16 +169,16 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("}")
   }
   
-  override func visitReturnExpr(_ expr: ReturnExpr) -> Result {
+  override func visitReturnStmt(_ stmt: ReturnStmt) -> Result {
     stream.write("return ")
-    visit(expr.value)
+    visit(stmt.value)
   }
   
-  override func visitBreakExpr(_ expr: BreakExpr) -> Result {
+  override func visitBreakStmt(_ stmt: BreakStmt) -> Result {
     stream.write("break")
   }
   
-  override func visitContinueExpr(_ expr: ContinueExpr) -> Result {
+  override func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
     stream.write("continue")
   }
   
@@ -221,17 +221,17 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("\(expr.value)")
   }
   
-  override func visitCompoundExpr(_ expr: CompoundExpr) -> Result {
-    visitCompoundExpr(expr, braced: true)
+  override func visitCompoundStmt(_ stmt: CompoundStmt) -> Result {
+    visitCompoundStmt(stmt, braced: true)
   }
   
-  func visitCompoundExpr(_ expr: CompoundExpr, braced: Bool) -> Result {
+  func visitCompoundStmt(_ stmt: CompoundStmt, braced: Bool) -> Result {
     if braced {
       stream.write("{")
     }
     stream.write("\n")
     withIndent {
-      for e in expr.exprs {
+      for e in stmt.exprs {
         writeIndent()
         visit(e)
         stream.write("\n")
@@ -257,7 +257,7 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     }
     stream.write(")")
   }
-  override func visitTypeDeclExpr(_ expr: TypeDeclExpr) -> Result {
+  override func visitTypeDecl(_ expr: TypeDecl) -> Result {
     for attribute in expr.attributes {
       stream.write(attribute.rawValue + " ")
     }
@@ -270,55 +270,55 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     withIndent {
       for field in expr.fields {
         writeIndent()
-        visitVarAssignExpr(field)
+        visitVarAssignDecl(field)
         stream.write("\n")
       }
       for method in expr.methods {
         writeIndent()
-        visitFuncDeclExpr(method)
+        visitFuncDecl(method)
         stream.write("\n")
       }
     }
     stream.write("}")
   }
-  override func visitExtensionExpr(_ expr: ExtensionExpr) -> Result {
+  override func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
     stream.write("extension ")
     visit(expr.typeRef)
     stream.write(" {\n")
     withIndent {
       for method in expr.methods {
         writeIndent()
-        visitFuncDeclExpr(method)
+        visitFuncDecl(method)
         stream.write("\n")
       }
     }
     stream.write("}")
   }
-  override func visitWhileExpr(_ expr: WhileExpr) -> Result {
+  override func visitWhileStmt(_ stmt: WhileStmt) -> Result {
     stream.write("while ")
-    visit(expr.condition)
+    visit(stmt.condition)
     stream.write(" ")
-    visitCompoundExpr(expr.body)
+    visitCompoundStmt(stmt.body)
   }
-  override func visitForLoopExpr(_ expr: ForLoopExpr) -> Result {
+  override func visitForStmt(_ stmt: ForStmt) -> Result {
     stream.write("for ")
-    if let initial = expr.initializer {
+    if let initial = stmt.initializer {
       visit(initial)
     }
     stream.write("; ")
-    if let cond = expr.condition {
+    if let cond = stmt.condition {
       visit(cond)
     }
     stream.write("; ")
-    if let incr = expr.incrementer {
+    if let incr = stmt.incrementer {
       visit(incr)
     }
     stream.write("; ")
-    visitCompoundExpr(expr.body)
+    visitCompoundStmt(stmt.body)
   }
-  override func visitIfExpr(_ expr: IfExpr) -> Result {
+  override func visitIfStmt(_ stmt: IfStmt) -> Result {
     var hasPrintedInitial = false
-    for (cond, body) in expr.blocks {
+    for (cond, body) in stmt.blocks {
       if hasPrintedInitial {
         stream.write(" else ")
       }
@@ -326,11 +326,11 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
       stream.write("if ")
       visit(cond)
       stream.write(" ")
-      visitCompoundExpr(body)
+      visitCompoundStmt(body)
     }
-    if let els = expr.elseBody {
+    if let els = stmt.elseBody {
       stream.write(" else ")
-      visitCompoundExpr(els)
+      visitCompoundStmt(els)
     }
   }
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
@@ -340,28 +340,28 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write(" : ")
     visit(expr.falseCase)
   }
-  override func visitSwitchExpr(_ expr: SwitchExpr) -> Result {
+  override func visitSwitchStmt(_ stmt: SwitchStmt) -> Result {
     stream.write("switch ")
-    visit(expr.value)
+    visit(stmt.value)
     stream.write(" {\n")
-    for c in expr.cases {
+    for c in stmt.cases {
       writeIndent()
-      visitCaseExpr(c)
+      visitCaseStmt(c)
     }
-    if let def = expr.defaultBody {
+    if let def = stmt.defaultBody {
       writeIndent()
       stream.write("default:")
-      visitCompoundExpr(def, braced: false)
+      visitCompoundStmt(def, braced: false)
     }
     writeIndent()
     stream.write("}")
   }
   
-  override func visitCaseExpr(_ expr: CaseExpr) -> Result {
+  override func visitCaseStmt(_ stmt: CaseStmt) -> Result {
     stream.write("case ")
-    visit(expr.constant)
+    visit(stmt.constant)
     stream.write(":")
-    visitCompoundExpr(expr.body, braced: false)
+    visitCompoundStmt(stmt.body, braced: false)
   }
   
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
@@ -387,8 +387,8 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write(")")
   }
   
-  override func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) {
-    stream.write("#\(expr.isError ? "error" : "warning") ")
-    visit(expr.content)
+  override func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) {
+    stream.write("#\(stmt.isError ? "error" : "warning") ")
+    visit(stmt.content)
   }
 }

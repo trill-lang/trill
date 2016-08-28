@@ -53,36 +53,36 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   override func visitBoolExpr(_ expr: BoolExpr) {
     printExpr("BoolExpr \(expr.value)", expr.startLoc())
   }
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) {
-    var s = "VarAssignExpr \(expr.name)"
-    if let type = expr.typeRef?.type {
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    var s = "VarAssignDecl \(decl.name)"
+    if let type = decl.typeRef?.type {
       s += ": \(type)"
     }
-    printExpr(s, expr.startLoc()) {
-      super.visitVarAssignExpr(expr)
+    printExpr(s, decl.startLoc()) {
+      super.visitVarAssignDecl(decl)
     }
   }
-  override func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result {
-    var str = "FuncArgumentAssignExpr "
-    if let externalName = expr.externalName {
+  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+    var str = "FuncArgumentAssignDecl "
+    if let externalName = decl.externalName {
       str += externalName.name + " "
     }
-    str += expr.name.name + " "
-    if let type = expr.typeRef {
+    str += decl.name.name + " "
+    if let type = decl.typeRef {
       str += type.name.name
     }
-    printExpr(str, expr.startLoc()) {
-      super.visitFuncArgumentAssignExpr(expr)
+    printExpr(str, decl.startLoc()) {
+      super.visitFuncArgumentAssignDecl(decl)
     }
   }
   override func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
     printExpr("TypeAliasExpr \(expr.name) \(expr.bound.name)", expr.startLoc())
   }
   
-  override func visitFuncDeclExpr(_ expr: FuncDeclExpr) -> Result {
+  override func visitFuncDecl(_ expr: FuncDecl) -> Result {
     if expr.has(attribute: .foreign) { return }
-    printExpr("FuncDeclExpr \(expr.name) \(expr.returnType.name)", expr.startLoc()) {
-      super.visitFuncDeclExpr(expr)
+    printExpr("FuncDecl \(expr.name) \(expr.returnType.name)", expr.startLoc()) {
+      super.visitFuncDecl(expr)
     }
   }
   override func visitClosureExpr(_ expr: ClosureExpr) -> Result {
@@ -90,16 +90,16 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       super.visitClosureExpr(expr)
     }
   }
-  override func visitReturnExpr(_ expr: ReturnExpr) -> Result {
-    printExpr("ReturnExpr", expr.startLoc()) {
-      super.visitReturnExpr(expr)
+  override func visitReturnStmt(_ stmt: ReturnStmt) -> Result {
+    printExpr("ReturnStmt", stmt.startLoc()) {
+      super.visitReturnStmt(stmt)
     }
   }
-  override func visitBreakExpr(_ expr: BreakExpr) -> Result {
-    printExpr("BreakExpr", expr.startLoc())
+  override func visitBreakStmt(_ stmt: BreakStmt) -> Result {
+    printExpr("BreakStmt", stmt.startLoc())
   }
-  override func visitContinueExpr(_ expr: ContinueExpr) -> Result {
-    printExpr("ContinueExpr", expr.startLoc())
+  override func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
+    printExpr("ContinueStmt", stmt.startLoc())
   }
   
   override func visitStringExpr(_ expr: StringExpr) {
@@ -122,9 +122,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
     printExpr("FloatExpr \(expr.value)", expr.startLoc())
   }
   
-  override func visitCompoundExpr(_ expr: CompoundExpr) -> Result {
-    printExpr("CompoundExpr", expr.startLoc()) {
-      super.visitCompoundExpr(expr)
+  override func visitCompoundStmt(_ stmt: CompoundStmt) -> Result {
+    printExpr("CompoundStmt", stmt.startLoc()) {
+      super.visitCompoundStmt(stmt)
     }
   }
   override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
@@ -132,30 +132,30 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       super.visitFuncCallExpr(expr)
     }
   }
-  override func visitTypeDeclExpr(_ expr: TypeDeclExpr) -> Result {
-    if expr.has(attribute: .foreign) { return }
-    printExpr("TypeDeclExpr \(expr.name)", expr.startLoc()) {
-      super.visitTypeDeclExpr(expr)
+  override func visitTypeDecl(_ decl: TypeDecl) -> Result {
+    if decl.has(attribute: .foreign) { return }
+    printExpr("TypeDecl \(decl.name)", decl.startLoc()) {
+      super.visitTypeDecl(decl)
     }
   }
-  override func visitExtensionExpr(_ expr: ExtensionExpr) -> Result {
-    printExpr("ExtensionExpr \(expr.type!)", expr.startLoc()) {
-      super.visitExtensionExpr(expr)
+  override func visitExtensionDecl(_ decl: ExtensionDecl) -> Result {
+    printExpr("ExtensionDecl \(decl.type)", decl.startLoc()) {
+      super.visitExtensionDecl(decl)
     }
   }
-  override func visitWhileExpr(_ expr: WhileExpr) -> Result {
-    printExpr("WhileExpr", expr.startLoc()) {
-      super.visitWhileExpr(expr)
+  override func visitWhileStmt(_ stmt: WhileStmt) -> Result {
+    printExpr("WhileStmt", stmt.startLoc()) {
+      super.visitWhileStmt(stmt)
     }
   }
-  override func visitForLoopExpr(_ expr: ForLoopExpr) -> Result {
-    printExpr("ForLoopExpr", expr.startLoc()) {
-      super.visitForLoopExpr(expr)
+  override func visitForStmt(_ stmt: ForStmt) -> Result {
+    printExpr("ForStmt", stmt.startLoc()) {
+      super.visitForStmt(stmt)
     }
   }
-  override func visitIfExpr(_ expr: IfExpr) -> Result {
-    printExpr("IfExpr", expr.startLoc()) {
-      super.visitIfExpr(expr)
+  override func visitIfStmt(_ stmt: IfStmt) -> Result {
+    printExpr("IfStmt", stmt.startLoc()) {
+      super.visitIfStmt(stmt)
     }
   }
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
@@ -163,14 +163,14 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       super.visitTernaryExpr(expr)
     }
   }
-  override func visitSwitchExpr(_ expr: SwitchExpr) -> Result {
-    printExpr("SwitchExpr", expr.startLoc()) {
-      super.visitSwitchExpr(expr)
+  override func visitSwitchStmt(_ stmt: SwitchStmt) -> Result {
+    printExpr("SwitchStmt", stmt.startLoc()) {
+      super.visitSwitchStmt(stmt)
     }
   }
-  override func visitCaseExpr(_ expr: CaseExpr) -> Result {
-    printExpr("CaseExpr", expr.startLoc()) {
-      super.visitCaseExpr(expr)
+  override func visitCaseStmt(_ stmt: CaseStmt) -> Result {
+    printExpr("CaseStmt", stmt.startLoc()) {
+      super.visitCaseStmt(stmt)
     }
   }
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
@@ -203,9 +203,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       super.visitParenExpr(expr)
     }
   }
-  override func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) -> () {
-    printExpr("PoundDiagnostic \(expr.isError ? "error" : "warning")", expr.startLoc()) {
-      super.visitPoundDiagnosticExpr(expr)
+  override func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> () {
+    printExpr("PoundDiagnostic \(stmt.isError ? "error" : "warning")", stmt.startLoc()) {
+      super.visitPoundDiagnosticStmt(stmt)
     }
   }
 }

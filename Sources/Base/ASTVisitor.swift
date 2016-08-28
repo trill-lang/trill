@@ -13,6 +13,12 @@ protocol ASTVisitor {
   @discardableResult
   func visit(_ expr: Expr) -> Result
   @discardableResult
+  func visit(_ decl: Decl) -> Result
+  @discardableResult
+  func visit(_ stmt: Stmt) -> Result
+  @discardableResult
+  func visit(_ node: ASTNode) -> Result
+  @discardableResult
   func visitNumExpr(_ expr: NumExpr) -> Result
   @discardableResult
   func visitCharExpr(_ expr: CharExpr) -> Result
@@ -41,43 +47,43 @@ protocol ASTVisitor {
   @discardableResult
   func visitStringExpr(_ expr: StringExpr) -> Result
   @discardableResult
-  func visitVarAssignExpr(_ expr: VarAssignExpr) -> Result
+  func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result
   @discardableResult
-  func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result
+  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result
   @discardableResult
-  func visitFuncDeclExpr(_ expr: FuncDeclExpr) -> Result
+  func visitFuncDecl(_ decl: FuncDecl) -> Result
   @discardableResult
-  func visitReturnExpr(_ expr: ReturnExpr) -> Result
+  func visitReturnStmt(_ stmt: ReturnStmt) -> Result
   @discardableResult
-  func visitBreakExpr(_ expr: BreakExpr) -> Result
+  func visitBreakStmt(_ stmt: BreakStmt) -> Result
   @discardableResult
-  func visitContinueExpr(_ expr: ContinueExpr) -> Result
+  func visitContinueStmt(_ stmt: ContinueStmt) -> Result
   @discardableResult
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result
   @discardableResult
-  func visitCompoundExpr(_ expr: CompoundExpr) -> Result
+  func visitCompoundStmt(_ expr: CompoundStmt) -> Result
   @discardableResult
   func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result
   @discardableResult
-  func visitTypeDeclExpr(_ expr: TypeDeclExpr) -> Result
+  func visitTypeDecl(_ expr: TypeDecl) -> Result
   @discardableResult
   func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result
   @discardableResult
-  func visitExtensionExpr(_ expr: ExtensionExpr) -> Result
+  func visitExtensionDecl(_ expr: ExtensionDecl) -> Result
   @discardableResult
-  func visitWhileExpr(_ expr: WhileExpr) -> Result
+  func visitWhileStmt(_ expr: WhileStmt) -> Result
   @discardableResult
-  func visitForLoopExpr(_ expr: ForLoopExpr) -> Result
+  func visitForStmt(_ expr: ForStmt) -> Result
   @discardableResult
-  func visitIfExpr(_ expr: IfExpr) -> Result
+  func visitIfStmt(_ expr: IfStmt) -> Result
   @discardableResult
   func visitTernaryExpr(_ expr: TernaryExpr) -> Result
   @discardableResult
-  func visitCaseExpr(_ expr: CaseExpr) -> Result
+  func visitCaseStmt(_ expr: CaseStmt) -> Result
   @discardableResult
   func visitClosureExpr(_ expr: ClosureExpr) -> Result
   @discardableResult
-  func visitSwitchExpr(_ expr: SwitchExpr) -> Result
+  func visitSwitchStmt(_ expr: SwitchStmt) -> Result
   @discardableResult
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result
   @discardableResult
@@ -85,10 +91,67 @@ protocol ASTVisitor {
   @discardableResult
   func visitFieldLookupExpr(_ expr: FieldLookupExpr) -> Result
   @discardableResult
-  func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) -> Result
+  func visitPoundDiagnosticStmt(_ expr: PoundDiagnosticStmt) -> Result
 }
 
 extension ASTVisitor {
+  @discardableResult
+  func visit(_ node: ASTNode) -> Result {
+    switch node {
+    case let decl as Decl:
+      return visit(decl)
+    case let expr as Expr:
+      return visit(expr)
+    case let stmt as Stmt:
+      return visit(stmt)
+    default:
+      fatalError("unknown node \(node)")
+    }
+  }
+  @discardableResult
+  func visit(_ decl: Decl) -> Result {
+    switch decl {
+    case let decl as FuncArgumentAssignDecl:
+      return visitFuncArgumentAssignDecl(decl)
+    case let decl as VarAssignDecl:
+      return visitVarAssignDecl(decl)
+    case let decl as FuncDecl:
+      return visitFuncDecl(decl)
+    case let decl as TypeDecl:
+      return visitTypeDecl(decl)
+    case let decl as ExtensionDecl:
+      return visitExtensionDecl(decl)
+    default:
+      fatalError("unknown decl \(decl)")
+    }
+  }
+  @discardableResult
+  func visit(_ stmt: Stmt) -> Result {
+    switch stmt {
+    case let stmt as ReturnStmt:
+      return visitReturnStmt(stmt)
+    case let stmt as BreakStmt:
+      return visitBreakStmt(stmt)
+    case let stmt as ContinueStmt:
+      return visitContinueStmt(stmt)
+    case let stmt as CompoundStmt:
+      return visitCompoundStmt(stmt)
+    case let stmt as WhileStmt:
+      return visitWhileStmt(stmt)
+    case let stmt as ForStmt:
+      return visitForStmt(stmt)
+    case let stmt as IfStmt:
+      return visitIfStmt(stmt)
+    case let stmt as SwitchStmt:
+      return visitSwitchStmt(stmt)
+    case let stmt as CaseStmt:
+      return visitCaseStmt(stmt)
+    case let stmt as PoundDiagnosticStmt:
+      return visitPoundDiagnosticStmt(stmt)
+    default:
+      fatalError("unknown stmt \(stmt)")
+    }
+  }
   @discardableResult
   func visit(_ expr: Expr) -> Result {
     switch expr {
@@ -114,48 +177,18 @@ extension ASTVisitor {
       return visitVarExpr(expr)
     case let expr as ParenExpr:
       return visitParenExpr(expr)
-    case let expr as FuncArgumentAssignExpr:
-      return visitFuncArgumentAssignExpr(expr)
-    case let expr as VarAssignExpr:
-      return visitVarAssignExpr(expr)
-    case let expr as FuncDeclExpr:
-      return visitFuncDeclExpr(expr)
-    case let expr as ReturnExpr:
-      return visitReturnExpr(expr)
-    case let expr as BreakExpr:
-      return visitBreakExpr(expr)
-    case let expr as ContinueExpr:
-      return visitContinueExpr(expr)
     case let expr as SubscriptExpr:
       return visitSubscriptExpr(expr)
-    case let expr as CompoundExpr:
-      return visitCompoundExpr(expr)
     case let expr as FuncCallExpr:
       return visitFuncCallExpr(expr)
-    case let expr as TypeDeclExpr:
-      return visitTypeDeclExpr(expr)
     case let expr as TypeAliasExpr:
       return visitTypeAliasExpr(expr)
-    case let expr as ExtensionExpr:
-      return visitExtensionExpr(expr)
-    case let expr as WhileExpr:
-      return visitWhileExpr(expr)
-    case let expr as ForLoopExpr:
-      return visitForLoopExpr(expr)
-    case let expr as IfExpr:
-      return visitIfExpr(expr)
     case let expr as TernaryExpr:
       return visitTernaryExpr(expr)
-    case let expr as SwitchExpr:
-      return visitSwitchExpr(expr)
-    case let expr as CaseExpr:
-      return visitCaseExpr(expr)
     case let expr as ClosureExpr:
       return visitClosureExpr(expr)
     case let expr as TypeRefExpr:
       return visitTypeRefExpr(expr)
-    case let expr as PoundDiagnosticExpr:
-      return visitPoundDiagnosticExpr(expr)
     case let expr as NilExpr:
       return visitNilExpr(expr)
     case let expr as InfixOperatorExpr:

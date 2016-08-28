@@ -41,11 +41,11 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     fatalError("must call init(stream:context:)")
   }
   
-  func emptyMain() -> FuncDeclExpr {
-    return FuncDeclExpr(name: "main",
+  func emptyMain() -> FuncDecl {
+    return FuncDecl(name: "main",
                         returnType: DataType.void.ref(),
                         args: [],
-                        body: CompoundExpr(exprs: []))
+                        body: CompoundStmt(exprs: []))
   }
   
   override func run(in context: ASTContext) {
@@ -72,14 +72,14 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write(")")
   }
   
-  override func visitCompoundExpr(_ expr: CompoundExpr) {
+  override func visitCompoundStmt(_ stmt: CompoundStmt) {
     stream.write("{\n")
     withIndent {
-      withScope(expr) {
-        for e in expr.exprs {
+      withScope(stmt) {
+        for e in stmt.exprs {
           write("")
           visit(e)
-          if (!(e is IfExpr || e is ForLoopExpr || e is WhileExpr)) {
+          if (!(e is IfStmt || e is ForStmt || e is WhileStmt)) {
             stream.write(";")
           }
           stream.write("\n")
@@ -93,16 +93,16 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("function (")
     stream.write(expr.args.map { $0.name.name }.joined(separator: ", "))
     stream.write(")")
-    visitCompoundExpr(expr.body) // JavaScript...
+    visitCompoundStmt(expr.body) // JavaScript...
   }
   
-  override func visitExtensionExpr(_ expr: ExtensionExpr) {
+  override func visitExtensionDecl(_ expr: ExtensionDecl) {
     for method in expr.methods {
-      visitFuncDeclExpr(method)
+      visitFuncDecl(method)
     }
   }
   
-  override func visitFuncDeclExpr(_ expr: FuncDeclExpr) {
+  override func visitFuncDecl(_ expr: FuncDecl) {
     if expr.has(attribute: .foreign) { return }
     let names = expr.args.map { $0.name.name }
     write("function \(Mangler.mangle(expr))(\(names.joined(separator: ", "))) ")
@@ -119,12 +119,12 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       }
       stream.write("}\n")
     } else {
-      _ = expr.body.map(visitCompoundExpr)
+      _ = expr.body.map(visitCompoundStmt)
     }
     stream.write("\n")
   }
   
-  override func visitReturnExpr(_ expr: ReturnExpr) {
+  override func visitReturnStmt(_ expr: ReturnStmt) {
     stream.write("return ")
     visit(expr.value)
   }
@@ -142,11 +142,11 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     }
   }
   
-  override func visitBreakExpr(_ expr: BreakExpr) {
+  override func visitBreakStmt(_ stmt: BreakStmt) {
     stream.write("break")
   }
   
-  override func visitContinueExpr(_ expr: ContinueExpr) {
+  override func visitContinueStmt(_ stmt: ContinueStmt) {
     stream.write("continue")
   }
   
@@ -164,7 +164,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitVarExpr(_ expr: VarExpr) {
-    if let funcDecl = expr.decl as? FuncDeclExpr {
+    if let funcDecl = expr.decl as? FuncDecl {
       stream.write(Mangler.mangle(funcDecl))
     } else {
       stream.write(expr.name.name)
@@ -206,12 +206,12 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       ])
   }
   
-  override func visitTypeDeclExpr(_ expr: TypeDeclExpr) {
+  override func visitTypeDecl(_ expr: TypeDecl) {
     if expr.has(attribute: .foreign) { return }
-    super.visitTypeDeclExpr(expr)
+    super.visitTypeDecl(expr)
   }
   
-  override func visitSwitchExpr(_ expr: SwitchExpr) {
+  override func visitSwitchStmt(_ expr: SwitchStmt) {
     stream.write("switch (")
     visit(expr.value)
     stream.write(") {\n")
@@ -222,21 +222,21 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     if let def = expr.defaultBody {
       write("default: ")
       var newExprs = def.exprs
-      newExprs.append(BreakExpr())
-      visitCompoundExpr(CompoundExpr(exprs: newExprs))
+      newExprs.append(BreakStmt())
+      visitCompoundStmt(CompoundStmt(exprs: newExprs))
       stream.write("\n")
     }
     stream.write("}")
   }
   
-  override func visitCaseExpr(_ expr: CaseExpr) -> Result {
+  override func visitCaseStmt(_ expr: CaseStmt) -> Result {
     write("case \(expr.constant.text): ")
     var newExprs = expr.body.exprs
-    newExprs.append(BreakExpr())
-    visitCompoundExpr(CompoundExpr(exprs: newExprs))
+    newExprs.append(BreakStmt())
+    visitCompoundStmt(CompoundStmt(exprs: newExprs))
   }
   
-  override func visitIfExpr(_ expr: IfExpr) {
+  override func visitIfStmt(_ expr: IfStmt) {
     for (idx, (condition, body)) in expr.blocks.enumerated() {
       if idx != 0 {
         stream.write(" else ")
@@ -244,7 +244,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       stream.write("if (")
       visit(condition)
       stream.write(") ")
-      visitCompoundExpr(body)
+      visitCompoundStmt(body)
     }
     if let elseBody = expr.elseBody {
       stream.write(" else ")
@@ -268,7 +268,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("[\(expr.field)]")
   }
   
-  override func visitWhileExpr(_ expr: WhileExpr) {
+  override func visitWhileStmt(_ expr: WhileStmt) {
     stream.write("while (")
     visit(expr.condition)
     stream.write(") ")
@@ -333,10 +333,10 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     withParens { visit(expr.falseCase) }
   }
   
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) {
-    if expr.has(attribute: .foreign) { return }
-    stream.write("var \(expr.name)")
-    if let rhs = expr.rhs {
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    if decl.has(attribute: .foreign) { return }
+    stream.write("var \(decl.name)")
+    if let rhs = decl.rhs {
       stream.write(" = ")
       visit(rhs)
     }
@@ -345,7 +345,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     }
   }
   
-  override func visitForLoopExpr(_ expr: ForLoopExpr) {
+  override func visitForStmt(_ expr: ForStmt) {
     // write the initializer outside the for loop.
     // the Trill scoping rules and validation let us get
     // away with this.
@@ -356,6 +356,6 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("; ")
     _ = expr.incrementer.map(visit)
     stream.write(") ")
-    visitCompoundExpr(expr.body)
+    visitCompoundStmt(expr.body)
   }
 }
