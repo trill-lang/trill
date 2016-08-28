@@ -94,8 +94,8 @@ class ClangImporter: Pass {
   
   let context: ASTContext
   
-  var importedTypes = [Identifier: TypeDeclExpr]()
-  var importedFunctions = [Identifier: FuncDeclExpr]()
+  var importedTypes = [Identifier: TypeDecl]()
+  var importedFunctions = [Identifier: FuncDecl]()
   
   required init(context: ASTContext) {
     self.context = context
@@ -143,10 +143,10 @@ class ClangImporter: Pass {
   func synthesize(name: String, args: [DataType],
                   return: DataType,
                   hasVarArgs: Bool,
-                  attributes: [DeclAttribute]) -> FuncDeclExpr {
-    return FuncDeclExpr(name: Identifier(name: name),
+                  attributes: [DeclAttribute]) -> FuncDecl {
+    return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
-                        args: args.map { FuncArgumentAssignExpr(name: "", type: $0.ref()) },
+                        args: args.map { FuncArgumentAssignDecl(name: "", type: $0.ref()) },
                         attributes: attributes,
                         hasVarArgs: hasVarArgs)
   }
@@ -176,7 +176,7 @@ class ClangImporter: Pass {
   }
   
   @discardableResult
-  func importStruct(_ cursor: CXCursor) -> TypeDeclExpr? {
+  func importStruct(_ cursor: CXCursor) -> TypeDecl? {
     let type = clang_getCursorType(cursor)
     let typeName = clang_getTypeSpelling(type).asSwift()
     
@@ -184,7 +184,7 @@ class ClangImporter: Pass {
     
     if let e = importedTypes[name] { return e }
     
-    var values = [VarAssignExpr]()
+    var values = [VarAssignDecl]()
     
     clang_visitChildrenWithBlock(cursor) { child, parent in
       let fieldId = Identifier(name: clang_getCursorSpelling(child).asSwift(),
@@ -193,7 +193,7 @@ class ClangImporter: Pass {
       guard let trillTy = self.convertToTrillType(fieldTy) else {
         return CXChildVisit_Break
       }
-      let expr = VarAssignExpr(name: fieldId,
+      let expr = VarAssignDecl(name: fieldId,
                                typeRef: trillTy.ref(),
                                attributes: [.foreign],
                                mutable: true)
@@ -201,7 +201,7 @@ class ClangImporter: Pass {
       return CXChildVisit_Continue
     }
     
-    let expr = TypeDeclExpr(name: name, fields: values, attributes: [.foreign])
+    let expr = TypeDecl(name: name, fields: values, attributes: [.foreign])
     importedTypes[name] = expr
     self.context.add(expr)
     return expr
@@ -242,7 +242,7 @@ class ClangImporter: Pass {
   func importEnum(_ cursor: CXCursor) {
     clang_visitChildrenWithBlock(cursor) { child, parent in
       let name = Identifier(name: clang_getCursorSpelling(child).asSwift())
-      let varExpr = VarAssignExpr(name: name,
+      let varExpr = VarAssignDecl(name: name,
                                   typeRef: DataType.int32.ref(),
                                   mutable: false)
       self.context.add(varExpr)
@@ -298,11 +298,11 @@ class ClangImporter: Pass {
     return first
   }
   
-  func parse(tu: CXTranslationUnit, token: CXToken, name: String) -> VarAssignExpr? {
+  func parse(tu: CXTranslationUnit, token: CXToken, name: String) -> VarAssignDecl? {
     do {
       let tok = clang_getTokenSpelling(tu, token).asSwift()
       guard let token = try simpleParseCToken(tok) else { return nil }
-      var expr: ValExpr! = nil
+      var expr: Expr! = nil
       switch token {
       case .char(let value):
         expr = CharExpr(value: value)
@@ -315,7 +315,7 @@ class ClangImporter: Pass {
       default:
         return nil
       }
-      return VarAssignExpr(name: Identifier(name: name),
+      return VarAssignDecl(name: Identifier(name: name),
                            typeRef: expr.type?.ref(),
                            rhs: expr,
                            mutable: false)

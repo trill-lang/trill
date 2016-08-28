@@ -9,57 +9,57 @@ extension Parser {
   /// While Expression
   ///
   /// while <val-expr> <braced-expr-block>
-  func parseWhileExpr() throws -> WhileExpr {
+  func parseWhileExpr() throws -> WhileStmt {
     try consume(.while)
     let startLoc = sourceLoc
     let condition = try parseValExpr()
     let body = try parseCompoundExpr()
-    return WhileExpr(condition: condition, body: body,
+    return WhileStmt(condition: condition, body: body,
                      sourceRange: range(start: startLoc))
   }
   
-  func parseForLoopExpr() throws -> ForLoopExpr {
+  func parseForLoopExpr() throws -> ForStmt {
     guard case .for = peek() else {
       throw unexpectedToken()
     }
     let startLoc = sourceLoc
     consumeToken()
-    var initializer: Expr? = nil
+    var initializer: ASTNode? = nil
     if case .semicolon = peek() {
       consumeToken()
     } else  {
       initializer = try parseStatementExpr()
       try consumeAtLeastOneLineSeparator()
     }
-    var condition: ValExpr? = nil
+    var condition: Expr? = nil
     if case .semicolon = peek() {
       consumeToken()
     } else  {
       condition = try parseValExpr()
       try consumeAtLeastOneLineSeparator()
     }
-    var incrementer: Expr? = nil
+    var incrementer: ASTNode? = nil
     if case .leftBrace = peek() {
     } else  {
       incrementer = try parseStatementExpr()
       if [.newline, .semicolon].contains(peek()) { consumeToken() }
     }
     let body = try parseCompoundExpr()
-    return ForLoopExpr(initializer: initializer,
+    return ForStmt(initializer: initializer,
                        condition: condition,
                        incrementer: incrementer,
                        body: body,
                        sourceRange: range(start: startLoc))
   }
   
-  func parseSwitchExpr() throws -> SwitchExpr {
+  func parseSwitchExpr() throws -> SwitchStmt {
     let startLoc = sourceLoc
     try consume(.switch)
     let comparator = try parseValExpr()
     let terminators: [TokenKind] = [.default, .case, .rightBrace]
     try consume(.leftBrace)
-    var cases = [CaseExpr]()
-    var defaultBody: CompoundExpr?
+    var cases = [CaseStmt]()
+    var defaultBody: CompoundStmt?
     while true {
       if case .case = peek() {
         let tok = consumeToken()
@@ -73,8 +73,8 @@ extension Parser {
         try consume(.colon)
         let bodyExprs = try parseStatementExprs(terminators: terminators)
         let sourceRange = range(start: startLoc)
-        let body = CompoundExpr(exprs: bodyExprs, sourceRange: sourceRange)
-        cases.append(CaseExpr(constant: e, body: body, sourceRange: caseRange))
+        let body = CompoundStmt(exprs: bodyExprs, sourceRange: sourceRange)
+        cases.append(CaseStmt(constant: e, body: body, sourceRange: caseRange))
       } else if case .default = peek() {
         consumeToken()
         guard defaultBody == nil else {
@@ -83,7 +83,7 @@ extension Parser {
             .highlighting(currentToken().range)
         }
         try consume(.colon)
-        defaultBody = CompoundExpr(exprs: try parseStatementExprs(terminators: terminators))
+        defaultBody = CompoundStmt(exprs: try parseStatementExprs(terminators: terminators))
       } else {
         throw unexpectedToken()
       }
@@ -92,13 +92,13 @@ extension Parser {
         break
       }
     }
-    return SwitchExpr(value: comparator,
+    return SwitchStmt(value: comparator,
                       cases: cases,
                       defaultBody: defaultBody,
                       sourceRange: range(start: startLoc))
   }
   
-  func parsePoundDiagnosticExpr() throws -> PoundDiagnosticExpr {
+  func parsePoundDiagnosticExpr() throws -> PoundDiagnosticStmt {
     let startLoc = sourceLoc
     let isError: Bool
     switch peek() {
@@ -116,7 +116,7 @@ extension Parser {
     let tok = consumeToken()
     let content = StringExpr(value: value,
                          sourceRange: tok.range)
-    return PoundDiagnosticExpr(isError: isError,
+    return PoundDiagnosticStmt(isError: isError,
                                content: content,
                                sourceRange: range(start: startLoc))
   }
@@ -124,11 +124,11 @@ extension Parser {
   /// If Expression
   ///
   /// if <val-expr> <braced-expr-block>
-  func parseIfExpr() throws -> IfExpr {
+  func parseIfExpr() throws -> IfStmt {
     let startLoc = sourceLoc
     try consume(.if)
     var blocks = [(try parseValExpr(), try parseCompoundExpr())]
-    let elseBody: CompoundExpr?
+    let elseBody: CompoundStmt?
     if case .else = peek() {
       consumeToken()
       if case .if = peek() {
@@ -141,20 +141,20 @@ extension Parser {
     } else {
       elseBody = nil
     }
-    return IfExpr(blocks: blocks, elseBody: elseBody,
+    return IfStmt(blocks: blocks, elseBody: elseBody,
                   sourceRange: range(start: startLoc))
   }
   
   /// Return Expression
   ///
   /// return <val-expr>
-  func parseReturnExpr() throws -> ReturnExpr {
+  func parseReturnExpr() throws -> ReturnStmt {
     let startLoc = sourceLoc
     guard case .return = peek() else {
       throw unexpectedToken()
     }
     consumeToken()
-    let val: ValExpr
+    let val: Expr
     
     // HACK HACK HACK
     if [.newline, .semicolon, .rightBrace, .case, .default].contains(peek()) {
@@ -162,37 +162,38 @@ extension Parser {
     } else {
       val = try parseValExpr()
     }
-    return ReturnExpr(value: val, sourceRange: range(start: startLoc))
+    return ReturnStmt(value: val, sourceRange: range(start: startLoc))
   }
   
-  /// Break Expression
+  /// Break Statement
   ///
   /// break
-  func parseBreakExpr() throws -> BreakExpr {
+  func parseBreakStmt() throws -> BreakStmt {
     let startLoc = sourceLoc
     guard case .break = peek() else {
       throw unexpectedToken()
     }
     consumeToken()
-    return BreakExpr(sourceRange: range(start: startLoc))
+    return BreakStmt(sourceRange: range(start: startLoc))
   }
   
-  /// Continue Expression
+  /// Continue Statement
   ///
   /// continue
-  func parseContinueExpr() throws -> ContinueExpr {
+  func parseContinueStmt() throws -> ContinueStmt {
     let startLoc = sourceLoc
     guard case .continue = peek() else {
       throw unexpectedToken()
     }
     consumeToken()
-    return ContinueExpr(sourceRange: range(start: startLoc))
+    return ContinueStmt(sourceRange: range(start: startLoc))
   }
   
-  /// Var Assign Expr
+  /// Var Assign Decl
   ///
   /// <var-assign-expr> ::= var <identifier> = <val-expr>
-  func parseVarAssignDecl(_ attrs: [DeclAttribute] = []) throws -> VarAssignExpr {
+  ///                     | let <identifier> = <val-expr>
+  func parseVarAssignDecl(_ attrs: [DeclAttribute] = []) throws -> VarAssignDecl {
     let startLoc = sourceLoc
     let mutable: Bool
     if case .var = peek() {
@@ -204,7 +205,7 @@ extension Parser {
     }
     consumeToken()
     let id = try parseIdentifier()
-    var rhs: ValExpr? = nil
+    var rhs: Expr? = nil
     var type: TypeRefExpr?
     if case .colon = peek() {
       consumeToken()
@@ -217,7 +218,7 @@ extension Parser {
     guard rhs != nil || type != nil else {
       throw unexpectedToken()
     }
-    return VarAssignExpr(name: id,
+    return VarAssignDecl(name: id,
                          typeRef: type,
                          rhs: rhs,
                          attributes: attrs,

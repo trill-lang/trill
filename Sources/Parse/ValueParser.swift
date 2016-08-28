@@ -15,8 +15,8 @@ extension Parser {
   ///            | <op><val-expr> | <val-expr> <op> <val-expr>
   ///            | <val-expr> [ <num> ]
   ///            |
-  func parseValExpr() throws -> ValExpr {
-    var valExpr: ValExpr? = nil
+  func parseValExpr() throws -> Expr {
+    var valExpr: Expr? = nil
     let startLoc = sourceLoc
     
     let tok = currentToken()
@@ -121,7 +121,7 @@ extension Parser {
       consumeToken()
       valExpr = ClosureExpr(args: args,
                             returnType: ret,
-                            body: CompoundExpr(exprs: exprs),
+                            body: CompoundStmt(exprs: exprs),
                             sourceRange: range(start: startLoc))
     default:
       throw Diagnostic.error(ParseError.unexpectedExpression(expected: "value"),
@@ -173,7 +173,7 @@ extension Parser {
         if op == .star && peek(ahead: -1).isLineSeparator { break outer }
         let opRange = currentToken().range
         consumeToken()
-        let val: ValExpr
+        let val: Expr
         if case .as = op {
           val = try parseType()
         } else {
@@ -219,7 +219,7 @@ extension Parser {
     return expr
   }
   
-  func attachPrefixToInfix(_ prefixOp: BuiltinOperator, prefixRange: SourceRange, startLoc: SourceLocation, expr: InfixOperatorExpr) -> ValExpr {
+  func attachPrefixToInfix(_ prefixOp: BuiltinOperator, prefixRange: SourceRange, startLoc: SourceLocation, expr: InfixOperatorExpr) -> Expr {
     if let infix = expr.lhs as? InfixOperatorExpr {
       let prefix = attachPrefixToInfix(prefixOp, prefixRange: prefixRange, startLoc: startLoc, expr: infix)
       return InfixOperatorExpr(op: expr.op,

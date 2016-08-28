@@ -126,19 +126,19 @@ enum BuiltinOperator: String, CustomStringConvertible {
   var description: String { return self.rawValue }
 }
 
-class PrefixOperatorExpr: ValExpr {
+class PrefixOperatorExpr: Expr {
   let op: BuiltinOperator
   let opRange: SourceRange?
-  let rhs: ValExpr
-  init(op: BuiltinOperator, rhs: ValExpr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
+  let rhs: Expr
+  init(op: BuiltinOperator, rhs: Expr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
     self.rhs = rhs
     self.op = op
     self.opRange = opRange
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? PrefixOperatorExpr else { return false }
-    return op == expr.op && rhs == expr.rhs
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? PrefixOperatorExpr else { return false }
+    return op == node.op && rhs == node.rhs
   }
   
   func type(forArgType argType: DataType) -> DataType? {
@@ -154,13 +154,13 @@ class PrefixOperatorExpr: ValExpr {
   }
 }
 
-class InfixOperatorExpr: ValExpr {
+class InfixOperatorExpr: Expr {
   let op: BuiltinOperator
   let opRange: SourceRange?
-  let lhs: ValExpr
-  let rhs: ValExpr
+  let lhs: Expr
+  let rhs: Expr
   
-  init(op: BuiltinOperator, lhs: ValExpr, rhs: ValExpr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
+  init(op: BuiltinOperator, lhs: Expr, rhs: Expr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
     self.lhs = lhs
     self.op = op
     self.opRange = opRange
@@ -168,9 +168,9 @@ class InfixOperatorExpr: ValExpr {
     super.init(sourceRange: sourceRange)
   }
   
-  override func equals(_ expr: Expr) -> Bool {
-    guard let expr = expr as? InfixOperatorExpr else { return false }
-    return op == expr.op && rhs == expr.rhs && lhs == expr.lhs
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? InfixOperatorExpr else { return false }
+    return op == node.op && rhs == node.rhs && lhs == node.lhs
   }
   
   func type(forArgType argType: DataType) -> DataType? {

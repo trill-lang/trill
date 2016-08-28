@@ -7,27 +7,27 @@ import Foundation
 
 class ASTTransformer: ASTVisitor {
   typealias Result = Void
-  var currentFunction: FuncDeclExpr? = nil
-  var currentType: TypeDeclExpr? = nil
-  var currentScope: CompoundExpr? = nil
-  var currentBreakTarget: Expr? = nil
+  var currentFunction: FuncDecl? = nil
+  var currentType: TypeDecl? = nil
+  var currentScope: CompoundStmt? = nil
+  var currentBreakTarget: ASTNode? = nil
   var currentClosure: ClosureExpr? = nil
   
-  var declContext: Expr? = nil
+  var declContext: ASTNode? = nil
   
   let context: ASTContext
   required init(context: ASTContext) {
     self.context = context
   }
   
-  func withBreakTarget(_ e: Expr, _ f: () -> Void) {
+  func withBreakTarget(_ e: ASTNode, _ f: () -> Void) {
     let oldTarget = currentBreakTarget
     currentBreakTarget = e
     withDeclContext(e, f)
     currentBreakTarget = oldTarget
   }
   
-  func withFunction(_ e: FuncDeclExpr, _ f: () -> Void) {
+  func withFunction(_ e: FuncDecl, _ f: () -> Void) {
     let oldFunction = currentFunction
     currentFunction = e
     withDeclContext(e, f)
@@ -41,21 +41,21 @@ class ASTTransformer: ASTVisitor {
     currentClosure = oldClosure
   }
   
-  func withTypeDecl(_ e: TypeDeclExpr, _ f: () -> Void) {
+  func withTypeDecl(_ e: TypeDecl, _ f: () -> Void) {
     let oldType = currentType
     currentType = e
     withDeclContext(e, f)
     currentType = oldType
   }
   
-  func withScope(_ e: CompoundExpr, _ f: () -> Void) {
+  func withScope(_ e: CompoundStmt, _ f: () -> Void) {
     let oldScope = currentScope
     currentScope = e
     f()
     currentScope = oldScope
   }
   
-  func withDeclContext(_ e: Expr, _ f: () -> Void) {
+  func withDeclContext(_ e: ASTNode, _ f: () -> Void) {
     let oldContext = declContext
     declContext = e
     f()
@@ -63,7 +63,7 @@ class ASTTransformer: ASTVisitor {
   }
   
   func run(in context: ASTContext) {
-    context.diagnostics.forEach(visitPoundDiagnosticExpr)
+    context.diagnostics.forEach(visitPoundDiagnosticStmt)
     context.globals.forEach(visit)
     context.types.forEach(visit)
     context.typeAliases.forEach(visit)
@@ -91,12 +91,12 @@ class ASTTransformer: ASTVisitor {
     _ = expr.value.map(visit)
   }
   
-  func visitVarAssignExpr(_ expr: VarAssignExpr) {
-    _ = expr.rhs.map(visit)
+  func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    _ = decl.rhs.map(visit)
   }
   
-  func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) {
-    _ = expr.rhs.map(visit)
+  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
+    _ = decl.rhs.map(visit)
   }
   
   func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) {}
@@ -104,18 +104,18 @@ class ASTTransformer: ASTVisitor {
   func visitClosureExpr(_ expr: ClosureExpr) {
     withClosure(expr) {
       withScope(expr.body) {
-        expr.args.forEach(visitFuncArgumentAssignExpr)
-        visitCompoundExpr(expr.body)
+        expr.args.forEach(visitFuncArgumentAssignDecl)
+        visitCompoundStmt(expr.body)
       }
     }
   }
   
-  func visitFuncDeclExpr(_ expr: FuncDeclExpr) {
+  func visitFuncDecl(_ expr: FuncDecl) {
     let visitor: () -> Void = {
       for arg in expr.args {
-        self.visitFuncArgumentAssignExpr(arg)
+        self.visitFuncArgumentAssignDecl(arg)
       }
-      _ = expr.body.map(self.visitCompoundExpr)
+      _ = expr.body.map(self.visitCompoundStmt)
     }
     withFunction(expr) {
       if let body = expr.body {
@@ -125,14 +125,14 @@ class ASTTransformer: ASTVisitor {
       }
     }
   }
-  func visitReturnExpr(_ expr: ReturnExpr) {
-    visit(expr.value)
+  func visitReturnStmt(_ stmt: ReturnStmt) {
+    visit(stmt.value)
   }
-  func visitBreakExpr(_ expr: BreakExpr) {}
-  func visitContinueExpr(_ expr: ContinueExpr) {}
-  func visitCompoundExpr(_ expr: CompoundExpr) {
-    withScope(expr) {
-      expr.exprs.forEach(visit)
+  func visitBreakStmt(_ stmt: BreakStmt) {}
+  func visitContinueStmt(_ stmt: ContinueStmt) {}
+  func visitCompoundStmt(_ stmt: CompoundStmt) {
+    withScope(stmt) {
+      stmt.exprs.forEach(visit)
     }
   }
   
@@ -158,50 +158,50 @@ class ASTTransformer: ASTVisitor {
     visit(expr.lhs)
   }
   
-  func visitTypeDeclExpr(_ expr: TypeDeclExpr) {
-    withTypeDecl(expr) {
-      for initializer in expr.initializers {
-        visitFuncDeclExpr(initializer)
+  func visitTypeDecl(_ decl: TypeDecl) {
+    withTypeDecl(decl) {
+      for initializer in decl.initializers {
+        visitFuncDecl(initializer)
       }
-      for method in expr.methods {
-        visitFuncDeclExpr(method)
+      for method in decl.methods {
+        visitFuncDecl(method)
       }
-      for field in expr.fields {
-        visitVarAssignExpr(field)
+      for field in decl.fields {
+        visitVarAssignDecl(field)
       }
-      if let deinitializer = expr.deinitializer {
-        visitFuncDeclExpr(deinitializer)
+      if let deinitializer = decl.deinitializer {
+        visitFuncDecl(deinitializer)
       }
     }
   }
-  func visitExtensionExpr(_ expr: ExtensionExpr) {
-    for method in expr.methods {
-      visitFuncDeclExpr(method)
-    }
-  }
-  
-  func visitWhileExpr(_ expr: WhileExpr) {
-    visit(expr.condition)
-    withBreakTarget(expr) {
-      visitCompoundExpr(expr.body)
+  func visitExtensionDecl(_ decl: ExtensionDecl) {
+    for method in decl.methods {
+      visitFuncDecl(method)
     }
   }
   
-  func visitForLoopExpr(_ expr: ForLoopExpr) {
-    _ = expr.initializer.map(visit)
-    _ = expr.condition.map(visit)
-    _ = expr.incrementer.map(visit)
-    withBreakTarget(expr) {
-      visit(expr.body)
+  func visitWhileStmt(_ stmt: WhileStmt) {
+    visit(stmt.condition)
+    withBreakTarget(stmt) {
+      visitCompoundStmt(stmt.body)
     }
   }
   
-  func visitIfExpr(_ expr: IfExpr) {
-    for (condition, body) in expr.blocks {
+  func visitForStmt(_ stmt: ForStmt) {
+    _ = stmt.initializer.map(visit)
+    _ = stmt.condition.map(visit)
+    _ = stmt.incrementer.map(visit)
+    withBreakTarget(stmt) {
+      visit(stmt.body)
+    }
+  }
+  
+  func visitIfStmt(_ stmt: IfStmt) {
+    for (condition, body) in stmt.blocks {
       _ = visit(condition)
-      visitCompoundExpr(body)
+      visitCompoundStmt(body)
     }
-    _ = expr.elseBody.map(visit)
+    _ = stmt.elseBody.map(visit)
   }
   
   func visitTernaryExpr(_ expr: TernaryExpr) {
@@ -210,17 +210,17 @@ class ASTTransformer: ASTVisitor {
     visit(expr.falseCase)
   }
   
-  func visitSwitchExpr(_ expr: SwitchExpr) {
-    visit(expr.value)
-    for e in expr.cases {
-      visit(e)
+  func visitSwitchStmt(_ stmt: SwitchStmt) {
+    visit(stmt.value)
+    for `case` in stmt.cases {
+      visit(`case`)
     }
-    _ = expr.defaultBody.map(visitCompoundExpr)
+    _ = stmt.defaultBody.map(visitCompoundStmt)
   }
   
-  func visitCaseExpr(_ expr: CaseExpr) {
-    visit(expr.constant)
-    visit(expr.body)
+  func visitCaseStmt(_ stmt: CaseStmt) {
+    visit(stmt.constant)
+    visit(stmt.body)
   }
   
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
@@ -236,7 +236,7 @@ class ASTTransformer: ASTVisitor {
     visit(expr.lhs)
   }
   
-  func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) {
+  func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) {
     // do nothing
   }
 }

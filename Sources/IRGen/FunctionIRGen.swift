@@ -24,7 +24,7 @@ extension IRGenerator {
   }
   
   @discardableResult
-  func codegenFunctionPrototype(_ expr: FuncDeclExpr) -> Result {
+  func codegenFunctionPrototype(_ expr: FuncDecl) -> Result {
     let mangled = Mangler.mangle(expr)
     let existing = LLVMGetNamedFunction(module, mangled)
     if existing != nil { return existing }
@@ -42,21 +42,21 @@ extension IRGenerator {
     return LLVMAddFunction(module, mangled, fType)
   }
   
-  func visitBreakExpr(_ expr: BreakExpr) -> Result {
+  func visitBreakStmt(_ expr: BreakStmt) -> Result {
     guard currentBreakTarget != nil else {
       fatalError("break outside loop")
     }
     return LLVMBuildBr(builder, currentBreakTarget)
   }
   
-  func visitContinueExpr(_ expr: ContinueExpr) -> Result {
+  func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
     guard currentContinueTarget != nil else {
       fatalError("continue outside loop")
     }
     return LLVMBuildBr(builder, currentContinueTarget)
   }
   
-  func synthesizeIntializer(_ expr: FuncDeclExpr, function: LLVMValueRef) -> LLVMValueRef {
+  func synthesizeIntializer(_ expr: FuncDecl, function: LLVMValueRef) -> LLVMValueRef {
     guard expr.isInitializer,
         let body = expr.body,
         body.exprs.isEmpty,
@@ -86,7 +86,7 @@ extension IRGenerator {
     return function
   }
   
-  func visitFuncDeclExpr(_ expr: FuncDeclExpr) -> Result {
+  func visitFuncDecl(_ expr: FuncDecl) -> Result {
     let function = codegenFunctionPrototype(expr)!
     
     if expr === context.mainFunction {
@@ -180,7 +180,7 @@ extension IRGenerator {
   }
   
   func codegenGlobalInit() -> Result {
-    let name = Mangler.mangle(FuncDeclExpr(name: "globalInit", returnType: DataType.void.ref(), args: []))
+    let name = Mangler.mangle(FuncDecl(name: "globalInit", returnType: DataType.void.ref(), args: []))
     let existing = LLVMGetNamedFunction(module, name)
     if existing != nil { return existing! }
     let fType = LLVMFunctionType(LLVMVoidType(), nil, 0, 0)
@@ -234,11 +234,11 @@ extension IRGenerator {
     return call
   }
   
-  func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result {
+  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
     fatalError("handled while generating function")
   }
   
-  func visitReturnExpr(_ expr: ReturnExpr) -> Result {
+  func visitReturnStmt(_ expr: ReturnStmt) -> Result {
     guard let currentFunction = currentFunction,
           let currentDecl = currentFunction.function else {
       fatalError("return outside function?")

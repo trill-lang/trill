@@ -7,13 +7,13 @@ import Foundation
 
 extension IRGenerator {
   @discardableResult
-  func codegenGlobalPrototype(_ expr: VarAssignExpr) -> VarBinding {
-    if let binding = globalVarIRBindings[expr.name] { return binding }
-    let type = resolveLLVMType(expr.type)
-    let global = LLVMAddGlobal(module, type, expr.name.name)!
+  func codegenGlobalPrototype(_ decl: VarAssignDecl) -> VarBinding {
+    if let binding = globalVarIRBindings[decl.name] { return binding }
+    let type = resolveLLVMType(decl.type)
+    let global = LLVMAddGlobal(module, type, decl.name.name)!
     LLVMSetAlignment(global, 8)
     let binding = VarBinding(ref: global, storage: .value)
-    globalVarIRBindings[expr.name] = binding
+    globalVarIRBindings[decl.name] = binding
     return binding
   }
   
@@ -25,14 +25,14 @@ extension IRGenerator {
     return .value
   }
   
-  func visitGlobal(_ expr: VarAssignExpr) -> VarBinding {
-    let binding = codegenGlobalPrototype(expr)
-    if expr.has(attribute: .foreign) && expr.rhs != nil {
+  func visitGlobal(_ decl: VarAssignDecl) -> VarBinding {
+    let binding = codegenGlobalPrototype(decl)
+    if decl.has(attribute: .foreign) && decl.rhs != nil {
       LLVMSetExternallyInitialized(binding.ref, 1)
       return binding
     }
-    let llvmType = resolveLLVMType(expr.type)
-    guard let rhs = expr.rhs else {
+    let llvmType = resolveLLVMType(decl.type)
+    guard let rhs = decl.rhs else {
       LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
       return binding
     }
@@ -51,16 +51,16 @@ extension IRGenerator {
     return binding
   }
   
-  func visitGlobalVarAssignExpr(_ expr: VarAssignExpr) -> Result {
-    return visitGlobal(expr).ref
+  func visitGlobalVarAssignExpr(_ decl: VarAssignDecl) -> Result {
+    return visitGlobal(decl).ref
   }
   
-  func visitVarAssignExpr(_ expr: VarAssignExpr) -> Result {
+  func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
     let function = currentFunction!.functionRef!
-    let type = expr.type
+    let type = decl.type
     let irType = resolveLLVMType(type)
     var value: LLVMValueRef
-    if let rhs = expr.rhs, let val = visit(rhs) {
+    if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
       if rhs.type! != type {
         value = coerce(value, from: rhs.type!, to: type)!
@@ -68,24 +68,24 @@ extension IRGenerator {
     } else {
       value = LLVMConstNull(irType)
     }
-    var binding = varIRBindings[expr.name]
+    var binding = varIRBindings[decl.name]
     if binding == nil {
       binding = createEntryBlockAlloca(function, type: irType,
-                                       name: expr.name.name,
+                                       name: decl.name.name,
                                        storage: storage(for: type))
     }
-    varIRBindings[expr.name] = binding
+    varIRBindings[decl.name] = binding
     LLVMBuildStore(builder, value, binding!.ref)
     return binding!.ref
   }
   
-  func visitIfExpr(_ expr: IfExpr) -> Result {
+  func visitIfStmt(_ stmt: IfStmt) -> Result {
     let function = LLVMGetBasicBlockParent(LLVMGetInsertBlock(builder))
     guard function != nil else {
       fatalError("if outside function?")
     }
-    let conditions = expr.blocks.map { $0.0 }
-    let bodies = expr.blocks.map { $0.1 }
+    let conditions = stmt.blocks.map { $0.0 }
+    let bodies = stmt.blocks.map { $0.1 }
     var bodyBlocks = [LLVMValueRef]()
     let currentBlock = LLVMGetInsertBlock(builder)
     let elsebb = LLVMAppendBasicBlockInContext(llvmContext, function, "else")
@@ -94,7 +94,7 @@ extension IRGenerator {
       let bb = LLVMAppendBasicBlockInContext(llvmContext, function, "then")
       bodyBlocks.append(bb!)
       LLVMPositionBuilderAtEnd(builder, bb)
-      withScope { visitCompoundExpr(body) }
+      withScope { visitCompoundStmt(body) }
       let currBlock = LLVMGetInsertBlock(builder)!
       if !currBlock.endsWithTerminator {
         LLVMBuildBr(builder, mergebb)
@@ -107,11 +107,11 @@ extension IRGenerator {
       LLVMBuildCondBr(builder, cond, bodyBlocks[idx], next)
       LLVMPositionBuilderAtEnd(builder, next)
     }
-    if let elseBody = expr.elseBody {
+    if let elseBody = stmt.elseBody {
       LLVMBuildBr(builder, elsebb)
       LLVMPositionBuilderAtEnd(builder, elsebb)
       withScope {
-        visitCompoundExpr(elseBody)
+        visitCompoundStmt(elseBody)
       }
       let lastInst = LLVMGetLastInstruction(elsebb)
       if LLVMIsABranchInst(lastInst) == nil {
@@ -125,7 +125,7 @@ extension IRGenerator {
     return nil
   }
   
-  func visitWhileExpr(_ expr: WhileExpr) -> Result {
+  func visitWhileStmt(_ stmt: WhileStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("while loop outside function?")
     }
@@ -134,13 +134,13 @@ extension IRGenerator {
     let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "end")
     LLVMBuildBr(builder, condbb)
     LLVMPositionBuilderAtEnd(builder, condbb)
-    let cond = visit(expr.condition)
+    let cond = visit(stmt.condition)
     LLVMBuildCondBr(builder, cond, bodybb, endbb)
     LLVMPositionBuilderAtEnd(builder, bodybb)
     withScope {
       currentBreakTarget = endbb!
       currentContinueTarget = condbb!
-      visit(expr.body)
+      visit(stmt.body)
     }
     let insertBlock = LLVMGetInsertBlock(builder)!
     if !insertBlock.endsWithTerminator {
@@ -150,12 +150,12 @@ extension IRGenerator {
     return nil
   }
   
-  func visitForLoopExpr(_ expr: ForLoopExpr) -> Result {
+  func visitForStmt(_ stmt: ForStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("for loop outside function")
     }
     withScope {
-      if let initializer = expr.initializer {
+      if let initializer = stmt.initializer {
         visit(initializer)
       }
       let condbb = LLVMAppendBasicBlockInContext(llvmContext, function, "cond")
@@ -166,17 +166,17 @@ extension IRGenerator {
       LLVMPositionBuilderAtEnd(builder, condbb)
       currentContinueTarget = incrbb!
       currentBreakTarget = endbb!
-      let cond = visit(expr.condition ?? BoolExpr(value: true))
+      let cond = visit(stmt.condition ?? BoolExpr(value: true))
       LLVMBuildCondBr(builder, cond, bodybb, endbb)
       LLVMPositionBuilderAtEnd(builder, bodybb)
       currentBreakTarget = endbb!
-      visit(expr.body)
+      visit(stmt.body)
       let insertBlock = LLVMGetInsertBlock(builder)!
       if !insertBlock.endsWithTerminator {
         LLVMBuildBr(builder, incrbb)
       }
       LLVMPositionBuilderAtEnd(builder, incrbb)
-      if let incrementer = expr.incrementer {
+      if let incrementer = stmt.incrementer {
         visit(incrementer)
       }
       LLVMBuildBr(builder, condbb)
@@ -185,18 +185,18 @@ extension IRGenerator {
     return nil
   }
   
-  func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) -> LLVMValueRef? {
+  func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> LLVMValueRef? {
     return nil
   }
   
-  func visitSwitchExpr(_ expr: SwitchExpr) -> Result {
+  func visitSwitchStmt(_ stmt: SwitchStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("switch outside function")
     }
     let currentBlock = LLVMGetInsertBlock(builder)
     let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "switch-end")
     let defaultBlock: LLVMBasicBlockRef
-    if let defaultBody = expr.defaultBody {
+    if let defaultBody = stmt.defaultBody {
       defaultBlock = LLVMAppendBasicBlockInContext(llvmContext, function, "default")
       LLVMPositionBuilderAtEnd(builder, defaultBlock)
       visit(defaultBody)
@@ -208,8 +208,8 @@ extension IRGenerator {
     } else {
       defaultBlock = endbb!
     }
-    let switchRef = LLVMBuildSwitch(builder, visit(expr.value), defaultBlock, UInt32(expr.cases.count))
-    for (i, c) in expr.cases.enumerated() {
+    let switchRef = LLVMBuildSwitch(builder, visit(stmt.value), defaultBlock, UInt32(stmt.cases.count))
+    for (i, c) in stmt.cases.enumerated() {
       let block = LLVMAppendBasicBlockInContext(llvmContext, function, "case-\(i)")
       LLVMPositionBuilderAtEnd(builder, block)
       visit(c.body)
@@ -220,7 +220,7 @@ extension IRGenerator {
     return nil
   }
   
-  func visitCaseExpr(_ expr: CaseExpr) -> Result {
+  func visitCaseStmt(_ stmt: CaseStmt) -> Result {
     // never called directly
     return nil
   }

@@ -49,7 +49,7 @@ class TypeChecker: ASTTransformer, Pass {
     return "Type Checking"
   }
   
-  func ensureTypesAndLabelsMatch(_ expr: FuncCallExpr, decl: FuncDeclExpr) {
+  func ensureTypesAndLabelsMatch(_ expr: FuncCallExpr, decl: FuncDecl) {
     let precondition: Bool
     var declArgs = decl.args
     
@@ -127,9 +127,9 @@ class TypeChecker: ASTTransformer, Pass {
     }
   }
   
-  override func visitSwitchExpr(_ expr: SwitchExpr) {
-    for c in expr.cases where !matches(c.constant.type, expr.value.type) {
-      error(TypeCheckError.typeMismatch(expected: expr.value.type!, got: c.constant.type!),
+  override func visitSwitchStmt(_ stmt: SwitchStmt) {
+    for c in stmt.cases where !matches(c.constant.type, stmt.value.type) {
+      error(TypeCheckError.typeMismatch(expected: stmt.value.type!, got: c.constant.type!),
             loc: c.constant.startLoc(),
             highlights: [c.constant.sourceRange!])
     }
@@ -145,20 +145,20 @@ class TypeChecker: ASTTransformer, Pass {
     super.visitVarExpr(expr)
   }
   
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) -> Result {
-    if let rhs = expr.rhs {
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
+    if let rhs = decl.rhs {
       guard let rhsType = rhs.type else { return }
-      if !matches(expr.type, rhsType) {
-        error(TypeCheckError.typeMismatch(expected: expr.type, got: rhsType),
-              loc: expr.startLoc())
+      if !matches(decl.type, rhsType) {
+        error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
+              loc: decl.startLoc())
         return
       }
     }
-    super.visitVarAssignExpr(expr)
+    super.visitVarAssignDecl(decl)
   }
   
-  override func visitIfExpr(_ expr: IfExpr) {
-    for (expr, _) in expr.blocks {
+  override func visitIfStmt(_ stmt: IfStmt) {
+    for (expr, _) in stmt.blocks {
       guard case .bool? = expr.type else {
         self.error(TypeCheckError.nonBoolCondition(got: expr.type),
                    loc: expr.startLoc(),
@@ -168,21 +168,21 @@ class TypeChecker: ASTTransformer, Pass {
         return
       }
     }
-    super.visitIfExpr(expr)
+    super.visitIfStmt(stmt)
   }
   
-  override func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result {
-    if let rhsType = expr.rhs?.type, !matches(expr.type, rhsType) {
-      error(TypeCheckError.typeMismatch(expected: expr.type, got: rhsType),
-            loc: expr.startLoc(),
+  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+    if let rhsType = decl.rhs?.type, !matches(decl.type, rhsType) {
+      error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
+            loc: decl.startLoc(),
             highlights: [
-              expr.sourceRange
+              decl.sourceRange
         ])
     }
-    super.visitFuncArgumentAssignExpr(expr)
+    super.visitFuncArgumentAssignDecl(decl)
   }
   
-  override func visitReturnExpr(_ expr: ReturnExpr) -> Result {
+  override func visitReturnStmt(_ expr: ReturnStmt) -> Result {
     guard let returnType = currentClosure?.returnType.type ?? currentFunction?.returnType.type else { return }
     guard let valType = expr.value.type else { return }
     if !matches(valType, returnType) {
@@ -192,7 +192,7 @@ class TypeChecker: ASTTransformer, Pass {
               expr.sourceRange
         ])
     }
-    super.visitReturnExpr(expr)
+    super.visitReturnStmt(expr)
   }
   
   override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {

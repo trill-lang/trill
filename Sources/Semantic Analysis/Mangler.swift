@@ -12,10 +12,10 @@ extension String {
 }
 
 enum Mangler {
-  static func mangle(_ c: ClosureExpr, in d: FuncDeclExpr) -> String {
+  static func mangle(_ c: ClosureExpr, in d: FuncDecl) -> String {
     return "_WC" + mangle(d, root: false)  // FIXME: number closures.
   }
-  static func mangle(_ d: FuncDeclExpr, root: Bool = true) -> String {
+  static func mangle(_ d: FuncDecl, root: Bool = true) -> String {
     if d.has(attribute: .foreign) {
       return d.name.name
     }

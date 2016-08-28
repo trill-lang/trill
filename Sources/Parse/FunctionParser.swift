@@ -11,10 +11,10 @@ extension Parser {
   /// func-decl ::= fun <name>([<name> [internal-name]: <typename>,]*): <typename> <braced-expr-block>
   func parseFuncDecl(_ attributes: [DeclAttribute],
                      forType type: DataType? = nil,
-                     isDeinit: Bool = false) throws -> FuncDeclExpr {
+                     isDeinit: Bool = false) throws -> FuncDecl {
     var attributes = attributes
     let startLoc = sourceLoc
-    var args = [FuncArgumentAssignExpr]()
+    var args = [FuncArgumentAssignDecl]()
     var returnType = TypeRefExpr(type: .void, name: "Void")
     var hasVarArgs = false
     let kind: FunctionKind
@@ -47,14 +47,14 @@ extension Parser {
     } else {
       (args, returnType, hasVarArgs) = try parseFuncSignature()
     }
-    var body: CompoundExpr? = nil
+    var body: CompoundStmt? = nil
     if case .leftBrace = peek() {
       body = try parseCompoundExpr()
       if case .initializer(let type) = kind {
         returnType = type.ref()
       }
     }
-    return FuncDeclExpr(name: name,
+    return FuncDecl(name: name,
                         returnType: returnType,
                         args: args,
                         kind: kind,
@@ -64,10 +64,10 @@ extension Parser {
                         sourceRange: range(start: startLoc))
   }
   
-  func parseFuncSignature() throws -> (args: [FuncArgumentAssignExpr], ret: TypeRefExpr, hasVarArgs: Bool) {
+  func parseFuncSignature() throws -> (args: [FuncArgumentAssignDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
     try consume(.leftParen)
     var hasVarArgs = false
-    var args = [FuncArgumentAssignExpr]()
+    var args = [FuncArgumentAssignDecl]()
     while true {
       if case .rightParen = peek() {
         consumeToken()
@@ -101,7 +101,7 @@ extension Parser {
         break
       }
       let type = try parseType()
-      let arg = FuncArgumentAssignExpr(name: internalName,
+      let arg = FuncArgumentAssignDecl(name: internalName,
                                        type: type,
                                        externalName: externalName,
                                        sourceRange: range(start: startLoc))

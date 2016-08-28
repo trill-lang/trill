@@ -118,37 +118,37 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     guard let decl = expr.decl else {
       return
     }
-    if let range =  expr.name.range?.nsRange, let decl = decl as? DeclExpr {
+    if let range =  expr.name.range?.nsRange, let decl = decl as? Decl {
       let color = context.isIntrinsic(decl: decl) ? attributes.externalName : attributes.internalName
       add(color: color, range: range)
     }
     super.visitFieldLookupExpr(expr)
   }
   
-  override func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) {
+  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
     add(attributes(for: expr.typeRef!))
-    super.visitFuncArgumentAssignExpr(expr)
+    super.visitFuncArgumentAssignDecl(expr)
   }
   
-  override func visitFuncDeclExpr(_ expr: FuncDeclExpr) {
+  override func visitFuncDecl(_ expr: FuncDecl) {
     add(attributes(for: expr.returnType))
-    super.visitFuncDeclExpr(expr)
+    super.visitFuncDecl(expr)
   }
   
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) {
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) {
     add(attributes(for: expr.typeRef!))
-    super.visitVarAssignExpr(expr)
+    super.visitVarAssignDecl(expr)
   }
   
-  override func visitExtensionExpr(_ expr: ExtensionExpr) {
+  override func visitExtensionDecl(_ expr: ExtensionDecl) {
     add(attributes(for: expr.typeRef))
-    super.visitExtensionExpr(expr)
+    super.visitExtensionDecl(expr)
   }
   
-  override func visitTypeDeclExpr(_ expr: TypeDeclExpr) {
+  override func visitTypeDecl(_ expr: TypeDecl) {
     let ref = TypeRefExpr(type: expr.type, name: expr.name)
     add(attributes(for: ref))
-    super.visitTypeDeclExpr(expr)
+    super.visitTypeDecl(expr)
   }
   
   override func visitTypeAliasExpr(_ expr: TypeAliasExpr) {

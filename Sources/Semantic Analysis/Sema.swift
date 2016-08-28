@@ -9,7 +9,7 @@ enum SemaError: Error, CustomStringConvertible {
   case unknownFunction(name: Identifier)
   case unknownType(type: DataType)
   case callNonFunction(type: DataType?)
-  case unknownField(typeDecl: TypeDeclExpr, expr: FieldLookupExpr)
+  case unknownField(typeDecl: TypeDecl, expr: FieldLookupExpr)
   case unknownVariableName(name: Identifier)
   case invalidOperands(op: BuiltinOperator, invalid: DataType)
   case cannotSubscript(type: DataType)
@@ -124,7 +124,7 @@ enum SemaError: Error, CustomStringConvertible {
 }
 
 class Sema: ASTTransformer, Pass {
-  var varBindings = [String: VarAssignExpr]()
+  var varBindings = [String: VarAssignDecl]()
   
   var title: String {
     return "Semantic Analysis"
@@ -137,8 +137,8 @@ class Sema: ASTTransformer, Pass {
   
   func registerTopLevelDecls(in context: ASTContext) {
     for expr in context.extensions {
-      guard let typeDecl = context.decl(for: expr.type!) else {
-        error(SemaError.unknownType(type: expr.type!),
+      guard let typeDecl = context.decl(for: expr.type) else {
+        error(SemaError.unknownType(type: expr.type),
               loc: expr.startLoc(),
               highlights: [ expr.sourceRange ])
         continue
@@ -184,8 +184,8 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func visitFuncDeclExpr(_ expr: FuncDeclExpr) {
-    super.visitFuncDeclExpr(expr)
+  override func visitFuncDecl(_ expr: FuncDecl) {
+    super.visitFuncDecl(expr)
     if expr.has(attribute: .foreign) {
       if !expr.isInitializer && expr.body != nil {
         error(SemaError.foreignFunctionWithBody(name: expr.name),
@@ -235,44 +235,44 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func withScope(_ e: CompoundExpr, _ f: () -> Void) {
+  override func withScope(_ e: CompoundStmt, _ f: () -> Void) {
     let oldVarBindings = varBindings
     super.withScope(e, f)
     varBindings = oldVarBindings
   }
   
-  override func visitVarAssignExpr(_ expr: VarAssignExpr) -> Result {
-    super.visitVarAssignExpr(expr)
-    if let rhs = expr.rhs, expr.has(attribute: .foreign) {
-      error(SemaError.foreignVarWithRHS(name: expr.name),
-            loc: expr.startLoc(),
+  override func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
+    super.visitVarAssignDecl(decl)
+    if let rhs = decl.rhs, decl.has(attribute: .foreign) {
+      error(SemaError.foreignVarWithRHS(name: decl.name),
+            loc: decl.startLoc(),
             highlights: [ rhs.sourceRange ])
       return
     }
-    guard !expr.has(attribute: .foreign) else { return }
-    if let type = expr.typeRef?.type {
+    guard !decl.has(attribute: .foreign) else { return }
+    if let type = decl.typeRef?.type {
       if !context.isValidType(type) {
         error(SemaError.unknownType(type: type),
-              loc: expr.typeRef!.startLoc(),
+              loc: decl.typeRef!.startLoc(),
               highlights: [
-                expr.typeRef!.sourceRange
+                decl.typeRef!.sourceRange
           ])
         return
       }
       
-      if let rhs = expr.rhs, let rhsType = rhs.type {
+      if let rhs = decl.rhs, let rhsType = rhs.type {
         if context.canCoerce(rhsType, to: type) {
           rhs.type = type
         }
       }
     }
-    if expr.containingTypeDecl == nil {
-      varBindings[expr.name.name] = expr
+    if decl.containingTypeDecl == nil {
+      varBindings[decl.name.name] = decl
     }
-    if let rhs = expr.rhs, expr.typeRef == nil {
+    if let rhs = decl.rhs, decl.typeRef == nil {
       guard let type = rhs.type else { return }
-      expr.type = type
-      expr.typeRef = type.ref()
+      decl.type = type
+      decl.typeRef = type.ref()
     }
   }
   
@@ -301,25 +301,25 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func visitFuncArgumentAssignExpr(_ expr: FuncArgumentAssignExpr) -> Result {
-    super.visitFuncArgumentAssignExpr(expr)
-    guard context.isValidType(expr.type) else {
-      error(SemaError.unknownType(type: expr.type),
-            loc: expr.typeRef?.startLoc(),
+  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+    super.visitFuncArgumentAssignDecl(decl)
+    guard context.isValidType(decl.type) else {
+      error(SemaError.unknownType(type: decl.type),
+            loc: decl.typeRef?.startLoc(),
             highlights: [
-              expr.typeRef?.sourceRange
+              decl.typeRef?.sourceRange
         ])
       return
     }
-    let canTy = context.canonicalType(expr.type)
+    let canTy = context.canonicalType(decl.type)
     if case .custom = canTy,
       context.decl(for: canTy)!.isIndirect {
-      expr.mutable = true
+      decl.mutable = true
     }
-    varBindings[expr.name.name] = expr
+    varBindings[decl.name.name] = decl
   }
   
-  func candidate(forArgs args: [Argument], candidates: [FuncDeclExpr]) -> FuncDeclExpr? {
+  func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
     search: for candidate in candidates {
       var candArgs = candidate.args
       if let first = candArgs.first, first.isImplicitSelf {
@@ -451,17 +451,17 @@ class Sema: ASTTransformer, Pass {
     expr.type = subtype
   }
   
-  override func visitExtensionExpr(_ expr: ExtensionExpr) -> Result {
-    guard let decl = context.decl(for: expr.type!) else {
-      error(SemaError.unknownType(type: expr.type!),
+  override func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
+    guard let decl = context.decl(for: expr.type) else {
+      error(SemaError.unknownType(type: expr.type),
             loc: expr.startLoc(),
             highlights: [ expr.typeRef.name.range ])
       return
     }
     withTypeDecl(decl) {
-      super.visitExtensionExpr(expr)
+      super.visitExtensionDecl(expr)
     }
-    expr.decl = decl
+    expr.typeDecl = decl
   }
   
   override func visitVarExpr(_ expr: VarExpr) -> Result {
@@ -470,7 +470,7 @@ class Sema: ASTTransformer, Pass {
       let fn = currentFunction,
       fn.isInitializer,
       expr.name == "self" {
-      expr.decl = VarAssignExpr(name: "self", typeRef: fn.returnType)
+      expr.decl = VarAssignDecl(name: "self", typeRef: fn.returnType)
       expr.isSelf = true
       expr.type = fn.returnType.type!
       return
@@ -479,7 +479,7 @@ class Sema: ASTTransformer, Pass {
     if let decl = varBindings[expr.name.name] ?? context.global(named: expr.name) {
       expr.decl = decl
       expr.type = decl.type
-      if let d = decl as? FuncArgumentAssignExpr, d.isImplicitSelf {
+      if let d = decl as? FuncArgumentAssignDecl, d.isImplicitSelf {
         expr.isSelf = true
       }
     } else if !candidates.isEmpty {
@@ -506,30 +506,30 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func visitContinueExpr(_ expr: ContinueExpr) -> Result {
+  override func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
     if currentBreakTarget == nil {
       error(SemaError.continueNotAllowed,
-            loc: expr.startLoc(),
-            highlights: [ expr.sourceRange ])
+            loc: stmt.startLoc(),
+            highlights: [ stmt.sourceRange ])
     }
   }
   
-  override func visitBreakExpr(_ expr: BreakExpr) -> Result {
+  override func visitBreakStmt(_ stmt: BreakStmt) -> Result {
     if currentBreakTarget == nil {
       error(SemaError.breakNotAllowed,
-            loc: expr.startLoc(),
-            highlights: [ expr.sourceRange ])
+            loc: stmt.startLoc(),
+            highlights: [ stmt.sourceRange ])
     }
   }
   
-  func foreignDecl(args: [DataType], ret: DataType) -> FuncDeclExpr {
-    let assigns: [FuncArgumentAssignExpr] = args.map {
+  func foreignDecl(args: [DataType], ret: DataType) -> FuncDecl {
+    let assigns: [FuncArgumentAssignDecl] = args.map {
       let name = Identifier(name: "__implicit__")
-      return FuncArgumentAssignExpr(name: "", type: TypeRefExpr(type: $0, name: name))
+      return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
     }
     let retName = Identifier(name: "\(ret)")
     let typeRef = TypeRefExpr(type: ret, name: retName)
-    return FuncDeclExpr(name: "",
+    return FuncDecl(name: "",
                         returnType: typeRef,
                         args: assigns,
                         body: nil,
@@ -555,7 +555,7 @@ class Sema: ASTTransformer, Pass {
     for arg in expr.args {
       guard arg.val.type != nil else { return }
     }
-    var candidates = [FuncDeclExpr]()
+    var candidates = [FuncDecl]()
     var name: Identifier? = nil
     switch expr.lhs {
     case let lhs as FieldLookupExpr:
@@ -629,13 +629,13 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func visitCompoundExpr(_ expr: CompoundExpr) {
-    for (idx, e) in expr.exprs.enumerated() {
+  override func visitCompoundStmt(_ stmt: CompoundStmt) {
+    for (idx, e) in stmt.exprs.enumerated() {
       visit(e)
-      let isLast = idx == (expr.exprs.endIndex - 1)
-      let isReturn = e is ReturnExpr
-      let isBreak = e is BreakExpr
-      let isContinue = e is ContinueExpr
+      let isLast = idx == (stmt.exprs.endIndex - 1)
+      let isReturn = e is ReturnStmt
+      let isBreak = e is BreakStmt
+      let isContinue = e is ContinueStmt
       let isNoReturnFuncCall: Bool = {
         if let c = e as? FuncCallExpr {
           return c.decl?.has(attribute: .noreturn) == true
@@ -643,10 +643,10 @@ class Sema: ASTTransformer, Pass {
         return false
       }()
       
-      if !expr.hasReturn {
+      if !stmt.hasReturn {
         if isReturn || isNoReturnFuncCall {
-          expr.hasReturn = true
-        } else if let ifExpr = e as? IfExpr,
+          stmt.hasReturn = true
+        } else if let ifExpr = e as? IfStmt,
                   let elseBody = ifExpr.elseBody {
           var hasReturn = true
           for block in ifExpr.blocks where !block.1.hasReturn {
@@ -655,7 +655,7 @@ class Sema: ASTTransformer, Pass {
           if hasReturn {
             hasReturn = elseBody.hasReturn
           }
-          expr.hasReturn = hasReturn
+          stmt.hasReturn = hasReturn
         }
       }
       
@@ -666,7 +666,7 @@ class Sema: ASTTransformer, Pass {
           isNoReturnFuncCall ? "call to noreturn function" : "break"
         warning("Code after \(type) will not be executed.",
                 loc: e.startLoc(),
-                highlights: [ expr.sourceRange ])
+                highlights: [ stmt.sourceRange ])
       }
     }
   }
@@ -680,15 +680,15 @@ class Sema: ASTTransformer, Pass {
     expr.type = .function(args: argTys, returnType: expr.returnType.type!)
   }
   
-  override func visitSwitchExpr(_ expr: SwitchExpr) {
-    super.visitSwitchExpr(expr)
-    guard let valueType = expr.value.type else { return }
-    for c in expr.cases {
-      let fakeInfix = InfixOperatorExpr(op: .equalTo, lhs: expr.value, rhs: c.constant)
+  override func visitSwitchStmt(_ stmt: SwitchStmt) {
+    super.visitSwitchStmt(stmt)
+    guard let valueType = stmt.value.type else { return }
+    for c in stmt.cases {
+      let fakeInfix = InfixOperatorExpr(op: .equalTo, lhs: stmt.value, rhs: c.constant)
       guard let t = fakeInfix.type(forArgType: c.constant.type!), !t.isPointer else {
         error(SemaError.cannotSwitch(type: valueType),
-              loc: expr.value.startLoc(),
-              highlights: [ expr.value.sourceRange ])
+              loc: stmt.value.startLoc(),
+              highlights: [ stmt.value.sourceRange ])
         continue
       }
     }
@@ -785,24 +785,24 @@ class Sema: ASTTransformer, Pass {
     expr.value = funcDecl.formattedName
   }
   
-  override func visitPoundDiagnosticExpr(_ expr: PoundDiagnosticExpr) {
-    if expr.isError {
-      context.diag.error(expr.text, loc: expr.content.startLoc(), highlights: [])
+  override func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) {
+    if stmt.isError {
+      context.diag.error(stmt.text, loc: stmt.content.startLoc(), highlights: [])
     } else {
-      context.diag.warning(expr.text, loc: expr.content.startLoc(), highlights: [])
+      context.diag.warning(stmt.text, loc: stmt.content.startLoc(), highlights: [])
     }
   }
   
-  override func visitReturnExpr(_ expr: ReturnExpr) {
+  override func visitReturnStmt(_ stmt: ReturnStmt) {
     guard let returnType = currentClosure?.returnType.type ?? currentFunction?.returnType.type else { return }
     let canRet = context.canonicalType(returnType)
-    if case .int = canRet, expr.value is NumExpr {
-      expr.value.type = returnType
+    if case .int = canRet, stmt.value is NumExpr {
+      stmt.value.type = returnType
     }
-    if case .pointer = canRet, expr.value is NilExpr {
-      expr.value.type = returnType
+    if case .pointer = canRet, stmt.value is NilExpr {
+      stmt.value.type = returnType
     }
-    super.visitReturnExpr(expr)
+    super.visitReturnStmt(stmt)
   }
   
   override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
