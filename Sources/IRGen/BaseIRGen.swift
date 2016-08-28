@@ -400,7 +400,11 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will always resolve to a pointer.
   func resolveVarBinding(_ expr: VarExpr) -> (Bool, VarBinding?) {
     if let binding = varIRBindings[expr.name] ?? globalVarIRBindings[expr.name] {
-      return (!expr.isSelf, binding)
+      var shouldLoad = true
+      if expr.isSelf && storage(for: expr.type!) == .reference {
+        shouldLoad = false
+      }
+      return (shouldLoad, binding)
     } else if let global = context.global(named: expr.name) {
       return (true, visitGlobal(global))
     } else if let funcDecl = expr.decl as? FuncDeclExpr {

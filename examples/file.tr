@@ -9,10 +9,6 @@ func readFile(filename: *Int8) -> *Int8 {
   if file == nil {
     return nil
   }
-  defer {
-    puts("closing...")
-    fclose(file)
-  }
   fseek(file, 0, SEEK_END)
   var length = ftell(file)
   fseek(file, 0, SEEK_SET)
@@ -21,6 +17,7 @@ func readFile(filename: *Int8) -> *Int8 {
     return nil
   }
   fread(program, 1 as size_t, length as size_t, file)
+  fclose(file)
   program[length] = 0 as Int8
   return program
 }
@@ -31,10 +28,7 @@ func main(argc: Int, argv: **Int8) -> Int {
     return -1
   }
   var content = readFile(filename: argv[1])
-  defer {
-    printf("freeing...")
-    free(content)
-  }
   puts(content)
+  free(content)
   return 0
 }

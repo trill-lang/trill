@@ -49,6 +49,6 @@ func main() {
   }
   println(danny.isChild().toInt())
   println(danny.job.salary)
-  danny.job.salary += ""
+  danny.job.salary += 100_000
   println(danny.job.salary)
 }

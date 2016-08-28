@@ -1,6 +1,6 @@
 foreign func malloc(_: Int) -> *Int8
 
-func compare(_ _a: *Int8, _ _b: *Int8) -> Int {
+func compare(_ _a: *Int8, _ _b: *Int8) -> Int32 {
   var a = *(_a as *Int)
   var b = *(_b as *Int)
   if a == b { return 0 }
@@ -30,7 +30,7 @@ func main() {
     nums[i] = arc4random_uniform(count as Int32) as Int
   }
   print(nums, count)
-  qsort(nums as *Int8, count as Int32, sizeof(Int) as Int32, compare as **Int8)
+  qsort(nums as *Int8, count as Int32, sizeof(Int) as Int32, compare)
   print(nums, count)
   free(nums as *Int8)
 }
