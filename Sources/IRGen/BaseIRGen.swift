@@ -352,6 +352,8 @@ class IRGenerator: ASTVisitor, Pass {
       return storage(for: type) == .value ? binding : LLVMPointerType(binding, 0)
     }
     switch type {
+    case .pointer(.void):
+      return LLVMPointerType(LLVMInt8Type(), 0)
     case .pointer(let subtype):
       let llvmType = resolveLLVMType(subtype)
       return LLVMPointerType(llvmType, 0)

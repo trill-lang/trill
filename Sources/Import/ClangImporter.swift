@@ -409,12 +409,7 @@ class ClangImporter: Pass {
         guard let t = convertFunctionType(pointee) else { return nil }
         return t
       }
-      let trillPointee: DataType?
-      if pointee.kind == CXType_Void {
-        trillPointee = .int8
-      } else {
-        trillPointee = convertToTrillType(pointee)
-      }
+      let trillPointee = convertToTrillType(pointee)
       guard let p = trillPointee else {
         return nil
       }

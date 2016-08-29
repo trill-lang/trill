@@ -1,6 +1,6 @@
 foreign func sleep(_: Int)
-foreign func calloc(_: Int, _: Int) -> *Int8
-foreign func realloc(_: *Int8, _: Int) -> *Int8
+foreign func calloc(_: Int, _: Int) -> *Void
+foreign func realloc(_: *Void, _: Int) -> *Void
 
 func assert(_ fact: Bool, _ message: *Int8) {
     if !fact {
@@ -31,7 +31,7 @@ type ThreadArray {
         }
     }
     mutating func _reallocate() {
-        self.elements = realloc(self.elements as *Int8, self.capacity * sizeof(Thread)) as *Thread
+        self.elements = realloc(self.elements as *Void, self.capacity * sizeof(Thread)) as *Thread
     }
     func _load() -> Double {
         return self.count as Double / self.capacity as Double
@@ -50,14 +50,14 @@ type ThreadArray {
         self._boundsCheck(index)
         self.count += 1
         self._growIfNeeded()
-        memmove(&self.elements[index + 1] as *Int8, &self.elements[index] as *Int8, sizeof(Thread) as Int32)
+        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Thread) as Int32)
         self.elements[index] = element
     }
     mutating func remove(at index: Int) -> Thread {
         self._boundsCheck(index)
         self._shrinkIfNeeded()
         self.count -= 1
-        memmove(&self.elements[index] as *Int8, &self.elements[index + 1] as *Int8, sizeof(Thread) as Int32)
+        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Thread) as Int32)
         return self.elements[self.count + 1]
     }
     func get(_ index: Int) -> Thread {
@@ -82,11 +82,11 @@ type ThreadArray {
         return self.count == 0
     }
     func destroy() {
-        free(self.elements as *Int8)
+        free(self.elements as *Void)
     }
 }
 
-func _Thread_invoke(_ thread: *Int8) -> *Int8 {
+func _Thread_invoke(_ thread: *Void) -> *Void {
     (thread as Thread)._run()
     return nil
 }
@@ -101,7 +101,7 @@ indirect type Thread {
     }
     func run() {
         printf("Running thread #%d\n", self.number)
-        pthread_create(&self._pthread, nil, _Thread_invoke, self as *Int8)
+        pthread_create(&self._pthread, nil, _Thread_invoke, self as *Void)
     }
     func _run() {
         while true {

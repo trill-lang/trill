@@ -68,7 +68,7 @@ func populate(driver: Driver, options: Options,
     let group = DispatchGroup()
     for file in sourceFiles {
       DispatchQueue.global().async(group: group) {
-        try! file.parse()
+        file.parse()
       }
     }
     group.wait()

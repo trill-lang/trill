@@ -1,5 +1,5 @@
-foreign func calloc(_: Int, _: Int) -> *Int8
-foreign func malloc(_: Int) -> *Int8
+foreign func calloc(_: Int, _: Int) -> *Void
+foreign func malloc(_: Int) -> *Void
 foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 
 let SEEK_END = 2 as Int32
@@ -51,8 +51,8 @@ indirect type Program {
     }
   }
   deinit {
-    free(self.instructions as *Int8)
-    free(self.memory)
+    free(self.instructions as *Void)
+    free(self.memory as *Void)
   }
   mutating func execute() {
     var pc = 0
@@ -183,7 +183,7 @@ indirect type Program {
       }
       pc += 1
     }
-    free(stack as *Int8)
+    free(stack as *Void)
     self.instructions = instructions
     self.memory = calloc(30000, sizeof(Int8)) as *Int8
     self.count = length as Int
@@ -198,11 +198,11 @@ func readFile(filename: *Int8) -> *Int8 {
   fseek(file, 0, SEEK_END)
   let length = ftell(file)
   fseek(file, 0, SEEK_SET)
-  var program = malloc(length + 1)
+  var program = malloc(length + 1) as *Int8
   if program == nil {
     return nil
   }
-  fread(program, 1 as size_t, length as size_t, file)
+  fread(program as *Void, 1 as size_t, length as size_t, file)
   program[length] = NUL
   fclose(file)
   return program
@@ -219,7 +219,7 @@ func main(argc: Int, argv: **Int8) -> Int {
     return 1
   }
   var prog = Program(input: str)
-  free(str)
+  free(str as *Void)
   if argc > 2 {
     if strcmp(argv[2], "c") == 0 {
       prog.printC()

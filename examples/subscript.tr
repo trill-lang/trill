@@ -1,16 +1,16 @@
-foreign func malloc(_: Int) -> *Int8
+foreign func malloc(_: Int) -> *Void
 
 func println(_ n: Int8) {
-  printf("%d\n", n);
+  printf("%d\n", n)
 }
 
 func main() {
-  var foo = malloc(100);
+  var foo = malloc(100) as *Int8
   for var i = 0; i < 100; i += 1 {
-    foo[i] = i as Int8;
+    foo[i] = i as Int8
   }
   for var i = 0; i < 100; i += 1 {
-    println(foo[i]);
+    println(foo[i])
   }
-  free(foo);
+  free(foo as *Void)
 }

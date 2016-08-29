@@ -16,7 +16,7 @@ func readFile(filename: *Int8) -> *Int8 {
   if program == nil {
     return nil
   }
-  fread(program, 1 as size_t, length as size_t, file)
+  fread(program as *Void, 1 as size_t, length as size_t, file)
   fclose(file)
   program[length] = 0 as Int8
   return program
@@ -29,6 +29,6 @@ func main(argc: Int, argv: **Int8) -> Int {
   }
   var content = readFile(filename: argv[1])
   puts(content)
-  free(content)
+  free(content as *Void)
   return 0
 }

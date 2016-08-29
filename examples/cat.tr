@@ -1,27 +1,28 @@
 foreign type FILE {}
-foreign var stdout: *FILE;
+foreign var stdout: *FILE
 foreign func malloc(_: Int) -> *Int8
 foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 
 func usage() {
-  printf("usage: %s [file]", #file);
+  printf("usage: %s [file]", #file)
 }
 
 func main(argc: Int, argv: **Int8) -> Int {
-  if argc < 2 { usage(); return 1; }
-  for var i = 1; i < argc; i += 1 {
-    var f = fopen(argv[i], "r");
-    var buf = malloc(100);
-    var s = buf;
-    while true { 
-      s = fgets(s, 100 as Int32, f);
-      if s == nil {
-        break;
-      }
-      printf("%s", s);
-    }
-    free(s);
-    fclose(f);
+  if argc < 2 {
+    usage()
+    return 1
   }
-  return 0;
+  for var i = 1; i < argc; i += 1 {
+    var f = fopen(argv[i], "r")
+    var buf = malloc(100) as *Int8
+    var s = buf
+    while true {
+      s = fgets(s, 100 as Int32, f)
+      if s == nil { break }
+      printf("%s", s)
+    }
+    free(s as *Void)
+    fclose(f)
+  }
+  return 0
 }

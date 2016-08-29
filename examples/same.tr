@@ -22,7 +22,7 @@ func readFile(filename: *Int8) -> (*Int8, Int) {
   if program == nil {
     return (nil, 0)
   }
-  fread(program, 1 as size_t, length as size_t, file)
+  fread(program as *Void, 1 as size_t, length as size_t, file)
   program[length] = NUL
   fclose(file)
   return (program, length)
@@ -39,6 +39,6 @@ func main(argc: Int, argv: **Int8) -> Int {
         fflush(stdout)
         usleep(10000 + (rand() % 3000) as Int)
     }
-    free(file.0)
+    free(file.0 as *Void)
     return 0
 }

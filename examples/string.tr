@@ -82,7 +82,7 @@ type String {
   }
  
   mutating func destroy() {
-    free(self.bytes)
+    free(self.bytes as *Void)
   }
 
   func printCStrings() {
@@ -136,7 +136,7 @@ func read(file: *Int8) -> String {
   fseek(f, 0, SEEK_SET)
 
   var str = calloc(0, fsize + 1)
-  fread(str, fsize as size_t, 1 as size_t, f)
+  fread(str as *Void, fsize as size_t, 1 as size_t, f)
   fclose(f)
   str[fsize] = 0 as Int8
   return String(bytes: str, length: fsize)

@@ -60,12 +60,18 @@ struct SourceFile {
     self.lines = self.contents.components(separatedBy: .newlines)
   }
   
-  func parse() throws {
-    let lexer = Lexer(filename: path.filename, input: contents)
-    let tokens = try lexer.lex()
-    let parser = Parser(tokens: tokens,
-                        filename: path.filename,
-                        context: context)
-    try parser.parseTopLevel(into: context)
+  func parse() {
+    do {
+      let lexer = Lexer(filename: path.filename, input: contents)
+      let tokens = try lexer.lex()
+      let parser = Parser(tokens: tokens,
+                          filename: path.filename,
+                          context: context)
+      try parser.parseTopLevel(into: context)
+    } catch let diag as Diagnostic {
+      context.diag.add(error: diag)
+    } catch {
+      context.error(error)
+    }
   }
 }
