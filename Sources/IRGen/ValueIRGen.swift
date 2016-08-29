@@ -8,14 +8,16 @@ import Foundation
 extension IRGenerator {
   func codegenGlobalStringPtr(_ string: String) -> Result {
     if let global = globalStringMap[string] { return global }
-    let globalArray = LLVMAddGlobal(module, LLVMArrayType(LLVMInt8Type(), UInt32(string.characters.count) + 1), "str")
+    let globalArray = LLVMAddGlobal(module,
+                                    LLVMArrayType(LLVMInt8Type(), UInt32(string.characters.count) + 1),
+                                    "str")!
     LLVMSetAlignment(globalArray, 1)
     string.withCString { str in
       let str = LLVMConstStringInContext(llvmContext, str, UInt32(string.characters.count), 0)
       LLVMSetInitializer(globalArray, str)
     }
     globalStringMap[string] = globalArray
-    return globalArray!
+    return globalArray
   }
   
   func codegenTupleType(_ type: DataType) -> LLVMTypeRef {

@@ -1,4 +1,4 @@
-func fib(_ n: Int) {
+func fact(_ n: Int) -> Int {
     var accum = n
     for var i = 2; i < n; i += 1 {
         accum *= i
