@@ -25,16 +25,19 @@ type ByteArray {
         self.count = length as Int
         strncpy(self.bytes, string, length)
     }
+    init(_owning bytes: *Int8, length: Int) {
+        self.capacity = length
+        self.count = length
+        self.bytes = bytes
+    }
     mutating func _growIfNeeded() {
         if self.load() > 0.75 {
-            printf("growing from %d to %d\n", self.capacity, self.capacity * 2)
             self.capacity *= 2
             self.bytes = realloc(self.bytes, self.capacity)
         }
     }
     mutating func _shrinkIfNeeded() {
         if self.load() < 0.5 {
-            printf("shrinking from %d to %d\n", self.capacity, self.capacity / 2)
             self.capacity /= 2
             self.bytes = realloc(self.bytes, self.capacity)
         }
@@ -45,7 +48,6 @@ type ByteArray {
         }
     }
     mutating func append(_ element: Int8) {
-        printf("Capacity: %d\n", self.capacity)
         self.bytes[self.count] = element
         self.count += 1
         self._growIfNeeded()
@@ -60,7 +62,13 @@ type ByteArray {
         self.insert(string, length: strlen(string) as Int, at: index)
     }
     mutating func insert(_ string: *Int8, length: Int, at index: Int) {
+        var length = length
+        var index = index
         self._boundsCheck(index)
+        if self.bytes[index - 1] == 0 {
+            length -= 1
+            index -= 1
+        }
         self.count += length
         self._growIfNeeded()
         memmove(&self.bytes[index + length], &self.bytes[index], length as Int32)
@@ -114,29 +122,5 @@ type ByteArray {
     func destroy() {
         free(self.bytes)
     }
-}
-
-func main() {
-    var arr = ByteArray(capacity: 20)
-    for var i: Int8 = 0; i < 30; i += 1 {
-        arr.append(i * 4)
-        arr.dump()
-    }
-
-    printf("index 14: %d\n", arr.get(14))
-    while !arr.isEmpty() {
-        arr.remove(at: arr.count - 1)
-        arr.dump()
-    }
-    arr.destroy()
-
-    var strArr = ByteArray(string: "Hello, world!")
-    strArr.dump()
-    strArr.append("\n\nfoo")
-    strArr.dump()
-    strArr.printString()
-    strArr.destroy()
-
-    ByteArray(capacity: 0)
 }
 
