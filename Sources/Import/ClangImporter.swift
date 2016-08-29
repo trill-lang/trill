@@ -152,13 +152,13 @@ class ClangImporter: Pass {
   }
   
   @discardableResult
-  func importTypeDef(_ cursor: CXCursor) -> TypeAliasExpr? {
+  func importTypeDef(_ cursor: CXCursor, in context: ASTContext) -> TypeAliasExpr? {
     let name = clang_getCursorSpelling(cursor).asSwift()
     let type = clang_getTypedefDeclUnderlyingType(cursor)
     let decl = clang_getTypeDeclaration(type)
     var trillType: DataType?
     if decl.kind == CXCursor_StructDecl {
-      if let expr = importStruct(decl) {
+      if let expr = importStruct(decl, in: context) {
         trillType = expr.type
       } else {
         return nil
@@ -171,12 +171,12 @@ class ClangImporter: Pass {
     }
     let alias = TypeAliasExpr(name: Identifier(name: name),
                               bound: t.ref())
-    self.context.add(alias)
+    context.add(alias)
     return alias
   }
   
   @discardableResult
-  func importStruct(_ cursor: CXCursor) -> TypeDecl? {
+  func importStruct(_ cursor: CXCursor, in context: ASTContext) -> TypeDecl? {
     let type = clang_getCursorType(cursor)
     let typeName = clang_getTypeSpelling(type).asSwift()
     
@@ -203,11 +203,11 @@ class ClangImporter: Pass {
     
     let expr = TypeDecl(name: name, fields: values, attributes: [.foreign])
     importedTypes[name] = expr
-    self.context.add(expr)
+    context.add(expr)
     return expr
   }
   
-  func importFunction(_ cursor: CXCursor)  {
+  func importFunction(_ cursor: CXCursor, in context: ASTContext)  {
     let name = clang_getCursorSpelling(cursor).asSwift()
     let existing = context.functions(named: Identifier(name: name))
     if !existing.isEmpty { return }
@@ -236,21 +236,21 @@ class ClangImporter: Pass {
                           hasVarArgs: hasVarArgs,
                           attributes: attributes)
     importedFunctions[decl.name] = decl
-    self.context.add(decl)
+    context.add(decl)
   }
   
-  func importEnum(_ cursor: CXCursor) {
+  func importEnum(_ cursor: CXCursor, in context: ASTContext) {
     clang_visitChildrenWithBlock(cursor) { child, parent in
       let name = Identifier(name: clang_getCursorSpelling(child).asSwift())
       let varExpr = VarAssignDecl(name: name,
                                   typeRef: DataType.int32.ref(),
                                   mutable: false)
-      self.context.add(varExpr)
+      context.add(varExpr)
       return CXChildVisit_Continue
     }
   }
   
-  func importMacro(_ cursor: CXCursor, in tu: CXTranslationUnit) {
+  func importMacro(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
     let range = clang_getCursorExtent(cursor)
     
     var tokenCount: UInt32 = 0
@@ -279,7 +279,7 @@ class ClangImporter: Pass {
   // FIXME: Actually use Clang's lexer instead of re-implementing parts of
   //        it, poorly.
   func simpleParseIntegerLiteralToken(_ token: String) throws -> TokenKind? {
-    let lexer = Lexer(input: token)
+    let lexer = Lexer(filename: "", input: token)
     let numStr = lexer.collectWhile { $0.isNumeric }
     guard let num = IntMax(numStr) else { throw ImportError.pastIntMax }
     let suffix = lexer.collectWhile { $0.isIdentifier }
@@ -290,7 +290,7 @@ class ClangImporter: Pass {
   }
   
   func simpleParseCToken(_ token: String) throws -> TokenKind? {
-    let toks = try Lexer(input: token).lex()
+    let toks = try Lexer(filename: "", input: token).lex()
     guard let first = toks.first?.kind else { return nil }
     if case .identifier(let name) = first {
       return try simpleParseIntegerLiteralToken(name) ?? first
@@ -327,6 +327,36 @@ class ClangImporter: Pass {
                          bound: type.ref())
   }
   
+  func importDeclarations(from path: String, in context: ASTContext) {
+    let tu: CXTranslationUnit
+    do {
+      tu = try translationUnit(for: path)
+    } catch {
+      context.error(error)
+      return
+    }
+    let cursor = clang_getTranslationUnitCursor(tu)
+    clang_visitChildrenWithBlock(cursor) { child, parent in
+      let kind = clang_getCursorKind(child)
+      switch kind {
+      case CXCursor_TypedefDecl:
+        self.importTypeDef(child, in: context)
+      case CXCursor_EnumDecl:
+        self.importEnum(child, in: context)
+      case CXCursor_StructDecl:
+        self.importStruct(child, in: context)
+      case CXCursor_FunctionDecl:
+        self.importFunction(child, in: context)
+      case CXCursor_MacroDefinition:
+        self.importMacro(child, in: tu, context: context)
+      default:
+        break
+      }
+      return CXChildVisit_Continue
+    }
+    clang_disposeTranslationUnit(tu)
+  }
+  
   func run(in context: ASTContext) {
     self.context.add(makeAlias(name: "uint16_t", type: .int16))
     self.context.add(makeAlias(name: "__builtin_va_list", type: .pointer(type: .int8)))
@@ -337,31 +367,7 @@ class ClangImporter: Pass {
                                 hasVarArgs: false,
                                 attributes: [.foreign, .noreturn]))
     for path in ClangImporter.paths {
-      do {
-        let tu = try translationUnit(for: path)
-        let cursor = clang_getTranslationUnitCursor(tu)
-        clang_visitChildrenWithBlock(cursor) { child, parent in
-          let kind = clang_getCursorKind(child)
-          switch kind {
-          case CXCursor_TypedefDecl:
-            self.importTypeDef(child)
-          case CXCursor_EnumDecl:
-            self.importEnum(child)
-          case CXCursor_StructDecl:
-            self.importStruct(child)
-          case CXCursor_FunctionDecl:
-            self.importFunction(child)
-          case CXCursor_MacroDefinition:
-            self.importMacro(child, in: tu)
-          default:
-            break
-          }
-          return CXChildVisit_Continue
-        }
-        // clang_disposeTranslationUnit(tu)
-      } catch {
-        print("Error loading \(path): \(error)")
-      }
+      self.importDeclarations(from: path, in: self.context)
     }
   }
   

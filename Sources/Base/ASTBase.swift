@@ -44,10 +44,12 @@ enum DeclAttribute: String {
 }
 
 struct SourceLocation: CustomStringConvertible {
+  let file: String?
   var line: Int
   var column: Int
   var charOffset: Int
-  init(line: Int, column: Int, charOffset: Int = 0) {
+  init(line: Int, column: Int, file: String? = nil, charOffset: Int = 0) {
+    self.file = file
     self.line = line
     self.column = column
     self.charOffset = charOffset

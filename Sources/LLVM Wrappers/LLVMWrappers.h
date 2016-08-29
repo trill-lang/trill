@@ -46,10 +46,10 @@ typedef struct RawOptions {
   OptimizationLevel optimizationLevel;
   bool importC;
   bool emitTiming;
+  bool isStdin;
   RawMode mode;
-  char *filename;
-  char *_Nullable *_Nonnull remainingArgs;
-  size_t argCount;
+  char *_Nullable *_Nonnull filenames;
+  size_t filenameCount;
 } RawOptions;
 
 _Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef module);

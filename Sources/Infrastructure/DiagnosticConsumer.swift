@@ -48,18 +48,14 @@ protocol DiagnosticConsumer: class {
 }
 
 class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
-  let lines: [String]
-  let filename: String
+  let files: [SourceFile]
   let colored: Bool
   
   var stream: StreamType
   
-  init(filename: String, lines: [String],
-       stream: inout StreamType, colored: Bool) {
-    let url = URL(fileURLWithPath: filename)
-    self.filename = url.lastPathComponent
+  init(files: [SourceFile], stream: inout StreamType, colored: Bool) {
+    self.files = files
     self.colored = colored
-    self.lines = lines
     self.stream = stream
   }
   
@@ -99,7 +95,17 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
     return String(s)
   }
   
+  func sourceFile(for diag: Diagnostic) -> SourceFile? {
+    guard let diagFile = diag.loc?.file else { return nil }
+    for file in files where file.path.filename == diagFile {
+      return file
+    }
+    return nil
+  }
+  
   func consume(_ diagnostic: Diagnostic) {
+    let file = sourceFile(for: diagnostic)
+    let filename = file?.path.basename ?? "<unknown>"
     stream.write("\(filename):")
     if let sourceLoc = diagnostic.loc {
       with([.bold]) {
@@ -120,9 +126,10 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
     with([.bold]) {
       stream.write("\(diagnostic.message)\n")
     }
-    if let loc = diagnostic.loc, loc.line > 0 {
-      let line = lines[loc.line - 1]
-      stream.write(line + "\n")
+    if let loc = diagnostic.loc,
+       let line = file?.lines[loc.line - 1],
+       loc.line > 0 {
+        stream.write(line + "\n")
       with([.bold, .green]) {
         stream.write(highlightString(forDiag: diagnostic))
       }

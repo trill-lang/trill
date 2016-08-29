@@ -126,18 +126,19 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
-    add(attributes(for: expr.typeRef!))
-    super.visitFuncArgumentAssignDecl(expr)
+
+    add(attributes(for: decl.typeRef!))
+    super.visitFuncArgumentAssignDecl(decl)
   }
   
-  override func visitFuncDecl(_ expr: FuncDecl) {
-    add(attributes(for: expr.returnType))
-    super.visitFuncDecl(expr)
+  override func visitFuncDecl(_ decl: FuncDecl) {
+    add(attributes(for: decl.returnType))
+    super.visitFuncDecl(decl)
   }
   
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
-    add(attributes(for: expr.typeRef!))
-    super.visitVarAssignDecl(expr)
+    add(attributes(for: decl.typeRef!))
+    super.visitVarAssignDecl(decl)
   }
   
   override func visitExtensionDecl(_ expr: ExtensionDecl) {

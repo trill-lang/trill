@@ -22,8 +22,6 @@ class SourceDocument: UIDocument {
                                object: oldValue)
     }
   }
-
-  
   
   override func contents(forType typeName: String) throws -> Any {
     guard let data = sourceText.data(using: .utf8) else {

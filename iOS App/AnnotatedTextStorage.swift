@@ -27,10 +27,10 @@ class LexerTextStorage: NSTextStorage {
   let filename: String
   let storage: NSMutableAttributedString
   
-  init(attributes: TextAttributes, filename: String, string: String = "") {
+  init(attributes: TextAttributes, filename: String, initialContents: String = "") {
     self.attributes = attributes
     self.filename = filename
-    self.storage = NSMutableAttributedString(string: string)
+    self.storage = NSMutableAttributedString(string: initialContents)
     super.init()
   }
   
@@ -79,7 +79,7 @@ class LexerTextStorage: NSTextStorage {
   }
   
   override func processEditing() {
-    let lexer = Lexer(input: string)
+    let lexer = Lexer(filename: self.filename, input: string)
     let tokens = (try? lexer.lex()) ?? []
     
     let fullRange =  NSRange(location: 0, length: storage.length)
@@ -115,14 +115,13 @@ class LexerTextStorage: NSTextStorage {
     }
     
     let diag = DiagnosticEngine()
-    let context = ASTContext(filename: "_semantic_highlight_", diagnosticEngine: diag)
+    let context = ASTContext(diagnosticEngine: diag)
     let annotator = SourceAnnotator(attributes: self.attributes,
                                     context: context)
     diag.register(annotator)
     let driver = Driver(context: context)
-    let filename = self.filename
     driver.add("Parser") { context in
-      let parser = Parser(tokens: tokens, filename: filename)
+      let parser = Parser(tokens: tokens, filename: self.filename, context: context)
       do {
         try parser.parseTopLevel(into: context)
       } catch let error as Diagnostic {

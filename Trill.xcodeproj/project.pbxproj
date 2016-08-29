@@ -47,12 +47,12 @@
 		DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
 		DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
 		DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
-		DC176FF91D6911A200FEFB85 /* BaseExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* BaseExprs.swift */; };
-		DC176FFA1D6911A200FEFB85 /* FunctionExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */; };
-		DC176FFB1D6911A200FEFB85 /* OperatorExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */; };
-		DC176FFC1D6911A200FEFB85 /* StatementExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* StatementExprs.swift */; };
-		DC176FFD1D6911A200FEFB85 /* TypeExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* TypeExprs.swift */; };
-		DC176FFE1D6911A200FEFB85 /* ValueExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* ValueExprs.swift */; };
+		DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* ASTBase.swift */; };
+		DC176FFA1D6911A200FEFB85 /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* Functions.swift */; };
+		DC176FFB1D6911A200FEFB85 /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* Operators.swift */; };
+		DC176FFC1D6911A200FEFB85 /* Statements.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* Statements.swift */; };
+		DC176FFD1D6911A200FEFB85 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* Types.swift */; };
+		DC176FFE1D6911A200FEFB85 /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* Values.swift */; };
 		DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD91D6911A200FEFB85 /* ClangImporter.swift */; };
 		DC1770001D6911A200FEFB85 /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */; };
 		DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */; };
@@ -90,12 +90,12 @@
 		DC17703E1D69134B00FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
 		DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
 		DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
-		DC1770431D69134B00FEFB85 /* BaseExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* BaseExprs.swift */; };
-		DC1770441D69134B00FEFB85 /* FunctionExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */; };
-		DC1770451D69134B00FEFB85 /* OperatorExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */; };
-		DC1770461D69134B00FEFB85 /* StatementExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* StatementExprs.swift */; };
-		DC1770471D69134B00FEFB85 /* TypeExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* TypeExprs.swift */; };
-		DC1770481D69134B00FEFB85 /* ValueExprs.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* ValueExprs.swift */; };
+		DC1770431D69134B00FEFB85 /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD21D6911A200FEFB85 /* ASTBase.swift */; };
+		DC1770441D69134B00FEFB85 /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD31D6911A200FEFB85 /* Functions.swift */; };
+		DC1770451D69134B00FEFB85 /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD41D6911A200FEFB85 /* Operators.swift */; };
+		DC1770461D69134B00FEFB85 /* Statements.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD51D6911A200FEFB85 /* Statements.swift */; };
+		DC1770471D69134B00FEFB85 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* Types.swift */; };
+		DC1770481D69134B00FEFB85 /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* Values.swift */; };
 		DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704A1D69139900FEFB85 /* ASTDumper.swift */; };
 		DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704B1D69139900FEFB85 /* ASTPrinter.swift */; };
 		DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */; };
@@ -138,6 +138,8 @@
 		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
 		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCA97C81D58581900883183 /* libLLVMLinker.a */; };
+		DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
+		DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -231,12 +233,12 @@
 		DC176FCD1D6911A200FEFB85 /* ASTContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTContext.swift; sourceTree = "<group>"; };
 		DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTTransformer.swift; path = ../Base/ASTTransformer.swift; sourceTree = "<group>"; };
 		DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTVisitor.swift; path = ../Base/ASTVisitor.swift; sourceTree = "<group>"; };
-		DC176FD21D6911A200FEFB85 /* BaseExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseExprs.swift; sourceTree = "<group>"; };
-		DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionExprs.swift; sourceTree = "<group>"; };
-		DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OperatorExprs.swift; sourceTree = "<group>"; };
-		DC176FD51D6911A200FEFB85 /* StatementExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementExprs.swift; sourceTree = "<group>"; };
-		DC176FD61D6911A200FEFB85 /* TypeExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeExprs.swift; sourceTree = "<group>"; };
-		DC176FD71D6911A200FEFB85 /* ValueExprs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueExprs.swift; sourceTree = "<group>"; };
+		DC176FD21D6911A200FEFB85 /* ASTBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTBase.swift; sourceTree = "<group>"; };
+		DC176FD31D6911A200FEFB85 /* Functions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Functions.swift; sourceTree = "<group>"; };
+		DC176FD41D6911A200FEFB85 /* Operators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Operators.swift; sourceTree = "<group>"; };
+		DC176FD51D6911A200FEFB85 /* Statements.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Statements.swift; sourceTree = "<group>"; };
+		DC176FD61D6911A200FEFB85 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		DC176FD71D6911A200FEFB85 /* Values.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Values.swift; sourceTree = "<group>"; };
 		DC176FD91D6911A200FEFB85 /* ClangImporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClangImporter.swift; sourceTree = "<group>"; };
 		DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticConsumer.swift; sourceTree = "<group>"; };
 		DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
@@ -365,6 +367,7 @@
 		DCAEBC791C9009ED00B84E25 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = /usr/local/llvm/lib/libLLVMTransformUtils.a; sourceTree = "<absolute>"; };
 		DCC4EF471D690D3D00E1CF5B /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DCCA97C81D58581900883183 /* libLLVMLinker.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLinker.a; path = ../../../../usr/local/llvm/lib/libLLVMLinker.a; sourceTree = "<group>"; };
+		DCF80B5F1D7487DB00463CBB /* SourceFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -457,12 +460,13 @@
 			isa = PBXGroup;
 			children = (
 				DC176FCD1D6911A200FEFB85 /* ASTContext.swift */,
-				DC176FD21D6911A200FEFB85 /* BaseExprs.swift */,
-				DC176FD31D6911A200FEFB85 /* FunctionExprs.swift */,
-				DC176FD41D6911A200FEFB85 /* OperatorExprs.swift */,
-				DC176FD51D6911A200FEFB85 /* StatementExprs.swift */,
-				DC176FD61D6911A200FEFB85 /* TypeExprs.swift */,
-				DC176FD71D6911A200FEFB85 /* ValueExprs.swift */,
+				DC176FD21D6911A200FEFB85 /* ASTBase.swift */,
+				DC176FD31D6911A200FEFB85 /* Functions.swift */,
+				DC176FD41D6911A200FEFB85 /* Operators.swift */,
+				DC176FD51D6911A200FEFB85 /* Statements.swift */,
+				DC176FD61D6911A200FEFB85 /* Types.swift */,
+				DC176FD71D6911A200FEFB85 /* Values.swift */,
+				DCF80B5F1D7487DB00463CBB /* SourceFile.swift */,
 			);
 			name = Base;
 			path = Sources/Base;
@@ -927,7 +931,8 @@
 				DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */,
 				DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
 				DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */,
-				DC1770431D69134B00FEFB85 /* BaseExprs.swift in Sources */,
+				DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */,
+				DC1770431D69134B00FEFB85 /* ASTBase.swift in Sources */,
 				DC1770521D6913B700FEFB85 /* Utilities.swift in Sources */,
 				DC1770531D6913B700FEFB85 /* DiagnosticConsumer.swift in Sources */,
 				DC1770541D6913B700FEFB85 /* DiagnosticEngine.swift in Sources */,
@@ -938,14 +943,14 @@
 				DC1770671D6913EF00FEFB85 /* StatementParser.swift in Sources */,
 				DC1770581D6913CA00FEFB85 /* Sema.swift in Sources */,
 				DC1770591D6913CA00FEFB85 /* TypeChecker.swift in Sources */,
-				DC1770441D69134B00FEFB85 /* FunctionExprs.swift in Sources */,
-				DC1770451D69134B00FEFB85 /* OperatorExprs.swift in Sources */,
+				DC1770441D69134B00FEFB85 /* Functions.swift in Sources */,
+				DC1770451D69134B00FEFB85 /* Operators.swift in Sources */,
 				DC1770651D6913EF00FEFB85 /* Lexer.swift in Sources */,
-				DC1770461D69134B00FEFB85 /* StatementExprs.swift in Sources */,
+				DC1770461D69134B00FEFB85 /* Statements.swift in Sources */,
 				DC1770511D6913AC00FEFB85 /* ASTDumper.swift in Sources */,
-				DC1770471D69134B00FEFB85 /* TypeExprs.swift in Sources */,
+				DC1770471D69134B00FEFB85 /* Types.swift in Sources */,
 				DC1770501D6913AA00FEFB85 /* JavaScriptGen.swift in Sources */,
-				DC1770481D69134B00FEFB85 /* ValueExprs.swift in Sources */,
+				DC1770481D69134B00FEFB85 /* Values.swift in Sources */,
 				DC17703D1D69130700FEFB85 /* TimingViewController.swift in Sources */,
 				DC1770381D69130700FEFB85 /* JavaScriptRunner.swift in Sources */,
 				DC1770391D69130700FEFB85 /* NavController.swift in Sources */,
@@ -986,9 +991,10 @@
 				DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */,
 				DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */,
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
-				DC176FF91D6911A200FEFB85 /* BaseExprs.swift in Sources */,
+				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
 				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
+				DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */,
 				DC1770021D6911A200FEFB85 /* Driver.swift in Sources */,
 				DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */,
 				DC1770121D6911A200FEFB85 /* Sema.swift in Sources */,
@@ -1005,13 +1011,13 @@
 				DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */,
 				DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */,
 				DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */,
-				DC176FFB1D6911A200FEFB85 /* OperatorExprs.swift in Sources */,
+				DC176FFB1D6911A200FEFB85 /* Operators.swift in Sources */,
 				DC17700B1D6911A200FEFB85 /* StatementIRGen.swift in Sources */,
-				DC176FFE1D6911A200FEFB85 /* ValueExprs.swift in Sources */,
+				DC176FFE1D6911A200FEFB85 /* Values.swift in Sources */,
 				DC1770001D6911A200FEFB85 /* DiagnosticConsumer.swift in Sources */,
-				DC176FFC1D6911A200FEFB85 /* StatementExprs.swift in Sources */,
-				DC176FFD1D6911A200FEFB85 /* TypeExprs.swift in Sources */,
-				DC176FFA1D6911A200FEFB85 /* FunctionExprs.swift in Sources */,
+				DC176FFC1D6911A200FEFB85 /* Statements.swift in Sources */,
+				DC176FFD1D6911A200FEFB85 /* Types.swift in Sources */,
+				DC176FFA1D6911A200FEFB85 /* Functions.swift in Sources */,
 				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
 				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
 				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,

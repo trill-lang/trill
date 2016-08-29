@@ -44,11 +44,9 @@ struct MainFuncFlags: OptionSet {
 public class ASTContext {
   
   let diag: DiagnosticEngine
-  let filename: String
   
-  init(filename: String, diagnosticEngine: DiagnosticEngine) {
+  init(diagnosticEngine: DiagnosticEngine) {
     self.diag = diagnosticEngine
-    self.filename = filename
   }
     
   func error(_ err: Error, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
@@ -191,6 +189,27 @@ public class ASTContext {
     typeAliasMap[alias.name.name] = alias
     typeAliases.append(alias)
     return true
+  }
+  
+  func merge(context: ASTContext) {
+    for function in context.functions {
+      add(function)
+    }
+    for type in context.types {
+      add(type)
+    }
+    for ext in context.extensions {
+      add(ext)
+    }
+    for diagnostic in context.diagnostics {
+      add(diagnostic)
+    }
+    for global in context.globals {
+      add(global)
+    }
+    for alias in context.typeAliases {
+      add(alias)
+    }
   }
   
   func decl(for type: DataType, canonicalized: Bool = true) -> TypeDecl? {

@@ -65,7 +65,8 @@ class ViewController: UIViewController, UITextViewDelegate {
     NotificationCenter.default.addObserver(self, selector: #selector(keyboardWasShown), name: .UIKeyboardDidShow, object: nil)
     NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillBeHidden), name: .UIKeyboardWillHide, object: nil)
     
-    storage = LexerTextStorage(attributes: colorScheme, filename: document.filename)
+    storage = LexerTextStorage(attributes: colorScheme,
+                               filename: document.fileURL.path)
     textView.text = document.sourceText
     storage.addLayoutManager(textView.layoutManager)
     storage.append(NSAttributedString(string: document.sourceText))
@@ -122,15 +123,20 @@ class ViewController: UIViewController, UITextViewDelegate {
       let dest = nav.topViewController as? RunViewController else { return }
     
     diagnosticEngine = DiagnosticEngine()
-    context = ASTContext(filename: document.filename, diagnosticEngine: diagnosticEngine)
+    context = ASTContext(diagnosticEngine: diagnosticEngine)
+    let filename = self.document.fileURL.path
+    let sourceFile = try! SourceFile(path: .input(url: document.fileURL,
+                                                  contents: document.sourceText),
+                                     context: context)
     driver = Driver(context: context)
     let text = storage.string
-    let filename = document.filename
     driver.add("Lexer and Parser") { context in
-      let lexer = Lexer(input: text)
+      let lexer = Lexer(filename: filename, input: text)
       do {
         let tokens = try lexer.lex()
-        let parser = Parser(tokens: tokens, filename: filename)
+        let parser = Parser(tokens: tokens,
+                            filename: filename,
+                            context: self.context)
         try parser.parseTopLevel(into: context)
       } catch let error as Diagnostic {
         self.diagnosticEngine.add(error: error)
@@ -148,10 +154,9 @@ class ViewController: UIViewController, UITextViewDelegate {
       }
     }
     
-    let lines = text.components(separatedBy: "\n")
     var stream = BlockStream(block: block)
     
-    let consumer = AttributedStringConsumer(lines: lines, palette: colorScheme)
+    let consumer = AttributedStringConsumer(file: sourceFile, palette: colorScheme)
     diagnosticEngine.register(consumer)
     
     dest.consumer = consumer

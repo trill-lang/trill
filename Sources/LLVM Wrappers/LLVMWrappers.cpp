@@ -60,7 +60,6 @@ LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef modu
 }
 
 RawOptions ParseArguments(int argc, char **argv) {
-  cl::opt<std::string> filename(cl::Positional, cl::desc("<input file>"), cl::Required);
   cl::opt<bool> emitAST("emit-ast", cl::desc("Emit the AST to stdout"));
   cl::opt<OptimizationLevel> optimizationLevel(cl::desc("Choose optimization level:"),
                                                cl::values(clEnumVal(O0 , "No optimizations, enable debugging"),
@@ -73,7 +72,7 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::opt<bool> noImport("no-import", cl::desc("Don't import C declarations"));
   cl::opt<bool> emitTiming("emit-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
-  cl::list<std::string> args(cl::Positional, cl::desc("<interpreter-args>"), cl::Optional);
+  cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
   cl::ParseCommandLineOptions(argc, argv);
   
   RawMode mode;
@@ -91,28 +90,27 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = JIT;
   }
   
-  char **remainingArgs = (char **)malloc(args.size() * sizeof(char *));
-  for (auto i = 0; i < args.size(); ++i) {
-    remainingArgs[i] = strdup(args[i].c_str());
+  char **filenamePtr = (char **)malloc(filenames.size() * sizeof(char *));
+  for (auto i = 0; i < filenames.size(); ++i) {
+    filenamePtr[i] = strdup(filenames[i].c_str());
   }
   
-  auto file = filename == "-" ? "<stdin>" : filename.c_str();
+  bool isStdin = filenames.size() == 1 && filenames[0] == "-";
   
   return RawOptions {
     optimizationLevel,
     importC,
     emitTiming,
+    isStdin,
     mode,
-    strdup(file),
-    remainingArgs,
-    args.size()
+    filenamePtr,
+    filenames.size()
   };
 }
 
 void DestroyRawOptions(RawOptions options) {
-  free(options.filename);
-  for (auto i = 0; i < options.argCount; ++i) {
-    free(options.remainingArgs[i]);
+  for (auto i = 0; i < options.filenameCount; ++i) {
+    free(options.filenames[i]);
   }
-  free(options.remainingArgs);
+  free(options.filenames);
 }

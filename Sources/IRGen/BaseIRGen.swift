@@ -153,8 +153,7 @@ class IRGenerator: ASTVisitor, Pass {
     passManager = LLVMCreateFunctionPassManagerForModule(module)
     passManager.addPasses(for: optimizationLevel)
     
-    fatalErrorConsumer = StreamConsumer(filename: context.filename,
-                                        lines: [],
+    fatalErrorConsumer = StreamConsumer(files: [],
                                         stream: &stderr,
                                         colored: true)
     LLVMEnablePrettyStackTrace()

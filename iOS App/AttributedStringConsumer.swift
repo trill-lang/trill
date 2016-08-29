@@ -6,14 +6,14 @@
 import UIKit
 
 class AttributedStringConsumer: DiagnosticConsumer {
-  var lines: [String]
+  let file: SourceFile
   var palette: TextAttributes
   private var builder = NSMutableAttributedString()
   static let font = UIFont(name: "Menlo", size: 14.0)!
   static let boldFont = UIFont(name: "Menlo-Bold", size: 14.0)!
   
-  init(lines: [String], palette: TextAttributes) {
-    self.lines = lines
+  init(file: SourceFile, palette: TextAttributes) {
+    self.file = file
     self.palette = palette
   }
   
@@ -38,7 +38,7 @@ class AttributedStringConsumer: DiagnosticConsumer {
     builder.append(attrString)
   }
   func lexString(_ s: String) {
-    let lexer = Lexer(input: s)
+    let lexer = Lexer(filename: file.path.filename, input: s)
     let str = NSMutableAttributedString(string: s)
     let stringRange = NSRange(location: 0, length: str.length)
     str.addAttribute(NSFontAttributeName, value: AttributedStringConsumer.font, range: stringRange)
@@ -81,7 +81,7 @@ class AttributedStringConsumer: DiagnosticConsumer {
   
   func consume(_ diagnostic: Diagnostic) {
     if let sourceLoc = diagnostic.loc {
-      bold("\(sourceLoc.line):\(sourceLoc.column): ")
+      bold("\(file.path.basename):\(sourceLoc.line):\(sourceLoc.column): ")
     }
     switch diagnostic.diagnosticType {
     case .warning:
@@ -91,7 +91,7 @@ class AttributedStringConsumer: DiagnosticConsumer {
     }
     bold("\(diagnostic.message)\n")
     if let loc = diagnostic.loc, loc.line > 0 {
-      let line = lines[loc.line - 1]
+      let line = file.lines[loc.line - 1]
       lexString(line)
       string("\n")
       string(highlightString(forDiag: diagnostic), .green)

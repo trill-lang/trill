@@ -37,23 +37,23 @@ enum Mode: Int {
 }
 
 struct Options {
-  let filename: String
+  let filenames: [String]
   let mode: Mode
-  let remainder: [String]
   let importC: Bool
   let emitTiming: Bool
+  let isStdin: Bool
   let optimizationLevel: OptimizationLevel
   
   init(_ raw: RawOptions) {
-    self.filename = String(cString: raw.filename)
     self.mode = Mode(raw.mode)
-    var strs = [String]()
-    for i in 0..<raw.argCount {
-      strs.append(String(cString: raw.remainingArgs[i]!))
+    var filenames = [String]()
+    for i in 0..<raw.filenameCount {
+      filenames.append(String(cString: raw.filenames[i]!))
     }
-    self.remainder = strs
+    self.filenames = filenames
     self.importC = raw.importC
     self.emitTiming = raw.emitTiming
+    self.isStdin = raw.isStdin
     self.optimizationLevel = raw.optimizationLevel
     DestroyRawOptions(raw)
   }
@@ -62,15 +62,19 @@ struct Options {
 var stdout = StandardTextOutputStream()
 
 func populate(driver: Driver, options: Options,
-              context: ASTContext,
-              str: String) {
+              sourceFiles: [SourceFile],
+              context: ASTContext) {
   driver.add("Lexing and Parsing") { context in
-    let lexer = Lexer(input: str)
-    let tokens = try lexer.lex()
-    let parser = Parser(tokens: tokens,
-                        filename: options.filename,
-                        context: context)
-    try parser.parseTopLevel(into: context)
+    let group = DispatchGroup()
+    for file in sourceFiles {
+      DispatchQueue.global().async(group: group) {
+        try! file.parse()
+      }
+    }
+    group.wait()
+    for file in sourceFiles {
+      context.merge(context: file.context)
+    }
   }
   if options.importC {
     driver.add(pass: ClangImporter.self)
@@ -111,45 +115,54 @@ func populate(driver: Driver, options: Options,
     }
   case .jit:
     driver.add("Executing the JIT") { context in
-      var args = options.remainder
-      args.insert("\(options.filename)", at: 0)
-      let ret = try gen.execute(args)
+      // TODO: Fix sending args to the JIT
+//      var args = options.remainder
+//      args.insert("\(options.filename)", at: 0)
+      let ret = try gen.execute([])
       if ret != 0 {
-        context.diag.error("\(options.filename) exited with non-zero exit code \(ret)")
+        context.diag.error("program exited with non-zero exit code \(ret)")
       }
     }
   default: break
   }
 }
 
+func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile] {
+  if options.isStdin {
+    return [try SourceFile(path: .stdin,
+                           context: ASTContext(diagnosticEngine: diag))]
+  } else {
+    return try options.filenames.map { path in
+      let context = ASTContext(diagnosticEngine: diag)
+      let url = URL(fileURLWithPath: path)
+      return try SourceFile(path: .file(url), context: context)
+    }
+  }
+}
+
 func main() -> Int32 {
   let options = Options(ParseArguments(CommandLine.argc, CommandLine.unsafeArgv))
   
-  var str = ""
-  if options.filename == "<stdin>" {
-    while let line = readLine() {
-      str += line + "\n"
-    }
-  } else if let s = try? String(contentsOfFile: options.filename) {
-    str = s
-  } else {
-    print("error: unknown file \(options.filename)")
-    return 1
-  }
-  
   let diag = DiagnosticEngine()
   
-  let context = ASTContext(filename: options.filename,
-                           diagnosticEngine: diag)
+  let files: [SourceFile]
+  do {
+    files = try sourceFiles(options: options, diag: diag)
+  } catch {
+    print("error: \(error)")
+    return -1
+  }
+  
+  let context = ASTContext(diagnosticEngine: diag)
   let driver = Driver(context: context)
-  populate(driver: driver, options: options, context: context, str: str)
+  populate(driver: driver,
+           options: options,
+           sourceFiles: files,
+           context: context)
   driver.run(in: context)
   
-  
   let isATTY = isatty(STDERR_FILENO) != 0
-  let consumer = StreamConsumer(filename: options.filename,
-                                lines: str.components(separatedBy: "\n"),
-                                stream: &stderr, colored: isATTY)
+  let consumer = StreamConsumer(files: files, stream: &stderr, colored: isATTY)
   diag.register(consumer)
   diag.consumeDiagnostics()
 

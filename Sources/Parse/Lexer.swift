@@ -323,7 +323,7 @@ enum LexError: Error, CustomStringConvertible {
 }
 
 class Lexer {
-  var sourceLoc = SourceLocation(line: 1, column: 1)
+  var sourceLoc: SourceLocation
   var characters = [UnicodeScalar]()
   var tokenIndex = 0
   
@@ -331,8 +331,9 @@ class Lexer {
     return SourceRange(start: start, end: sourceLoc)
   }
   
-  init(input: String) {
+  init(filename: String, input: String) {
     characters = Array(input.unicodeScalars)
+    sourceLoc = SourceLocation(line: 1, column: 1, file: filename)
   }
   
   func lex() throws -> [Token] {
