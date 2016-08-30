@@ -66,7 +66,7 @@ public class ASTContext {
   var extensions = [ExtensionDecl]()
   var diagnostics = [PoundDiagnosticStmt]()
   var globals = [VarAssignDecl]()
-  var typeAliases = [TypeAliasExpr]()
+  var typeAliases = [TypeAliasDecl]()
   
   private var funcDeclMap = [String: [FuncDecl]]()
   private var typeDeclMap: [DataType: TypeDecl] = [
@@ -78,7 +78,7 @@ public class ASTContext {
     .void: TypeDecl(name: "Void", fields: [])
   ]
   private var globalDeclMap = [String: VarAssignDecl]()
-  private var typeAliasMap = [String: TypeAliasExpr]()
+  private var typeAliasMap = [String: TypeAliasDecl]()
   
   private(set) var mainFunction: FuncDecl? = nil
   private(set) var mainFlags: MainFuncFlags? = nil
@@ -174,7 +174,7 @@ public class ASTContext {
   }
   
   @discardableResult
-  func add(_ alias: TypeAliasExpr) -> Bool {
+  func add(_ alias: TypeAliasDecl) -> Bool {
     guard typeAliasMap[alias.name.name] == nil else {
       return false
     }

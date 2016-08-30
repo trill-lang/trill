@@ -536,13 +536,13 @@ class Sema: ASTTransformer, Pass {
                         modifiers: [.foreign, .implicit])
   }
   
-  override func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
-    guard let bound = expr.bound.type else { return }
+  override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
+    guard let bound = decl.bound.type else { return }
     guard context.isValidType(bound) else {
       error(SemaError.unknownType(type: bound),
-            loc: expr.bound.startLoc(),
+            loc: decl.bound.startLoc(),
             highlights: [
-              expr.bound.sourceRange
+              decl.bound.sourceRange
         ])
       return
     }

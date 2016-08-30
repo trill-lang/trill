@@ -108,9 +108,9 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     }
   }
   
-  override func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
-    stream.write("type \(expr.name) = ")
-    visit(expr.bound)
+  override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
+    stream.write("type \(decl.name) = ")
+    visit(decl.bound)
   }
   
   override func visitNilExpr(_ expr: NilExpr) -> Result {

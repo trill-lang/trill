@@ -67,7 +67,7 @@ protocol ASTVisitor {
   @discardableResult
   func visitTypeDecl(_ expr: TypeDecl) -> Result
   @discardableResult
-  func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result
+  func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result
   @discardableResult
   func visitExtensionDecl(_ expr: ExtensionDecl) -> Result
   @discardableResult
@@ -121,6 +121,8 @@ extension ASTVisitor {
       return visitTypeDecl(decl)
     case let decl as ExtensionDecl:
       return visitExtensionDecl(decl)
+    case let decl as TypeAliasDecl:
+      return visitTypeAliasDecl(decl)
     default:
       fatalError("unknown decl \(decl)")
     }
@@ -181,8 +183,6 @@ extension ASTVisitor {
       return visitSubscriptExpr(expr)
     case let expr as FuncCallExpr:
       return visitFuncCallExpr(expr)
-    case let expr as TypeAliasExpr:
-      return visitTypeAliasExpr(expr)
     case let expr as TernaryExpr:
       return visitTernaryExpr(expr)
     case let expr as ClosureExpr:

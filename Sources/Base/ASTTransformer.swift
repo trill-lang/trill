@@ -136,7 +136,7 @@ class ASTTransformer: ASTVisitor {
     }
   }
   
-  func visitTypeAliasExpr(_ expr: TypeAliasExpr) {}
+  func visitTypeAliasDecl(_ decl: TypeAliasDecl) {}
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) {
     visit(expr.lhs)

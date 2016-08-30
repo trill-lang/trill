@@ -54,6 +54,7 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
     printExpr("BoolExpr \(expr.value)", expr.startLoc())
   }
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    guard decl.startLoc() != nil else { return }
     var s = "VarAssignDecl \(decl.name)"
     if let type = decl.typeRef?.type {
       s += ": \(type)"
@@ -75,8 +76,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       super.visitFuncArgumentAssignDecl(decl)
     }
   }
-  override func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
-    printExpr("TypeAliasExpr \(expr.name) \(expr.bound.name)", expr.startLoc())
+  override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
+    guard decl.startLoc() != nil else { return }
+    printExpr("TypeAliasDecl \(decl.name) \(decl.bound.name)", decl.startLoc())
   }
   
   override func visitFuncDecl(_ expr: FuncDecl) -> Result {

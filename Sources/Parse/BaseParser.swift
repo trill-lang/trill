@@ -174,7 +174,7 @@ class Parser {
         let expr = try parseTypeDecl(attrs)
         if let typeDecl = expr as? TypeDecl {
           context.add(typeDecl)
-        } else if let alias = expr as? TypeAliasExpr {
+        } else if let alias = expr as? TypeAliasDecl {
           context.add(alias)
         } else {
           fatalError("non-type expr returned from parseTypeDecl()")
@@ -273,7 +273,7 @@ class Parser {
     if case .operator(op: .assign) = peek() {
       consumeToken()
       let bound = try parseType()
-      return TypeAliasExpr(name: name,
+      return TypeAliasDecl(name: name,
                            bound: bound,
                            sourceRange: range(start: startLoc))
     }

@@ -152,7 +152,7 @@ class ClangImporter: Pass {
   }
   
   @discardableResult
-  func importTypeDef(_ cursor: CXCursor, in context: ASTContext) -> TypeAliasExpr? {
+  func importTypeDef(_ cursor: CXCursor, in context: ASTContext) -> TypeAliasDecl? {
     let name = clang_getCursorSpelling(cursor).asSwift()
     let type = clang_getTypedefDeclUnderlyingType(cursor)
     let decl = clang_getTypeDeclaration(type)
@@ -169,7 +169,7 @@ class ClangImporter: Pass {
     guard let t = trillType, name != "\(t)" else {
       return nil
     }
-    let alias = TypeAliasExpr(name: Identifier(name: name),
+    let alias = TypeAliasDecl(name: Identifier(name: name),
                               bound: t.ref())
     context.add(alias)
     return alias
@@ -322,8 +322,8 @@ class ClangImporter: Pass {
     } catch { return nil }
   }
   
-  func makeAlias(name: String, type: DataType) -> TypeAliasExpr {
-    return TypeAliasExpr(name: Identifier(name: name),
+  func makeAlias(name: String, type: DataType) -> TypeAliasDecl {
+    return TypeAliasDecl(name: Identifier(name: name),
                          bound: type.ref())
   }
   

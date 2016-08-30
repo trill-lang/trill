@@ -152,9 +152,9 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     super.visitTypeDecl(expr)
   }
   
-  override func visitTypeAliasExpr(_ expr: TypeAliasExpr) {
-    add(attributes(for: expr.bound))
-    super.visitTypeAliasExpr(expr)
+  override func visitTypeAliasDecl(_ decl: TypeAliasDecl) {
+    add(attributes(for: decl.bound))
+    super.visitTypeAliasDecl(decl)
   }
   
   override func visitClosureExpr(_ expr: ClosureExpr) {

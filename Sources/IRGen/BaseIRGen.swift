@@ -278,7 +278,7 @@ class IRGenerator: ASTVisitor, Pass {
     return String(cString: cString)
   }
   
-  func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
+  func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
     return nil
   }
   
