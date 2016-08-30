@@ -1,22 +1,18 @@
-type String = ByteArray
-
 extension Int {
     func toString() -> String {
         let length = floor(log10(labs(self) as Double)) as Int + 2
-        let str = calloc(length, sizeof(Int8))
+        let str = calloc(length, sizeof(Int8)) as *Int8
         snprintf(str, (length * sizeof(Int8)) as size_t, "%d", self)
-        return ByteArray(_owning: str, length: length)
+        return String(_owning: str, length: length)
     }
 }
 
 func main() {
-    let one = 1.toString()
+    let one = fact(8.plus(8)).toString()
     var oneThousand = 1000.toString()
-    for var i = 0; i < 5; i += 1 {
-        oneThousand.append(one)
-        oneThousand.dump()
-    }
-    oneThousand.append(oneThousand)
+    one.printString()
+    oneThousand.append(", ")
+    oneThousand.append(one)
     oneThousand.printString()
     one.destroy()
     oneThousand.destroy()

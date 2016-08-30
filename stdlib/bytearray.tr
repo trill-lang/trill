@@ -9,25 +9,25 @@ func assert(_ fact: Bool, _ message: *Int8) {
 
 type ByteArray {
     var bytes: *Int8
-    var count: Int
+    var length: Int
     var capacity: Int
     init(capacity: Int) {
         assert(capacity > 0, "Cannot initialize an array with 0 capacity")
         self.bytes = calloc(capacity, sizeof(Int8)) as *Int8
         self.capacity = capacity
-        self.count = 0
+        self.length = 0
         self.dump()
     }
-    init(string: *Int8) {
+    init(_ string: *Int8) {
         let length = strlen(string)
         self.capacity = (length as Double * 1.5) as Int
         self.bytes = calloc(self.capacity, sizeof(Int8)) as *Int8
-        self.count = length as Int
+        self.length = length as Int
         strncpy(self.bytes, string, length)
     }
     init(_owning bytes: *Int8, length: Int) {
         self.capacity = length
-        self.count = length
+        self.length = length
         self.bytes = bytes
     }
     mutating func _growIfNeeded() {
@@ -43,20 +43,20 @@ type ByteArray {
         }
     }
     func _boundsCheck(_ index: Int) {
-        if index > self.count {
+        if index > self.length {
             trill_fatalError("index out of bounds")
         }
     }
     mutating func append(_ element: Int8) {
-        self.bytes[self.count] = element
-        self.count += 1
+        self.bytes[self.length] = element
+        self.length += 1
         self._growIfNeeded()
     }
     mutating func append(_ string: *Int8) {
-        self.insert(string, at: self.count)
+        self.insert(string, at: self.length)
     }
     mutating func append(_ array: ByteArray) {
-        self.insert(array.bytes, length: array.count, at: self.count)
+        self.insert(array.bytes, length: array.length, at: self.length)
     }
     mutating func insert(_ string: *Int8, at index: Int) {
         self.insert(string, length: strlen(string) as Int, at: index)
@@ -66,30 +66,29 @@ type ByteArray {
         var index = index
         self._boundsCheck(index)
         if self.bytes[index - 1] == 0 {
-            length -= 1
             index -= 1
         }
-        self.count += length
+        self.length += length
         self._growIfNeeded()
         memmove(&self.bytes[index + length] as *Void, &self.bytes[index] as *Void, length as Int32)
         strncpy(&self.bytes[index], string, length as Int32)
     }
     mutating func insert(_ element: Int8, at index: Int) {
         self._boundsCheck(index)
-        self.count += 1
+        self.length += 1
         self._growIfNeeded()
         memmove(&self.bytes[index + 1] as *Void, &self.bytes[index] as *Void, 1)
         self.bytes[index] = element
     }
     mutating func insert(_ array: ByteArray, at index: Int) {
-        self.insert(array.bytes, length: array.count, at: index)
+        self.insert(array.bytes, length: array.length, at: index)
     }
     mutating func remove(at index: Int) -> Int8 {
         self._boundsCheck(index)
         self._shrinkIfNeeded()
-        self.count -= 1
+        self.length -= 1
         memmove(&self.bytes[index] as *Void, &self.bytes[index + 1] as *Void, 1)
-        return self.bytes[self.count + 1]
+        return self.bytes[self.length + 1]
     }
     func get(_ index: Int) -> Int8 {
         self._boundsCheck(index)
@@ -100,14 +99,14 @@ type ByteArray {
         self.bytes[index] = element
     }
     func load() -> Double {
-        return self.count as Double / self.capacity as Double
+        return self.length as Double / self.capacity as Double
     }
     func dump() {
-        printf("capacity: %d, count: %d (load %f)\n", self.capacity, self.count, self.load())
+        printf("capacity: %d, length: %d (load %f)\n", self.capacity, self.length, self.load())
         putchar('[' as Int32)
-        for var i = 0; i < self.count; i += 1 {
+        for var i = 0; i < self.length; i += 1 {
             printf("0x%x", self.bytes[i] as Int)
-            if i != self.count - 1 {
+            if i != self.length - 1 {
                 printf(", ")
             }
         }
@@ -117,7 +116,7 @@ type ByteArray {
         puts(self.bytes)
     }
     func isEmpty() -> Bool {
-        return self.count == 0
+        return self.length == 0
     }
     func destroy() {
         free(self.bytes as *Void)
