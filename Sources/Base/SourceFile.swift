@@ -69,7 +69,7 @@ struct SourceFile {
                           context: context)
       try parser.parseTopLevel(into: context)
     } catch let diag as Diagnostic {
-      context.diag.add(error: diag)
+      context.diag.add(diag)
     } catch {
       context.error(error)
     }

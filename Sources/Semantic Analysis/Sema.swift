@@ -23,6 +23,7 @@ enum SemaError: Error, CustomStringConvertible {
   case nonPointerNil(type: DataType)
   case notAllPathsReturn(type: DataType)
   case noViableOverload(name: Identifier, args: [Argument])
+  case candidates([FuncDecl])
   case ambiguousReference(name: Identifier)
   case addressOfRValue
   case breakNotAllowed
@@ -90,6 +91,10 @@ enum SemaError: Error, CustomStringConvertible {
         return d
         }.joined(separator: ", ")
       s += ")"
+      return s
+    case .candidates(let functions):
+      var s = "found candidates with these arguments: "
+      s += functions.map { $0.formattedParameterList }.joined(separator: ", ")
       return s
     case .ambiguousReference(let name):
       return "ambiguous reference to '\(name)'"
@@ -611,6 +616,8 @@ class Sema: ASTTransformer, Pass {
             highlights: [
               name?.range
         ])
+      note(SemaError.candidates(candidates),
+           loc: name?.range?.start)
       return
     }
     expr.decl = decl

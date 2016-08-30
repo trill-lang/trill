@@ -224,4 +224,12 @@ extension ASTVisitor {
   func warning(_ msg: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
     context.warning(msg, loc: loc, highlights: highlights)
   }
+  
+  func note(_ note: Error, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
+    context.note("\(note)", loc: loc, highlights: highlights)
+  }
+  
+  func note(_ msg: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
+    context.note(msg, loc: loc, highlights: highlights)
+  }
 }

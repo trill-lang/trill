@@ -57,8 +57,16 @@ public class ASTContext {
     diag.warning("\(warn)", loc: loc, highlights: highlights)
   }
   
+  func note(_ note: Error, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
+    diag.note("\(note)", loc: loc, highlights: highlights)
+  }
+  
   func warning(_ msg: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
     diag.warning(msg, loc: loc, highlights: highlights)
+  }
+  
+  func note(_ msg: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
+    diag.note(msg, loc: loc, highlights: highlights)
   }
   
   var functions = [FuncDecl]()

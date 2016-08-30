@@ -1,0 +1,28 @@
+indirect type Context {
+    var a: Int
+    var b: *Int8
+}
+
+type Closure {
+    var context: Context
+    var function: (Context, Int, Int) -> Int
+    func invoke(_ a: Int, _ b: Int) -> Int {
+        return self.function(self.context, a, b)
+    }
+}
+
+func add(_ context: Context, a: Int, b: Int) -> Int {
+    printf("Context.a: %d\n", context.a)
+    printf("Context.b: %s\n", context.b)
+    return a + b
+}
+
+func main() {
+    var context = Context(a: 0, b: "hello, world")
+    let closure = Closure(context: context, function: add)
+    printf("100 + 200 = %d\n", closure.invoke(100, 200))
+    context.a = 100
+    context.b = "Goodbye, world"
+    printf("50 + 100 = %d\n", closure.invoke(50, 100))
+    print(context)
+}

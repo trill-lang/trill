@@ -84,12 +84,8 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     guard let first = self.args.first else { return false }
     return first.isImplicitSelf
   }
-  var formattedName: String {
-    var s = ""
-    if let methodTy = parentType {
-      s += "\(methodTy)."
-    }
-    s += "\(name)("
+  var formattedParameterList: String {
+    var s = "("
     for (idx, arg) in args.enumerated() where !arg.isImplicitSelf {
       var names = [String]()
       if let extern = arg.externalName {
@@ -110,6 +106,15 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
       s += "_: ..."
     }
     s += ")"
+    return s
+  }
+  var formattedName: String {
+    var s = ""
+    if let methodTy = parentType {
+      s += "\(methodTy)."
+    }
+    s += "\(name)"
+    s += formattedParameterList
     if returnType != .void {
       s += " -> "
       s += "\(returnType.type!)"

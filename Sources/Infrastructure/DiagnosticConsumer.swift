@@ -122,6 +122,10 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
       with([.bold, .red]) {
         stream.write("error: ")
       }
+    case .note:
+      with([.bold, .green]) {
+        stream.write("note: ")
+      }
     }
     with([.bold]) {
       stream.write("\(diagnostic.message)\n")

@@ -7,9 +7,13 @@ import Foundation
 
 public struct Diagnostic: Error, CustomStringConvertible {
   enum DiagnosticType: CustomStringConvertible {
-    case error, warning
+    case error, warning, note
     var description: String {
-      return self == .error ? "error" : "warning"
+      switch self {
+      case .error: return "error"
+      case .warning: return "warning"
+      case .note: return "note"
+      }
     }
   }
   let message: String
@@ -44,11 +48,13 @@ public struct Diagnostic: Error, CustomStringConvertible {
   static func warning(_ err: Error, loc: SourceLocation? = nil, highlights: [SourceRange] = []) -> Diagnostic {
     return Diagnostic(message: "\(err)", diagnosticType: .warning, loc: loc, highlights: highlights)
   }
+  static func note(_ note: Error, loc: SourceLocation? = nil, highlights: [SourceRange] = []) -> Diagnostic {
+    return Diagnostic(message: "\(note)", diagnosticType: .note, loc: loc, highlights: highlights)
+  }
 }
 
 public class DiagnosticEngine {
-  private(set) var warnings = [Diagnostic]()
-  private(set) var errors = [Diagnostic]()
+  private(set) var diagnostics = [Diagnostic]()
   private(set) var consumers = [DiagnosticConsumer]()
   
   func error(_ err: Error, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
@@ -56,23 +62,20 @@ public class DiagnosticEngine {
   }
   
   func error(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
-    errors.append(Diagnostic(message: message, diagnosticType: .error, loc: loc, highlights: highlights.flatMap { $0 }))
+    diagnostics.append(Diagnostic(message: message, diagnosticType: .error, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   
   func warning(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
-    warnings.append(Diagnostic(message: message, diagnosticType: .warning, loc: loc, highlights: highlights.flatMap { $0 }))
+    diagnostics.append(Diagnostic(message: message, diagnosticType: .warning, loc: loc, highlights: highlights.flatMap { $0 }))
+  }
+  func note(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
+    diagnostics.append(Diagnostic(message: message, diagnosticType: .note, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   
-  func add(error: Diagnostic) { errors.append(error) }
-  func add(warning: Diagnostic) { warnings.append(warning) }
+  func add(_ diag: Diagnostic) { diagnostics.append(diag) }
   
   func consumeDiagnostics() {
-    let diags = (warnings + errors).sorted { a, b in
-      guard let aLoc = a.loc else { return false }
-      guard let bLoc = b.loc else { return true }
-      return aLoc.charOffset < bLoc.charOffset
-    }
-    for diag in diags {
+    for diag in diagnostics {
       for consumer in consumers {
         consumer.consume(diag)
       }
@@ -81,6 +84,10 @@ public class DiagnosticEngine {
   
   func register(_ consumer: DiagnosticConsumer) {
     consumers.append(consumer)
+  }
+  
+  var errors: [Diagnostic] {
+    return diagnostics.filter { $0.diagnosticType == .error }
   }
   
   var hasErrors: Bool { return !errors.isEmpty }
