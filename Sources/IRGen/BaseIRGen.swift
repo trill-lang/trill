@@ -223,8 +223,9 @@ class IRGenerator: ASTVisitor, Pass {
         }
         return LLVMCreateTargetMachine(target!,
                                        cString,
-                                       "",
-                                       "",
+                                       "", // TODO: Figure out what to put here
+                                       "", //       because I don't know how to
+                                           //       get the CPU and features
                                        options.optimizationLevel.llvmLevel,
                                        LLVMRelocDefault,
                                        LLVMCodeModelDefault)
