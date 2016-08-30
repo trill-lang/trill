@@ -19,6 +19,8 @@ enum LLVMError: Error, CustomStringConvertible {
   case invalidModule(String)
   case brokenJIT
   case llvmError(String)
+  case invalidTarget(String)
+  case couldNotDetermineTarget
   var description: String {
     switch self {
     case .noMainFunction:
@@ -33,6 +35,47 @@ enum LLVMError: Error, CustomStringConvertible {
       return "module file is invalid:\n\(msg)"
     case .llvmError(let msg):
       return "LLVM Error: \(msg)"
+    case .invalidTarget(let target):
+      return "invalid target '\(target)'"
+    case .couldNotDetermineTarget:
+      return "could not determine target for host platform"
+    }
+  }
+}
+
+enum EmitType: CustomStringConvertible {
+  case llvm, asm, obj, bin
+  
+  func addExtension(to basename: String) -> String {
+    var url = URL(fileURLWithPath: basename)
+    url.deletePathExtension()
+    guard let ext = fileExtension else { return url.lastPathComponent }
+    return url.appendingPathExtension(ext).lastPathComponent
+  }
+  
+  var fileExtension: String? {
+    switch self {
+    case .llvm: return "ll"
+    case .asm: return "s"
+    case .obj: return "o"
+    case .bin: return nil
+    }
+  }
+  
+  var description: String {
+    switch self {
+    case .llvm: return "LLVM IR"
+    case .bin: return "Executable"
+    case .asm: return "Assembly"
+    case .obj: return "Object File"
+    }
+  }
+  
+  var llvmType: LLVMCodeGenFileType {
+    switch self {
+    case .bin, .llvm: fatalError("should not be handled here")
+    case .asm: return LLVMAssemblyFile
+    case .obj: return LLVMObjectFile
     }
   }
 }
@@ -85,8 +128,14 @@ class IRGenerator: ASTVisitor, Pass {
   /// The LLVM context the module lives in
   let llvmContext: LLVMContextRef
   
+  /// The LLVM context the module lives in
+  let targetMachine: LLVMTargetMachineRef
+  
   /// The ASTContext currently being generated
   let context: ASTContext
+  
+  /// The command line options
+  let options: Options
   
   /// A map of global varible bindings
   var globalVarIRBindings = [Identifier: VarBinding]()
@@ -133,25 +182,22 @@ class IRGenerator: ASTVisitor, Pass {
   /// The function pass manager that performs optimizations.
   let passManager: LLVMPassManagerRef
   
-  /// Creates an IRGenerator with no optimizations.
-  /// - parameters:
-  ///   - context: The ASTContext containing the current module.
   required convenience init(context: ASTContext) {
-    self.init(context: context, optimizationLevel: O0)
+    fatalError("call init(context:options:)")
   }
   
   /// Creates an IRGenerator.
   /// - parameters:
   ///   - context: The ASTContext containing the current module.
-  ///   - optimizationLevel: The optimization level specified in the command
-  ///                        line arguments.
-  init(context: ASTContext, optimizationLevel: OptimizationLevel) {
+  ///   - options: The command line arguments.
+  init(context: ASTContext, options: Options) throws {
+    self.options = options
+    
     llvmContext = LLVMGetGlobalContext()
     module = LLVMModuleCreateWithNameInContext("main", llvmContext)
     builder = LLVMCreateBuilderInContext(llvmContext)
-    
     passManager = LLVMCreateFunctionPassManagerForModule(module)
-    passManager.addPasses(for: optimizationLevel)
+    passManager.addPasses(for: options.optimizationLevel)
     
     fatalErrorConsumer = StreamConsumer(files: [],
                                         stream: &stderr,
@@ -163,6 +209,32 @@ class IRGenerator: ASTVisitor, Pass {
     LLVMInitializeFunctionPassManager(passManager)
     LLVMInitializeNativeAsmPrinter()
     LLVMInitializeNativeTarget()
+    
+    var targetTriple: String? = nil
+    if let triple = LLVMGetDefaultTargetTriple() {
+      targetTriple = String(cString: triple)
+      LLVMDisposeMessage(triple)
+    }
+    if let targetTriple = options.targetTriple ?? targetTriple {
+      self.targetMachine = try targetTriple.withCString { cString in
+        var target: LLVMTargetRef?
+        if LLVMGetTargetFromTriple(cString, &target, nil) != 0 {
+          throw LLVMError.invalidTarget(targetTriple)
+        }
+        return LLVMCreateTargetMachine(target!,
+                                       cString,
+                                       "",
+                                       "",
+                                       options.optimizationLevel.llvmLevel,
+                                       LLVMRelocDefault,
+                                       LLVMCodeModelDefault)
+      }
+    } else {
+      guard let t = LLVMGetFirstTarget() else {
+        throw LLVMError.couldNotDetermineTarget
+      }
+      self.targetMachine = t
+    }
     
     LLVMSetDataLayout(module, "e")
     
@@ -265,17 +337,34 @@ class IRGenerator: ASTVisitor, Pass {
     return function!
   }
   
-  /// Serializes the LLVM module to textual IR.
-  /// Will not generate a main entry point if there was no user-defined main.
-  func serialize() throws -> String {
-    if let mainFunction = mainFunction {
+  func emit(_ type: EmitType, output: String? = nil) throws {
+    if mainFunction != nil {
       try codegenMain(forJIT: false)
     }
     finalizeGlobalInit()
     try validateModule()
-    let cString = LLVMPrintModuleToString(module)!
-    defer { LLVMDisposeMessage(cString) }
-    return String(cString: cString)
+    let outputFilename = type.addExtension(to: output ?? options.filenames.first ?? "out")
+    if case .llvm = type {
+      var err: UnsafeMutablePointer<Int8>?
+      outputFilename.withCString { cString in
+        let mutable = strdup(cString)
+        LLVMPrintModuleToFile(module, mutable, &err)
+        free(mutable)
+      }
+      if let err = err {
+        throw LLVMError.llvmError(String(cString: err))
+      }
+    } else {
+      var err: UnsafeMutablePointer<Int8>?
+      outputFilename.withCString { cString in
+        let mutable = strdup(cString)
+        LLVMTargetMachineEmitToFile(targetMachine, module, mutable, type.llvmType, &err)
+        free(mutable)
+      }
+      if let err = err {
+        throw LLVMError.llvmError(String(cString: err))
+      }
+    }
   }
   
   func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
@@ -461,5 +550,17 @@ extension LLVMPassManagerRef {
     
     LLVMAddFunctionInliningPass(self)
     LLVMAddTailCallEliminationPass(self)
+  }
+}
+
+extension OptimizationLevel {
+  var llvmLevel: LLVMCodeGenOptLevel {
+    switch self {
+    case O0: return LLVMCodeGenLevelNone
+    case O1: return LLVMCodeGenLevelLess
+    case O2: return LLVMCodeGenLevelDefault
+    case O3: return LLVMCodeGenLevelAggressive
+    default: return LLVMCodeGenLevelNone
+    }
   }
 }

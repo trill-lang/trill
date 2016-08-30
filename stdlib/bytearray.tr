@@ -7,7 +7,7 @@ func assert(_ fact: Bool, _ message: *Int8) {
     }
 }
 
-type ByteArray {
+indirect type ByteArray {
     var bytes: *Int8
     var length: Int
     var capacity: Int
@@ -20,7 +20,7 @@ type ByteArray {
     }
     init(_ string: *Int8) {
         let length = strlen(string)
-        self.capacity = (length as Double * 1.5) as Int
+        self.capacity = ((length + 1) as Double * 1.5) as Int
         self.bytes = calloc(self.capacity, sizeof(Int8)) as *Int8
         self.length = length as Int
         strncpy(self.bytes, string, length)
@@ -115,7 +115,7 @@ type ByteArray {
     func isEmpty() -> Bool {
         return self.length == 0
     }
-    func destroy() {
+    deinit {
         free(self.bytes as *Void)
     }
 }

@@ -214,11 +214,7 @@ extension IRGenerator {
       }
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }
-    if !decl.has(attribute: .implicit) && decl.has(attribute: .foreign) {
-      function = codegenFunctionPrototype(decl)
-    } else {
-      function = LLVMGetNamedFunction(module, Mangler.mangle(decl))
-    }
+    function = codegenFunctionPrototype(decl)
     if function == nil {
       function = visit(expr.lhs)
     }

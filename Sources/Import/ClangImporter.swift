@@ -66,9 +66,13 @@ func freelist<T>(_ ptr: UnsafeMutablePointer<UnsafeMutablePointer<T>?>, count: I
 extension CXString {
   func asSwift() -> String {
     defer { clang_disposeString(self) }
-    let str = String(cString: clang_getCString(self))
-    let components = str.components(separatedBy: " ")
-    return components.last ?? str
+    return String(cString: clang_getCString(self))
+  }
+}
+
+extension String {
+  var lastWord: String? {
+    return components(separatedBy: " ").last
   }
 }
 
@@ -178,8 +182,9 @@ class ClangImporter: Pass {
   @discardableResult
   func importStruct(_ cursor: CXCursor, in context: ASTContext) -> TypeDecl? {
     let type = clang_getCursorType(cursor)
-    let typeName = clang_getTypeSpelling(type).asSwift()
-    
+    guard let typeName = clang_getTypeSpelling(type).asSwift().lastWord else {
+        return nil
+    }
     let name = Identifier(name: typeName)
     
     if let e = importedTypes[name] { return e }
@@ -421,10 +426,16 @@ class ClangImporter: Pass {
       guard let trillRet = convertToTrillType(ret) else { return nil }
       return .function(args: [], returnType: trillRet)
     case CXType_Typedef:
-      let typeName = clang_getTypeSpelling(type).asSwift()
+      guard let typeName = clang_getTypeSpelling(type)
+                            .asSwift()
+                            .lastWord else {
+          return nil
+      }
       return .custom(name: typeName)
     case CXType_Record:
-      let name = clang_getTypeSpelling(type).asSwift()
+      guard let name = clang_getTypeSpelling(type).asSwift().lastWord else {
+          return nil
+      }
       return .custom(name: name)
     case CXType_ConstantArray:
       let element = clang_getArrayElementType(type)

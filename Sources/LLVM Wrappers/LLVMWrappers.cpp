@@ -68,10 +68,14 @@ RawOptions ParseArguments(int argc, char **argv) {
                                                           clEnumVal(O3, "Enable expensive optimizations"),
                                                           clEnumValEnd));
   cl::opt<bool> emitLLVM("emit-llvm", cl::desc("Emit the generated LLVM IR to stdout"));
+  cl::opt<bool> emitASM("emit-asm", cl::desc("Emit the generated assembly to stdout"));
+  cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
   cl::opt<bool> emitJS("emit-js", cl::desc("Emit the generated JavaScript to stdout"));
   cl::opt<bool> noImport("no-import", cl::desc("Don't import C declarations"));
   cl::opt<bool> emitTiming("emit-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
+  cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
+  cl::opt<std::string> outputFile("o", cl::desc("output-filename"));
   cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
   cl::ParseCommandLineOptions(argc, argv);
   
@@ -84,10 +88,14 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = EmitJavaScript;
   } else if (emitAST) {
     mode = EmitAST;
+  } else if (emitASM) {
+    mode = EmitASM;
   } else if (prettyPrint) {
     mode = PrettyPrint;
-  } else {
+  } else if (jit) {
     mode = JIT;
+  } else {
+    mode = EmitObj;
   }
   
   char **filenamePtr = (char **)malloc(filenames.size() * sizeof(char *));
@@ -95,6 +103,8 @@ RawOptions ParseArguments(int argc, char **argv) {
     filenamePtr[i] = strdup(filenames[i].c_str());
   }
   
+  auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
+  auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());
   bool isStdin = filenames.size() == 1 && filenames[0] == "-";
   
   return RawOptions {
@@ -103,12 +113,16 @@ RawOptions ParseArguments(int argc, char **argv) {
     emitTiming,
     isStdin,
     mode,
+    targetMachine,
+    outputFilename,
     filenamePtr,
     filenames.size()
   };
 }
 
 void DestroyRawOptions(RawOptions options) {
+  free(options.outputFilename);
+  free(options.target);
   for (auto i = 0; i < options.filenameCount; ++i) {
     free(options.filenames[i]);
   }

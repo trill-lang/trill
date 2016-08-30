@@ -1,0 +1,146 @@
+foreign func calloc(_: Int, _: Int) -> *Void
+foreign func realloc(_: *Void, _: Int) -> *Void
+
+type Point {
+    let x: Double
+    let y: Double
+}
+
+func assert(_ fact: Bool, _ message: *Int8) {
+    if !fact {
+        trill_fatalError(message)
+    }
+}
+
+type PointArray {
+    var elements: *Point
+    var count: Int
+    var capacity: Int
+    init(capacity: Int) {
+        assert(capacity > 0, "Cannot initialize an array with 0 capacity")
+        self.elements = calloc(capacity, sizeof(Point)) as *Point
+        self.capacity = capacity
+        self.count = 0
+    }
+    mutating func _growIfNeeded() {
+        if self._load() > 0.75 {
+            self.capacity = (self.capacity as Double * 1.5) as Int
+            self._reallocate()
+        }
+    }
+    mutating func _shrinkIfNeeded() {
+        if self._load() < 0.5 {
+            self.capacity = (self.capacity as Double / 1.5) as Int
+            self._reallocate()
+        }
+    }
+    mutating func _reallocate() {
+        self.elements = realloc(self.elements as *Void, self.capacity * sizeof(Point)) as *Point
+    }
+    func _load() -> Double {
+        return self.count as Double / self.capacity as Double
+    }
+    func _boundsCheck(_ index: Int) {
+        if index > self.count {
+            trill_fatalError("index out of bounds")
+        }
+    }
+    mutating func append(_ element: Point) {
+        self.elements[self.count] = element
+        self.count += 1
+        self._growIfNeeded()
+    }
+    mutating func insert(_ element: Point, at index: Int) {
+        self._boundsCheck(index)
+        self.count += 1
+        self._growIfNeeded()
+        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Point) as Int32)
+        self.elements[index] = element
+    }
+    mutating func remove(at index: Int) -> Point {
+        self._boundsCheck(index)
+        self._shrinkIfNeeded()
+        self.count -= 1
+        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Point) as Int32)
+        return self.elements[self.count + 1]
+    }
+    func get(_ index: Int) -> Point {
+        self._boundsCheck(index)
+        return self.elements[index]
+    }
+    mutating func set(_ element: Point, at index: Int) {
+        self._boundsCheck(index)
+        self.elements[index] = element
+    }
+    func dump() {
+        putchar('[' as Int32)
+        for var i = 0; i < self.count; i += 1 {
+            let p = self.elements[i]
+            printf("Point(x: %f, y: %f)", p.x, p.y)
+            if i != self.count - 1 {
+                printf(", ")
+            }
+        }
+        puts("]")
+    }
+    func isEmpty() -> Bool {
+        return self.count == 0
+    }
+    func destroy() {
+        free(self.elements as *Void)
+    }
+}
+
+func area(of points: PointArray) -> Double {
+    var area: Double = 0.0
+    for var i = 0; i < points.count; i += 1 {
+        let next = i == points.count - 1 ? 0 : i + 1
+        let p1 = points.get(i)
+        let p2 = points.get(next)
+        area += ((p1.y + p2.y) / 2.0) * (p2.x - p1.x)
+    }
+    return area
+}
+
+func readPoints() -> PointArray {
+    var array = PointArray(capacity: 20)
+    while true {
+        var x: Double = 0.0
+        var y: Double = 0.0
+        if scanf("%lf %lf", &x, &y) == -1 {
+            break
+        }
+        array.append(Point(x: x, y: y))
+    }
+    return array
+}
+
+func largePolygon() -> PointArray {
+    var points = PointArray(capacity: 1000)
+    var start = 0.0
+    var stop = 10_000_000_000.0
+    var step = 10_000.0
+    for var value = 0.0; value < stop; value += step {
+        points.append(Point(x: 0.0, y: value))
+    }
+    for var value = 0.0; value < stop; value += step {
+        points.append(Point(x: value, y: stop))
+    }
+    for var value = stop - step; value >= 0.0; value -= step {
+        points.append(Point(x: stop, y: value))
+    }
+    for var value = stop - step; value >= 0.0; value -= step {
+        points.append(Point(x: value, y: 0.0))
+    }
+    return points
+}
+
+func main() {
+    let points = readPoints()
+    points.dump()
+    printf("area: %f\n", area(of: points))
+    let large = largePolygon()
+    // large.dump()
+    printf("large area: %f\n", area(of: large))
+    points.destroy()
+}

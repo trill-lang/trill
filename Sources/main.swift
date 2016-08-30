@@ -21,44 +21,6 @@ class StandardTextOutputStream: TextOutputStream {
   }
 }
 
-enum Mode: Int {
-  case emitLLVM, emitAST, emitJavaScript, prettyPrint, jit
-
-  init(_ raw: RawMode) {
-    switch raw {
-    case EmitLLVM: self = .emitLLVM
-    case EmitAST: self = .emitAST
-    case PrettyPrint: self = .prettyPrint
-    case EmitJavaScript: self = .emitJavaScript
-    case JIT: self = .jit
-    default: fatalError("invalid mode \(raw)")
-    }
-  }
-}
-
-struct Options {
-  let filenames: [String]
-  let mode: Mode
-  let importC: Bool
-  let emitTiming: Bool
-  let isStdin: Bool
-  let optimizationLevel: OptimizationLevel
-  
-  init(_ raw: RawOptions) {
-    self.mode = Mode(raw.mode)
-    var filenames = [String]()
-    for i in 0..<raw.filenameCount {
-      filenames.append(String(cString: raw.filenames[i]!))
-    }
-    self.filenames = filenames
-    self.importC = raw.importC
-    self.emitTiming = raw.emitTiming
-    self.isStdin = raw.isStdin
-    self.optimizationLevel = raw.optimizationLevel
-    DestroyRawOptions(raw)
-  }
-}
-
 var stdout = StandardTextOutputStream()
 
 func populate(driver: Driver, options: Options,
@@ -103,16 +65,23 @@ func populate(driver: Driver, options: Options,
     return
   }
   
-  let gen = IRGenerator(context: context,
-                        optimizationLevel: options.optimizationLevel)
+  let gen = try! IRGenerator(context: context,
+                            options: options)
   driver.add("LLVM IR Generation", pass: gen.run)
   
   switch options.mode {
-  case .emitLLVM:
-    driver.add("Serializing LLVM IR") { context in
-      let str = try gen.serialize()
-      print(str)
+  case .emitLLVM, .emitASM, .emitObj:
+    let outputType: EmitType
+    switch options.mode {
+    case .emitLLVM: outputType = .llvm
+    case .emitObj: outputType = .obj
+    case .emitASM: outputType = .asm
+    default: outputType = .bin
     }
+    driver.add("Serializing \(outputType)") { context in
+      try gen.emit(outputType, output: options.outputFilename)
+    }
+    break
   case .jit:
     driver.add("Executing the JIT") { context in
       // TODO: Fix sending args to the JIT

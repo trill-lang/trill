@@ -227,9 +227,10 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
     guard let lhsType = expr.lhs.type else { return }
     guard let rhsType = expr.rhs.type else { return }
+    let canLhs = context.canonicalType(lhsType)
     if expr.op == .as {
       // thrown from sema
-    } else if expr.type(forArgType: lhsType) == nil  {
+    } else if expr.type(forArgType: canLhs) == nil  {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
             loc: expr.startLoc(),
             highlights: [

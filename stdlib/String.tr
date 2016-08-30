@@ -1,11 +1,74 @@
-type String = ByteArray
+type String {
+    var _storage: ByteArray
+    init(cString: *Int8) {
+        self._storage = ByteArray(cString)
+    }
+    init(_owning cString: *Int8, length: Int) {
+        self._storage = ByteArray(_owning: cString, length: length)
+    }
+    init() {
+        self._storage = ByteArray(capacity: 256)
+    }
+    func length() -> Int {
+        return self._storage.length
+    }
+    func cString() -> *Int8 {
+        return self._storage.bytes
+    }
+    mutating func append(_ char: Int8) {
+        self._storage.append(char)
+    }
+    mutating func append(_ string: String) {
+        self._storage.append(string._storage)
+    }
+    mutating func append(_ cString: *Int8) {
+        self._storage.append(cString)
+    }
+    mutating func insert(_ cString: *Int8, length: Int, at index: Int) {
+        self._storage.insert(cString, length: length, at: index)
+    }
+    mutating func insert(_ cString: *Int8, at index: Int) {
+        self._storage.insert(cString, at: index)
+    }
+    mutating func insert(_ string: String, at index: Int) {
+        self._storage.insert(string._storage, at: index)
+    }
+    func get(_ index: Int) -> Int8 {
+        return self._storage.get(index)
+    }
+    func isEmpty() -> Bool {
+        return self._storage.isEmpty()
+    }
+    func hash() -> Int {
+        // A very simple implementation of djb2
+        var hash = 5381
+        for var i = 0; i < self.length(); i += 1 {
+            hash = (hash * 33) ^ self._storage.bytes[i] as Int
+        }
+        return hash
+    }
+    func hasPrefix(_ string: String) -> Bool {
+        if self.length() < string.length() { return false }
+        for var i = 0; i < string.length(); i += 1 {
+            if self.get(i) != string.get(i) { return false }
+        }
+        return true
+    }
+    func hasSuffix(_ string: String) -> Bool {
+        if self.length() < string.length() { return false }
+        for var i = string.length() - 1; i >= 0; i -= 1 {
+            if self.get(i) != string.get(i) { return false }
+        }
+        return true
+    }
+}
 
 func print(_ string: String) {
-    printf("%s", string.bytes)
+    printf("%s", string.cString())
 }
 
 func println(_ string: String) {
-    printf("%s\n", string.bytes)
+    printf("%s\n", string.cString())
 }
 
 func print(_ string: *Int8) {

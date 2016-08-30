@@ -766,7 +766,7 @@ class Sema: ASTTransformer, Pass {
       }
       expr.type = rhsType
     } else {
-      if let exprType = expr.type(forArgType: lhsType) {
+      if let exprType = expr.type(forArgType: canLhs) {
         expr.type = exprType
       } else {
         expr.type = .void
@@ -815,7 +815,7 @@ class Sema: ASTTransformer, Pass {
   override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
     super.visitPrefixOperatorExpr(expr)
     guard let rhsType = expr.rhs.type else { return }
-    guard let exprType = expr.type(forArgType: rhsType) else {
+    guard let exprType = expr.type(forArgType: context.canonicalType(rhsType)) else {
       error(SemaError.invalidOperands(op: expr.op, invalid: rhsType),
             loc: expr.opRange?.start,
             highlights: [

@@ -35,7 +35,7 @@ extern "C" {
 _Pragma("clang assume_nonnull begin")
   
 typedef enum RawMode {
-  EmitLLVM, EmitAST, PrettyPrint, EmitJavaScript, JIT
+  EmitObj, EmitASM, EmitLLVM, EmitAST, PrettyPrint, EmitJavaScript, JIT
 } RawMode;
 
 typedef enum OptimizationLevel {
@@ -48,6 +48,8 @@ typedef struct RawOptions {
   bool emitTiming;
   bool isStdin;
   RawMode mode;
+  char *_Nullable target;
+  char *_Nullable outputFilename;
   char *_Nullable *_Nonnull filenames;
   size_t filenameCount;
 } RawOptions;

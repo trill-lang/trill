@@ -19,10 +19,8 @@ clean:
 purge: clean
 	rm -f $(BINARIES)
 
-%.ll : %.tr
-	$(TRILL) $< -emit-timing -emit-llvm > $@
-%.o : %.ll
-	$(LLC) -filetype obj $<
+%.o: %.tr
+	$(TRILL) $< -emit-timing > $@
 % : %.o
 	$(CLANG) -lc++ -L/usr/local/lib -ltrillRuntime $< -o $@
 

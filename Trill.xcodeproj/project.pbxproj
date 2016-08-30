@@ -122,6 +122,7 @@
 		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
 		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
+		DC7968321D76219B00FF7A02 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7968311D76219B00FF7A02 /* Options.swift */; };
 		DC98BBBB1D59A31400677C66 /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E01D1FBF52003A8DED /* libclangAST.a */; };
 		DC98BBBC1D59A31500677C66 /* libclangParse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E41D1FBF52003A8DED /* libclangParse.a */; };
 		DC98BBBD1D59A31700677C66 /* libclangSema.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E61D1FBF52003A8DED /* libclangSema.a */; };
@@ -329,6 +330,7 @@
 		DC5F39191D1FBFDD003A8DED /* libclangTidyReadabilityModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyReadabilityModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyReadabilityModule.a; sourceTree = "<group>"; };
 		DC5F391A1D1FBFDD003A8DED /* libclangTidyUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyUtils.a; path = ../../../../usr/local/llvm/lib/libclangTidyUtils.a; sourceTree = "<group>"; };
 		DC5F394F1D1FC016003A8DED /* libclang_rt.osx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclang_rt.osx.a; path = ../../../../usr/local/llvm/lib/clang/3.8.0/lib/darwin/libclang_rt.osx.a; sourceTree = "<group>"; };
+		DC7968311D76219B00FF7A02 /* Options.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Options.swift; path = Sources/Infrastructure/Options.swift; sourceTree = SOURCE_ROOT; };
 		DC98BBC51D5EE92F00677C66 /* libtinygc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtinygc.a; path = ../../../../usr/local/lib/libtinygc.a; sourceTree = "<group>"; };
 		DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = /usr/local/llvm/lib/libLLVMCodeGen.a; sourceTree = "<absolute>"; };
@@ -635,6 +637,7 @@
 				DC176FF01D6911A200FEFB85 /* Semantic Analysis */,
 				DC31C1071C82681E00F85807 /* BridgingHeader.h */,
 				DC31C10A1C82681E00F85807 /* main.swift */,
+				DC7968311D76219B00FF7A02 /* Options.swift */,
 			);
 			path = Trill;
 			sourceTree = "<group>";
@@ -990,6 +993,7 @@
 				DC1770051D6911A200FEFB85 /* BaseIRGen.swift in Sources */,
 				DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */,
 				DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */,
+				DC7968321D76219B00FF7A02 /* Options.swift in Sources */,
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
