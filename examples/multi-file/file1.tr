@@ -10,10 +10,11 @@ extension Int {
 func main() {
     let one = fact(8.plus(8)).toString()
     var oneThousand = 1000.toString()
-    one.printString()
+    println(one)
     oneThousand.append(", ")
     oneThousand.append(one)
-    oneThousand.printString()
+    println(oneThousand)
+    println(oneThousand.isEmpty())
     one.destroy()
     oneThousand.destroy()
 }

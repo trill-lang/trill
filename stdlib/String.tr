@@ -1,0 +1,73 @@
+type String = ByteArray
+
+func print(_ string: String) {
+    printf("%s", string.bytes)
+}
+
+func println(_ string: String) {
+    printf("%s\n", string.bytes)
+}
+
+func print(_ string: *Int8) {
+    printf("%s", string)
+}
+
+func println(_ string: *Int8) {
+    printf("%s\n", string)
+}
+
+func print(_ bool: Bool) {
+    printf("%s", bool ? "true" : "false")
+}
+
+func println(_ bool: Bool) {
+    printf("%s\n", bool ? "true" : "false")
+}
+
+func print(_ int: Int) {
+    printf("%d", int)
+}
+
+func println(_ int: Int) {
+    printf("%d\n", int)
+}
+
+func print(_ int: Int8) {
+    printf("%c", int)
+}
+
+func println(_ int: Int8) {
+    printf("%c\n", int)
+}
+
+func print(_ int: Int16) {
+    printf("%d", int)
+}
+
+func println(_ int: Int16) {
+    printf("%d\n", int)
+}
+
+func print(_ int: Int32) {
+    printf("%d", int)
+}
+
+func println(_ int: Int32) {
+    printf("%d\n", int)
+}
+
+func print(_ float: Float) {
+    printf("%f", float)
+}
+
+func println(_ float: Float) {
+    printf("%f\n", float)
+}
+
+func print(_ double: Double) {
+    printf("%f", double)
+}
+
+func println(_ double: Double) {
+    printf("%f\n", double)
+}
