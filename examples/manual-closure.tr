@@ -24,5 +24,4 @@ func main() {
     context.a = 100
     context.b = "Goodbye, world"
     printf("50 + 100 = %d\n", closure.invoke(50, 100))
-    print(context)
 }
