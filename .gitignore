@@ -25,3 +25,5 @@ DerivedData
 # trill build
 examples/build/
 *.ll
+*.o
+*.s
