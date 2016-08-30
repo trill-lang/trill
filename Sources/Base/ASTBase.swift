@@ -13,7 +13,7 @@ enum DeclKind {
   case diagnostic
 }
 
-enum DeclAttribute: String {
+enum DeclModifier: String {
   case foreign = "foreign"
   case `static` = "static"
   case mutating = "mutating"

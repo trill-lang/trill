@@ -25,9 +25,9 @@ struct PopulateJSDecls: Pass {
     for name in ["print", "println"] {
       let anyRef = DataType.any.ref()
       let decl = FuncDecl(name: Identifier(name: name),
-                              returnType: DataType.void.ref(),
-                              args: [FuncArgumentAssignDecl(name: "", type: anyRef)],
-                              attributes: [.foreign])
+                          returnType: DataType.void.ref(),
+                          args: [FuncArgumentAssignDecl(name: "", type: anyRef)],
+                          modifiers: [.foreign])
       context.add(decl)
     }
   }

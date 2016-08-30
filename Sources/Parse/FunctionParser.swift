@@ -9,10 +9,10 @@ extension Parser {
   /// Function Declaration
   ///
   /// func-decl ::= fun <name>([<name> [internal-name]: <typename>,]*): <typename> <braced-expr-block>
-  func parseFuncDecl(_ attributes: [DeclAttribute],
+  func parseFuncDecl(_ modifiers: [DeclModifier],
                      forType type: DataType? = nil,
                      isDeinit: Bool = false) throws -> FuncDecl {
-    var attributes = attributes
+    var modifiers = modifiers
     let startLoc = sourceLoc
     var args = [FuncArgumentAssignDecl]()
     var returnType = TypeRefExpr(type: .void, name: "Void")
@@ -20,7 +20,7 @@ extension Parser {
     let kind: FunctionKind
     var nameRange: SourceRange? = nil
     if case .Init = peek(), type != nil {
-      attributes.append(.mutating)
+      modifiers.append(.mutating)
       kind = .initializer(type: type!)
       nameRange = consumeToken().range
     } else if isDeinit, case .deinit = peek(), type != nil {
@@ -59,7 +59,7 @@ extension Parser {
                         args: args,
                         kind: kind,
                         body: body,
-                        attributes: attributes,
+                        modifiers: modifiers,
                         hasVarArgs: hasVarArgs,
                         sourceRange: range(start: startLoc))
   }

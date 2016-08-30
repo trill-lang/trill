@@ -25,7 +25,7 @@ class VarAssignDecl: Decl {
   var typeRef: TypeRefExpr?
   var containingTypeDecl: TypeDecl?
   var mutable: Bool
-  init(name: Identifier, typeRef: TypeRefExpr?, rhs: Expr? = nil, containingTypeDecl: TypeDecl? = nil, attributes: [DeclAttribute] = [], mutable: Bool = true, sourceRange: SourceRange? = nil) {
+  init(name: Identifier, typeRef: TypeRefExpr?, rhs: Expr? = nil, containingTypeDecl: TypeDecl? = nil, modifiers: [DeclModifier] = [], mutable: Bool = true, sourceRange: SourceRange? = nil) {
     precondition(rhs != nil || typeRef != nil)
     self.rhs = rhs
     self.typeRef = typeRef
@@ -33,7 +33,7 @@ class VarAssignDecl: Decl {
     self.name = name
     self.containingTypeDecl = containingTypeDecl
     super.init(type: typeRef?.type ?? .void,
-               attributes: attributes,
+               modifiers: modifiers,
                sourceRange: sourceRange)
   }
   override func equals(_ node: ASTNode) -> Bool {
@@ -149,7 +149,7 @@ class ExtensionDecl: Decl {
   init(type: TypeRefExpr, methods: [FuncDecl], sourceRange: SourceRange? = nil) {
     self.methods = methods.map { $0.addingImplicitSelf(type.type!) }
     self.typeRef = type
-    super.init(type: type.type!, attributes: [], sourceRange: sourceRange)
+    super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)
   }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? ExtensionDecl else { return false }

@@ -80,8 +80,8 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
-    for attribute in decl.attributes {
-      stream.write(attribute.rawValue + " ")
+    for modifier in decl.modifiers {
+      stream.write(modifier.rawValue + " ")
     }
     let tok = decl.mutable ? "var" : "let"
     stream.write("\(tok) \(decl.name)")
@@ -124,7 +124,7 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitFuncDecl(_ expr: FuncDecl) -> Result {
-    for attribute in expr.attributes {
+    for attribute in expr.modifiers {
       stream.write(attribute.rawValue + " ")
     }
     if expr.isInitializer {
@@ -258,7 +258,7 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     stream.write(")")
   }
   override func visitTypeDecl(_ expr: TypeDecl) -> Result {
-    for attribute in expr.attributes {
+    for attribute in expr.modifiers {
       stream.write(attribute.rawValue + " ")
     }
     stream.write("type \(expr.name) {")

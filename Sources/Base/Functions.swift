@@ -51,7 +51,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
        args: [FuncArgumentAssignDecl],
        kind: FunctionKind = .free,
        body: CompoundStmt? = nil,
-       attributes: [DeclAttribute] = [],
+       modifiers: [DeclModifier] = [],
        hasVarArgs: Bool = false,
        sourceRange: SourceRange? = nil) {
     self.args = args
@@ -61,7 +61,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     self.returnType = returnType
     self.hasVarArgs = hasVarArgs
     super.init(type: .function(args: args.map { $0.type }, returnType: returnType.type!),
-               attributes: attributes,
+               modifiers: modifiers,
                sourceRange: sourceRange)
   }
   var isInitializer: Bool {
@@ -135,7 +135,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
                         args: args,
                         kind: kind,
                         body: body,
-                        attributes: Array(attributes),
+                        modifiers: Array(modifiers),
                         hasVarArgs: hasVarArgs,
                         sourceRange: sourceRange)
   }

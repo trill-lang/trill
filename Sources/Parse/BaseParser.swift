@@ -13,7 +13,7 @@ enum ParseError: Error, CustomStringConvertible {
   case caseMustBeConstant
   case unexpectedExpression(expected: String)
   case duplicateDeinit
-  case invalidAttribute(DeclAttribute, DeclKind)
+  case invalidAttribute(DeclModifier, DeclKind)
   
   var description: String {
     switch self {
@@ -200,10 +200,10 @@ class Parser {
     return Identifier(name: name, range: consumeToken().range)
   }
   
-  func parseAttributes() throws -> [DeclAttribute] {
-    var attrs = [DeclAttribute]()
+  func parseAttributes() throws -> [DeclModifier] {
+    var attrs = [DeclModifier]()
     while case .identifier(let attrId) = peek() {
-      if let attr = DeclAttribute(rawValue: attrId) {
+      if let attr = DeclModifier(rawValue: attrId) {
         consumeToken()
         attrs.append(attr)
       } else {
@@ -265,7 +265,7 @@ class Parser {
   /// type-decl ::= type <typename> {
   ///   [<field-decl> | <func-decl>]*
   /// }
-  func parseTypeDecl(_ attributes: [DeclAttribute]) throws -> ASTNode {
+  func parseTypeDecl(_ modifiers: [DeclModifier]) throws -> ASTNode {
     try consume(.type)
     let startLoc = sourceLoc
     let name = try parseIdentifier()
@@ -302,7 +302,7 @@ class Parser {
         if deinitializer != nil {
           throw Diagnostic.error(ParseError.duplicateDeinit, loc: sourceLoc)
         }
-        deinitializer = try parseFuncDecl(attributes, forType:type, isDeinit: true)
+        deinitializer = try parseFuncDecl(modifiers, forType:type, isDeinit: true)
       default:
         throw unexpectedToken()
       }
@@ -310,7 +310,7 @@ class Parser {
     }
     return TypeDecl(name: name, fields: fields, methods: methods,
                         initializers: initializers,
-                        attributes: attributes,
+                        modifiers: modifiers,
                         deinit: deinitializer,
                         sourceRange: range(start: startLoc))
   }

@@ -193,7 +193,7 @@ extension Parser {
   ///
   /// <var-assign-expr> ::= var <identifier> = <val-expr>
   ///                     | let <identifier> = <val-expr>
-  func parseVarAssignDecl(_ attrs: [DeclAttribute] = []) throws -> VarAssignDecl {
+  func parseVarAssignDecl(_ attrs: [DeclModifier] = []) throws -> VarAssignDecl {
     let startLoc = sourceLoc
     let mutable: Bool
     if case .var = peek() {
@@ -221,7 +221,7 @@ extension Parser {
     return VarAssignDecl(name: id,
                          typeRef: type,
                          rhs: rhs,
-                         attributes: attrs,
+                         modifiers: attrs,
                          mutable: mutable,
                          sourceRange: range(start: startLoc))
   }

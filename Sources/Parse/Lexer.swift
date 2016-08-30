@@ -174,7 +174,7 @@ enum TokenKind: Equatable {
          .poundLine, .poundWarning, .poundError:
          return true
     case .identifier(let value):
-      return DeclAttribute(rawValue: value) != nil || value == "self"
+      return DeclModifier(rawValue: value) != nil || value == "self"
     case .operator(op: .as): return true
     default: return false
     }

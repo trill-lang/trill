@@ -143,11 +143,11 @@ class ClangImporter: Pass {
   func synthesize(name: String, args: [DataType],
                   return: DataType,
                   hasVarArgs: Bool,
-                  attributes: [DeclAttribute]) -> FuncDecl {
+                  modifiers: [DeclModifier]) -> FuncDecl {
     return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
                         args: args.map { FuncArgumentAssignDecl(name: "", type: $0.ref()) },
-                        attributes: attributes,
+                        modifiers: modifiers,
                         hasVarArgs: hasVarArgs)
   }
   
@@ -195,13 +195,13 @@ class ClangImporter: Pass {
       }
       let expr = VarAssignDecl(name: fieldId,
                                typeRef: trillTy.ref(),
-                               attributes: [.foreign],
+                               modifiers: [.foreign],
                                mutable: true)
       values.append(expr)
       return CXChildVisit_Continue
     }
     
-    let expr = TypeDecl(name: name, fields: values, attributes: [.foreign])
+    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign])
     importedTypes[name] = expr
     context.add(expr)
     return expr
@@ -213,9 +213,9 @@ class ClangImporter: Pass {
     if !existing.isEmpty { return }
     let numArgs = clang_Cursor_getNumArguments(cursor)
     guard numArgs != -1 else { return }
-    var attributes = [DeclAttribute.foreign]
+    var modifiers = [DeclModifier.foreign]
     if clang_isNoReturn(cursor) != 0 {
-      attributes.append(.noreturn)
+      modifiers.append(.noreturn)
     }
     let hasVarArgs = clang_Cursor_isVariadic(cursor) != 0
     let funcType = clang_getCursorType(cursor)
@@ -234,7 +234,7 @@ class ClangImporter: Pass {
                           args: args,
                           return: trillRetTy,
                           hasVarArgs: hasVarArgs,
-                          attributes: attributes)
+                          modifiers: modifiers)
     importedFunctions[decl.name] = decl
     context.add(decl)
   }
@@ -365,7 +365,7 @@ class ClangImporter: Pass {
                                 args: [.pointer(type: .int8)],
                                 return: .void,
                                 hasVarArgs: false,
-                                attributes: [.foreign, .noreturn]))
+                                modifiers: [.foreign, .noreturn]))
     for path in ClangImporter.paths {
       self.importDeclarations(from: path, in: self.context)
     }

@@ -126,12 +126,12 @@ func ==(lhs: DataType, rhs: DataType) -> Bool {
 
 class Decl: ASTNode {
   var type: DataType
-  let attributes: Set<DeclAttribute>
-  func has(attribute: DeclAttribute) -> Bool {
-    return attributes.contains(attribute)
+  let modifiers: Set<DeclModifier>
+  func has(attribute: DeclModifier) -> Bool {
+    return modifiers.contains(attribute)
   }
-  init(type: DataType, attributes: [DeclAttribute], sourceRange: SourceRange?) {
-    self.attributes = Set(attributes)
+  init(type: DataType, modifiers: [DeclModifier], sourceRange: SourceRange?) {
+    self.modifiers = Set(modifiers)
     self.type = type
     super.init(sourceRange: sourceRange)
   }
@@ -187,7 +187,7 @@ class TypeDecl: Decl {
     return TypeRefExpr(type: self.type, name: self.name)
   }
   
-  static func synthesizeInitializer(fields: [VarAssignDecl], name: Identifier, attributes: [DeclAttribute]) -> FuncDecl {
+  static func synthesizeInitializer(fields: [VarAssignDecl], name: Identifier, modifiers: [DeclModifier]) -> FuncDecl {
     let type = DataType(name: name.name)
     let typeRef = TypeRefExpr(type: type, name: name)
     let initFields = fields.map { field in
@@ -199,14 +199,14 @@ class TypeDecl: Decl {
       args: initFields,
       kind: .initializer(type: type),
       body: CompoundStmt(exprs: []),
-      attributes: attributes)
+      modifiers: modifiers)
   }
   
   init(name: Identifier,
        fields: [VarAssignDecl],
        methods: [FuncDecl] = [],
        initializers: [FuncDecl] = [],
-       attributes: [DeclAttribute] = [],
+       modifiers: [DeclModifier] = [],
        deinit: FuncDecl? = nil,
        sourceRange: SourceRange? = nil) {
     self.fields = fields
@@ -215,10 +215,10 @@ class TypeDecl: Decl {
     self.deinitializer = `deinit`?.addingImplicitSelf(type)
     let synthInit = TypeDecl.synthesizeInitializer(fields: fields,
                                                        name: name,
-                                                       attributes: attributes)
+                                                       modifiers: modifiers)
     self.initializers.append(synthInit)
     self.name = name
-    super.init(type: type, attributes: attributes, sourceRange: sourceRange)
+    super.init(type: type, modifiers: modifiers, sourceRange: sourceRange)
     for method in methods {
       self.addMethod(method, named: method.name.name)
     }

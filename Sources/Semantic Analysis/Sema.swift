@@ -533,7 +533,7 @@ class Sema: ASTTransformer, Pass {
                         returnType: typeRef,
                         args: assigns,
                         body: nil,
-                        attributes: [.foreign, .implicit])
+                        modifiers: [.foreign, .implicit])
   }
   
   override func visitTypeAliasExpr(_ expr: TypeAliasExpr) -> Result {
