@@ -339,7 +339,7 @@ class Sema: ASTTransformer, Pass {
         if case .int = type, exprArg.val is NumExpr {
           valType = type
           exprArg.val.type = valType
-        } else if case .pointer = type, exprArg.val is NilExpr {
+        } else if context.canBeNil(type), exprArg.val is NilExpr {
           valType = type
           exprArg.val.type = valType
         }
@@ -692,7 +692,8 @@ class Sema: ASTTransformer, Pass {
     guard let valueType = stmt.value.type else { return }
     for c in stmt.cases {
       let fakeInfix = InfixOperatorExpr(op: .equalTo, lhs: stmt.value, rhs: c.constant)
-      guard let t = fakeInfix.type(forArgType: c.constant.type!), !t.isPointer else {
+      guard let t = context.operatorType(fakeInfix, for: c.constant.type!),
+               !t.isPointer else {
         error(SemaError.cannotSwitch(type: valueType),
               loc: stmt.value.startLoc(),
               highlights: [ stmt.value.sourceRange ])
@@ -715,10 +716,10 @@ class Sema: ASTTransformer, Pass {
       expr.lhs.type = rhsType
       lhsType = rhsType
     }
-    if case .pointer = canLhs, expr.rhs is NilExpr {
+    if context.canBeNil(canLhs), expr.rhs is NilExpr {
       expr.rhs.type = lhsType
       rhsType = lhsType
-    } else if case .pointer = canRhs, expr.lhs is NilExpr {
+    } else if context.canBeNil(canRhs), expr.lhs is NilExpr {
       expr.lhs.type = rhsType
       lhsType = rhsType
     }
@@ -736,8 +737,7 @@ class Sema: ASTTransformer, Pass {
         }
       }
       if expr.rhs is NilExpr, let lhsType = expr.lhs.type {
-        let canLhs = context.canonicalType(lhsType)
-        guard case .pointer = canLhs else {
+        guard context.canBeNil(lhsType) else {
           error(SemaError.nonPointerNil(type: lhsType),
                 loc: expr.lhs.startLoc(),
                 highlights: [
@@ -766,7 +766,7 @@ class Sema: ASTTransformer, Pass {
       }
       expr.type = rhsType
     } else {
-      if let exprType = expr.type(forArgType: canLhs) {
+      if let exprType = context.operatorType(expr, for: canLhs) {
         expr.type = exprType
       } else {
         expr.type = .void
@@ -806,7 +806,7 @@ class Sema: ASTTransformer, Pass {
     if case .int = canRet, stmt.value is NumExpr {
       stmt.value.type = returnType
     }
-    if case .pointer = canRet, stmt.value is NilExpr {
+    if context.canBeNil(canRet), stmt.value is NilExpr {
       stmt.value.type = returnType
     }
     super.visitReturnStmt(stmt)

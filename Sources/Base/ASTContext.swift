@@ -359,6 +359,18 @@ public class ASTContext {
     }
   }
   
+  func isIndirect(_ type: DataType) -> Bool {
+    guard let decl = decl(for: type) else { return false }
+    return decl.isIndirect
+  }
+  
+  func canBeNil(_ type: DataType) -> Bool {
+    let can = canonicalType(type)
+    if case .pointer = can { return true }
+    if isIndirect(can) { return true }
+    return false
+  }
+  
   func canonicalType(_ type: DataType) -> DataType {
     if case .custom(let name) = type {
       if let alias = typeAliasMap[name] {
@@ -399,12 +411,20 @@ public class ASTContext {
     }
   }
   
+  func operatorType(_ op: InfixOperatorExpr, for argType: DataType) -> DataType? {
+    switch op.op {
+    case .equalTo where isIndirect(argType): return .bool
+    case .notEqualTo where isIndirect(argType): return .bool
+    default: return op.type(forArgType: argType)
+    }
+  }
+  
   func canCoerce(_ type: DataType, to other: DataType) -> Bool {
     // You should be able to cast between an indirect type and a pointer.
-    if let decl = decl(for: other), decl.isIndirect, case .pointer = type {
+    if isIndirect(other), case .pointer = type {
       return true
     }
-    if let decl = decl(for: type), decl.isIndirect, case .pointer = other {
+    if isIndirect(type), case .pointer = other {
       return true
     }
     return type.canCoerceTo(other)

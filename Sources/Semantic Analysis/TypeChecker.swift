@@ -230,7 +230,7 @@ class TypeChecker: ASTTransformer, Pass {
     let canLhs = context.canonicalType(lhsType)
     if expr.op == .as {
       // thrown from sema
-    } else if expr.type(forArgType: canLhs) == nil  {
+    } else if context.operatorType(expr, for: canLhs) == nil  {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
             loc: expr.startLoc(),
             highlights: [
