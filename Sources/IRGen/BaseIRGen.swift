@@ -341,7 +341,8 @@ class IRGenerator: ASTVisitor, Pass {
     }
     finalizeGlobalInit()
     try validateModule()
-    let outputFilename = type.addExtension(to: output ?? options.filenames.first ?? "out")
+    let outputBase = options.isStdin ? "out" : output ?? options.filenames.first ?? "out"
+    let outputFilename = type.addExtension(to: outputBase)
     if case .llvm = type {
       var err: UnsafeMutablePointer<Int8>?
       outputFilename.withCString { cString in
