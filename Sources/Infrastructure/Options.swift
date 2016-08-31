@@ -10,7 +10,8 @@ import Foundation
 
 
 enum Mode: Int {
-  case emitLLVM, emitAST, emitASM, emitObj, emitJavaScript, prettyPrint, jit
+  case emitLLVM, emitAST, emitASM, emitObj, emitBinary
+  case emitJavaScript, prettyPrint, jit
   
   init(_ raw: RawMode) {
     switch raw {
@@ -18,6 +19,7 @@ enum Mode: Int {
     case EmitAST: self = .emitAST
     case EmitASM: self = .emitASM
     case EmitObj: self = .emitObj
+    case EmitBinary: self = .emitBinary
     case PrettyPrint: self = .prettyPrint
     case EmitJavaScript: self = .emitJavaScript
     case JIT: self = .jit

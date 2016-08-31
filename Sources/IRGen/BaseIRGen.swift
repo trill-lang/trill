@@ -49,16 +49,14 @@ enum EmitType: CustomStringConvertible {
   func addExtension(to basename: String) -> String {
     var url = URL(fileURLWithPath: basename)
     url.deletePathExtension()
-    guard let ext = fileExtension else { return url.lastPathComponent }
-    return url.appendingPathExtension(ext).lastPathComponent
+    return url.appendingPathExtension(fileExtension).lastPathComponent
   }
   
-  var fileExtension: String? {
+  var fileExtension: String {
     switch self {
     case .llvm: return "ll"
     case .asm: return "s"
-    case .obj: return "o"
-    case .bin: return nil
+    case .obj, .bin: return "o"
     }
   }
   
@@ -73,9 +71,9 @@ enum EmitType: CustomStringConvertible {
   
   var llvmType: LLVMCodeGenFileType {
     switch self {
-    case .bin, .llvm: fatalError("should not be handled here")
+    case .llvm: fatalError("should not be handled here")
     case .asm: return LLVMAssemblyFile
-    case .obj: return LLVMObjectFile
+    case .bin, .obj: return LLVMObjectFile
     }
   }
 }
@@ -128,8 +126,11 @@ class IRGenerator: ASTVisitor, Pass {
   /// The LLVM context the module lives in
   let llvmContext: LLVMContextRef
   
-  /// The LLVM context the module lives in
+  /// The target machine we're codegenning for
   let targetMachine: LLVMTargetMachineRef
+  
+  /// The target triple we're codegenning for
+  let targetTriple: String
   
   /// The ASTContext currently being generated
   let context: ASTContext
@@ -210,31 +211,27 @@ class IRGenerator: ASTVisitor, Pass {
     LLVMInitializeNativeAsmPrinter()
     LLVMInitializeNativeTarget()
     
-    var targetTriple: String? = nil
-    if let triple = LLVMGetDefaultTargetTriple() {
-      targetTriple = String(cString: triple)
-      LLVMDisposeMessage(triple)
-    }
-    if let targetTriple = options.targetTriple ?? targetTriple {
-      self.targetMachine = try targetTriple.withCString { cString in
-        var target: LLVMTargetRef?
-        if LLVMGetTargetFromTriple(cString, &target, nil) != 0 {
-          throw LLVMError.invalidTarget(targetTriple)
-        }
-        return LLVMCreateTargetMachine(target!,
-                                       cString,
-                                       "", // TODO: Figure out what to put here
-                                       "", //       because I don't know how to
-                                           //       get the CPU and features
-                                       options.optimizationLevel.llvmLevel,
-                                       LLVMRelocDefault,
-                                       LLVMCodeModelDefault)
+    self.targetTriple = options.targetTriple ?? {
+      let triple = LLVMGetDefaultTargetTriple()!
+      defer {
+        LLVMDisposeMessage(triple)
       }
-    } else {
-      guard let t = LLVMGetFirstTarget() else {
-        throw LLVMError.couldNotDetermineTarget
+      return String(cString: triple)
+    }()
+    let targetTriple = self.targetTriple
+    self.targetMachine = try targetTriple.withCString { cString in
+      var target: LLVMTargetRef?
+      if LLVMGetTargetFromTriple(cString, &target, nil) != 0 {
+        throw LLVMError.invalidTarget(targetTriple)
       }
-      self.targetMachine = t
+      return LLVMCreateTargetMachine(target!,
+                                     cString,
+                                     "", // TODO: Figure out what to put here
+        "", //       because I don't know how to
+        //       get the CPU and features
+        options.optimizationLevel.llvmLevel,
+        LLVMRelocDefault,
+        LLVMCodeModelDefault)
     }
     
     LLVMSetDataLayout(module, "e")
@@ -357,13 +354,18 @@ class IRGenerator: ASTVisitor, Pass {
       }
     } else {
       var err: UnsafeMutablePointer<Int8>?
-      outputFilename.withCString { cString in
+      try outputFilename.withCString { cString in
         let mutable = strdup(cString)
         LLVMTargetMachineEmitToFile(targetMachine, module, mutable, type.llvmType, &err)
         free(mutable)
-      }
-      if let err = err {
-        throw LLVMError.llvmError(String(cString: err))
+        if let err = err {
+          throw LLVMError.llvmError(String(cString: err))
+        }
+        if case .bin = type {
+          targetTriple.withCString { trip in
+            _ = clang_linkExecutableFromObject(trip, cString)
+          }
+        }
       }
     }
   }

@@ -25,7 +25,7 @@ var stdout = StandardTextOutputStream()
 
 func populate(driver: Driver, options: Options,
               sourceFiles: [SourceFile],
-              context: ASTContext) {
+              context: ASTContext) throws {
   driver.add("Lexing and Parsing") { context in
     let group = DispatchGroup()
     for file in sourceFiles {
@@ -65,12 +65,12 @@ func populate(driver: Driver, options: Options,
     return
   }
   
-  let gen = try! IRGenerator(context: context,
+  let gen = try IRGenerator(context: context,
                             options: options)
   driver.add("LLVM IR Generation", pass: gen.run)
   
   switch options.mode {
-  case .emitLLVM, .emitASM, .emitObj:
+  case .emitLLVM, .emitASM, .emitObj, .emitBinary:
     let outputType: EmitType
     switch options.mode {
     case .emitLLVM: outputType = .llvm
@@ -113,28 +113,25 @@ func main() -> Int32 {
   let options = Options(ParseArguments(CommandLine.argc, CommandLine.unsafeArgv))
   
   let diag = DiagnosticEngine()
-  
-  let files: [SourceFile]
-  do {
-    files = try sourceFiles(options: options, diag: diag)
-  } catch {
-    print("error: \(error)")
-    return -1
-  }
-  
   let context = ASTContext(diagnosticEngine: diag)
   let driver = Driver(context: context)
-  populate(driver: driver,
-           options: options,
-           sourceFiles: files,
-           context: context)
-  driver.run(in: context)
-  
+  var files = [SourceFile]()
+  do {
+    files = try sourceFiles(options: options, diag: diag)
+    
+    try populate(driver: driver,
+                 options: options,
+                 sourceFiles: files,
+                 context: context)
+    driver.run(in: context)
+  } catch {
+    diag.error(error)
+  }
   let isATTY = isatty(STDERR_FILENO) != 0
   let consumer = StreamConsumer(files: files, stream: &stderr, colored: isATTY)
   diag.register(consumer)
   diag.consumeDiagnostics()
-
+  
   if options.emitTiming {
     var passColumn = Column(title: "Pass Title")
     var timeColumn = Column(title: "Time")
@@ -144,7 +141,7 @@ func main() -> Int32 {
     }
     TableFormatter(columns: [passColumn, timeColumn]).write(to: &stderr)
   }
-  return diag.hasErrors ? 1 : 0
+  return diag.hasErrors ? -1 : 0
 }
 
 exit(main())

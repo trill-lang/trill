@@ -35,7 +35,8 @@ extern "C" {
 _Pragma("clang assume_nonnull begin")
   
 typedef enum RawMode {
-  EmitObj, EmitASM, EmitLLVM, EmitAST, PrettyPrint, EmitJavaScript, JIT
+  EmitBinary, EmitObj, EmitASM, EmitLLVM,
+  EmitAST, PrettyPrint, EmitJavaScript, JIT
 } RawMode;
 
 typedef enum OptimizationLevel {
@@ -58,6 +59,7 @@ _Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModu
 void LLVMLinkInOrcMCJITReplacement(void);
 const char *LLVMGetJITError();
 int clang_isNoReturn(CXCursor cursor);
+int clang_linkExecutableFromObject(const char *targetTriple, const char *filename);
 char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename);
 RawOptions ParseArguments(int argc, char *_Nullable *_Nullable argv);
 void DestroyRawOptions(RawOptions options);

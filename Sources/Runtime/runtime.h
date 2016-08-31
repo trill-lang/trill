@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #define TRILL_NORETURN __attribute__((noreturn))
+#define TRILL_NONNULL _Nonnull
 
 #ifdef __cplusplus
 namespace trill {

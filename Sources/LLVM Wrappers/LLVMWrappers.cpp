@@ -6,8 +6,14 @@
 #include "LLVMWrappers.h"
 #include "clang/AST/Decl.h"
 #include "clang/AST/Attr.h"
+#include "clang/Frontend/CompilerInstance.h"
+#include "clang/Frontend/TextDiagnosticPrinter.h"
+#include "clang/Driver/Driver.h"
+#include "clang/Driver/Job.h"
 #include "clang/Lex/LiteralSupport.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Program.h"
+#include "llvm/Support/Path.h"
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Transforms/Scalar.h"
@@ -67,8 +73,9 @@ RawOptions ParseArguments(int argc, char **argv) {
                                                           clEnumVal(O2, "Enable default optimizations"),
                                                           clEnumVal(O3, "Enable expensive optimizations"),
                                                           clEnumValEnd));
-  cl::opt<bool> emitLLVM("emit-llvm", cl::desc("Emit the generated LLVM IR to stdout"));
-  cl::opt<bool> emitASM("emit-asm", cl::desc("Emit the generated assembly to stdout"));
+  cl::opt<bool> emitLLVM("emit-llvm", cl::desc("Emit the generated LLVM IR"));
+  cl::opt<bool> emitASM("emit-asm", cl::desc("Emit the generated assembly"));
+  cl::opt<bool> emitObject("emit-object", cl::desc("Emit the generated object file"));
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
   cl::opt<bool> emitJS("emit-js", cl::desc("Emit the generated JavaScript to stdout"));
   cl::opt<bool> noImport("no-import", cl::desc("Don't import C declarations"));
@@ -94,8 +101,10 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = PrettyPrint;
   } else if (jit) {
     mode = JIT;
-  } else {
+  } else if (emitObject) {
     mode = EmitObj;
+  } else {
+    mode = EmitBinary;
   }
   
   char **filenamePtr = (char **)malloc(filenames.size() * sizeof(char *));
@@ -127,4 +136,46 @@ void DestroyRawOptions(RawOptions options) {
     free(options.filenames[i]);
   }
   free(options.filenames);
+}
+
+int clang_linkExecutableFromObject(const char *targetTriple, const char *filename) {
+  std::string inputPath(filename);
+  std::string outputPath = sys::path::stem(inputPath);
+  auto clangPath = sys::findProgramByName("clang");
+  if (auto err = clangPath.getError()) {
+    return err.value();
+  }
+  std::vector<const char *> args {
+    clangPath->c_str(),
+    inputPath.c_str(),
+    "-l", "c++",
+    "-l", "gc",
+    "-l", "trillRuntime",
+    "-L", "/usr/local/lib",
+    "-o", outputPath.c_str(),
+  };
+  auto options = new clang::DiagnosticOptions();
+  auto diagClient = new clang::TextDiagnosticPrinter(llvm::errs(),
+                                                     options);
+  auto diagID = new clang::DiagnosticIDs();
+  clang::DiagnosticsEngine diags(diagID, options, diagClient);
+  
+  clang::driver::Driver driver(args[0], targetTriple, diags);
+  auto compilation = driver.BuildCompilation(args);
+  if (!compilation)
+    return 1;
+  
+  auto failingCommands =
+    SmallVector<std::pair<int, const clang::driver::Command *>, 1>();
+  int result = driver.ExecuteCompilation(*compilation, failingCommands);
+  if (result < 0) {
+    driver.generateCompilationDiagnostics(*compilation, *failingCommands[0].second);
+    return 1;
+  }
+  
+  if (auto err = llvm::sys::fs::remove(inputPath)) {
+    return err.value();
+  }
+  
+  return 0;
 }
