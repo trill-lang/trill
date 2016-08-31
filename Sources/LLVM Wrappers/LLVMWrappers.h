@@ -55,7 +55,7 @@ typedef struct RawOptions {
   size_t filenameCount;
 } RawOptions;
 
-_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef module);
+_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef);
 void LLVMLinkInOrcMCJITReplacement(void);
 const char *LLVMGetJITError();
 int clang_isNoReturn(CXCursor cursor);

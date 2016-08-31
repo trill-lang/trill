@@ -234,8 +234,6 @@ class IRGenerator: ASTVisitor, Pass {
         LLVMCodeModelDefault)
     }
     
-    LLVMSetDataLayout(module, "e")
-    
     self.context = context
   }
   
@@ -258,7 +256,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// - parameters:
   ///   - args: The command line arguments that will be sent to the JIT main.
   func execute(_ args: [String]) throws -> Int32 {
-    guard let jit = LLVMCreateOrcMCJITReplacementForModule(module) else {
+    guard let jit = LLVMCreateOrcMCJITReplacement(module, targetMachine) else {
       throw LLVMError.brokenJIT
     }
     try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit)

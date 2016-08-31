@@ -14,7 +14,10 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Program.h"
 #include "llvm/Support/Path.h"
+#include "llvm/Support/TargetRegistry.h"
 #include "llvm/IR/LegacyPassManager.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm-c/TargetMachine.h"
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/IPO.h"
@@ -57,10 +60,12 @@ const char *LLVMGetJITError() {
   return GlobalJITError.c_str();
 }
 
-LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacementForModule(LLVMModuleRef module) {
+LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef) {
+  auto target = reinterpret_cast<TargetMachine *>(targetRef);
   EngineBuilder builder(std::unique_ptr<Module>(unwrap(module)));
   builder.setMCJITMemoryManager(make_unique<SectionMemoryManager>());
   builder.setErrorStr(&GlobalJITError);
+  builder.setTargetOptions(target->Options);
   builder.setUseOrcMCJITReplacement(true);
   return wrap(builder.create());
 }
