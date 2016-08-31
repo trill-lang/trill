@@ -68,7 +68,7 @@ void trill_fatalError(const char *_Nonnull message) {
 }
 
 void *trill_alloc(size_t size) {
-  void *ptr = malloc(size);//GC_MALLOC(size);
+  void *ptr = GC_MALLOC(size);
   if (!ptr) {
     trill_fatalError((char *)"malloc failed");
   }
@@ -76,7 +76,7 @@ void *trill_alloc(size_t size) {
 }
 
 void trill_registerDeinitializer(void *object, void (*deinitializer)(void *)) {
-//  GC_register_finalizer_no_order(object, (GC_finalization_proc)deinitializer, NULL, NULL, NULL);
+  GC_register_finalizer_no_order(object, (GC_finalization_proc)deinitializer, NULL, NULL, NULL);
 }
   
 void trill_handleSignal(int signal) {
