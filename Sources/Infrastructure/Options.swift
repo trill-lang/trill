@@ -28,7 +28,16 @@ enum Mode: Int {
   }
 }
 
-public struct Options {
+func swiftArrayFromCStrings(_ ptr: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>, count: Int) -> [String] {
+  var strings = [String]()
+  for str in UnsafeMutableBufferPointer(start: ptr, count: count) {
+    guard let str = str else { continue }
+    strings.append(String(cString: str))
+  }
+  return strings
+}
+
+public class Options {
   let filenames: [String]
   let targetTriple: String?
   let outputFilename: String?
@@ -37,14 +46,12 @@ public struct Options {
   let emitTiming: Bool
   let isStdin: Bool
   let optimizationLevel: OptimizationLevel
+  let raw: RawOptions
   
   init(_ raw: RawOptions) {
+    self.raw = raw
     self.mode = Mode(raw.mode)
-    var filenames = [String]()
-    for i in 0..<raw.filenameCount {
-      filenames.append(String(cString: raw.filenames[i]!))
-    }
-    self.filenames = filenames
+    self.filenames = swiftArrayFromCStrings(raw.filenames, count: raw.filenameCount)
     self.importC = raw.importC
     self.emitTiming = raw.emitTiming
     self.isStdin = raw.isStdin
@@ -59,6 +66,9 @@ public struct Options {
     } else {
       self.targetTriple = nil
     }
+  }
+  
+  deinit {
     DestroyRawOptions(raw)
   }
 }

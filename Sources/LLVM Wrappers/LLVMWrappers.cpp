@@ -29,6 +29,15 @@
 #include "llvm/Object/ObjectFile.h"
 #include "llvm/Object/Archive.h"
 
+
+std::pair<char **, size_t> toCStrings(std::vector<std::string> strings) {
+  char **cStrings = (char **)malloc(strings.size() * sizeof(char *));
+  for (auto i = 0; i < strings.size(); ++i) {
+    cStrings[i] = strdup(strings[i].c_str());
+  }
+  return { cStrings, strings.size() };
+}
+
 using namespace llvm;
 int clang_isNoReturn(CXCursor cursor) {
   assert(cursor.kind == CXCursor_FunctionDecl);
@@ -89,6 +98,12 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
   cl::opt<std::string> outputFile("o", cl::desc("output-filename"));
   cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
+  cl::list<std::string> linkerFlags("Xlinker", cl::Positional,
+                                    cl::PositionalEatsArgs,
+                                    cl::desc("<extra linker flags>"));
+  cl::list<std::string> ccFlags("Xcc", cl::Positional,
+                                cl::PositionalEatsArgs,
+                                cl::desc("<extra clang flags>"));
   cl::ParseCommandLineOptions(argc, argv);
   
   RawMode mode;
@@ -112,14 +127,14 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = EmitBinary;
   }
   
-  char **filenamePtr = (char **)malloc(filenames.size() * sizeof(char *));
-  for (auto i = 0; i < filenames.size(); ++i) {
-    filenamePtr[i] = strdup(filenames[i].c_str());
-  }
   
   auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
   auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());
   bool isStdin = filenames.size() == 1 && filenames[0] == "-";
+  
+  auto filenamesPair = toCStrings(filenames);
+  auto linkerPair = toCStrings(linkerFlags);
+  auto ccPair = toCStrings(ccFlags);
   
   return RawOptions {
     optimizationLevel,
@@ -129,8 +144,12 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode,
     targetMachine,
     outputFilename,
-    filenamePtr,
-    filenames.size()
+    filenamesPair.first,
+    filenamesPair.second,
+    linkerPair.first,
+    linkerPair.second,
+    ccPair.first,
+    ccPair.second
   };
 }
 
@@ -143,7 +162,12 @@ void DestroyRawOptions(RawOptions options) {
   free(options.filenames);
 }
 
-int clang_linkExecutableFromObject(const char *targetTriple, const char *filename) {
+int clang_linkExecutableFromObject(const char *targetTriple,
+                                   const char *filename,
+                                   char **linkerFlags,
+                                   size_t linkerFlagsCount,
+                                   char **ccFlags,
+                                   size_t ccFlagsCount) {
   std::string inputPath(filename);
   std::string outputPath = sys::path::stem(inputPath);
   auto clangPath = sys::findProgramByName("clang");
@@ -159,6 +183,20 @@ int clang_linkExecutableFromObject(const char *targetTriple, const char *filenam
     "-L", "/usr/local/lib",
     "-o", outputPath.c_str(),
   };
+  for (auto flag : ArrayRef<char *>(ccFlags, ccFlagsCount)) {
+    args.push_back(flag);
+  }
+  if (linkerFlagsCount > 0) {
+    args.push_back("-Xlinker");
+    SmallString<20> linkerFlag;
+    for (size_t i = 0; i < linkerFlagsCount; ++i) {
+      linkerFlag += linkerFlags[i];
+      if (i < linkerFlagsCount - 1) {
+        linkerFlag += ' ';
+      }
+    }
+    args.push_back(linkerFlag.c_str());
+  }
   auto options = new clang::DiagnosticOptions();
   auto diagClient = new clang::TextDiagnosticPrinter(llvm::errs(),
                                                      options);

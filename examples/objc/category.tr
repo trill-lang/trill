@@ -91,7 +91,7 @@ func printStringDescription(_ obj: *Int8, _ sel: *objc_selector) {
   ObjCBox(obj: obj).send("printDescription")
 }
 
-func main(argc: Int, argv: **Int8) {
+func main() {
   NSString.add("printDescription", printStringDescription)
   var s = str("hello, world")
   s.send("printDescription")

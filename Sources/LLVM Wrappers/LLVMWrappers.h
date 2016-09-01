@@ -53,13 +53,22 @@ typedef struct RawOptions {
   char *_Nullable outputFilename;
   char *_Nullable *_Nonnull filenames;
   size_t filenameCount;
+  char *_Nullable *_Nonnull linkerFlags;
+  size_t linkerFlagCount;
+  char *_Nullable *_Nonnull ccFlags;
+  size_t ccFlagCount;
 } RawOptions;
 
 _Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef);
 void LLVMLinkInOrcMCJITReplacement(void);
 const char *LLVMGetJITError();
 int clang_isNoReturn(CXCursor cursor);
-int clang_linkExecutableFromObject(const char *targetTriple, const char *filename);
+int clang_linkExecutableFromObject(const char *targetTriple,
+                                   const char *filename,
+                                   char *_Nullable *_Nonnull linkerFlags,
+                                   size_t linkerFlagsCount,
+                                   char *_Nullable *_Nonnull ccFlags,
+                                   size_t ccFlagsCount);
 char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename);
 RawOptions ParseArguments(int argc, char *_Nullable *_Nullable argv);
 void DestroyRawOptions(RawOptions options);

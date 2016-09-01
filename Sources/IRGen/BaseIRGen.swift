@@ -362,7 +362,11 @@ class IRGenerator: ASTVisitor, Pass {
         }
         if case .bin = type {
           targetTriple.withCString { trip in
-            _ = clang_linkExecutableFromObject(trip, cString)
+            _ = clang_linkExecutableFromObject(trip, cString,
+                                               options.raw.linkerFlags,
+                                               options.raw.linkerFlagCount,
+                                               options.raw.ccFlags,
+                                               options.raw.ccFlagCount)
           }
         }
       }
