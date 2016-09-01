@@ -1,0 +1,37 @@
+func assert(_ condition: Bool, _ msg: *Int8) {
+    if !condition {
+        trill_fatalError(msg)
+    }
+}
+indirect type IntList {
+    let value: Int
+    let next: IntList
+
+    func print() {
+        print("(")
+        print(self.value)
+        print(")")
+        if self.next != nil {
+            print("->")
+            self.next.print()
+        }
+    }
+
+    func get(_ index: Int) -> Int {
+        assert(index >= 0, "invalid index")
+        if index == 0 {
+            return self.value
+        }
+        assert(self.next != nil, "index out of bounds")
+        return self.next.get(index - 1)
+    }
+}
+
+func main() {
+    let list = IntList(value: 10, next:
+                IntList(value: 100, next:
+                 IntList(value: 1000, next: nil)))
+    list.print()
+    println("")
+    println(list.get(-1))
+}

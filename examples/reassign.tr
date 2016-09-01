@@ -1,0 +1,15 @@
+func swap(_ a: *Int, _ b: *Int) {
+    var _a = a
+    var _b = b
+    let temp = *b
+    *_b = *a
+    *_a = temp
+}
+
+func main() {
+    var a = 100
+    var b = 200
+    printf("a: %d, b: %d\n", a, b)
+    swap(&a, &b)
+    printf("a: %d, b: %d\n", a, b)
+}
