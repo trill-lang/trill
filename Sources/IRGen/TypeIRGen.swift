@@ -33,6 +33,10 @@ extension IRGenerator {
       codegenFunctionPrototype(deinitiailizer)
     }
     
+    if let loc = expr.startLoc() {
+      LLVMCreateTypeDebugInfo(debugBuilder, structure, loc.raw)
+    }
+    
     return structure!
   }
   
@@ -102,7 +106,8 @@ extension IRGenerator {
       let llvmType = resolveLLVMType(type)
       let alloca =  createEntryBlockAlloca(currentFunction!.functionRef!,
                                            type: llvmType, name: "ptrtmp",
-                                           storage: .value)
+                                           storage: .value,
+                                           loc: nil)
       LLVMBuildStore(builder, visit(expr), alloca.ref)
       return alloca.ref
     }

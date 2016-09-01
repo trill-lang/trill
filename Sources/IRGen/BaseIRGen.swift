@@ -138,6 +138,9 @@ class IRGenerator: ASTVisitor, Pass {
   /// The command line options
   let options: Options
   
+  /// The debug info generator for this module
+  let debugBuilder: DebugInfoBuilderRef
+  
   /// A map of global varible bindings
   var globalVarIRBindings = [Identifier: VarBinding]()
   
@@ -193,9 +196,10 @@ class IRGenerator: ASTVisitor, Pass {
   ///   - options: The command line arguments.
   init(context: ASTContext, options: Options) throws {
     self.options = options
-    
+
     llvmContext = LLVMGetGlobalContext()
     module = LLVMModuleCreateWithNameInContext("main", llvmContext)
+    debugBuilder = LLVMCreateDebugInfoBuilder(module)
     builder = LLVMCreateBuilderInContext(llvmContext)
     passManager = LLVMCreateFunctionPassManagerForModule(module)
     passManager.addPasses(for: options.optimizationLevel)
@@ -227,11 +231,11 @@ class IRGenerator: ASTVisitor, Pass {
       return LLVMCreateTargetMachine(target!,
                                      cString,
                                      "", // TODO: Figure out what to put here
-        "", //       because I don't know how to
-        //       get the CPU and features
-        options.optimizationLevel.llvmLevel,
-        LLVMRelocDefault,
-        LLVMCodeModelDefault)
+                                     "", //       because I don't know how to
+                                         //       get the CPU and features
+                                     options.optimizationLevel.llvmLevel,
+                                     LLVMRelocDefault,
+                                     LLVMCodeModelDefault)
     }
     
     self.context = context
@@ -563,6 +567,14 @@ extension OptimizationLevel {
     case O2: return LLVMCodeGenLevelDefault
     case O3: return LLVMCodeGenLevelAggressive
     default: return LLVMCodeGenLevelNone
+    }
+  }
+}
+
+extension SourceLocation {
+  var raw: RawSourceLocation {
+    return (file ?? "").withCString {
+      return RawSourceLocation(line: Int32(line), column: Int32(column), file: strdup($0))
     }
   }
 }

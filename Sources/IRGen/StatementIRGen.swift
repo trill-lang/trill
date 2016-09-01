@@ -31,6 +31,7 @@ extension IRGenerator {
       LLVMSetExternallyInitialized(binding.ref, 1)
       return binding
     }
+    LLVMGetMetadata(binding.ref, 0)
     let llvmType = resolveLLVMType(decl.type)
     guard let rhs = decl.rhs else {
       LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
@@ -72,7 +73,8 @@ extension IRGenerator {
     if binding == nil {
       binding = createEntryBlockAlloca(function, type: irType,
                                        name: decl.name.name,
-                                       storage: storage(for: type))
+                                       storage: storage(for: type),
+                                       loc: decl.startLoc())
     }
     varIRBindings[decl.name] = binding
     LLVMBuildStore(builder, value, binding!.ref)

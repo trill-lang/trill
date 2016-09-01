@@ -2,9 +2,6 @@
 //  SourceFile.swift
 //  Trill
 //
-//  Created by Harlan Haskins on 8/29/16.
-//  Copyright © 2016 Harlan. All rights reserved.
-//
 
 import Foundation
 

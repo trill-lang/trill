@@ -11,16 +11,17 @@ extension IRGenerator {
                               type: LLVMTypeRef,
                               name: String,
                               storage: Storage,
+                              loc: SourceLocation?,
                               initial: LLVMValueRef? = nil) -> VarBinding {
     let currentBlock = LLVMGetInsertBlock(builder)
     let entryBlock = LLVMGetEntryBasicBlock(function)
     LLVMPositionBuilder(builder, entryBlock, LLVMGetFirstInstruction(entryBlock))
-    let alloca = LLVMBuildAlloca(builder, type, name)!
+    let alloca = LLVMBuildAlloca(builder, type, name)
     LLVMPositionBuilderAtEnd(builder, currentBlock)
     if let initial = initial {
       LLVMBuildStore(builder, initial, alloca)
     }
-    return VarBinding(ref: alloca, storage: storage)
+    return VarBinding(ref: alloca!, storage: storage)
   }
   
   @discardableResult
@@ -39,7 +40,11 @@ extension IRGenerator {
     let type = resolveLLVMType(expr.returnType)
     let fType = LLVMFunctionType(type, argBuf, UInt32(expr.args.count),
                                  expr.hasVarArgs ? 1 : 0)
-    return LLVMAddFunction(module, mangled, fType)
+    let final = LLVMAddFunction(module, mangled, fType)
+    if let loc = expr.startLoc() {
+      LLVMCreateFunctionDebugInfo(debugBuilder, final, expr.formattedName, loc.raw)
+    }
+    return final
   }
   
   func visitBreakStmt(_ expr: BreakStmt) -> Result {
@@ -113,7 +118,8 @@ extension IRGenerator {
           res = codegenAlloc(type: returnType)
         } else {
           res = createEntryBlockAlloca(function, type: type,
-                                       name: "res", storage: storageKind)
+                                       name: "res", storage: storageKind,
+                                       loc: expr.startLoc())
         }
         if expr.isInitializer {
           varIRBindings["self"] = res!
@@ -131,6 +137,7 @@ extension IRGenerator {
                                        type: argType,
                                        name: arg.name.name,
                                        storage: storageKind,
+                                       loc: arg.startLoc(),
                                        initial: param)
         }
         varIRBindings[arg.name] = ptr

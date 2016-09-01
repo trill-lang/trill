@@ -126,6 +126,7 @@
 		DC7968341D765A1000FF7A02 /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968331D765A1000FF7A02 /* libclangFrontend.a */; };
 		DC7968361D765A1E00FF7A02 /* libclangEdit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968351D765A1E00FF7A02 /* libclangEdit.a */; };
 		DC7968381D765A2000FF7A02 /* libclangFrontendTool.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968371D765A2000FF7A02 /* libclangFrontendTool.a */; };
+		DC7D41A01D7769130012C9BB /* DebugInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC7D419E1D7769130012C9BB /* DebugInfo.cpp */; };
 		DC98BBBB1D59A31400677C66 /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E01D1FBF52003A8DED /* libclangAST.a */; };
 		DC98BBBC1D59A31500677C66 /* libclangParse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E41D1FBF52003A8DED /* libclangParse.a */; };
 		DC98BBBD1D59A31700677C66 /* libclangSema.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E61D1FBF52003A8DED /* libclangSema.a */; };
@@ -337,6 +338,9 @@
 		DC7968331D765A1000FF7A02 /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontend.a; sourceTree = "<group>"; };
 		DC7968351D765A1E00FF7A02 /* libclangEdit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangEdit.a; path = ../../../../../../usr/local/llvm/lib/libclangEdit.a; sourceTree = "<group>"; };
 		DC7968371D765A2000FF7A02 /* libclangFrontendTool.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontendTool.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontendTool.a; sourceTree = "<group>"; };
+		DC7D419E1D7769130012C9BB /* DebugInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DebugInfo.cpp; sourceTree = "<group>"; };
+		DC7D419F1D7769130012C9BB /* DebugInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugInfo.h; sourceTree = "<group>"; };
+		DC7D41A11D7769630012C9BB /* Imports.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Imports.h; sourceTree = "<group>"; };
 		DC98BBC51D5EE92F00677C66 /* libtinygc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtinygc.a; path = ../../../../usr/local/lib/libtinygc.a; sourceTree = "<group>"; };
 		DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = /usr/local/llvm/lib/libLLVMCodeGen.a; sourceTree = "<absolute>"; };
@@ -526,6 +530,9 @@
 			children = (
 				DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */,
 				DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */,
+				DC7D41A11D7769630012C9BB /* Imports.h */,
+				DC7D419E1D7769130012C9BB /* DebugInfo.cpp */,
+				DC7D419F1D7769130012C9BB /* DebugInfo.h */,
 			);
 			name = "LLVM Wrappers";
 			path = "Sources/LLVM Wrappers";
@@ -1037,6 +1044,7 @@
 				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
 				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
 				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,
+				DC7D41A01D7769130012C9BB /* DebugInfo.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1270,6 +1278,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = /usr/local/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
 				LIBRARY_SEARCH_PATHS = (
@@ -1290,6 +1299,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
 				HEADER_SEARCH_PATHS = /usr/local/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
 				LIBRARY_SEARCH_PATHS = (
