@@ -332,16 +332,13 @@ class Sema: ASTTransformer, Pass {
       }
       if !candidate.hasVarArgs && candArgs.count != args.count { continue }
       for (candArg, exprArg) in zip(candArgs, args) {
-        if let externalName = candArg.externalName, exprArg.label != externalName { continue search }
+        if let externalName = candArg.externalName,
+           exprArg.label != externalName { continue search }
         guard var valType = exprArg.val.type else { continue search }
         let type = context.canonicalType(candArg.type)
         // automatically coerce number literals.
-        if case .int = type, exprArg.val is NumExpr {
+        if propagateContextualType(type, to: exprArg.val) {
           valType = type
-          exprArg.val.type = valType
-        } else if context.canBeNil(type), exprArg.val is NilExpr {
-          valType = type
-          exprArg.val.type = valType
         }
         if !matches(type, .any) && !matches(type, valType) {
           continue search
@@ -709,19 +706,11 @@ class Sema: ASTTransformer, Pass {
     
     let canLhs = context.canonicalType(lhsType)
     let canRhs = context.canonicalType(rhsType)
-    if case .int = canLhs, expr.rhs is NumExpr {
-      expr.rhs.type = lhsType
-      rhsType = lhsType
-    } else if case .int = canRhs, expr.lhs is NumExpr {
-      expr.lhs.type = rhsType
+    
+    if propagateContextualType(rhsType, to: expr.lhs) {
       lhsType = rhsType
-    }
-    if context.canBeNil(canLhs), expr.rhs is NilExpr {
-      expr.rhs.type = lhsType
+    } else if propagateContextualType(lhsType, to: expr.rhs) {
       rhsType = lhsType
-    } else if context.canBeNil(canRhs), expr.lhs is NilExpr {
-      expr.lhs.type = rhsType
-      lhsType = rhsType
     }
     
     if expr.op.isAssign {
@@ -802,13 +791,7 @@ class Sema: ASTTransformer, Pass {
   
   override func visitReturnStmt(_ stmt: ReturnStmt) {
     guard let returnType = currentClosure?.returnType.type ?? currentFunction?.returnType.type else { return }
-    let canRet = context.canonicalType(returnType)
-    if case .int = canRet, stmt.value is NumExpr {
-      stmt.value.type = returnType
-    }
-    if context.canBeNil(canRet), stmt.value is NilExpr {
-      stmt.value.type = returnType
-    }
+    propagateContextualType(returnType, to: stmt.value)
     super.visitReturnStmt(stmt)
   }
   
@@ -847,5 +830,30 @@ class Sema: ASTTransformer, Pass {
         return
       }
     }
+  }
+  
+  @discardableResult
+  func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
+    let canTy = context.canonicalType(contextualType)
+    if case .int = canTy, expr is NumExpr {
+      expr.type = contextualType
+      return true
+    }
+    if let op = expr as? InfixOperatorExpr {
+      if
+        case .int = contextualType,
+        op.lhs is NumExpr,
+        op.rhs is NumExpr {
+        op.rhs.type = contextualType
+        op.lhs.type = contextualType
+        op.type = context.operatorType(op, for: contextualType)
+        return true
+      }
+    }
+    if context.canBeNil(canTy), expr is NilExpr {
+      expr.type = contextualType
+      return true
+    }
+    return false
   }
 }

@@ -60,7 +60,7 @@ void crash() {
   print_stacktrace();
   abort();
 }
-  
+
 TRILL_NORETURN
 void trill_fatalError(const char *_Nonnull message) {
   fprintf(stderr, "fatal error: %s\n", message);

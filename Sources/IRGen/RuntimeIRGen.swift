@@ -30,16 +30,15 @@ extension IRGenerator {
     
     if let deinitializer = typeDecl.deinitializer {
       var voidPointerTy = LLVMPointerType(LLVMInt8Type(), 0)
-      var deinitializerTy = LLVMFunctionType(LLVMVoidType(), &voidPointerTy, 1, 0)
+      let deinitializerTy = LLVMFunctionType(LLVMVoidType(), &voidPointerTy, 1, 0)
       let deinitializer = codegenFunctionPrototype(deinitializer)
-      let args = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: 2)
       let deinitializerCast = LLVMBuildBitCast(builder, deinitializer,
                                             LLVMPointerType(deinitializerTy, 0),
                                             "deinitializer-cast")
-      defer { free(args) }
-      args[0] = ptr
-      args[1] = deinitializerCast
-      LLVMBuildCall(builder, register, args, 2, "")
+      var args: [LLVMValueRef?] = [ptr, deinitializerCast]
+      _ = args.withUnsafeMutableBufferPointer { buf in
+        LLVMBuildCall(builder, register, buf.baseAddress, UInt32(buf.count), "")
+      }
     }
     return VarBinding(ref: res, storage: .reference)
   }

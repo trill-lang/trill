@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-_Pragma("clang assume_nonnull begin")
+TRILL_ASSUME_NONNULL_BEGIN
   
 typedef enum RawMode {
   EmitBinary, EmitObj, EmitASM, EmitLLVM,
@@ -77,6 +77,6 @@ void DestroyRawOptions(RawOptions options);
 }
 #endif
 
-_Pragma("clang assume_nonnull end")
+TRILL_ASSUME_NONNULL_END
 
 #endif /* LLVMWrappers_hpp */

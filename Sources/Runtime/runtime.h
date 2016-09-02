@@ -7,9 +7,9 @@
 #define runtime_h
 
 #include <stdio.h>
+#include "defines.h"
 
-#define TRILL_NORETURN __attribute__((noreturn))
-#define TRILL_NONNULL _Nonnull
+// TRILL_ASSUME_NONNULL_BEGIN
 
 #ifdef __cplusplus
 namespace trill {
@@ -28,5 +28,7 @@ void trill_registerDeinitializer(void *_Nonnull object, void (*_Nonnull deinitia
 }
 }
 #endif
+
+// TRILL_ASSUME_NONNULL_END
   
 #endif /* runtime_h */

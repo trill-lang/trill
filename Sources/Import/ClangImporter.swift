@@ -91,7 +91,7 @@ class ClangImporter: Pass {
   
   #if os(macOS)
   // TODO: PLEASE stop using these absolute Xcode paths.
-  static let paths = headerFiles.map { "/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/" + $0 } + ["/usr/local/include/trill/trill.h"]
+  static let paths = ["/usr/local/include/trill/trill.h"] + headerFiles.map { "/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/" + $0 }
   #else
   static let paths = headerFiles.map { "/usr/local/include/" + $0 } + ["/usr/local/include/trill/trill.h"]
   #endif
@@ -116,7 +116,7 @@ class ClangImporter: Pass {
       "-I/usr/include",
       "-I/usr/local/include",
       "-I/usr/local/llvm/include",
-      ]
+    ]
     #if os(macOS)
       args.append("-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/")
     #endif
@@ -268,11 +268,7 @@ class ClangImporter: Pass {
       clang_disposeTokens(tu, tokens, tokenCount)
     }
     
-    let cursors = UnsafeMutablePointer<CXCursor>.allocate(capacity: Int(tokenCount))
-    defer {
-      free(cursors)
-    }
-    clang_annotateTokens(tu, tokens, tokenCount, cursors)
+    clang_annotateTokens(tu, tokens, tokenCount, nil)
     
     let name = clang_getTokenSpelling(tu, tokens[0]).asSwift()
     guard context.global(named: name) == nil else { return }

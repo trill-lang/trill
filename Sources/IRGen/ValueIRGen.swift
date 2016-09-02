@@ -24,13 +24,11 @@ extension IRGenerator {
     guard case .tuple(let fields) = type else { fatalError("must be tuple type") }
     let name = Mangler.mangle(context.canonicalType(type))
     if let existing = LLVMGetTypeByName(module, name) { return existing }
-    let types = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: fields.count)
-    defer { types.deallocate(capacity: fields.count) }
-    for (idx, field) in fields.enumerated() {
-      types[idx] = resolveLLVMType(field)
-    }
+    var types: [LLVMValueRef?] = fields.map(resolveLLVMType)
     let named = LLVMStructCreateNamed(llvmContext, name)!
-    LLVMStructSetBody(named, types, UInt32(fields.count), 1)
+    _ = types.withUnsafeMutableBufferPointer { buf in
+      LLVMStructSetBody(named, buf.baseAddress, UInt32(buf.count), 1)
+    }
     return named
   }
   
@@ -113,12 +111,10 @@ extension IRGenerator {
   func visitStringExpr(_ expr: StringExpr) -> Result {
     let globalPtr = codegenGlobalStringPtr(expr.value)
     let zero = LLVMConstNull(typeIRBindings[.int64]!)
-    let indices = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: 2)
-    defer { free(indices) }
-    indices[0] = zero!
-    indices[1] = zero!
-    
-    return LLVMConstGEP(globalPtr, indices, 2)
+    var indices = [zero, zero]
+    return indices.withUnsafeMutableBufferPointer { buf in
+      return LLVMConstGEP(globalPtr, buf.baseAddress, UInt32(buf.count))
+    }
   }
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
@@ -229,14 +225,13 @@ extension IRGenerator {
     LLVMBuildBr(builder, endBB)
     LLVMPositionBuilderAtEnd(builder, endBB)
     let phi = LLVMBuildPhi(builder, LLVMInt1Type(), "op-phi")
-    let values = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: 2)
-    defer { values.deallocate(capacity: 2) }
-    values[0] = lhs
-    values[1] = rhs
-    let blocks = UnsafeMutablePointer<LLVMBasicBlockRef?>.allocate(capacity: 2)
-    blocks[0] = block
-    blocks[1] = secondCaseBB
-    LLVMAddIncoming(phi, values, blocks, 2)
+    var values = [lhs, rhs]
+    var blocks = [block, secondCaseBB]
+    values.withUnsafeMutableBufferPointer { valueBuf in
+      _ = blocks.withUnsafeMutableBufferPointer { blockBuf in
+        LLVMAddIncoming(phi, valueBuf.baseAddress, blockBuf.baseAddress, UInt32(valueBuf.count))
+      }
+    }
     return phi
   }
   
@@ -324,15 +319,13 @@ extension IRGenerator {
     LLVMBuildBr(builder, endbb)
     LLVMPositionBuilderAtEnd(builder, endbb)
     let phi = LLVMBuildPhi(builder, llvmType, "ternary-phi")
-    let vals = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: 2)
-    defer { free(vals) }
-    vals[0] = trueVal
-    vals[1] = falseVal
-    let bbs = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: 2)
-    defer { free(bbs) }
-    bbs[0] = truebb!
-    bbs[1] = falsebb!
-    LLVMAddIncoming(phi, vals, bbs, 2)
+    var values = [trueVal, falseVal]
+    var blocks = [truebb, falsebb]
+    values.withUnsafeMutableBufferPointer { valueBuf in
+      _ = blocks.withUnsafeMutableBufferPointer { blockBuf in
+        LLVMAddIncoming(phi, valueBuf.baseAddress, blockBuf.baseAddress, UInt32(valueBuf.count))
+      }
+    }
     return phi
   }
 }

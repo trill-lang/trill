@@ -7,5 +7,6 @@
 #define BridgingHeader_h
 
 #include "LLVMWrappers.h"
+#include "runtime.h"
 
 #endif /* BridgingHeader_h */

@@ -293,18 +293,20 @@ class IRGenerator: ASTVisitor, Pass {
   func codegenMain(forJIT: Bool) throws -> Result {
     guard
       let mainFunction = mainFunction,
-      let mainFuncDecl = context.mainFunction,
       let mainFlags = context.mainFlags else {
         throw LLVMError.noMainFunction
     }
     let hasArgcArgv = mainFlags.contains(.args)
     let ret = mainFlags.contains(.exitCode) ? resolveLLVMType(.int64) : LLVMVoidType()
     
-    let params = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: 2)
-    params[0] = LLVMInt32Type()
-    params[1] = LLVMPointerType(LLVMPointerType(LLVMInt8Type(), 0), 0)
-    defer { free(params) }
-    let mainType = LLVMFunctionType(ret, params, 2, 0)
+    var params = [
+      LLVMInt32Type(),
+      LLVMPointerType(LLVMPointerType(LLVMInt8Type(), 0), 0)
+    ]
+    
+    let mainType = params.withUnsafeMutableBufferPointer { buf in
+      LLVMFunctionType(ret, buf.baseAddress, UInt32(buf.count), 0)
+    }
     
     // The JIT can't use 'main' because then it'll resolve to the main from Swift.
     let mainName = forJIT ? "trill_main" : "main"
@@ -316,11 +318,13 @@ class IRGenerator: ASTVisitor, Pass {
     
     let val: LLVMValueRef?
     if hasArgcArgv {
-      let argsPtr = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: 2)
-      defer { free(argsPtr) }
-      argsPtr[0] = LLVMBuildSExt(builder, LLVMGetParam(function, 0), LLVMInt64Type(), "argc-ext")
-      argsPtr[1] = LLVMGetParam(function, 1)
-      val = LLVMBuildCall(builder, mainFunction, argsPtr, 2, "")
+      var args = [
+        LLVMBuildSExt(builder, LLVMGetParam(function, 0), LLVMInt64Type(), "argc-ext"),
+        LLVMGetParam(function, 1)
+      ]
+      val = args.withUnsafeMutableBufferPointer { buf in
+        LLVMBuildCall(builder, mainFunction, buf.baseAddress, UInt32(buf.count), "")
+      }
     } else {
       val = LLVMBuildCall(builder, mainFunction, nil, 0, "")
     }
@@ -453,13 +457,11 @@ class IRGenerator: ASTVisitor, Pass {
       let llvmType = resolveLLVMType(subtype)
       return LLVMPointerType(llvmType, 0)
     case .function(let args, let ret):
-      let argTypes = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: args.count)
-      defer { argTypes.deallocate(capacity: args.count) }
-      for (idx, argType) in args.enumerated() {
-        argTypes[idx] = resolveLLVMType(argType)
-      }
+      var argTypes: [LLVMTypeRef?] = args.map(resolveLLVMType)
       let retTy = resolveLLVMType(ret)
-      return LLVMPointerType(LLVMFunctionType(retTy, argTypes, UInt32(args.count), 0), 0)
+      return argTypes.withUnsafeMutableBufferPointer { buf in
+        LLVMPointerType(LLVMFunctionType(retTy, buf.baseAddress, UInt32(buf.count), 0), 0)
+      }
     case .tuple:
       return codegenTupleType(type)
     case .custom:

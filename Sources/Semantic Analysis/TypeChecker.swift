@@ -16,6 +16,7 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case subscriptWithInvalidType(type: DataType)
   case nonBoolCondition(got: DataType?)
   case overflow(raw: String, type: DataType)
+  case shiftPastBitWidth(type: DataType, shiftWidth: IntMax)
   
   var description: String {
     switch self {
@@ -40,6 +41,8 @@ enum TypeCheckError: Error, CustomStringConvertible {
       return "if condition must be a Bool (got '\(typeName)')"
     case .overflow(let raw, let type):
       return "value '\(raw)' overflows when stored into '\(type)'"
+    case .shiftPastBitWidth(let type, let shiftWidth):
+      return "shift amount \(shiftWidth) is greater than or equal to \(type)'s size in bits"
     }
   }
 }
@@ -236,6 +239,7 @@ class TypeChecker: ASTTransformer, Pass {
             highlights: [
               expr.lhs.sourceRange
         ])
+      return
     } else if !matches(lhsType, rhsType) {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
             loc: expr.opRange?.start,
@@ -243,6 +247,17 @@ class TypeChecker: ASTTransformer, Pass {
               expr.lhs.sourceRange,
               expr.opRange,
               expr.rhs.sourceRange ])
+      return
+    } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
+            let num = expr.rhs as? NumExpr,
+            case .int(let width)? = expr.type,
+            num.value >= IntMax(width) {
+      error(TypeCheckError.shiftPastBitWidth(type: expr.type!, shiftWidth: num.value),
+            loc: num.startLoc(),
+            highlights: [
+              num.sourceRange
+        ])
+      return
     }
     super.visitInfixOperatorExpr(expr)
   }

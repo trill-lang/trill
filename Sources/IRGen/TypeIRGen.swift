@@ -18,12 +18,10 @@ extension IRGenerator {
     let structure = LLVMStructCreateNamed(llvmContext, expr.name.name)
     typeIRBindings[expr.type] = structure
     
-    let ptr = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: expr.fields.count)
-    defer { free(ptr) }
-    for (idx, member) in expr.fields.enumerated() {
-      ptr[idx] = resolveLLVMType(member.type)
+    var fieldTys: [LLVMTypeRef?] = expr.fields.map { resolveLLVMType($0.type) }
+    _ = fieldTys.withUnsafeMutableBufferPointer { buf in
+      LLVMStructSetBody(structure, buf.baseAddress, UInt32(buf.count), 0)
     }
-    LLVMStructSetBody(structure, ptr, UInt32(expr.fields.count), 0)
     
     for method in expr.methods {
       codegenFunctionPrototype(method)

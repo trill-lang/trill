@@ -122,6 +122,7 @@
 		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
 		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
+		DC78DA421D7920930015035A /* defines.h in Headers */ = {isa = PBXBuildFile; fileRef = DC78DA411D7920930015035A /* defines.h */; };
 		DC7968321D76219B00FF7A02 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7968311D76219B00FF7A02 /* Options.swift */; };
 		DC7968341D765A1000FF7A02 /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968331D765A1000FF7A02 /* libclangFrontend.a */; };
 		DC7968361D765A1E00FF7A02 /* libclangEdit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968351D765A1E00FF7A02 /* libclangEdit.a */; };
@@ -333,6 +334,7 @@
 		DC5F39191D1FBFDD003A8DED /* libclangTidyReadabilityModule.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyReadabilityModule.a; path = ../../../../usr/local/llvm/lib/libclangTidyReadabilityModule.a; sourceTree = "<group>"; };
 		DC5F391A1D1FBFDD003A8DED /* libclangTidyUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyUtils.a; path = ../../../../usr/local/llvm/lib/libclangTidyUtils.a; sourceTree = "<group>"; };
 		DC5F394F1D1FC016003A8DED /* libclang_rt.osx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclang_rt.osx.a; path = ../../../../usr/local/llvm/lib/clang/3.8.0/lib/darwin/libclang_rt.osx.a; sourceTree = "<group>"; };
+		DC78DA411D7920930015035A /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defines.h; path = Sources/Runtime/defines.h; sourceTree = SOURCE_ROOT; };
 		DC7968311D76219B00FF7A02 /* Options.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Options.swift; path = Sources/Infrastructure/Options.swift; sourceTree = SOURCE_ROOT; };
 		DC7968331D765A1000FF7A02 /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontend.a; sourceTree = "<group>"; };
 		DC7968351D765A1E00FF7A02 /* libclangEdit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangEdit.a; path = ../../../../../../usr/local/llvm/lib/libclangEdit.a; sourceTree = "<group>"; };
@@ -603,6 +605,7 @@
 				DC1770151D69128500FEFB85 /* demangle.h */,
 				DC1770161D69128500FEFB85 /* runtime.cpp */,
 				DC1770171D69128500FEFB85 /* runtime.h */,
+				DC78DA411D7920930015035A /* defines.h */,
 				DC1770181D69128500FEFB85 /* trill.h */,
 			);
 			name = Runtime;
@@ -791,6 +794,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC17701D1D69128500FEFB85 /* trill.h in Headers */,
+				DC78DA421D7920930015035A /* defines.h in Headers */,
 				DC17701A1D69128500FEFB85 /* demangle.h in Headers */,
 				DC17701C1D69128500FEFB85 /* runtime.h in Headers */,
 			);

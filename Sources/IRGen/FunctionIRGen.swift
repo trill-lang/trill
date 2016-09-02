@@ -28,17 +28,19 @@ extension IRGenerator {
     let mangled = Mangler.mangle(expr)
     let existing = LLVMGetNamedFunction(module, mangled)
     if existing != nil { return existing }
-    let argBuf = UnsafeMutablePointer<LLVMTypeRef?>.allocate(capacity: expr.args.count)
-    for (idx, arg) in expr.args.enumerated() {
+    var argTys = [LLVMTypeRef?]()
+    for arg in expr.args {
       var type = resolveLLVMType(arg.type)
       if arg.isImplicitSelf && storage(for: arg.type) != .reference {
         type = LLVMPointerType(type, 0)
       }
-      argBuf[idx] = type
+      argTys.append(type)
     }
     let type = resolveLLVMType(expr.returnType)
-    let fType = LLVMFunctionType(type, argBuf, UInt32(expr.args.count),
+    let fType = argTys.withUnsafeMutableBufferPointer { buf in
+      LLVMFunctionType(type, buf.baseAddress, UInt32(buf.count),
                                  expr.hasVarArgs ? 1 : 0)
+    }
     return LLVMAddFunction(module, mangled, fType)
   }
   
@@ -171,14 +173,6 @@ extension IRGenerator {
     return function
   }
   
-  func codegenArguments(_ args: [Argument]) -> UnsafeMutablePointer<LLVMValueRef?> {
-    let pointer = UnsafeMutablePointer<LLVMValueRef?>.allocate(capacity: args.count)
-    for (idx, arg) in args.enumerated() {
-      pointer[idx] = visit(arg.val)
-    }
-    return pointer
-  }
-  
   func codegenGlobalInit() -> Result {
     let name = Mangler.mangle(FuncDecl(name: "globalInit", returnType: DataType.void.ref(), args: []))
     let existing = LLVMGetNamedFunction(module, name)
@@ -202,7 +196,7 @@ extension IRGenerator {
   }
   
   func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
-    guard var decl = expr.decl else { fatalError("no decl on funccall") }
+    guard let decl = expr.decl else { fatalError("no decl on funccall") }
     var function: LLVMValueRef? = nil
     var args = expr.args
     if
@@ -219,11 +213,12 @@ extension IRGenerator {
       function = visit(expr.lhs)
     }
     
-    let pointer = codegenArguments(args)
-    defer { free(pointer) }
+    var argVals = args.map { visit($0.val) }
     let name = expr.type == .void ? "" : "calltmp"
-    let call = LLVMBuildCall(builder, function, pointer,
-                             UInt32(args.count), name)
+    let call = argVals.withUnsafeMutableBufferPointer { buf in
+      LLVMBuildCall(builder, function, buf.baseAddress,
+                    UInt32(buf.count), name)
+    }
     if decl.has(attribute: .noreturn) {
       LLVMBuildUnreachable(builder)
     }
