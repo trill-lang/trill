@@ -33,5 +33,5 @@ func main() {
                  IntList(value: 1000, next: nil)))
     list.print()
     println("")
-    println(list.get(-1))
+    // println(list.get(-1))
 }

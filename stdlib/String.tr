@@ -2,12 +2,14 @@ type String {
     var _storage: ByteArray
     init(cString: *Int8) {
         self._storage = ByteArray(cString)
+        self._storage.append(0)
     }
     init(_owning cString: *Int8, length: Int) {
         self._storage = ByteArray(_owning: cString, length: length)
     }
     init() {
         self._storage = ByteArray(capacity: 256)
+        self._storage.append(0)
     }
     func length() -> Int {
         return self._storage.length
@@ -16,22 +18,48 @@ type String {
         return self._storage.bytes
     }
     mutating func append(_ char: Int8) {
+        self._storage.remove(at: self._storage.length)
         self._storage.append(char)
+        self._storage.append(0)
     }
     mutating func append(_ string: String) {
+        self._storage.remove(at: self._storage.length)
         self._storage.append(string._storage)
+        self._storage.append(0)
     }
     mutating func append(_ cString: *Int8) {
+        self._storage.remove(at: self._storage.length)
         self._storage.append(cString)
+        self._storage.append(0)
     }
     mutating func insert(_ cString: *Int8, length: Int, at index: Int) {
+        if index == self.length() {
+            self._storage.remove(at: self.length())
+        }
         self._storage.insert(cString, length: length, at: index)
+        if index == self.length() {
+            self._storage.append(0)
+        }
     }
     mutating func insert(_ cString: *Int8, at index: Int) {
+        let isEnd = index == self.length()
+        if isEnd {
+            self._storage.remove(at: self.length())
+        }
         self._storage.insert(cString, at: index)
+        if isEnd {
+            self._storage.append(0)
+        }
     }
     mutating func insert(_ string: String, at index: Int) {
+        let isEnd = index == self.length()
+        if isEnd {
+            self._storage.remove(at: self.length())
+        }
         self._storage.insert(string._storage, at: index)
+        if isEnd {
+            self._storage.append(0)
+        }
     }
     func get(_ index: Int) -> Int8 {
         return self._storage.get(index)
@@ -61,76 +89,7 @@ type String {
         }
         return true
     }
-}
-
-func print(_ string: String) {
-    printf("%s", string.cString())
-}
-
-func println(_ string: String) {
-    printf("%s\n", string.cString())
-}
-
-func print(_ string: *Int8) {
-    printf("%s", string)
-}
-
-func println(_ string: *Int8) {
-    printf("%s\n", string)
-}
-
-func print(_ bool: Bool) {
-    printf("%s", bool ? "true" : "false")
-}
-
-func println(_ bool: Bool) {
-    printf("%s\n", bool ? "true" : "false")
-}
-
-func print(_ int: Int) {
-    printf("%d", int)
-}
-
-func println(_ int: Int) {
-    printf("%d\n", int)
-}
-
-func print(_ int: Int8) {
-    printf("%c", int)
-}
-
-func println(_ int: Int8) {
-    printf("%c\n", int)
-}
-
-func print(_ int: Int16) {
-    printf("%d", int)
-}
-
-func println(_ int: Int16) {
-    printf("%d\n", int)
-}
-
-func print(_ int: Int32) {
-    printf("%d", int)
-}
-
-func println(_ int: Int32) {
-    printf("%d\n", int)
-}
-
-func print(_ float: Float) {
-    printf("%f", float)
-}
-
-func println(_ float: Float) {
-    printf("%f\n", float)
-}
-
-func print(_ double: Double) {
-    printf("%f", double)
-}
-
-func println(_ double: Double) {
-    printf("%f\n", double)
+    func mergeSorted() -> String {
+        return String(_storage: self._storage.mergeSorted())
+    }
 }

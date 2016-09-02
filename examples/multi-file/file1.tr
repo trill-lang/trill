@@ -21,4 +21,6 @@ func main() {
     print("oneThousand.hash(): ")
     println(oneThousand.hash())
     println(oneThousand.isEmpty())
+    let sorted = oneThousand.mergeSorted()
+    print(oneThousand)
 }

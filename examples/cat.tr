@@ -1,6 +1,5 @@
-foreign type FILE {}
 foreign var stdout: *FILE
-foreign func malloc(_: Int) -> *Int8
+foreign func malloc(_: Int) -> *Void
 foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 
 func usage() {
@@ -14,6 +13,10 @@ func main(argc: Int, argv: **Int8) -> Int {
   }
   for var i = 1; i < argc; i += 1 {
     var f = fopen(argv[i], "r")
+    if f == nil {
+        printf("could not open file %s\n", argv[i])
+        return 1
+    }
     var buf = malloc(100) as *Int8
     var s = buf
     while true {
