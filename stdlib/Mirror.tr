@@ -1,0 +1,49 @@
+type MetaType = *Void
+type FieldMetadata = *Void
+
+type Mirror {
+    let _metadata: MetaType
+    init(reflecting _type: MetaType) {
+        self._metadata = _type
+    }
+
+    func name() -> *Int8 {
+        return trill_getTypeName(self._metadata)
+    }
+
+    func sizeInBits() -> Int {
+        return trill_getTypeSizeInBits(self._metadata)
+    }
+
+    func print() {
+        if (self._metadata == nil) {
+            puts("Metadata is null!\n");
+            return;
+        }
+        printf("Metadata for type %s (size: %d):\n", self.name(), self.sizeInBits());
+        for var i = 0; i < self.numberOfFields(); i += 1 {
+            let field = self.field(at: i)
+            printf("  └ %s: %s\n", field.name(), field.typeMetadata().name());
+        }
+    }
+
+    func field(at index: Int) -> FieldMirror {
+        return FieldMirror(reflecting: trill_getFieldMetadata(self._metadata, index))
+    }
+    func numberOfFields() -> Int {
+        return trill_getNumFields(self._metadata)
+    }
+}
+
+type FieldMirror {
+    let _metadata: FieldMetadata
+    init(reflecting field: FieldMetadata) {
+        self._metadata = field
+    }
+    func name() -> *Int8 {
+        return trill_getFieldName(self._metadata)
+    }
+    func typeMetadata() -> Mirror {
+        return Mirror(reflecting: trill_getFieldType(self._metadata))
+    }
+}

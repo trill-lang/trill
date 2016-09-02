@@ -132,6 +132,9 @@ class IRGenerator: ASTVisitor, Pass {
   /// The target triple we're codegenning for
   let targetTriple: String
   
+  /// The data layout for the current target
+  let layout: LLVMTargetDataRef
+  
   /// The ASTContext currently being generated
   let context: ASTContext
   
@@ -147,6 +150,8 @@ class IRGenerator: ASTVisitor, Pass {
   
   /// A map of types to their LLVMTypeRefs
   var typeIRBindings = IRGenerator.builtinTypeBindings
+  
+  var typeMetadataMap = [DataType: LLVMValueRef]()
   
   /// A static set of mappings between all the builtin Trill types to their
   /// LLVM counterparts.
@@ -233,6 +238,8 @@ class IRGenerator: ASTVisitor, Pass {
         LLVMRelocDefault,
         LLVMCodeModelDefault)
     }
+    
+    layout = LLVMGetTargetMachineData(targetMachine)
     
     self.context = context
   }

@@ -7,14 +7,19 @@ indirect type IntList {
     let value: Int
     let next: IntList
 
-    func print() {
+    func _print() {
         print("(")
         print(self.value)
         print(")")
         if self.next != nil {
             print("->")
-            self.next.print()
+            self.next._print()
         }
+    }
+
+    func print() {
+        self._print()
+        println("")
     }
 
     func get(_ index: Int) -> Int {
@@ -32,6 +37,5 @@ func main() {
                 IntList(value: 100, next:
                  IntList(value: 1000, next: nil)))
     list.print()
-    println("")
-    // println(list.get(-1))
+    println(list.get(-1))
 }

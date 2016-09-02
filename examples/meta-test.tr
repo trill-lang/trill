@@ -1,0 +1,9 @@
+type Foo {
+    let bar: Int
+    let baz: *Foo
+}
+
+func main() {
+    let f = Foo(bar: 100, baz: nil)
+    Mirror(reflecting: typeOf(f)).print()
+}

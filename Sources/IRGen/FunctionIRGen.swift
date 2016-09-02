@@ -57,7 +57,7 @@ extension IRGenerator {
     }
     return LLVMBuildBr(builder, currentContinueTarget)
   }
-  
+
   func synthesizeIntializer(_ expr: FuncDecl, function: LLVMValueRef) -> LLVMValueRef {
     guard expr.isInitializer,
         let body = expr.body,
@@ -68,6 +68,7 @@ extension IRGenerator {
     }
     let entryBB = LLVMAppendBasicBlock(function, "entry")
     LLVMPositionBuilderAtEnd(builder, entryBB)
+    
     var retLLVMType = resolveLLVMType(type)
     if typeDecl.isIndirect {
       retLLVMType = LLVMGetElementType(retLLVMType)
@@ -197,6 +198,11 @@ extension IRGenerator {
   
   func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     guard let decl = expr.decl else { fatalError("no decl on funccall") }
+    
+    if decl === IntrinsicFunctions.typeOf {
+      return codegenTypeOfCall(expr)
+    }
+    
     var function: LLVMValueRef? = nil
     var args = expr.args
     if

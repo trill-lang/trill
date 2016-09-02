@@ -8,12 +8,14 @@ import Foundation
 extension IRGenerator {
   func codegenGlobalStringPtr(_ string: String) -> Result {
     if let global = globalStringMap[string] { return global }
+    let length = UInt32(string.utf8.count)
     let globalArray = LLVMAddGlobal(module,
-                                    LLVMArrayType(LLVMInt8Type(), UInt32(string.characters.count) + 1),
+                                    LLVMArrayType(LLVMInt8Type(), length + 1),
                                     "str")!
     LLVMSetAlignment(globalArray, 1)
-    string.withCString { str in
-      let str = LLVMConstStringInContext(llvmContext, str, UInt32(string.characters.count), 0)
+    var utf8String = string.utf8CString
+    utf8String.withUnsafeMutableBufferPointer { buf in
+      let str = LLVMConstStringInContext(llvmContext, buf.baseAddress, length, 0)
       LLVMSetInitializer(globalArray, str)
     }
     globalStringMap[string] = globalArray

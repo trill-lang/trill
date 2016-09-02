@@ -44,6 +44,8 @@
 		DC02C6161D58377200FE8374 /* libLLVMSymbolize.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6131D58377200FE8374 /* libLLVMSymbolize.a */; };
 		DC02C6181D5837BE00FE8374 /* libLLVMTransformUtils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6171D5837BE00FE8374 /* libLLVMTransformUtils.a */; };
 		DC02C61A1D58380A00FE8374 /* libLLVMipo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6191D58380A00FE8374 /* libLLVMipo.a */; };
+		DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
+		DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */; };
 		DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
 		DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
 		DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
@@ -234,6 +236,8 @@
 		DC02C6131D58377200FE8374 /* libLLVMSymbolize.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMSymbolize.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMSymbolize.a"; sourceTree = "<group>"; };
 		DC02C6171D5837BE00FE8374 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMTransformUtils.a"; sourceTree = "<group>"; };
 		DC02C6191D58380A00FE8374 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMipo.a"; sourceTree = "<group>"; };
+		DC03B9081D79F84500C980D3 /* Builtins.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Builtins.swift; path = ../IRGen/Builtins.swift; sourceTree = "<group>"; };
+		DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuiltinIRGen.swift; sourceTree = "<group>"; };
 		DC0FE9321CE3061A00224874 /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC176FCD1D6911A200FEFB85 /* ASTContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTContext.swift; sourceTree = "<group>"; };
 		DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTTransformer.swift; path = ../Base/ASTTransformer.swift; sourceTree = "<group>"; };
@@ -474,6 +478,7 @@
 			children = (
 				DC176FCD1D6911A200FEFB85 /* ASTContext.swift */,
 				DC176FD21D6911A200FEFB85 /* ASTBase.swift */,
+				DC03B9081D79F84500C980D3 /* Builtins.swift */,
 				DC176FD31D6911A200FEFB85 /* Functions.swift */,
 				DC176FD41D6911A200FEFB85 /* Operators.swift */,
 				DC176FD51D6911A200FEFB85 /* Statements.swift */,
@@ -513,6 +518,7 @@
 			isa = PBXGroup;
 			children = (
 				DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */,
+				DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */,
 				DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */,
 				DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */,
 				DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */,
@@ -1010,6 +1016,7 @@
 				DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */,
 				DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */,
 				DC7968321D76219B00FF7A02 /* Options.swift in Sources */,
+				DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */,
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
@@ -1026,6 +1033,7 @@
 				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
 				DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */,
 				DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */,
+				DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */,
 				DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */,
 				DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
 				DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */,

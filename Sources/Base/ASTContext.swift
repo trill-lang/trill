@@ -292,7 +292,14 @@ public class ASTContext {
   }
   
   func functions(named name: Identifier) -> [FuncDecl] {
-    return funcDeclMap[name.name] ?? []
+    var results = [FuncDecl]()
+    if let decls = funcDeclMap[name.name] {
+      results.append(contentsOf: decls)
+    }
+    for intrinsic in IntrinsicFunctions.allIntrinsics where intrinsic.name == name {
+      results.append(intrinsic)
+    }
+    return results
   }
   
   func global(named name: Identifier) -> VarAssignDecl? {
