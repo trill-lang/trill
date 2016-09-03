@@ -125,7 +125,7 @@ class LexerTextStorage: NSTextStorage {
       do {
         try parser.parseTopLevel(into: context)
       } catch let error as Diagnostic {
-        diag.add(error: error)
+        diag.add(error)
       } catch {
         diag.error("\(error)")
       }

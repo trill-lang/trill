@@ -80,20 +80,27 @@ class AttributedStringConsumer: DiagnosticConsumer {
   }
   
   func consume(_ diagnostic: Diagnostic) {
-    if let sourceLoc = diagnostic.loc {
-      bold("\(file.path.basename):\(sourceLoc.line):\(sourceLoc.column): ")
-    }
     switch diagnostic.diagnosticType {
     case .warning:
       bold("warning: ", .magenta)
+    case .note:
+      bold("note: ", .green)
     case .error:
       bold("error: ", .red)
     }
     bold("\(diagnostic.message)\n")
+    bold(" --> ")
+    string("\(file.path.basename)")
     if let loc = diagnostic.loc, loc.line > 0 {
+      string(":\(loc.line):\(loc.column)\n")
       let line = file.lines[loc.line - 1]
+      let lineStr = "\(loc.line)"
+      let indentation = indent(lineStr.characters.count)
+      string(" \(indentation)|\n")
+      string(" \(lineStr)| ")
       lexString(line)
       string("\n")
+      string(" \(indentation)| ")
       string(highlightString(forDiag: diagnostic), .green)
       string("\n")
     }

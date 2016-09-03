@@ -24,3 +24,7 @@ func format(time: Double) -> String {
   }
   return formatter.string(from: NSNumber(value: time))! + unit
 }
+
+func indent(_ n: Int) -> String {
+  return String(repeating: " ", count: n)
+}

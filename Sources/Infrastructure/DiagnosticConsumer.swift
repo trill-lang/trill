@@ -105,14 +105,6 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
   
   func consume(_ diagnostic: Diagnostic) {
     let file = sourceFile(for: diagnostic)
-    let filename = file?.path.basename ?? "<unknown>"
-    stream.write("\(filename):")
-    if let sourceLoc = diagnostic.loc {
-      with([.bold]) {
-        stream.write("\(sourceLoc.line):\(sourceLoc.column):")
-      }
-    }
-    stream.write(" ")
     switch diagnostic.diagnosticType {
     case .warning:
       with([.bold, .magenta]) {
@@ -133,11 +125,26 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
     if let loc = diagnostic.loc,
        let line = file?.lines[loc.line - 1],
        loc.line > 0 {
-        stream.write(line + "\n")
+      with([.bold]) {
+        stream.write(" --> ")
+      }
+      let filename = file?.path.basename ?? "<unknown>"
+      stream.write("\(filename)")
+      if let sourceLoc = diagnostic.loc {
+        with([.bold]) {
+          stream.write(":\(sourceLoc.line):\(sourceLoc.column)")
+        }
+      }
+      stream.write("\n")
+      let lineStr = "\(loc.line)"
+      let indentation = "\(indent(lineStr.characters.count))"
+      stream.write(" \(indentation)|\n")
+      stream.write(" \(lineStr)| \(line)\n")
+      stream.write(" \(indentation)| ")
       with([.bold, .green]) {
         stream.write(highlightString(forDiag: diagnostic))
       }
-      stream.write("\n")
+      stream.write("\n\n")
     }
   }
 }

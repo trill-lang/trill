@@ -125,6 +125,7 @@
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
 		DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
 		DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
+		DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
 		DC5996681D7A487C0040073F /* libLLVMDebugInfoCodeView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5996661D7A487C0040073F /* libLLVMDebugInfoCodeView.a */; };
 		DC5996691D7A487C0040073F /* libLLVMDebugInfoDWARF.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5996671D7A487C0040073F /* libLLVMDebugInfoDWARF.a */; };
 		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
@@ -971,6 +972,7 @@
 				DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */,
 				DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */,
 				DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
+				DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */,
 				DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */,
 				DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */,
 				DC1770431D69134B00FEFB85 /* ASTBase.swift in Sources */,

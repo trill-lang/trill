@@ -1,0 +1,3 @@
+indirect type Foo {
+    let foo: Foo
+}

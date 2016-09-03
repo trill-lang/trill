@@ -139,7 +139,7 @@ class ViewController: UIViewController, UITextViewDelegate {
                             context: self.context)
         try parser.parseTopLevel(into: context)
       } catch let error as Diagnostic {
-        self.diagnosticEngine.add(error: error)
+        self.diagnosticEngine.add(error)
       } catch {
         self.diagnosticEngine.error("\(error)")
       }
