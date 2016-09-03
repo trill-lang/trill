@@ -322,7 +322,7 @@ enum LexError: Error, CustomStringConvertible {
   }
 }
 
-class Lexer {
+struct Lexer {
   var sourceLoc: SourceLocation
   var characters = [UnicodeScalar]()
   var tokenIndex = 0
@@ -336,7 +336,7 @@ class Lexer {
     sourceLoc = SourceLocation(line: 1, column: 1, file: filename)
   }
   
-  func lex() throws -> [Token] {
+  mutating func lex() throws -> [Token] {
     var tokens = [Token]()
     while true {
       do {
@@ -352,7 +352,7 @@ class Lexer {
     return tokens
   }
   
-  func advance(_ n: Int = 1) {
+  mutating func advance(_ n: Int = 1) {
     guard let c = currentChar() else { return }
     for _ in 0..<n {
       if c == "\n" {
@@ -384,7 +384,7 @@ class Lexer {
     return s
   }
   
-  func advanceIf(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) -> Bool {
+  mutating func advanceIf(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) -> Bool {
     guard let c = currentChar() else { return false }
     if f(c) {
       perform()
@@ -394,11 +394,11 @@ class Lexer {
     return false
   }
   
-  func advanceWhile(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) {
+  mutating func advanceWhile(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) {
     while advanceIf(f, perform: perform) {}
   }
   
-  func collectWhile(_ f: (UnicodeScalar) -> Bool) -> String {
+  mutating func collectWhile(_ f: (UnicodeScalar) -> Bool) -> String {
     var s = ""
     advanceWhile(f) {
       guard let c = currentChar() else { return }
@@ -407,7 +407,7 @@ class Lexer {
     return s
   }
   
-  func readCharacter() throws -> UnicodeScalar {
+  mutating func readCharacter() throws -> UnicodeScalar {
     if currentChar() == "\\" {
       advance()
       switch currentChar() {
@@ -449,7 +449,7 @@ class Lexer {
     }
   }
   
-  func advanceToNextToken() throws -> Token {
+  mutating func advanceToNextToken() throws -> Token {
     advanceWhile({ $0.isSpace })
     guard let c = currentChar() else {
       return Token(kind: .eof, range: range(start: sourceLoc))

@@ -131,7 +131,7 @@ class ViewController: UIViewController, UITextViewDelegate {
     driver = Driver(context: context)
     let text = storage.string
     driver.add("Lexer and Parser") { context in
-      let lexer = Lexer(filename: filename, input: text)
+      var lexer = Lexer(filename: filename, input: text)
       do {
         let tokens = try lexer.lex()
         let parser = Parser(tokens: tokens,

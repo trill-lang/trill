@@ -38,7 +38,7 @@ class AttributedStringConsumer: DiagnosticConsumer {
     builder.append(attrString)
   }
   func lexString(_ s: String) {
-    let lexer = Lexer(filename: file.path.filename, input: s)
+    var lexer = Lexer(filename: file.path.filename, input: s)
     let str = NSMutableAttributedString(string: s)
     let stringRange = NSRange(location: 0, length: str.length)
     str.addAttribute(NSFontAttributeName, value: AttributedStringConsumer.font, range: stringRange)

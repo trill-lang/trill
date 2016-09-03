@@ -79,7 +79,7 @@ class LexerTextStorage: NSTextStorage {
   }
   
   override func processEditing() {
-    let lexer = Lexer(filename: self.filename, input: string)
+    var lexer = Lexer(filename: self.filename, input: string)
     let tokens = (try? lexer.lex()) ?? []
     
     let fullRange =  NSRange(location: 0, length: storage.length)

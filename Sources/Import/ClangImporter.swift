@@ -280,7 +280,7 @@ class ClangImporter: Pass {
   // FIXME: Actually use Clang's lexer instead of re-implementing parts of
   //        it, poorly.
   func simpleParseIntegerLiteralToken(_ token: String) throws -> TokenKind? {
-    let lexer = Lexer(filename: "", input: token)
+    var lexer = Lexer(filename: "", input: token)
     let numStr = lexer.collectWhile { $0.isNumeric }
     guard let num = IntMax(numStr) else { throw ImportError.pastIntMax }
     let suffix = lexer.collectWhile { $0.isIdentifier }
@@ -291,7 +291,8 @@ class ClangImporter: Pass {
   }
   
   func simpleParseCToken(_ token: String) throws -> TokenKind? {
-    let toks = try Lexer(filename: "", input: token).lex()
+    var lexer = Lexer(filename: "", input: token)
+    let toks = try lexer.lex()
     guard let first = toks.first?.kind else { return nil }
     if case .identifier(let name) = first {
       return try simpleParseIntegerLiteralToken(name) ?? first

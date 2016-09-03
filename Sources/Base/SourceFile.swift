@@ -62,7 +62,7 @@ struct SourceFile {
   
   func parse() {
     do {
-      let lexer = Lexer(filename: path.filename, input: contents)
+      var lexer = Lexer(filename: path.filename, input: contents)
       let tokens = try lexer.lex()
       let parser = Parser(tokens: tokens,
                           filename: path.filename,
