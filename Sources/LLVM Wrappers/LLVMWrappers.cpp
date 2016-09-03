@@ -53,8 +53,8 @@ char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename)
     return strdup(err.message().c_str());
   }
   auto arch = object::Archive::create(*buf.get());
-  if (auto err = arch.getError()) {
-    return strdup(err.message().c_str());
+  if (Error err = arch.takeError()) {
+    return strdup(errorToErrorCode(std::move(err)).message().c_str());
   }
   auto archive = std::move(arch.get());
   auto bin = object::OwningBinary<object::Archive>(std::move(archive),

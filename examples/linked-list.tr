@@ -37,5 +37,6 @@ func main() {
                 IntList(value: 100, next:
                  IntList(value: 1000, next: nil)))
     list.print()
+    Mirror(reflecting: typeOf(list)).print()
     println(list.get(-1))
 }

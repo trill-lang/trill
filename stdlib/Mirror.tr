@@ -23,7 +23,12 @@ type Mirror {
         printf("Metadata for type %s (size: %d):\n", self.name(), self.sizeInBits());
         for var i = 0; i < self.numberOfFields(); i += 1 {
             let field = self.field(at: i)
-            printf("  └ %s: %s\n", field.name(), field.typeMetadata().name());
+            printf("  └ ")
+            let name = field.name()
+            if name != nil {
+                printf("%s: ", name)
+            }
+            printf("%s\n", field.typeMetadata().name());
         }
     }
 

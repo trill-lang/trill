@@ -835,24 +835,38 @@ class Sema: ASTTransformer, Pass {
   @discardableResult
   func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
     let canTy = context.canonicalType(contextualType)
-    if case .int = canTy, expr is NumExpr {
-      expr.type = contextualType
-      return true
-    }
-    if let op = expr as? InfixOperatorExpr {
-      if
-        case .int = contextualType,
-        op.lhs is NumExpr,
-        op.rhs is NumExpr {
-        op.rhs.type = contextualType
-        op.lhs.type = contextualType
-        op.type = context.operatorType(op, for: contextualType)
+    switch expr {
+    case let expr as NumExpr:
+      if case .int = canTy {
+        expr.type = contextualType
         return true
       }
-    }
-    if context.canBeNil(canTy), expr is NilExpr {
+    case let expr as InfixOperatorExpr:
+      if
+        case .int = canTy,
+        expr.lhs is NumExpr,
+        expr.rhs is NumExpr {
+        expr.rhs.type = contextualType
+        expr.lhs.type = contextualType
+        expr.type = context.operatorType(expr, for: contextualType)
+        return true
+      }
+    case let expr as NilExpr where context.canBeNil(canTy):
       expr.type = contextualType
       return true
+    case let expr as TupleExpr:
+      guard
+        case .tuple(let contextualFields) = canTy,
+        case .tuple(let fields)? = expr.type,
+        contextualFields.count == fields.count else { return false }
+      var changed = false
+      for (ctxField, value) in zip(contextualFields, expr.values) {
+        let changedThis = propagateContextualType(ctxField, to: value)
+        if !changed && changedThis { changed = true }
+      }
+      return changed
+    default:
+      break
     }
     return false
   }

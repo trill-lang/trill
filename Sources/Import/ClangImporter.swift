@@ -359,9 +359,10 @@ class ClangImporter: Pass {
   }
   
   func run(in context: ASTContext) {
-    self.context.add(makeAlias(name: "uint16_t", type: .int16))
     self.context.add(makeAlias(name: "__builtin_va_list", type: .pointer(type: .int8)))
     self.context.add(makeAlias(name: "__darwin_pthread_handler_rec", type: .pointer(type: .int8)))
+    self.context.add(makeAlias(name: "__darwin_pthread_t", type: .pointer(type: .int8)))
+    self.context.add(makeAlias(name: "pthread_override_t", type: .pointer(type: .int8)))
     self.context.add(synthesize(name: "trill_fatalError",
                                 args: [.pointer(type: .int8)],
                                 return: .void,

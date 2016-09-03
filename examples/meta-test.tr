@@ -1,9 +1,13 @@
 type Foo {
     let bar: Int
     let baz: *Foo
+    let tup: (uint16_t, Bool)
+    let function: (Int, (Bool, *Void)) -> Void
 }
 
+func f(_: Int, _: (Bool, *Void)) -> Void {}
+
 func main() {
-    let f = Foo(bar: 100, baz: nil)
+    let f = Foo(bar: 100, baz: nil, tup: (1, true), function: f)
     Mirror(reflecting: typeOf(f)).print()
 }

@@ -1,12 +1,4 @@
 foreign func sleep(_: Int)
-foreign func calloc(_: Int, _: Int) -> *Void
-foreign func realloc(_: *Void, _: Int) -> *Void
-
-func assert(_ fact: Bool, _ message: *Int8) {
-    if !fact {
-        trill_fatalError(message)
-    }
-}
 
 type ThreadArray {
     var elements: *Thread

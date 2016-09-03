@@ -63,13 +63,15 @@ extension IRGenerator {
     var pointerLevel = 0
     let fullName = "\(type)"
     let name = Mangler.mangle(type)
-    var fields = [VarAssignDecl]()
+    var fields = [(String?, DataType)]()
     switch type {
     case .pointer:
       pointerLevel = type.pointerLevel()
     case .custom:
       guard let decl = context.decl(for: type) else { return nil }
-      fields = decl.fields
+      fields = decl.fields.map { ($0.name.name, $0.type) }
+    case .tuple(let types):
+      fields = types.map { (nil , $0) }
     default:
       break
     }
@@ -100,13 +102,19 @@ extension IRGenerator {
     typeMetadataMap[type] = global
     
     var fieldVals = [LLVMValueRef?]()
-    for field in fields {
-      guard let meta = codegenTypeMetadata(field.type) else {
+    for (fieldName, type) in fields {
+      guard let meta = codegenTypeMetadata(type) else {
         LLVMDeleteGlobal(global)
         typeMetadataMap[type] = nil
         return nil
       }
-      let name = codegenGlobalStringPtr(field.name.name)
+      
+      let name: LLVMValueRef
+      if let fieldName = fieldName {
+        name = codegenGlobalStringPtr(fieldName)!
+      } else {
+        name = LLVMConstNull(voidPointerTy)
+      }
       var values = [
         LLVMBuildBitCast(builder, name, voidPointerTy, ""),
         LLVMBuildBitCast(builder, meta, voidPointerTy, "")

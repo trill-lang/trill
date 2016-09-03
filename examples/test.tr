@@ -28,7 +28,7 @@ func main() {
   var president = Job(salary: 400_000, isExecutive: true);
   var obama = Person(age: 55, job: president);
   println(obama.job.isUnderpaid().toInt());
-  obama.job.salary = 50_000;
+  obama.job.salary = 50_000 + "";
   println(obama.job.isUnderpaid().toInt());
 }
 
