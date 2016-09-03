@@ -8,5 +8,6 @@
 
 #include "runtime.h"
 #include "demangle.h"
+#include "metadata.h"
 
 #endif /* trill_h */

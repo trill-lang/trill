@@ -93,7 +93,7 @@ class ClangImporter: Pass {
   // TODO: PLEASE stop using these absolute Xcode paths.
   static let paths = ["/usr/local/include/trill/trill.h"] + headerFiles.map { "/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/" + $0 }
   #else
-  static let paths = headerFiles.map { "/usr/local/include/" + $0 } + ["/usr/local/include/trill/trill.h"]
+  static let paths = ["/usr/local/include/trill/trill.h"] + headerFiles.map { "/usr/local/include/" + $0 }
   #endif
   
   let context: ASTContext

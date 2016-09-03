@@ -1,11 +1,4 @@
-foreign type objc_selector {}
-foreign type objc_class {}
-foreign func objc_msgSend(_ class: *Int8, _ sel: *objc_selector, _: ...) -> *Int8
-foreign func objc_getClass(_: *Int8) -> *Int8
-foreign func class_getName(_: *objc_class) -> *Int8
-foreign func sel_registerName(_: *Int8) -> *objc_selector
 foreign func NSApplicationMain(_ argc: Int32, _ argv: **Int8)
-foreign func printf(_: *Int8, _: ...)
 
 type CGSize {
   var width: Double
@@ -20,13 +13,7 @@ type CGRect {
   var size: CGSize
 }
 
-type ObjCBox {
-  var obj: *Int8
-
-  func send(_ message: *Int8) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message)))
-  }
-
+extension ObjCBox {
   // HACK HACK HACK
   func send(_ message: *Int8, _ arg: CGRect) -> ObjCBox {
     return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg))
@@ -34,68 +21,11 @@ type ObjCBox {
   func send(_ message: *Int8, _ arg: Bool) -> ObjCBox {
     return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg))
   }
-
-  func send(_ message: *Int8, _ arg: *Int8) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg))
-  }
-  func send(_ message: *Int8, _ arg: *Int8, _ arg2: *Int8) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg, arg2))
-  }
-  func send(_ message: *Int8, _ arg: *Int8, _ arg2: *Int8, _ arg3: *Int8) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg, arg2, arg3))
-  }
-  func send(_ message: *Int8, _ arg: ObjCBox) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg.obj))
-  }
-  func send(_ message: *Int8, _ arg: ObjCBox, _ arg2: ObjCBox) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg.obj, arg2.obj))
-  }
-  func send(_ message: *Int8, _ arg: ObjCBox, _ arg2: ObjCBox, _ arg3: ObjCBox) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg.obj, arg2.obj, arg3.obj))
-  }
-  // HACK
-  func send(_ message: *Int8, _ arg: ObjCBox, _ arg2: *Int8, _ arg3: ObjCBox) -> ObjCBox {
-    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg.obj, arg2, arg3.obj))
-  }
-
-  func new() -> ObjCBox {
-    return self.send("new")
-  }
-  func alloc() -> ObjCBox {
-    return self.send("alloc")
-  }
-  func retain() -> ObjCBox {
-    return self.send("retain")
-  }
-  func release() -> ObjCBox {
-    return self.send("release")
-  }
-  func autorelease() -> ObjCBox {
-    return self.send("autorelease")
-  }
-
-  func printRetainCount() {
-    var count = self.send("retainCount")
-    var description = self.send("description")
-    printf("%s -> retain count: %d\n", description.send("UTF8String"), count)
-    description.release()
+  func send(_ message: *Int8, _ arg1: ObjCBox, _ arg2: *Int8, _ arg3: ObjCBox) -> ObjCBox {
+    return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(message), arg1, arg2, arg3))
   }
 }
 
-func print(_ string: ObjCBox) {
-  printf("%s\n", string.send("UTF8String"))
-}
-
-func print(_ str: *Int8) {
-  printf("%s\n", str)
-}
-
-func Class(_ name: *Int8) -> ObjCBox {
-  return ObjCBox(obj: objc_getClass(name))
-}
-
-var NSURL = Class("NSURL")
-var NSString = Class("NSString")
 var NSWindow = Class("NSWindow")
 var NSViewController = Class("NSViewController")
 var NSView = Class("NSView")
@@ -121,7 +51,7 @@ func main(argc: Int, argv: **Int8) {
                           .send("stringByAppendingString:", name)
   var quitItem = NSMenuItem.alloc()
                            .send("initWithTitle:action:keyEquivalent:",
-                                 quitTitle, "terminate:", 
+                                 quitTitle, "terminate:",
                                  NSString.send("stringWithUTF8String:", "q"))
                           .retain()
   appMenu.send("addItem:", quitItem)

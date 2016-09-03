@@ -123,6 +123,8 @@
 		DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
 		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
+		DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
+		DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
 		DC5996681D7A487C0040073F /* libLLVMDebugInfoCodeView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5996661D7A487C0040073F /* libLLVMDebugInfoCodeView.a */; };
 		DC5996691D7A487C0040073F /* libLLVMDebugInfoDWARF.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5996671D7A487C0040073F /* libLLVMDebugInfoDWARF.a */; };
 		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
@@ -302,6 +304,8 @@
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
 		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; };
 		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; };
+		DC4CF0C71D7A76750090216B /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = SOURCE_ROOT; };
 		DC5996661D7A487C0040073F /* libLLVMDebugInfoCodeView.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDebugInfoCodeView.a; path = ../../../../../../usr/local/llvm/lib/libLLVMDebugInfoCodeView.a; sourceTree = "<group>"; };
 		DC5996671D7A487C0040073F /* libLLVMDebugInfoDWARF.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDebugInfoDWARF.a; path = ../../../../../../usr/local/llvm/lib/libLLVMDebugInfoDWARF.a; sourceTree = "<group>"; };
 		DC5F38DE1D1FBC98003A8DED /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../../../usr/local/llvm/lib/libclang.dylib; sourceTree = "<group>"; };
@@ -619,6 +623,8 @@
 				DC1770151D69128500FEFB85 /* demangle.h */,
 				DC1770161D69128500FEFB85 /* runtime.cpp */,
 				DC1770171D69128500FEFB85 /* runtime.h */,
+				DC4CF0C61D7A76750090216B /* metadata.cpp */,
+				DC4CF0C71D7A76750090216B /* metadata.h */,
 				DC78DA411D7920930015035A /* defines.h */,
 				DC1770181D69128500FEFB85 /* trill.h */,
 			);
@@ -1014,6 +1020,7 @@
 			files = (
 				DC17701B1D69128500FEFB85 /* runtime.cpp in Sources */,
 				DC1770191D69128500FEFB85 /* demangle.cpp in Sources */,
+				DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1041,6 +1048,7 @@
 				DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */,
 				DC31C10E1C82681E00F85807 /* main.swift in Sources */,
 				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
+				DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */,
 				DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */,
 				DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */,
 				DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */,
