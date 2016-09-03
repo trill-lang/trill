@@ -27,7 +27,7 @@ func demangleArgs() {
 
 class DemangleRegex: NSRegularExpression {
   convenience init() {
-    try! self.init(pattern: "_W\\w+", options: [])
+    try! self.init(pattern: "_?_W\\w+", options: [])
   }
   override func replacementString(for result: NSTextCheckingResult,
                                   in string: String,

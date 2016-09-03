@@ -201,8 +201,13 @@ bool demangleClosure(std::string &symbol, std::string &out) {
 }
 
 bool demangle(std::string &symbol, std::string &out) {
-  if (symbol.substr(0, 2) != "_W") { return false; }
-  symbol.erase(0, 2);
+  if (symbol.substr(0, 2) == "_W") {
+    symbol.erase(0, 2);
+  } else if (symbol.substr(0, 3) == "__W") {
+    symbol.erase(0, 3);
+  } else {
+    return false;
+  }
   switch (symbol.front()) {
   case 'C':
     return demangleClosure(symbol, out);
