@@ -188,11 +188,19 @@ class ASTTransformer: ASTVisitor {
   }
   
   func visitForStmt(_ stmt: ForStmt) {
-    _ = stmt.initializer.map(visit)
-    _ = stmt.condition.map(visit)
-    _ = stmt.incrementer.map(visit)
-    withBreakTarget(stmt) {
-      visit(stmt.body)
+    withScope(stmt.body) {
+      if let initial = stmt.initializer {
+        visit(initial)
+      }
+      if let cond = stmt.condition {
+        visit(cond)
+      }
+      if let incr = stmt.incrementer {
+        visit(incr)
+      }
+      withBreakTarget(stmt) {
+        visit(stmt.body)
+      }
     }
   }
   

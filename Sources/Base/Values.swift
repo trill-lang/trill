@@ -47,7 +47,7 @@ class NumExpr: ConstantExpr { // 1234567
     self.type = .int64
   }
   override var text: String {
-    return "\(value)"
+    return raw
   }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? NumExpr else { return false }
@@ -133,7 +133,7 @@ class FloatExpr: ConstantExpr {
     super.init(sourceRange: sourceRange)
   }
   override var text: String {
-    return "\(value)"
+    return raw
   }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? FloatExpr else { return false }
@@ -206,9 +206,9 @@ class CharExpr: ConstantExpr {
   }
 }
 
-class LValueExpr: Expr {}
+protocol LValue {}
 
-class VarExpr: LValueExpr {
+class VarExpr: Expr, LValue {
   let name: Identifier
   var isTypeVar = false
   var isSelf = false
@@ -237,7 +237,7 @@ class SizeofExpr: Expr {
   }
 }
 
-class SubscriptExpr: LValueExpr {
+class SubscriptExpr: Expr, LValue {
   let lhs: Expr
   let amount: Expr
   init(lhs: Expr, amount: Expr, sourceRange: SourceRange? = nil) {
@@ -251,7 +251,7 @@ class SubscriptExpr: LValueExpr {
   }
 }
 
-class FieldLookupExpr: LValueExpr {
+class FieldLookupExpr: Expr, LValue {
   let lhs: Expr
   var decl: ASTNode? = nil
   var typeDecl: TypeDecl? = nil
