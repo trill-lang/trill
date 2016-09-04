@@ -126,8 +126,10 @@ class FloatExpr: ConstantExpr {
     get { return .double } set { }
   }
   let value: Double
-  init(value: Double, sourceRange: SourceRange? = nil) {
+  let raw: String
+  init(value: Double, raw: String, sourceRange: SourceRange? = nil) {
     self.value = value
+    self.raw = raw
     super.init(sourceRange: sourceRange)
   }
   override var text: String {
@@ -204,7 +206,9 @@ class CharExpr: ConstantExpr {
   }
 }
 
-class VarExpr: Expr {
+class LValueExpr: Expr {}
+
+class VarExpr: LValueExpr {
   let name: Identifier
   var isTypeVar = false
   var isSelf = false
@@ -233,7 +237,7 @@ class SizeofExpr: Expr {
   }
 }
 
-class SubscriptExpr: Expr {
+class SubscriptExpr: LValueExpr {
   let lhs: Expr
   let amount: Expr
   init(lhs: Expr, amount: Expr, sourceRange: SourceRange? = nil) {
@@ -247,7 +251,7 @@ class SubscriptExpr: Expr {
   }
 }
 
-class FieldLookupExpr: Expr {
+class FieldLookupExpr: LValueExpr {
   let lhs: Expr
   var decl: ASTNode? = nil
   var typeDecl: TypeDecl? = nil

@@ -822,7 +822,7 @@ class Sema: ASTTransformer, Pass {
       }
     }
     if expr.op == .ampersand {
-      guard expr.rhs is VarExpr || expr.rhs is SubscriptExpr || expr.rhs is FieldLookupExpr else {
+      guard expr.rhs is LValueExpr else {
         error(SemaError.addressOfRValue,
               loc: expr.opRange?.start,
               highlights: [

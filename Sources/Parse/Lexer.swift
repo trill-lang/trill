@@ -7,6 +7,7 @@ import Foundation
 
 enum TokenKind: Equatable {
   case number(value: IntMax, raw: String)
+  case float(left: IntMax, right: IntMax, raw: String)
   case identifier(value: String)
   case unknown(char: String)
   case char(value: UInt8)
@@ -115,6 +116,7 @@ enum TokenKind: Equatable {
   var text: String {
     switch self {
     case .number(let value): return "\(value)"
+    case .float(let left, let right, _): return "\(left).\(right)"
     case .identifier(let value): return value
     case .unknown(let char): return char
     case .char(let value): return String(UnicodeScalar(value))
@@ -183,6 +185,7 @@ enum TokenKind: Equatable {
   var isLiteral: Bool {
     switch self {
     case .number: return true
+    case .float: return true
     case .char: return true
     default: return false
     }
@@ -209,6 +212,8 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   switch (lhs, rhs) {
   case (.number(let value, let raw), .number(let otherValue, let otherRaw)):
     return value == otherValue && raw == otherRaw
+  case (.float(let left, let right, let raw), .float(let otherLeft, let otherRight, let otherRaw)):
+    return left == otherLeft && right == otherRight && raw == otherRaw
   case (.identifier(let value), .identifier(let otherValue)):
     return value == otherValue
   case (.unknown(let v), .unknown(let v2)):
@@ -504,7 +509,16 @@ struct Lexer {
     if c.isIdentifier {
       let id = collectWhile { $0.isIdentifier }
       if let numVal = id.asNumber() {
-        return Token(kind: .number(value: numVal, raw: id), range: range(start: startLoc))
+        if currentChar() == ".", let c = charAt(1), c.isNumeric {
+          advance()
+          let num = collectWhile { $0.isNumeric }
+          if !num.isEmpty, let right = num.asNumber() {
+            return Token(kind: .float(left: numVal, right: right, raw: "\(id).\(num)"),
+                         range: range(start: startLoc))
+          }
+        } else {
+          return Token(kind: .number(value: numVal, raw: id), range: range(start: startLoc))
+        }
       } else {
         return Token(kind: TokenKind(identifier: id), range: range(start: startLoc))
       }

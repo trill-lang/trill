@@ -60,17 +60,15 @@ extension Parser {
       valExpr = CharExpr(value: value, sourceRange: range(start: startLoc))
     case .number(let num, let raw):
       consumeToken()
-      if case .dot = peek(), case .number(let value, _) = peek(ahead: 1) {
-        consumeToken()
-        consumeToken()
-        let newValue: Double = Double(num) + (Double(value) / 100.0)
-        valExpr = FloatExpr(value: newValue,
-                            sourceRange: range(start: startLoc))
-      } else {
-        valExpr = NumExpr(value: num,
+      valExpr = NumExpr(value: num,
+                        raw: raw,
+                        sourceRange: tok.range)
+    case .float(let left, let right, let raw):
+      consumeToken()
+      let newValue: Double = Double(left) + (Double(right) / 100.0)
+      valExpr = FloatExpr(value: newValue,
                           raw: raw,
-                          sourceRange: tok.range)
-      }
+                          sourceRange: range(start: startLoc))
     case .true:
       consumeToken()
       valExpr = BoolExpr(value: true,
