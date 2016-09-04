@@ -65,6 +65,7 @@ func freelist<T>(_ ptr: UnsafeMutablePointer<UnsafeMutablePointer<T>?>, count: I
 
 extension CXString {
   func asSwift() -> String {
+    guard self.data != nil else { return "<none>" }
     defer { clang_disposeString(self) }
     return String(cString: clang_getCString(self))
   }
@@ -73,6 +74,27 @@ extension CXString {
 extension String {
   var lastWord: String? {
     return components(separatedBy: " ").last
+  }
+}
+
+extension SourceLocation {
+  init(clangLocation: CXSourceLocation) {
+    var cxfile: CXFile?
+    var line: UInt32 = 0
+    var column: UInt32 = 0
+    var offset: UInt32 = 0
+    clang_getSpellingLocation(clangLocation, &cxfile, &line, &column, &offset)
+    self.init(line: Int(line), column: Int(column), file: clang_getFileName(cxfile).asSwift(),
+              charOffset: Int(offset))
+  }
+}
+
+extension SourceRange {
+  init(clangRange: CXSourceRange) {
+    let start = clang_getRangeStart(clangRange)
+    let end = clang_getRangeEnd(clangRange)
+    self.init(start: SourceLocation(clangLocation: start),
+              end: SourceLocation(clangLocation: end))
   }
 }
 
@@ -151,12 +173,14 @@ class ClangImporter: Pass {
   func synthesize(name: String, args: [DataType],
                   return: DataType,
                   hasVarArgs: Bool,
-                  modifiers: [DeclModifier]) -> FuncDecl {
+                  modifiers: [DeclModifier],
+                  range: SourceRange?) -> FuncDecl {
     return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
                         args: args.map { FuncArgumentAssignDecl(name: "", type: $0.ref()) },
                         modifiers: modifiers,
-                        hasVarArgs: hasVarArgs)
+                        hasVarArgs: hasVarArgs,
+                        sourceRange: range)
   }
   
   @discardableResult
@@ -177,8 +201,10 @@ class ClangImporter: Pass {
     guard let t = trillType, name != "\(t)" else {
       return nil
     }
+    let range = clang_getCursorExtent(cursor)
     let alias = TypeAliasDecl(name: Identifier(name: name),
-                              bound: t.ref())
+                              bound: t.ref(),
+                              sourceRange: SourceRange(clangRange: range))
     context.add(alias)
     return alias
   }
@@ -202,17 +228,22 @@ class ClangImporter: Pass {
       guard let trillTy = self.convertToTrillType(fieldTy) else {
         return CXChildVisit_Break
       }
+      let range = SourceRange(clangRange: clang_getCursorExtent(child))
       let expr = VarAssignDecl(name: fieldId,
                                typeRef: trillTy.ref(),
                                modifiers: [.foreign],
-                               mutable: true)
+                               mutable: true,
+                               sourceRange: range)
       values.append(expr)
       return CXChildVisit_Continue
     }
     guard res == 0 else {
       return nil
     }
-    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign])
+    
+    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
+    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign],
+                        sourceRange: range)
     importedTypes[name] = expr
     context.add(expr)
     return expr
@@ -241,11 +272,13 @@ class ClangImporter: Pass {
       args.append(trillType)
     }
     
+    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
     let decl = synthesize(name: name,
                           args: args,
                           return: trillRetTy,
                           hasVarArgs: hasVarArgs,
-                          modifiers: modifiers)
+                          modifiers: modifiers,
+                          range: range)
     importedFunctions[decl.name] = decl
     context.add(decl)
   }
@@ -253,9 +286,12 @@ class ClangImporter: Pass {
   func importEnum(_ cursor: CXCursor, in context: ASTContext) {
     clang_visitChildrenWithBlock(cursor) { child, parent in
       let name = Identifier(name: clang_getCursorSpelling(child).asSwift())
+      
+      let range = SourceRange(clangRange: clang_getCursorExtent(child))
       let varExpr = VarAssignDecl(name: name,
                                   typeRef: DataType.int32.ref(),
-                                  mutable: false)
+                                  mutable: false,
+                                  sourceRange: range)
       context.add(varExpr)
       return CXChildVisit_Continue
     }
@@ -309,30 +345,33 @@ class ClangImporter: Pass {
   func parse(tu: CXTranslationUnit, token: CXToken, name: String) -> VarAssignDecl? {
     do {
       let tok = clang_getTokenSpelling(tu, token).asSwift()
+      let range = SourceRange(clangRange: clang_getTokenExtent(tu, token))
       guard let token = try simpleParseCToken(tok) else { return nil }
       var expr: Expr! = nil
       switch token {
       case .char(let value):
-        expr = CharExpr(value: value)
+        expr = CharExpr(value: value, sourceRange: range)
       case .stringLiteral(let value):
-        expr = StringExpr(value: value)
+        expr = StringExpr(value: value, sourceRange: range)
       case .number(let value, let raw):
-        expr = NumExpr(value: value, raw: raw)
+        expr = NumExpr(value: value, raw: raw, sourceRange: range)
       case .identifier(let name):
-        expr = VarExpr(name: Identifier(name: name))
+        expr = VarExpr(name: Identifier(name: name), sourceRange: range)
       default:
         return nil
       }
       return VarAssignDecl(name: Identifier(name: name),
                            typeRef: expr.type?.ref(),
                            rhs: expr,
-                           mutable: false)
+                           mutable: false,
+                           sourceRange: range)
     } catch { return nil }
   }
   
-  func makeAlias(name: String, type: DataType) -> TypeAliasDecl {
+  func makeAlias(name: String, type: DataType, range: SourceRange? = nil) -> TypeAliasDecl {
     return TypeAliasDecl(name: Identifier(name: name),
-                         bound: type.ref())
+                         bound: type.ref(),
+                         sourceRange: range)
   }
   
   func importDeclarations(from path: String, in context: ASTContext) {
@@ -366,13 +405,16 @@ class ClangImporter: Pass {
   }
   
   func run(in context: ASTContext) {
-    self.context.add(makeAlias(name: "__builtin_va_list", type: .pointer(type: .int8)))
-    self.context.add(makeAlias(name: "__darwin_pthread_handler_rec", type: .pointer(type: .int8)))
+    self.context.add(makeAlias(name: "__builtin_va_list",
+                               type: .pointer(type: .int8)))
+    self.context.add(makeAlias(name: "__darwin_pthread_handler_rec",
+                               type: .pointer(type: .int8)))
     self.context.add(synthesize(name: "trill_fatalError",
                                 args: [.pointer(type: .int8)],
                                 return: .void,
                                 hasVarArgs: false,
-                                modifiers: [.foreign, .noreturn]))
+                                modifiers: [.foreign, .noreturn],
+                                range: nil))
     for path in ClangImporter.paths {
       self.importDeclarations(from: path, in: self.context)
     }

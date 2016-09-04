@@ -65,6 +65,7 @@ class JSONDiagnosticConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
   func finalize() {
     let jsonData = try! JSONSerialization.data(withJSONObject: json, options: [.prettyPrinted])
     stream.write(String(data: jsonData, encoding: .utf8)!)
+    stream.write("\n")
   }
   
   var json: [[String: Any]] {
