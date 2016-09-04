@@ -1,7 +1,11 @@
+func takesFloat(_ f: Double) {
+    printf("[%s]: %f\n", #function, f)
+}
 func main() {
   var f = 10.0;
   var g = 10;
   printf("%f -> %d -> %f\n", f, f as Int, (f as Int) as Double);
   printf("%d -> %f -> %d\n", g, g as Double, (g as Double) as Int);
   printf("%f\n", 10.0 / 100.0);
+  takesFloat(100_000.0 / 333)
 }

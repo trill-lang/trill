@@ -35,7 +35,15 @@ extension IRGenerator {
   }
   
   func visitNumExpr(_ expr: NumExpr) -> Result {
-    return LLVMConstInt(resolveLLVMType(expr.type!), unsafeBitCast(expr.value, to: UInt64.self), 1)
+    let llvmTy = resolveLLVMType(expr.type!)
+    switch context.canonicalType(expr.type!) {
+    case .floating:
+      return LLVMConstReal(llvmTy, Double(expr.value))
+    case .int:
+      return LLVMConstInt(llvmTy, unsafeBitCast(expr.value, to: UInt64.self), 1)
+    default:
+      fatalError("non-number NumExpr")
+    }
   }
   
   func visitCharExpr(_ expr: CharExpr) -> Result {
@@ -43,7 +51,7 @@ extension IRGenerator {
   }
   
   func visitFloatExpr(_ expr: FloatExpr) -> Result {
-    return LLVMConstReal(typeIRBindings[.double]!, expr.value)
+    return LLVMConstReal(resolveLLVMType(expr.type!), expr.value)
   }
   
   func visitBoolExpr(_ expr: BoolExpr) -> Result {

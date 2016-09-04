@@ -110,23 +110,24 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitNumExpr(_ expr: NumExpr) {
     guard let type = expr.type else { return }
     let canTy = context.canonicalType(type)
-    guard case .int(let width) = canTy else { fatalError("non-number numexpr?") }
-    var overflows = false
-    switch width {
-    case 8:
-      if expr.value > IntMax(Int8.max) { overflows = true }
-    case 16:
-      if expr.value > IntMax(Int16.max) { overflows = true }
-    case 32:
-      if expr.value > IntMax(Int32.max) { overflows = true }
-    case 64:
-      if expr.value > IntMax(Int64.max) { overflows = true }
-    default: break
-    }
-    if overflows {
-      error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
-            loc: expr.startLoc(), highlights: [expr.sourceRange])
-      return
+    if case .int(let width) = canTy {
+      var overflows = false
+      switch width {
+      case 8:
+        if expr.value > IntMax(Int8.max) { overflows = true }
+      case 16:
+        if expr.value > IntMax(Int16.max) { overflows = true }
+      case 32:
+        if expr.value > IntMax(Int32.max) { overflows = true }
+      case 64:
+        if expr.value > IntMax(Int64.max) { overflows = true }
+      default: break
+      }
+      if overflows {
+        error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
+              loc: expr.startLoc(), highlights: [expr.sourceRange])
+        return
+      }
     }
   }
   

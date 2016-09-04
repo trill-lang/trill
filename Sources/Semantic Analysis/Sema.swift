@@ -268,6 +268,8 @@ class Sema: ASTTransformer, Pass {
       if let rhs = decl.rhs, let rhsType = rhs.type {
         if context.canCoerce(rhsType, to: type) {
           rhs.type = type
+        } else {
+          propagateContextualType(type, to: rhs)
         }
       }
     }
@@ -841,13 +843,15 @@ class Sema: ASTTransformer, Pass {
         expr.type = contextualType
         return true
       }
+      if case .floating = canTy {
+        expr.type = contextualType
+        return true
+      }
     case let expr as InfixOperatorExpr:
-      if
-        case .int = canTy,
-        expr.lhs is NumExpr,
+      if expr.lhs is NumExpr,
         expr.rhs is NumExpr {
-        expr.rhs.type = contextualType
-        expr.lhs.type = contextualType
+        propagateContextualType(contextualType, to: expr.lhs)
+        propagateContextualType(contextualType, to: expr.rhs)
         expr.type = context.operatorType(expr, for: contextualType)
         return true
       }
