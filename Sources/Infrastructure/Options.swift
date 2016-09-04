@@ -11,7 +11,7 @@ import Foundation
 
 enum Mode: Int {
   case emitLLVM, emitAST, emitASM, emitObj, emitBinary
-  case emitJavaScript, prettyPrint, jit
+  case emitJavaScript, prettyPrint, jit, onlyDiagnostics
   
   init(_ raw: RawMode) {
     switch raw {
@@ -23,6 +23,7 @@ enum Mode: Int {
     case PrettyPrint: self = .prettyPrint
     case EmitJavaScript: self = .emitJavaScript
     case JIT: self = .jit
+    case OnlyDiagnostics: self = .onlyDiagnostics
     default: fatalError("invalid mode \(raw)")
     }
   }
@@ -44,6 +45,7 @@ public class Options {
   let mode: Mode
   let importC: Bool
   let emitTiming: Bool
+  let jsonDiagnostics: Bool
   let isStdin: Bool
   let optimizationLevel: OptimizationLevel
   let raw: RawOptions
@@ -56,6 +58,7 @@ public class Options {
     self.emitTiming = raw.emitTiming
     self.isStdin = raw.isStdin
     self.optimizationLevel = raw.optimizationLevel
+    self.jsonDiagnostics = raw.jsonDiagnostics
     if let outputFilename = raw.outputFilename {
       self.outputFilename = String(cString: outputFilename)
     } else {

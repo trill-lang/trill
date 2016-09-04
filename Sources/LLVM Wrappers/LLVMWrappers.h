@@ -36,7 +36,8 @@ TRILL_ASSUME_NONNULL_BEGIN
   
 typedef enum RawMode {
   EmitBinary, EmitObj, EmitASM, EmitLLVM,
-  EmitAST, PrettyPrint, EmitJavaScript, JIT
+  EmitAST, PrettyPrint, EmitJavaScript, JIT,
+  OnlyDiagnostics
 } RawMode;
 
 typedef enum OptimizationLevel {
@@ -48,6 +49,7 @@ typedef struct RawOptions {
   bool importC;
   bool emitTiming;
   bool isStdin;
+  bool jsonDiagnostics;
   RawMode mode;
   char *_Nullable target;
   char *_Nullable outputFilename;

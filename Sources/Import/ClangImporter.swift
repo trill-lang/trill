@@ -87,6 +87,10 @@ class ClangImporter: Pass {
     "string.h",
     "_types.h",
     "pthread.h",
+    "sys/_types/_timeval.h",
+    "sys/time.h",
+    "sys/resource.h",
+    "sched.h",
   ]
   
   #if os(macOS)
@@ -191,7 +195,7 @@ class ClangImporter: Pass {
     
     var values = [VarAssignDecl]()
     
-    clang_visitChildrenWithBlock(cursor) { child, parent in
+    let res = clang_visitChildrenWithBlock(cursor) { child, parent in
       let fieldId = Identifier(name: clang_getCursorSpelling(child).asSwift(),
                                range: nil)
       let fieldTy = clang_getCursorType(child)
@@ -205,7 +209,9 @@ class ClangImporter: Pass {
       values.append(expr)
       return CXChildVisit_Continue
     }
-    
+    guard res == 0 else {
+      return nil
+    }
     let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign])
     importedTypes[name] = expr
     context.add(expr)
@@ -362,8 +368,6 @@ class ClangImporter: Pass {
   func run(in context: ASTContext) {
     self.context.add(makeAlias(name: "__builtin_va_list", type: .pointer(type: .int8)))
     self.context.add(makeAlias(name: "__darwin_pthread_handler_rec", type: .pointer(type: .int8)))
-    self.context.add(makeAlias(name: "__darwin_pthread_t", type: .pointer(type: .int8)))
-    self.context.add(makeAlias(name: "pthread_override_t", type: .pointer(type: .int8)))
     self.context.add(synthesize(name: "trill_fatalError",
                                 args: [.pointer(type: .int8)],
                                 return: .void,
@@ -440,8 +444,18 @@ class ClangImporter: Pass {
       let size = clang_getNumArgTypes(type)
       guard let trillElType = convertToTrillType(element) else { return nil }
       return .tuple(fields: [DataType](repeating: trillElType, count: Int(size)))
+    case CXType_Elaborated:
+      let element = clang_Type_getNamedType(type)
+      return convertToTrillType(element)
+    case CXType_IncompleteArray:
+      let element = clang_getArrayElementType(type)
+      guard let trillEltTy = convertToTrillType(element) else { return nil }
+      return .pointer(type: trillEltTy)
     case CXType_Invalid:
       return nil
+    case CXType_BlockPointer:
+      // C/Obj-C Blocks are unexposed, but are always pointers.
+      return .pointer(type: .int8)
     default:
       return nil
     }

@@ -93,8 +93,10 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
   cl::opt<bool> emitJS("emit-js", cl::desc("Emit the generated JavaScript to stdout"));
   cl::opt<bool> noImport("no-import", cl::desc("Don't import C declarations"));
+  cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
   cl::opt<bool> emitTiming("emit-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
+  cl::opt<bool> onlyDiagnostics("only-diagnostics", cl::desc("Only emit diagnostics"));
   cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
   cl::opt<std::string> outputFile("o", cl::desc("output-filename"));
   cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
@@ -108,7 +110,9 @@ RawOptions ParseArguments(int argc, char **argv) {
   
   RawMode mode;
   bool importC = !noImport;
-  if (emitLLVM) {
+  if (onlyDiagnostics) {
+    mode = OnlyDiagnostics;
+  } else if (emitLLVM) {
     mode = EmitLLVM;
   } else if (emitJS) {
     importC = false;
@@ -141,6 +145,7 @@ RawOptions ParseArguments(int argc, char **argv) {
     importC,
     emitTiming,
     isStdin,
+    jsonDiagnostics,
     mode,
     targetMachine,
     outputFilename,

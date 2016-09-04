@@ -45,6 +45,11 @@ func + (left: ANSIColor, right: String) -> String {
 
 protocol DiagnosticConsumer: class {
   func consume(_ diagnostic: Diagnostic)
+  func finalize()
+}
+
+extension DiagnosticConsumer {
+  func finalize() {}
 }
 
 class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {

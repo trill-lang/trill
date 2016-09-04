@@ -19,9 +19,7 @@ extension Parser {
   }
   
   func parseForLoopExpr() throws -> ForStmt {
-    guard case .for = peek() else {
-      throw unexpectedToken()
-    }
+    try consume(.for)
     let startLoc = sourceLoc
     consumeToken()
     var initializer: ASTNode? = nil

@@ -58,6 +58,8 @@ func populate(driver: Driver, options: Options,
   driver.add(pass: Sema.self)
   driver.add(pass: TypeChecker.self)
   
+  if case .onlyDiagnostics = options.mode { return }
+  
   if case .emitJavaScript = options.mode {
     driver.add("Generating JavaScript") { context in
       return JavaScriptGen(stream: &stdout, context: context).run(in: context)
@@ -128,8 +130,13 @@ func main() -> Int32 {
     diag.error(error)
   }
   let isATTY = isatty(STDERR_FILENO) != 0
-  let consumer = StreamConsumer(files: files, stream: &stderr, colored: isATTY)
-  diag.register(consumer)
+  if options.jsonDiagnostics {
+    let consumer = JSONDiagnosticConsumer(stream: &stderr)
+    diag.register(consumer)
+  } else {
+    let consumer = StreamConsumer(files: files, stream: &stderr, colored: isATTY)
+    diag.register(consumer)
+  }
   diag.consumeDiagnostics()
   
   if options.emitTiming {

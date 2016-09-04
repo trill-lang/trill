@@ -80,6 +80,9 @@ public class DiagnosticEngine {
         consumer.consume(diag)
       }
     }
+    for consumer in consumers {
+      consumer.finalize()
+    }
   }
   
   func register(_ consumer: DiagnosticConsumer) {

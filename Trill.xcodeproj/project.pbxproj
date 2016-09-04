@@ -46,6 +46,7 @@
 		DC02C61A1D58380A00FE8374 /* libLLVMipo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC02C6191D58380A00FE8374 /* libLLVMipo.a */; };
 		DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
 		DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */; };
+		DC07FA1A1D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC07FA191D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift */; };
 		DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FCD1D6911A200FEFB85 /* ASTContext.swift */; };
 		DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */; };
 		DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */; };
@@ -244,6 +245,7 @@
 		DC02C6191D58380A00FE8374 /* libLLVMipo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMipo.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMipo.a"; sourceTree = "<group>"; };
 		DC03B9081D79F84500C980D3 /* Builtins.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Builtins.swift; path = ../IRGen/Builtins.swift; sourceTree = "<group>"; };
 		DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BuiltinIRGen.swift; sourceTree = "<group>"; };
+		DC07FA191D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONDiagnosticConsumer.swift; sourceTree = "<group>"; };
 		DC0FE9321CE3061A00224874 /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC176FCD1D6911A200FEFB85 /* ASTContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTContext.swift; sourceTree = "<group>"; };
 		DC176FD01D6911A200FEFB85 /* ASTTransformer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ASTTransformer.swift; path = ../Base/ASTTransformer.swift; sourceTree = "<group>"; };
@@ -519,6 +521,7 @@
 				DC176FD11D6911A200FEFB85 /* ASTVisitor.swift */,
 				DC17701E1D6912E300FEFB85 /* Utilities.swift */,
 				DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */,
+				DC07FA191D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift */,
 				DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */,
 				DC176FDD1D6911A200FEFB85 /* Driver.swift */,
 				DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */,
@@ -1056,6 +1059,7 @@
 				DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */,
 				DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */,
 				DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
+				DC07FA1A1D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift in Sources */,
 				DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */,
 				DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */,
 				DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */,
