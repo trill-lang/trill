@@ -130,7 +130,7 @@ enum SemaError: Error, CustomStringConvertible {
     case .incompleteTypeAccess(let type, let operation):
       return "cannot \(operation) incomplete type '\(type)'"
     case .nonMatchingArrayType(let arrayType, let elementType):
-      return "element type \(elementType) does not match array type \(arrayType)"
+      return "element type '\(elementType)' does not match array type '\(arrayType)'"
     case .ambiguousType:
       return "type is ambiguous without more context"
     }
