@@ -39,13 +39,13 @@ private extension Diagnostic {
       }
       js["sourceLocation"] = loc.json
     }
-    var highlightJSON = [[String: Any]]()
-    for highlight in highlights {
-      highlightJSON.append([
-        "start": highlight.start
-      ])
+    
+    js["highlights"] = highlights.map {
+      [
+        "start": $0.start.json,
+        "end": $0.end.json,
+      ]
     }
-    js["highlights"] = highlightJSON
     return js
   }
 }

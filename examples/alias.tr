@@ -1,6 +1,6 @@
-type Foo = Int
-type Bar = Foo
-type Baz = Bar
+type Foo = Bar
+type Bar = Baz
+type Baz = Foo
 
 func foo(_ b: Baz) -> Bar { return b }
 

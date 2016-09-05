@@ -35,6 +35,7 @@ enum SemaError: Error, CustomStringConvertible {
   case poundFunctionOutsideFunction
   case assignToConstant(name: Identifier?)
   case deinitOnStruct(name: Identifier?)
+  case incompleteTypeAccess(type: DataType, operation: String)
   case indexIntoNonTuple
   case outOfBoundsTupleField(field: Int, max: Int)
   
@@ -124,6 +125,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "cannot index into non-tuple expression"
     case .outOfBoundsTupleField(let field, let max):
       return "cannot access field \(field) in tuple with \(max) fields"
+    case .incompleteTypeAccess(let type, let operation):
+      return "cannot \(operation) incomplete type '\(type)'"
     }
   }
 }
@@ -452,6 +455,14 @@ class Sema: ASTTransformer, Pass {
             highlights: [ expr.lhs.sourceRange ])
       return
     }
+    guard subtype != .void else {
+      error(SemaError.incompleteTypeAccess(type: subtype, operation: "subscript"),
+            loc: expr.lhs.startLoc(),
+            highlights: [
+              expr.lhs.sourceRange
+            ])
+      return
+    }
     expr.type = subtype
   }
   
@@ -615,8 +626,7 @@ class Sema: ASTTransformer, Pass {
             highlights: [
               name?.range
         ])
-      note(SemaError.candidates(candidates),
-           loc: name?.range?.start)
+      note(SemaError.candidates(candidates))
       return
     }
     expr.decl = decl
@@ -717,6 +727,14 @@ class Sema: ASTTransformer, Pass {
     
     if expr.op.isAssign {
       expr.type = .void
+      if case .void = canRhs {
+        error(SemaError.incompleteTypeAccess(type: canRhs, operation: "assign value from"),
+              loc: expr.rhs.startLoc(),
+              highlights: [
+                expr.rhs.sourceRange
+              ])
+        return
+      }
       if case .immutable(let name) = context.mutability(of: expr.lhs) {
         if currentFunction == nil || !currentFunction!.isInitializer {
           error(SemaError.assignToConstant(name: name),
@@ -811,13 +829,21 @@ class Sema: ASTTransformer, Pass {
     }
     expr.type = exprType
     if expr.op == .star {
-      guard case .pointer = rhsType else {
+      guard case .pointer(let subtype) = rhsType else {
         error(SemaError.dereferenceNonPointer(type: rhsType),
               loc: expr.opRange?.start,
               highlights: [
                 expr.opRange,
                 expr.rhs.sourceRange
           ])
+        return
+      }
+      guard subtype != .void else {
+        error(SemaError.incompleteTypeAccess(type: subtype, operation: "dereference"),
+              loc: expr.startLoc(),
+              highlights: [
+                expr.sourceRange
+              ])
         return
       }
     }

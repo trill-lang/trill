@@ -203,7 +203,7 @@ func readFile(filename: *Int8) -> *Int8 {
     return nil
   }
   fread(program as *Void, 1 as size_t, length as size_t, file)
-  Mirror(reflecting: typeOf(*file)).print()
+  // Mirror(reflecting: typeOf(*file)).print()
   program[length] = NUL
   fclose(file)
   return program
