@@ -281,8 +281,19 @@ class Sema: ASTTransformer, Pass {
     }
     if let rhs = decl.rhs, decl.typeRef == nil {
       guard let type = rhs.type else { return }
+      let canRhs = context.canonicalType(type)
+      if case .void = canRhs {
+        error(SemaError.incompleteTypeAccess(type: type, operation: "assign value from"),
+              loc: rhs.startLoc(),
+              highlights: [
+                rhs.sourceRange
+          ])
+        return
+      }
+      
       decl.type = type
       decl.typeRef = type.ref()
+      
     }
   }
   
