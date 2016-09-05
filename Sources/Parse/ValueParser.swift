@@ -55,6 +55,17 @@ extension Parser {
       default:
         throw unexpectedToken()
       }
+    case .leftBracket:
+      consumeToken()
+      var values = [Expr]()
+      while peek() != .rightBracket {
+        values.append(try parseValExpr())
+        if peek() != .rightBracket {
+          try consume(.comma)
+        }
+      }
+      consumeToken()
+      return ArrayExpr(values: values, sourceRange: range(start: startLoc))
     case .char(let value):
       consumeToken()
       valExpr = CharExpr(value: value, sourceRange: range(start: startLoc))

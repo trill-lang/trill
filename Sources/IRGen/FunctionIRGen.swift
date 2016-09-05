@@ -219,7 +219,22 @@ extension IRGenerator {
       function = visit(expr.lhs)
     }
     
-    var argVals = args.map { visit($0.val) }
+    var argVals = [LLVMValueRef?]()
+    for arg in args {
+      var val = visit(arg.val)
+      if case .array(let field, _)? = arg.val.type {
+        let alloca = createEntryBlockAlloca(currentFunction!.functionRef!,
+                                            type: LLVMTypeOf(val),
+                                            name: "",
+                                            storage: .value,
+                                            initial: val)
+        val = LLVMBuildBitCast(builder,
+                               alloca.ref,
+                               LLVMPointerType(resolveLLVMType(field), 0),
+                               "")
+      }
+      argVals.append(val)
+    }
     let name = expr.type == .void ? "" : "calltmp"
     let call = argVals.withUnsafeMutableBufferPointer { buf in
       LLVMBuildCall(builder, function, buf.baseAddress,

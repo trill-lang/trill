@@ -18,6 +18,7 @@ enum DataType: CustomStringConvertible, Hashable {
   case any
   indirect case function(args: [DataType], returnType: DataType)
   indirect case pointer(type: DataType)
+  indirect case array(field: DataType, length: Int?)
   indirect case tuple(fields: [DataType])
   
   static let int64 = DataType.int(width: 64)
@@ -27,6 +28,9 @@ enum DataType: CustomStringConvertible, Hashable {
   static let float = DataType.floating(type: .float)
   static let double = DataType.floating(type: .double)
   static let float80 = DataType.floating(type: .float80)
+  static func incompleteArray(field: DataType) -> DataType {
+    return .array(field: field, length: nil)
+  }
   
   init(name: String) {
     switch name {
@@ -45,8 +49,14 @@ enum DataType: CustomStringConvertible, Hashable {
   }
   
   var rootType: DataType {
-    guard case .pointer(let type) = self else { return self }
-    return type.rootType
+    switch self {
+    case .array(let field, _):
+      return field
+    case .pointer(let type):
+      return type.rootType
+    default:
+      return self
+    }
   }
   
   var description: String {
@@ -55,6 +65,12 @@ enum DataType: CustomStringConvertible, Hashable {
     case .int(let width): return "Int\(width)"
     case .bool: return "Bool"
     case .void: return "Void"
+    case .array(let field, let length):
+      var s = "[\(field)"
+      if let length = length {
+        s += "; \(length)"
+      }
+      return s + "]"
     case .custom(let name): return name
     case .pointer(let type):
       return "*\(type)"
@@ -116,6 +132,8 @@ func ==(lhs: DataType, rhs: DataType) -> Bool {
   case (.floating(let double), .floating(let rhsDouble)):
     return double == rhsDouble
   case (.any, .any): return true
+  case (.array(let field, _), .array(let field2, _)):
+    return field == field2
   case (.function(let args, let ret), .function(let args2, let ret2)):
     return args == args2 && ret == ret2
   case (.tuple(let fields), .tuple(let fields2)):
@@ -305,6 +323,18 @@ class PointerTypeRefExpr: TypeRefExpr {
       type = .pointer(type: type)
     }
     super.init(type: type, name: fullId, sourceRange: sourceRange)
+  }
+}
+
+class ArrayTypeRefExpr: TypeRefExpr {
+  let element: TypeRefExpr
+  init(element: TypeRefExpr, length: Int? = nil, sourceRange: SourceRange? = nil) {
+    self.element = element
+    let fullId = Identifier(name: "[\(element.name.name)]",
+                            range: sourceRange)
+    super.init(type: .array(field: element.type!, length: length),
+               name: fullId,
+               sourceRange: sourceRange)
   }
 }
 

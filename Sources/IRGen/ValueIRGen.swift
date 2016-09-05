@@ -58,6 +58,15 @@ extension IRGenerator {
     return LLVMConstInt(typeIRBindings[.bool]!, expr.value ? 1 : 0, 0)
   }
   
+  func visitArrayExpr(_ expr: ArrayExpr) -> Optional<LLVMValueRef> {
+    var initial = LLVMConstNull(resolveLLVMType(expr.type!))
+    for (idx, value) in expr.values.enumerated() {
+      let index = LLVMConstInt(LLVMInt64Type(), UInt64(idx), 0)
+      initial = LLVMBuildInsertElement(builder, initial, visit(value), index, "")
+    }
+    return initial
+  }
+  
   func visitTupleExpr(_ expr: TupleExpr) -> LLVMValueRef? {
     let type = resolveLLVMType(expr.type!)
     var initial = LLVMConstNull(type)!
@@ -81,7 +90,15 @@ extension IRGenerator {
   }
   
   func visitSizeofExpr(_ expr: SizeofExpr) -> Result {
-    return LLVMBuildTruncOrBitCast(builder, LLVMSizeOf(resolveLLVMType(expr.valueType!)), LLVMInt64Type(), "")
+    if case .array(let subtype, let length?) = expr.valueType! {
+      let type = resolveLLVMType(subtype)
+      let size = LLVMSizeOf(type)
+      let cast = LLVMBuildTruncOrBitCast(builder, size, LLVMInt64Type(), "")
+      return LLVMBuildMul(builder, cast, LLVMConstInt(LLVMInt64Type(), UInt64(length), 0), "")
+    }
+    let valueType = resolveLLVMType(expr.valueType!)
+    let size = LLVMSizeOf(valueType)
+    return LLVMBuildTruncOrBitCast(builder, size, LLVMInt64Type(), "")
   }
   
   func visitVoidExpr(_ expr: VoidExpr) -> Result {

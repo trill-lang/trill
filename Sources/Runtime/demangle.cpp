@@ -56,6 +56,11 @@ bool readType(std::string &str, std::string &out) {
     }
     out += ") -> ";
     if (!readType(str, out)) { return false; }
+  } else if (str.front() == 'A') {
+    str.erase(0, 1);
+    std::string underlying;
+    if (!readType(str, underlying)) { return false; }
+    out += "[" + underlying + "]";
   } else if (str.front() == 't') {
     str.erase(0, 1);
     out += '(';

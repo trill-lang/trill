@@ -38,6 +38,8 @@ enum SemaError: Error, CustomStringConvertible {
   case incompleteTypeAccess(type: DataType, operation: String)
   case indexIntoNonTuple
   case outOfBoundsTupleField(field: Int, max: Int)
+  case nonMatchingArrayType(DataType, DataType)
+  case ambiguousType
   
   var description: String {
     switch self {
@@ -127,6 +129,10 @@ enum SemaError: Error, CustomStringConvertible {
       return "cannot access field \(field) in tuple with \(max) fields"
     case .incompleteTypeAccess(let type, let operation):
       return "cannot \(operation) incomplete type '\(type)'"
+    case .nonMatchingArrayType(let arrayType, let elementType):
+      return "element type \(elementType) does not match array type \(arrayType)"
+    case .ambiguousType:
+      return "type is ambiguous without more context"
     }
   }
 }
@@ -434,6 +440,30 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
+  override func visitArrayExpr(_ expr: ArrayExpr) {
+    super.visitArrayExpr(expr)
+    guard let first = expr.values.first?.type else {
+      error(SemaError.ambiguousType,
+            loc: expr.startLoc(),
+            highlights: [
+              expr.sourceRange
+            ])
+      return
+    }
+    for value in expr.values {
+      guard let type = value.type else { return }
+      guard matches(type, first) else {
+        error(SemaError.nonMatchingArrayType(first, type),
+              loc: value.startLoc(),
+              highlights: [
+                value.sourceRange
+              ])
+        return
+      }
+    }
+    expr.type = .array(field: first, length: expr.values.count)
+  }
+  
   override func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
     super.visitTupleFieldLookupExpr(expr)
     guard let lhsTy = expr.lhs.type else { return }
@@ -460,21 +490,27 @@ class Sema: ASTTransformer, Pass {
   override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     super.visitSubscriptExpr(expr)
     guard let type = expr.lhs.type else { return }
-    guard case .pointer(let subtype) = type else {
+    let elementType: DataType
+    switch type {
+    case .pointer(let subtype):
+      elementType = subtype
+    case .array(let element, _):
+      elementType = element
+    default:
       error(SemaError.cannotSubscript(type: type),
             loc: expr.startLoc(),
             highlights: [ expr.lhs.sourceRange ])
       return
     }
-    guard subtype != .void else {
-      error(SemaError.incompleteTypeAccess(type: subtype, operation: "subscript"),
+    guard elementType != .void else {
+      error(SemaError.incompleteTypeAccess(type: elementType, operation: "subscript"),
             loc: expr.lhs.startLoc(),
             highlights: [
               expr.lhs.sourceRange
             ])
       return
     }
-    expr.type = subtype
+    expr.type = elementType
   }
   
   override func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
@@ -884,6 +920,17 @@ class Sema: ASTTransformer, Pass {
         expr.type = contextualType
         return true
       }
+    case let expr as ArrayExpr:
+      guard case .array(let ctx, _) = contextualType else {
+        return false
+      }
+      var changed = false
+      for value in expr.values {
+        let changedThis = propagateContextualType(ctx, to: value)
+        if !changed && changedThis { changed = true }
+      }
+      expr.type = ctx
+      return true
     case let expr as InfixOperatorExpr:
       if expr.lhs is NumExpr,
         expr.rhs is NumExpr {

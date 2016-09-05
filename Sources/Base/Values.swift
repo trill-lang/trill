@@ -101,6 +101,17 @@ class TupleExpr: Expr {
   }
 }
 
+class ArrayExpr: Expr {
+  let values: [Expr]
+  init(values: [Expr], sourceRange: SourceRange? = nil) {
+    self.values = values
+    super.init(sourceRange: sourceRange)
+  }
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? ArrayExpr else { return false }
+    return values == node.values
+  }
+}
 
 class TupleFieldLookupExpr: Expr {
   let lhs: Expr

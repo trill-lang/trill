@@ -67,6 +67,9 @@ enum Mangler {
         s += mangle(field, root: false)
       }
       s += "T"
+    case .array(let field, _):
+      s += "A"
+      s += mangle(field, root: false)
     case .int(let width):
       s += "s"
       if width == 64 {

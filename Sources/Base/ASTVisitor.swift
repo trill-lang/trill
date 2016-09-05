@@ -33,6 +33,8 @@ protocol ASTVisitor {
   @discardableResult
   func visitVoidExpr(_ expr: VoidExpr) -> Result
   @discardableResult
+  func visitArrayExpr(_ expr: ArrayExpr) -> Result
+  @discardableResult
   func visitTupleExpr(_ expr: TupleExpr) -> Result
   @discardableResult
   func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result
@@ -165,6 +167,8 @@ extension ASTVisitor {
       return visitFloatExpr(expr)
     case let expr as BoolExpr:
       return visitBoolExpr(expr)
+    case let expr as ArrayExpr:
+      return visitArrayExpr(expr)
     case let expr as TupleExpr:
       return visitTupleExpr(expr)
     case let expr as TupleFieldLookupExpr:

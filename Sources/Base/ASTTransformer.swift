@@ -150,6 +150,10 @@ class ASTTransformer: ASTVisitor {
     }
   }
   
+  func visitArrayExpr(_ expr: ArrayExpr) {
+    expr.values.forEach(visit)
+  }
+  
   func visitTupleExpr(_ expr: TupleExpr) {
     expr.values.forEach(visit)
   }

@@ -460,6 +460,12 @@ class IRGenerator: ASTVisitor, Pass {
     switch type {
     case .pointer(.void):
       return LLVMPointerType(LLVMInt8Type(), 0)
+    case .array(let field, let length):
+      let fieldTy = resolveLLVMType(field)
+      if let length = length {
+        return LLVMVectorType(fieldTy, UInt32(length))
+      }
+      return LLVMPointerType(fieldTy, 0)
     case .pointer(let subtype):
       let llvmType = resolveLLVMType(subtype)
       return LLVMPointerType(llvmType, 0)

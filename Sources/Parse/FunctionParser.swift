@@ -160,6 +160,13 @@ extension Parser {
           return TupleTypeRefExpr(fieldNames: args,
                                   sourceRange: range(start: startLoc))
         }
+      case .leftBracket:
+        consumeToken()
+        let innerType = try parseType()
+        try consume(.rightBracket)
+        return ArrayTypeRefExpr(element: innerType,
+                                length: nil,
+                                sourceRange: range(start: startLoc))
       case .operator(op: .star):
         consumeToken()
         return PointerTypeRefExpr(pointedTo: try parseType(),
