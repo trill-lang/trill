@@ -90,15 +90,16 @@ extension IRGenerator {
   }
   
   func visitSizeofExpr(_ expr: SizeofExpr) -> Result {
-    if case .array(let subtype, let length?) = expr.valueType! {
-      let type = resolveLLVMType(subtype)
-      let size = LLVMSizeOf(type)
-      let cast = LLVMBuildTruncOrBitCast(builder, size, LLVMInt64Type(), "")
-      return LLVMBuildMul(builder, cast, LLVMConstInt(LLVMInt64Type(), UInt64(length), 0), "")
+    return byteSize(of: expr.valueType!)
+  }
+  
+  func byteSize(of type: DataType) -> Result {
+    if case .array(let subtype, let length?) = type {
+      let subSize = byteSize(of: subtype)
+      return LLVMBuildMul(builder, subSize, LLVMConstInt(LLVMInt64Type(), UInt64(length), 0), "")
     }
-    let valueType = resolveLLVMType(expr.valueType!)
-    let size = LLVMSizeOf(valueType)
-    return LLVMBuildTruncOrBitCast(builder, size, LLVMInt64Type(), "")
+    let llvmType = resolveLLVMType(type)
+    return LLVMBuildTruncOrBitCast(builder, LLVMSizeOf(llvmType), LLVMInt64Type(), "")
   }
   
   func visitVoidExpr(_ expr: VoidExpr) -> Result {
