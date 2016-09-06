@@ -747,9 +747,10 @@ class Sema: ASTTransformer, Pass {
     super.visitSwitchStmt(stmt)
     guard let valueType = stmt.value.type else { return }
     for c in stmt.cases {
-      let fakeInfix = InfixOperatorExpr(op: .equalTo, lhs: stmt.value, rhs: c.constant)
-      guard let t = context.operatorType(fakeInfix, for: c.constant.type!),
-               !t.isPointer else {
+      guard let decl = context.infixOperatorCandidate(.equalTo,
+                                                      lhs: stmt.value,
+                                                      rhs: c.constant),
+               !decl.returnType.type!.isPointer else {
         error(SemaError.cannotSwitch(type: valueType),
               loc: stmt.value.startLoc(),
               highlights: [ stmt.value.sourceRange ])
@@ -803,6 +804,9 @@ class Sema: ASTTransformer, Pass {
           return
         }
       }
+      if case .assign = expr.op {
+        return
+      }
     }
     if case .as = expr.op {
       guard context.isValidType(expr.rhs.type!) else {
@@ -819,15 +823,27 @@ class Sema: ASTTransformer, Pass {
                 expr.opRange,
                 expr.rhs.sourceRange
           ])
+        return
       }
       expr.type = rhsType
-    } else {
-      if let exprType = context.operatorType(expr, for: canLhs) {
-        expr.type = exprType
-      } else {
-        expr.type = .void
-      }
+      return
     }
+    let lookupOp = expr.op.associatedOp ?? expr.op
+    if let decl = context.infixOperatorCandidate(lookupOp,
+                                                 lhs: expr.lhs,
+                                                 rhs: expr.rhs) {
+      expr.decl = decl
+      if expr.op.isAssign {
+        expr.type = .void
+      } else {
+        expr.type = decl.returnType.type
+      }
+      return
+    }
+    error(SemaError.noViableOverload(name: Identifier(name: "\(expr.op)"), args: [
+        Argument(val: expr.lhs),
+        Argument(val: expr.rhs)
+      ]), loc: expr.opRange?.start)
   }
   
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
@@ -871,7 +887,7 @@ class Sema: ASTTransformer, Pass {
             highlights: [
               expr.opRange,
               expr.rhs.sourceRange
-        ])
+            ])
       return
     }
     expr.type = exprType
@@ -936,7 +952,7 @@ class Sema: ASTTransformer, Pass {
         expr.rhs is NumExpr {
         propagateContextualType(contextualType, to: expr.lhs)
         propagateContextualType(contextualType, to: expr.rhs)
-        expr.type = context.operatorType(expr, for: contextualType)
+        visitInfixOperatorExpr(expr)
         return true
       }
     case let expr as NilExpr where context.canBeNil(canTy):

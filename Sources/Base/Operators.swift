@@ -159,6 +159,7 @@ class InfixOperatorExpr: Expr {
   let opRange: SourceRange?
   let lhs: Expr
   let rhs: Expr
+  var decl: OperatorDecl? = nil
   
   init(op: BuiltinOperator, lhs: Expr, rhs: Expr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
     self.lhs = lhs
@@ -172,58 +173,30 @@ class InfixOperatorExpr: Expr {
     guard let node = node as? InfixOperatorExpr else { return false }
     return op == node.op && rhs == node.rhs && lhs == node.lhs
   }
+}
+
+class OperatorDecl: FuncDecl {
+  let op: BuiltinOperator
+  init(op: BuiltinOperator,
+       args: [FuncArgumentAssignDecl],
+       returnType: TypeRefExpr,
+       body: CompoundStmt?,
+       modifiers: [DeclModifier],
+       sourceRange: SourceRange? = nil) {
+    self.op = op
+    super.init(name: Identifier(name: "operator\(op)"),
+               returnType: returnType,
+               args: args,
+               kind: .operator(op: op),
+               body: body,
+               modifiers: modifiers,
+               sourceRange: sourceRange)
+  }
   
-  func type(forArgType argType: DataType) -> DataType? {
-    if op.isAssign { return argType }
-    switch (self.op, argType) {
-    case (.plus, .int): return argType
-    case (.plus, .floating): return argType
-    case (.plus, .pointer): return argType
-    case (.minus, .int): return argType
-    case (.minus, .floating): return argType
-    case (.minus, .pointer): return .int64
-    case (.star, .int): return argType
-    case (.star, .floating): return argType
-    case (.star, .pointer): return .int64
-    case (.divide, .int): return argType
-    case (.divide, .floating): return argType
-    case (.mod, .int): return argType
-      
-    case (.equalTo, .int): return .bool
-    case (.equalTo, .pointer): return .bool
-    case (.equalTo, .floating): return .bool
-    case (.equalTo, .bool): return .bool
-      
-    case (.notEqualTo, .int): return .bool
-    case (.notEqualTo, .floating): return .bool
-    case (.notEqualTo, .pointer): return .bool
-    case (.notEqualTo, .bool): return .bool
-      
-    case (.lessThan, .int): return .bool
-    case (.lessThan, .pointer): return .bool
-    case (.lessThan, .floating): return .bool
-      
-    case (.lessThanOrEqual, .int): return .bool
-    case (.lessThanOrEqual, .pointer): return .bool
-    case (.lessThanOrEqual, .floating): return .bool
-      
-    case (.greaterThan, .int): return .bool
-    case (.greaterThan, .pointer): return .bool
-    case (.greaterThan, .floating): return .bool
-      
-    case (.greaterThanOrEqual, .int): return .bool
-    case (.greaterThanOrEqual, .pointer): return .bool
-    case (.greaterThanOrEqual, .floating): return .bool
-      
-    case (.and, .bool): return .bool
-    case (.or, .bool): return .bool
-    case (.xor, .int): return argType
-    case (.xor, .bool): return .bool
-    case (.bitwiseOr, .int): return argType
-    case (.ampersand, .int): return argType
-    case (.leftShift, .int): return argType
-    case (.rightShift, .int): return argType
-    default: return nil
+  override func equals(_ node: ASTNode) -> Bool {
+    guard let node = node as? OperatorDecl else {
+      return false
     }
+    return op == node.op && super.equals(node)
   }
 }

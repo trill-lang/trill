@@ -17,7 +17,7 @@ extension Parser {
     var args = [FuncArgumentAssignDecl]()
     var returnType = TypeRefExpr(type: .void, name: "Void")
     var hasVarArgs = false
-    let kind: FunctionKind
+    var kind: FunctionKind = .free
     var nameRange: SourceRange? = nil
     if case .Init = peek(), type != nil {
       modifiers.append(.mutating)
@@ -26,6 +26,9 @@ extension Parser {
     } else if isDeinit, case .deinit = peek(), type != nil {
       kind = .deinitializer(type: type!)
       nameRange = consumeToken().range
+    } else if case .operator = peek() {
+      try consume(.operator)
+      kind = .operator(op: .plus)
     } else {
       try consume(.func)
       if let type = type {
@@ -40,6 +43,13 @@ extension Parser {
       name = Identifier(name: "deinit", range: nameRange)
     case .initializer:
       name = Identifier(name: "init", range: nameRange)
+    case .operator:
+      guard case .oper(let op) = peek() else {
+        throw unexpectedToken()
+      }
+      kind = .operator(op: op)
+      let tok = consumeToken()
+      name = Identifier(name: "operator\(op)", range: tok.range)
     default:
       name = try parseIdentifier()
     }
@@ -54,14 +64,21 @@ extension Parser {
         returnType = type.ref()
       }
     }
+    if case .operator(let op) = kind {
+      return OperatorDecl(op: op,
+                          args: args,
+                          returnType: returnType,
+                          body: body,
+                          modifiers: modifiers)
+    }
     return FuncDecl(name: name,
-                        returnType: returnType,
-                        args: args,
-                        kind: kind,
-                        body: body,
-                        modifiers: modifiers,
-                        hasVarArgs: hasVarArgs,
-                        sourceRange: range(start: startLoc))
+                    returnType: returnType,
+                    args: args,
+                    kind: kind,
+                    body: body,
+                    modifiers: modifiers,
+                    hasVarArgs: hasVarArgs,
+                    sourceRange: range(start: startLoc))
   }
   
   func parseFuncSignature() throws -> (args: [FuncArgumentAssignDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
@@ -167,7 +184,7 @@ extension Parser {
         return ArrayTypeRefExpr(element: innerType,
                                 length: nil,
                                 sourceRange: range(start: startLoc))
-      case .operator(op: .star):
+      case .oper(op: .star):
         consumeToken()
         return PointerTypeRefExpr(pointedTo: try parseType(),
                                   level: 1,

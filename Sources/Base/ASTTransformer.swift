@@ -68,6 +68,7 @@ class ASTTransformer: ASTVisitor {
     context.types.forEach(visit)
     context.typeAliases.forEach(visit)
     context.functions.forEach(visit)
+    context.operators.forEach(visit)
     context.extensions.forEach(visit)
   }
   
@@ -108,6 +109,10 @@ class ASTTransformer: ASTVisitor {
         visitCompoundStmt(expr.body)
       }
     }
+  }
+  
+  func visitOperatorDecl(_ decl: OperatorDecl) {
+    visitFuncDecl(decl)
   }
   
   func visitFuncDecl(_ expr: FuncDecl) {

@@ -105,6 +105,9 @@ indirect type ByteArray {
     func load() -> Double {
         return self.length as Double / self.capacity as Double
     }
+    func copy() -> ByteArray {
+      return ByteArray(self.bytes, length: self.length)
+    }
     func dump() {
         printf("capacity: %d, length: %d (load %f)\n", self.capacity, self.length, self.load())
         putchar('[' as Int32)

@@ -29,6 +29,8 @@ enum Mangler {
       case .method(let type):
         s += "M" + mangle(type, root: false)
         s += d.name.name.withCount
+      case .operator(let op):
+        s += "O\(op)" // FIXME: Full support for mangling all operators
       default:
         s += d.name.name.withCount
       }

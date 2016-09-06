@@ -9,6 +9,7 @@ enum ASTError: Error, CustomStringConvertible {
   case duplicateVar(name: Identifier)
   case duplicateType(name: Identifier)
   case duplicateFunction(name: Identifier)
+  case duplicateOperatorOverload(decl: OperatorDecl)
   case circularAlias(name: Identifier)
   case invalidMain(got: DataType)
   case duplicateMain
@@ -20,6 +21,8 @@ enum ASTError: Error, CustomStringConvertible {
       return "invalid redeclaration of variable '\(name)'"
     case .duplicateFunction(let name):
       return "invalid redeclaration of function '\(name)'"
+    case .duplicateOperatorOverload(let decl):
+      return "invalid redeclaration of overload for '\(decl.op)' with arguments '\(decl.formattedParameterList)'"
     case .circularAlias(let name):
       return "declaration of '\(name)' is circular"
     case .invalidMain(let type):
@@ -70,6 +73,7 @@ public class ASTContext {
   }
   
   var functions = [FuncDecl]()
+  var operators = [OperatorDecl]()
   var types = [TypeDecl]()
   var extensions = [ExtensionDecl]()
   var diagnostics = [PoundDiagnosticStmt]()
@@ -82,8 +86,33 @@ public class ASTContext {
     .int16: TypeDecl(name: "Int16",  fields: []),
     .int32: TypeDecl(name: "Int32",  fields: []),
     .int64: TypeDecl(name: "Int",  fields: []),
+    .double: TypeDecl(name: "Double",  fields: []),
+    .float: TypeDecl(name: "Float",  fields: []),
+    .float80: TypeDecl(name: "Float80",  fields: []),
     .bool: TypeDecl(name: "Bool", fields: []),
     .void: TypeDecl(name: "Void", fields: [])
+  ]
+  private var operatorMap: [BuiltinOperator: [OperatorDecl]] = [
+    .plus: makeHomogenousOps(.plus, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .minus: makeHomogenousOps(.minus, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .star: makeHomogenousOps(.star, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .divide: makeHomogenousOps(.divide, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .mod: makeHomogenousOps(.mod, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .ampersand: makeHomogenousOps(.ampersand, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .bitwiseOr: makeHomogenousOps(.bitwiseOr, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .bitwiseNot: makeHomogenousOps(.bitwiseNot, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .leftShift: makeHomogenousOps(.leftShift, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .rightShift: makeHomogenousOps(.rightShift, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .xor: makeHomogenousOps(.xor, [.int8, .int16, .int32, .int64, .float, .double, .float80, .bool]),
+    .equalTo: makeBoolOps(.equalTo, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .notEqualTo: makeBoolOps(.notEqualTo, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .lessThan: makeBoolOps(.lessThan, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .lessThanOrEqual: makeBoolOps(.lessThanOrEqual, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .greaterThan: makeBoolOps(.greaterThan, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .greaterThanOrEqual: makeBoolOps(.greaterThanOrEqual, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .and: makeBoolOps(.and, [.bool]),
+    .or: makeBoolOps(.or, [.bool]),
+    .not: makeBoolOps(.not, [.bool]),
   ]
   private var globalDeclMap = [String: VarAssignDecl]()
   private var typeAliasMap = [String: TypeAliasDecl]()
@@ -122,6 +151,46 @@ public class ASTContext {
       return
     }
     mainFunction = main
+  }
+  
+  func add(_ operatorDecl: OperatorDecl) {
+    operators.append(operatorDecl)
+    
+    let decls = operators(for: operatorDecl.op)
+    let declNames = decls.map { Mangler.mangle($0) }
+    if declNames.contains(Mangler.mangle(operatorDecl)) {
+      error(ASTError.duplicateOperatorOverload(decl: operatorDecl),
+            loc: operatorDecl.name.range?.start,
+            highlights: [ operatorDecl.name.range ])
+      return
+    }
+    
+    var existing = operatorMap[operatorDecl.op] ?? []
+    existing.append(operatorDecl)
+    operatorMap[operatorDecl.op] = existing
+  }
+  
+  func infixOperatorCandidate(_ op: BuiltinOperator, lhs: Expr, rhs: Expr) -> OperatorDecl? {
+    let canLhs = canonicalType(lhs.type!)
+    if rhs is NilExpr && canBeNil(canLhs) && [.equalTo, .notEqualTo].contains(op) {
+      return OperatorDecl(op: op,
+                          args: [
+                            FuncArgumentAssignDecl(name: "", type: lhs.type!.ref()),
+                            FuncArgumentAssignDecl(name: "", type: lhs.type!.ref())
+                          ],
+                          returnType: DataType.bool.ref(),
+                          body: nil,
+                          modifiers: [.implicit])
+    }
+    
+    let canRhs = canonicalType(rhs.type!)
+    let decls = operators(for: op)
+    for decl in decls {
+      if matches(decl.args[0].type, canLhs) && matches(decl.args[1].type, canRhs) {
+        return decl
+      }
+    }
+    return nil
   }
   
   func add(_ funcDecl: FuncDecl) {
@@ -202,6 +271,9 @@ public class ASTContext {
   func merge(context: ASTContext) {
     for function in context.functions {
       add(function)
+    }
+    for op in context.operators {
+      add(op)
     }
     for type in context.types {
       add(type)
@@ -300,6 +372,10 @@ public class ASTContext {
       results.append(intrinsic)
     }
     return results
+  }
+  
+  func operators(for op: BuiltinOperator) -> [OperatorDecl] {
+    return operatorMap[op] ?? []
   }
   
   func global(named name: Identifier) -> VarAssignDecl? {
@@ -418,14 +494,6 @@ public class ASTContext {
     }
   }
   
-  func operatorType(_ op: InfixOperatorExpr, for argType: DataType) -> DataType? {
-    switch op.op {
-    case .equalTo where isIndirect(argType): return .bool
-    case .notEqualTo where isIndirect(argType): return .bool
-    default: return op.type(forArgType: argType)
-    }
-  }
-  
   func canCoerce(_ type: DataType, to other: DataType) -> Bool {
     // You should be able to cast between an indirect type and a pointer.
     if isIndirect(other), case .pointer = type {
@@ -437,3 +505,23 @@ public class ASTContext {
     return type.canCoerceTo(other)
   }
 }
+
+fileprivate func makeHomogenousOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
+  return types.map { type in makeOp(op, type, type, type) }
+}
+fileprivate func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
+  return types.map { type in makeOp(op, type, type, .bool) }
+}
+
+fileprivate func makeOp(_ op: BuiltinOperator,
+                    _ lhsType: DataType,
+                    _ rhsType: DataType,
+                    _ returnType: DataType) -> OperatorDecl {
+  return OperatorDecl(op: op, args: [
+    FuncArgumentAssignDecl(name: "", type: lhsType.ref()),
+    FuncArgumentAssignDecl(name: "", type: rhsType.ref()),
+    ], returnType: returnType.ref(),
+       body: CompoundStmt(exprs: []),
+       modifiers: [.implicit])
+}
+  

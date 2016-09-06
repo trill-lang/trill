@@ -168,8 +168,13 @@ class Parser {
       switch peek() {
       case .poundWarning, .poundError:
         context.add(try parsePoundDiagnosticExpr())
-      case .func:
-        context.add(try parseFuncDecl(attrs))
+      case .func, .operator:
+        let decl = try parseFuncDecl(attrs)
+        if let op = decl as? OperatorDecl {
+          context.add(op)
+        } else {
+          context.add(decl)
+        }
       case .type:
         let expr = try parseTypeDecl(attrs)
         if let typeDecl = expr as? TypeDecl {
@@ -213,7 +218,7 @@ class Parser {
     }
     let nextKind: DeclKind
     switch peek() {
-    case .func, .Init, .deinit:
+    case .func, .Init, .deinit, .operator:
       nextKind = .function
     case .var, .let:
       nextKind = .variable
@@ -270,7 +275,7 @@ class Parser {
     let startLoc = sourceLoc
     let name = try parseIdentifier()
     
-    if case .operator(op: .assign) = peek() {
+    if case .oper(op: .assign) = peek() {
       consumeToken()
       let bound = try parseType()
       return TypeAliasDecl(name: name,

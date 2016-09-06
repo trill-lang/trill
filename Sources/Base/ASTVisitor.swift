@@ -55,6 +55,8 @@ protocol ASTVisitor {
   @discardableResult
   func visitFuncDecl(_ decl: FuncDecl) -> Result
   @discardableResult
+  func visitOperatorDecl(_ decl: OperatorDecl) -> Result
+  @discardableResult
   func visitReturnStmt(_ stmt: ReturnStmt) -> Result
   @discardableResult
   func visitBreakStmt(_ stmt: BreakStmt) -> Result
@@ -117,6 +119,8 @@ extension ASTVisitor {
       return visitFuncArgumentAssignDecl(decl)
     case let decl as VarAssignDecl:
       return visitVarAssignDecl(decl)
+    case let decl as OperatorDecl:
+      return visitOperatorDecl(decl)
     case let decl as FuncDecl:
       return visitFuncDecl(decl)
     case let decl as TypeDecl:

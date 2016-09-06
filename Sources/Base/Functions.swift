@@ -9,6 +9,7 @@ enum FunctionKind {
   case initializer(type: DataType)
   case deinitializer(type: DataType)
   case method(type: DataType)
+  case `operator`(op: BuiltinOperator)
   case free
 }
 
@@ -76,7 +77,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     switch kind {
     case .initializer(let type), .method(let type), .deinitializer(let type):
       return type
-    case .free:
+    case .operator, .free:
       return nil
     }
   }

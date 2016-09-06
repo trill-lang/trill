@@ -156,30 +156,30 @@ extension IRGenerator {
   // %x = load i64* %x-alloca
   // %addtmp = add i64 %0, i64 %x
   
-  func codegen(_ op: BuiltinOperator, lhs: LLVMValueRef, rhs: LLVMValueRef, type: DataType) -> Result {
-    switch op {
+  func codegen(_ decl: OperatorDecl, lhs: LLVMValueRef, rhs: LLVMValueRef, type: DataType) -> Result {
+    switch decl.op {
     case .plus:
       if case .floating = type {
         return LLVMBuildFAdd(builder, lhs, rhs, "addtmp")
-      } else {
+      } else if case .int = type {
         return LLVMBuildAdd(builder, lhs, rhs, "addtmp")
       }
     case .minus:
       if case .floating = type {
         return LLVMBuildFSub(builder, lhs, rhs, "subtmp")
-      } else {
+      } else if case .int = type {
         return LLVMBuildSub(builder, lhs, rhs, "subtmp")
       }
     case .star:
       if case .floating = type {
         return LLVMBuildFMul(builder, lhs, rhs, "multmp")
-      } else {
+      } else if case .int = type {
         return LLVMBuildMul(builder, lhs, rhs, "multmp")
       }
     case .divide:
       if case .floating = type {
         return LLVMBuildFDiv(builder, lhs, rhs, "divtmp")
-      } else {
+      } else if case .int = type {
         return LLVMBuildSDiv(builder, lhs, rhs, "divtmp")
       }
     case .mod:
@@ -187,51 +187,66 @@ extension IRGenerator {
     case .equalTo:
       if case .floating = type {
         return LLVMBuildFCmp(builder, LLVMRealOEQ, lhs, rhs, "eqtmp")
-      } else {
+      } else if case .int = type {
         return LLVMBuildICmp(builder, LLVMIntEQ, lhs, rhs, "eqtmp")
       }
     case .notEqualTo:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealONE, lhs, rhs, "eqtmp")
-      } else {
-        return LLVMBuildICmp(builder, LLVMIntNE, lhs, rhs, "eqtmp")
+        return LLVMBuildFCmp(builder, LLVMRealONE, lhs, rhs, "neqtmp")
+      } else if case .int = type {
+        return LLVMBuildICmp(builder, LLVMIntNE, lhs, rhs, "neqtmp")
       }
     case .lessThan:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOLT, lhs, rhs, "eqtmp")
-      } else {
-        return LLVMBuildICmp(builder, LLVMIntSLT, lhs, rhs, "eqtmp")
+        return LLVMBuildFCmp(builder, LLVMRealOLT, lhs, rhs, "lttmp")
+      } else if case .int = type {
+        return LLVMBuildICmp(builder, LLVMIntSLT, lhs, rhs, "lttmp")
       }
     case .lessThanOrEqual:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOLE, lhs, rhs, "eqtmp")
-      } else {
-        return LLVMBuildICmp(builder, LLVMIntSLE, lhs, rhs, "eqtmp")
+        return LLVMBuildFCmp(builder, LLVMRealOLE, lhs, rhs, "ltetmp")
+      } else if case .int = type {
+        return LLVMBuildICmp(builder, LLVMIntSLE, lhs, rhs, "ltetmp")
       }
     case .greaterThan:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOGT, lhs, rhs, "eqtmp")
-      } else {
-        return LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "eqtmp")
+        return LLVMBuildFCmp(builder, LLVMRealOGT, lhs, rhs, "gttmp")
+      } else if case .int = type {
+        return LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "gttmp")
       }
     case .greaterThanOrEqual:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOGE, lhs, rhs, "eqtmp")
-      } else {
-        return LLVMBuildICmp(builder, LLVMIntSGE, lhs, rhs, "eqtmp")
+        return LLVMBuildFCmp(builder, LLVMRealOGE, lhs, rhs, "gtetmp")
+      } else if case .int = type {
+        return LLVMBuildICmp(builder, LLVMIntSGE, lhs, rhs, "gtetmp")
       }
     case .xor:
-      return LLVMBuildXor(builder, lhs, rhs, "xortmp")
+      if decl.has(attribute: .implicit) {
+        return LLVMBuildXor(builder, lhs, rhs, "xortmp")
+      }
     case .ampersand:
-      return LLVMBuildAnd(builder, lhs, rhs, "andtmp")
+      if decl.has(attribute: .implicit) {
+        return LLVMBuildAnd(builder, lhs, rhs, "andtmp")
+      }
     case .bitwiseOr:
-      return LLVMBuildOr(builder, lhs, rhs, "ortmp")
+      if decl.has(attribute: .implicit) {
+        return LLVMBuildOr(builder, lhs, rhs, "ortmp")
+      }
     case .leftShift:
-      return LLVMBuildShl(builder, lhs, rhs, "shltmp")
+      if decl.has(attribute: .implicit) {
+        return LLVMBuildShl(builder, lhs, rhs, "shltmp")
+      }
     case .rightShift:
-      return LLVMBuildLShr(builder, lhs, rhs, "lshrtmp")
+      if decl.has(attribute: .implicit) {
+        return LLVMBuildLShr(builder, lhs, rhs, "lshrtmp")
+      }
     default:
-      fatalError("unknown operator \(op)")
+      break
+    }
+    let function = codegenFunctionPrototype(decl)
+    var args: [LLVMValueRef?] = [lhs, rhs]
+    return args.withUnsafeMutableBufferPointer { buf in
+      return LLVMBuildCall(builder, function, buf.baseAddress, 2, "optmp")
     }
   }
   
@@ -290,15 +305,22 @@ extension IRGenerator {
     if case .assign = expr.op {
       let ptr = resolvePtr(expr.lhs)
       return LLVMBuildStore(builder, rhs, ptr)
-    } else if let associated = expr.op.associatedOp {
+    } else if context.canBeNil(expr.lhs.type!) && expr.rhs is NilExpr {
+      let lhs = visit(expr.lhs)!
+      if case .equalTo = expr.op {
+        return LLVMBuildIsNull(builder, lhs, "")
+      } else if case .notEqualTo = expr.op {
+        return LLVMBuildIsNotNull(builder, lhs, "")
+      }
+    } else if expr.op.associatedOp != nil {
       let ptr = resolvePtr(expr.lhs)
       let lhsVal = LLVMBuildLoad(builder, ptr, "cmpassignload")!
-      let performed = codegen(associated, lhs: lhsVal, rhs: rhs, type: expr.lhs.type!)!
+      let performed = codegen(expr.decl!, lhs: lhsVal, rhs: rhs, type: expr.lhs.type!)!
       return LLVMBuildStore(builder, performed, ptr)
     }
     
     let lhs = visit(expr.lhs)!
-    return codegen(expr.op, lhs: lhs, rhs: rhs, type: expr.lhs.type!)
+    return codegen(expr.decl!, lhs: lhs, rhs: rhs, type: expr.lhs.type!)
   }
   
   func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {

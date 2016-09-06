@@ -407,6 +407,9 @@ class IRGenerator: ASTVisitor, Pass {
     for function in context.functions where !function.has(attribute: .foreign) {
       codegenFunctionPrototype(function)
     }
+    for op in context.operators {
+      codegenFunctionPrototype(op)
+    }
     for type in context.types {
       visitTypeDecl(type)
     }
@@ -415,6 +418,9 @@ class IRGenerator: ASTVisitor, Pass {
     }
     for function in context.functions where !function.has(attribute: .foreign) {
       _ = visitFuncDecl(function)
+    }
+    for op in context.operators {
+      _ = visitFuncDecl(op)
     }
   }
 

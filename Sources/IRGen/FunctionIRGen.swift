@@ -89,6 +89,10 @@ extension IRGenerator {
     return function
   }
   
+  func visitOperatorDecl(_ decl: OperatorDecl) -> LLVMValueRef? {
+    return visitFuncDecl(decl)
+  }
+  
   func visitFuncDecl(_ expr: FuncDecl) -> Result {
     let function = codegenFunctionPrototype(expr)!
     

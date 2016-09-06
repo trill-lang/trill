@@ -231,23 +231,16 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
     guard let lhsType = expr.lhs.type else { return }
     guard let rhsType = expr.rhs.type else { return }
-    let canLhs = context.canonicalType(lhsType)
     if expr.op == .as {
       // thrown from sema
-    } else if context.operatorType(expr, for: canLhs) == nil  {
+    } else if expr.op.isAssign {
+      // thrown from sema
+    } else if expr.decl == nil  {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
             loc: expr.startLoc(),
             highlights: [
               expr.lhs.sourceRange
         ])
-      return
-    } else if !matches(lhsType, rhsType) {
-      error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
-            loc: expr.opRange?.start,
-            highlights: [
-              expr.lhs.sourceRange,
-              expr.opRange,
-              expr.rhs.sourceRange ])
       return
     } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
             let num = expr.rhs as? NumExpr,

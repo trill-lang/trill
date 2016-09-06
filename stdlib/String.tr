@@ -7,6 +7,9 @@ type String {
     init(_owning cString: *Int8, length: Int) {
         self._storage = ByteArray(_owning: cString, length: length)
     }
+    init(_array: ByteArray) {
+        self._storage = _array
+    }
     init() {
         self._storage = ByteArray(capacity: 256)
         self._storage.append(0)
@@ -60,6 +63,9 @@ type String {
         if isEnd {
             self._storage.append(0)
         }
+    }
+    func copy() -> String {
+      return String(_array: self._storage.copy())
     }
     func get(_ index: Int) -> Int8 {
         return self._storage.get(index)

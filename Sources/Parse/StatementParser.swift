@@ -208,7 +208,7 @@ extension Parser {
       consumeToken()
       type = try parseType()
     }
-    if case .operator(op: .assign) = peek() {
+    if case .oper(op: .assign) = peek() {
       consumeToken()
       rhs = try parseValExpr()
     }

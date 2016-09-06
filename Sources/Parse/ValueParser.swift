@@ -21,7 +21,7 @@ extension Parser {
     
     let tok = currentToken()
     switch tok.kind {
-    case .operator(let op) where op.isPrefix:
+    case .oper(let op) where op.isPrefix:
       let opRange = currentToken().range
       consumeToken()
       let val = try parseValExpr()
@@ -178,7 +178,7 @@ extension Parser {
         let falseVal = try parseValExpr()
         expr = TernaryExpr(condition: expr, trueCase: trueVal, falseCase: falseVal,
                            sourceRange: range(start: startLoc))
-      case .operator(let op):
+      case .oper(let op):
         if op == .star && peek(ahead: -1).isLineSeparator { break outer }
         let opRange = currentToken().range
         consumeToken()
