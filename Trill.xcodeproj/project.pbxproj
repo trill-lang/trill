@@ -301,6 +301,8 @@
 		DC17705E1D6913EF00FEFB85 /* StatementParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementParser.swift; sourceTree = "<group>"; };
 		DC17705F1D6913EF00FEFB85 /* ValueParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueParser.swift; sourceTree = "<group>"; };
 		DC17C8C31CDC509D00779D66 /* libstdc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libstdc++.tbd"; path = "usr/lib/libstdc++.tbd"; sourceTree = SDKROOT; };
+		DC1BF29A1D7F166C0055157B /* MangledOperators.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MangledOperators.def; path = Sources/Runtime/MangledOperators.def; sourceTree = SOURCE_ROOT; };
+		DC1BF29B1D7F179F0055157B /* SpecialTypes.def */ = {isa = PBXFileReference; lastKnownFileType = text; name = SpecialTypes.def; path = Sources/Runtime/SpecialTypes.def; sourceTree = SOURCE_ROOT; };
 		DC217A041D4EAD3000729DF0 /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC217A061D4EAD3000729DF0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtrillRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -624,6 +626,8 @@
 			isa = PBXGroup;
 			children = (
 				DC1770141D69128500FEFB85 /* demangle.cpp */,
+				DC1BF29A1D7F166C0055157B /* MangledOperators.def */,
+				DC1BF29B1D7F179F0055157B /* SpecialTypes.def */,
 				DC1770151D69128500FEFB85 /* demangle.h */,
 				DC1770161D69128500FEFB85 /* runtime.cpp */,
 				DC1770171D69128500FEFB85 /* runtime.h */,

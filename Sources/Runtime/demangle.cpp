@@ -89,30 +89,12 @@ bool readType(std::string &str, std::string &out) {
         out += std::to_string(num);
       }
       break;
-    case 'I':
-      str.erase(0, 1);
-      out += "Int";
+#define SPECIAL_TYPE(c, name) \
+    case c:                   \
+      str.erase(0, 1);        \
+      out += name;            \
       break;
-    case 'f':
-      str.erase(0, 1);
-      out += "Float";
-      break;
-    case 'd':
-      str.erase(0, 1);
-      out += "Double";
-      break;
-    case 'F':
-      str.erase(0, 1);
-      out += "Float80";
-      break;
-    case 'b':
-      str.erase(0, 1);
-      out += "Bool";
-      break;
-    case 'v':
-      str.erase(0, 1);
-      out += "Void";
-      break;
+#include "SpecialTypes.def"
     default:
       return false;
     }
@@ -166,66 +148,11 @@ bool demangleFunction(std::string &symbol, std::string &out) {
     } else if (symbol.front() == 'O') {
       symbol.erase(0, 1);
       switch (symbol.front()) {
-      case 'p':
-          out += "+";
-          break;
-      case 'm':
-          out += "-";
-          break;
-      case 't':
-          out += "*";
-          break;
-      case 'd':
-          out += "/";
-          break;
-      case 'M':
-          out += "%";
-          break;
-      case 'e':
-          out += "==";
-          break;
-      case 'n':
-          out += "!=";
-          break;
-      case 'l':
-          out += "<";
-          break;
-      case 'L':
-          out += "<=";
-          break;
-      case 'g':
-          out += ">";
-          break;
-      case 'G':
-          out += ">=";
-          break;
-      case 'a':
-          out += "&&";
-          break;
-      case 'o':
-          out += "||";
-          break;
-      case 'x':
-          out += "^";
-          break;
-      case 'A':
-          out += "&";
-          break;
-      case 'O':
-          out += "|";
-          break;
-      case 'N':
-          out += "!";
-          break;
-      case 'B':
-          out += "~";
-          break;
-      case 's':
-          out += "<<";
-          break;
-      case 'S':
-          out += ">>";
-          break;
+#define MANGLED_OPERATOR(c, str) \
+      case c:                    \
+        out += str;              \
+        break;
+#include "MangledOperators.def"
       default: return false;
       }
       symbol.erase(0, 1);
