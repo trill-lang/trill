@@ -65,7 +65,8 @@ extension Parser {
                           args: args,
                           returnType: returnType,
                           body: body,
-                          modifiers: modifiers)
+                          modifiers: modifiers,
+                          opRange: nameRange)
     }
     return FuncDecl(name: name,
                     returnType: returnType,

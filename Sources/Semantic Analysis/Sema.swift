@@ -40,6 +40,7 @@ enum SemaError: Error, CustomStringConvertible {
   case outOfBoundsTupleField(field: Int, max: Int)
   case nonMatchingArrayType(DataType, DataType)
   case ambiguousType
+  case operatorsMustHaveTwoArgs(op: BuiltinOperator)
   
   var description: String {
     switch self {
@@ -133,6 +134,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "element type '\(elementType)' does not match array type '\(arrayType)'"
     case .ambiguousType:
       return "type is ambiguous without more context"
+    case .operatorsMustHaveTwoArgs(let op):
+      return "definition for operator '\(op)' must have two arguments"
     }
   }
 }
@@ -757,6 +760,18 @@ class Sema: ASTTransformer, Pass {
         continue
       }
     }
+  }
+  
+  override func visitOperatorDecl(_ decl: OperatorDecl) {
+    guard decl.args.count == 2 else {
+      error(SemaError.operatorsMustHaveTwoArgs(op: decl.op),
+            loc: decl.opRange?.start,
+            highlights: [
+              decl.opRange
+            ])
+      return
+    }
+    super.visitOperatorDecl(decl)
   }
   
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {

@@ -177,13 +177,16 @@ class InfixOperatorExpr: Expr {
 
 class OperatorDecl: FuncDecl {
   let op: BuiltinOperator
+  let opRange: SourceRange?
   init(op: BuiltinOperator,
        args: [FuncArgumentAssignDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
+       opRange: SourceRange? = nil,
        sourceRange: SourceRange? = nil) {
     self.op = op
+    self.opRange = opRange
     super.init(name: Identifier(name: "operator\(op)"),
                returnType: returnType,
                args: args,
