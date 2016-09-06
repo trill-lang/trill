@@ -168,7 +168,7 @@ class Parser {
       switch peek() {
       case .poundWarning, .poundError:
         context.add(try parsePoundDiagnosticExpr())
-      case .func, .operator:
+      case .func:
         let decl = try parseFuncDecl(attrs)
         if let op = decl as? OperatorDecl {
           context.add(op)
@@ -275,7 +275,7 @@ class Parser {
     let startLoc = sourceLoc
     let name = try parseIdentifier()
     
-    if case .oper(op: .assign) = peek() {
+    if case .operator(op: .assign) = peek() {
       consumeToken()
       let bound = try parseType()
       return TypeAliasDecl(name: name,

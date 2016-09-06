@@ -163,6 +163,72 @@ bool demangleFunction(std::string &symbol, std::string &out) {
       symbol.erase(0, 1);
       if (!readType(symbol, out)) { return false; }
       out += ".init";
+    } else if (symbol.front() == 'O') {
+      symbol.erase(0, 1);
+      switch (symbol.front()) {
+      case 'p':
+          out += "+";
+          break;
+      case 'm':
+          out += "-";
+          break;
+      case 't':
+          out += "*";
+          break;
+      case 'd':
+          out += "/";
+          break;
+      case 'M':
+          out += "%";
+          break;
+      case 'e':
+          out += "==";
+          break;
+      case 'n':
+          out += "!=";
+          break;
+      case 'l':
+          out += "<";
+          break;
+      case 'L':
+          out += "<=";
+          break;
+      case 'g':
+          out += ">";
+          break;
+      case 'G':
+          out += ">=";
+          break;
+      case 'a':
+          out += "&&";
+          break;
+      case 'o':
+          out += "||";
+          break;
+      case 'x':
+          out += "^";
+          break;
+      case 'A':
+          out += "&";
+          break;
+      case 'O':
+          out += "|";
+          break;
+      case 'N':
+          out += "!";
+          break;
+      case 'B':
+          out += "~";
+          break;
+      case 's':
+          out += "<<";
+          break;
+      case 'S':
+          out += ">>";
+          break;
+      default: return false;
+      }
+      symbol.erase(0, 1);
     } else {
       if (!readName(symbol, out)) { return false; }
     }

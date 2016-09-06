@@ -26,13 +26,14 @@ extension Parser {
     } else if isDeinit, case .deinit = peek(), type != nil {
       kind = .deinitializer(type: type!)
       nameRange = consumeToken().range
-    } else if case .operator = peek() {
-      try consume(.operator)
-      kind = .operator(op: .plus)
     } else {
       try consume(.func)
       if let type = type {
         kind = .method(type: type)
+      } else if case .operator(let op) = peek() {
+        let tok = consumeToken()
+        nameRange = tok.range
+        kind = .operator(op: op)
       } else {
         kind = .free
       }
@@ -43,13 +44,8 @@ extension Parser {
       name = Identifier(name: "deinit", range: nameRange)
     case .initializer:
       name = Identifier(name: "init", range: nameRange)
-    case .operator:
-      guard case .oper(let op) = peek() else {
-        throw unexpectedToken()
-      }
-      kind = .operator(op: op)
-      let tok = consumeToken()
-      name = Identifier(name: "operator\(op)", range: tok.range)
+    case .operator(let op):
+      name = Identifier(name: "operator\(op)", range: nameRange)
     default:
       name = try parseIdentifier()
     }
@@ -184,7 +180,7 @@ extension Parser {
         return ArrayTypeRefExpr(element: innerType,
                                 length: nil,
                                 sourceRange: range(start: startLoc))
-      case .oper(op: .star):
+      case .operator(op: .star):
         consumeToken()
         return PointerTypeRefExpr(pointedTo: try parseType(),
                                   level: 1,

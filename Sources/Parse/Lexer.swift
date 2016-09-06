@@ -11,7 +11,7 @@ enum TokenKind: Equatable {
   case identifier(value: String)
   case unknown(char: String)
   case char(value: UInt8)
-  case oper(op: BuiltinOperator)
+  case `operator`(op: BuiltinOperator)
   case stringLiteral(value: String)
   case semicolon
   case newline
@@ -31,7 +31,6 @@ enum TokenKind: Equatable {
   case Init
   case `deinit`
   case `extension`
-  case `operator`
   case sizeOf
   case type
   case `while`
@@ -86,7 +85,6 @@ enum TokenKind: Equatable {
     case "deinit": self = .deinit
     case "type": self = .type
     case "extension": self = .extension
-    case "operator": self = .operator
     case "sizeof": self = .sizeOf
     case "while": self = .while
     case "if": self = .if
@@ -104,7 +102,7 @@ enum TokenKind: Equatable {
     case "default": self = .default
     case "for": self = .for
     case "nil": self = .nil
-    case "as": self = .oper(op: .as)
+    case "as": self = .operator(op: .as)
     case "#function": self = .poundFunction
     case "#file": self = .poundFile
     case "#line": self = .poundLine
@@ -122,7 +120,7 @@ enum TokenKind: Equatable {
     case .identifier(let value): return value
     case .unknown(let char): return char
     case .char(let value): return String(UnicodeScalar(value))
-    case .oper(let op): return "\(op)"
+    case .operator(let op): return "\(op)"
     case .stringLiteral(let value): return value.escaped()
     case .semicolon: return ";"
     case .newline: return "\\n"
@@ -167,20 +165,19 @@ enum TokenKind: Equatable {
     case .poundLine: return "#line"
     case .poundWarning: return "#warning"
     case .poundError: return "#error"
-    case .operator: return "operator"
     }
   }
   
   var isKeyword: Bool {
     switch self {
     case .func, .while, .if, .in, .else, .for, .nil, .break, .case, .switch,
-         .default, .continue, .return, .underscore, .extension, .operator, .sizeOf, .var,
+         .default, .continue, .return, .underscore, .extension, .sizeOf, .var,
          .let, .type, .true, .false, .Init, .deinit, .poundFunction, .poundFile,
          .poundLine, .poundWarning, .poundError:
          return true
     case .identifier(let value):
       return DeclModifier(rawValue: value) != nil || value == "self"
-    case .oper(op: .as): return true
+    case .operator(op: .as): return true
     default: return false
     }
   }
@@ -223,7 +220,7 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
     return v == v2
   case (.char(let v), .char(let v2)):
     return v == v2
-  case (.oper(let v), .oper(let v2)):
+  case (.operator(let v), .operator(let v2)):
     return v == v2
   case (.stringLiteral(let v), .stringLiteral(let v2)):
     return v == v2
@@ -547,7 +544,7 @@ struct Lexer {
     if c.isOperator {
       let opStr = collectWhile { $0.isOperator }
       if let op = BuiltinOperator(rawValue: opStr) {
-        return Token(kind: .oper(op: op), range: range(start: startLoc))
+        return Token(kind: .operator(op: op), range: range(start: startLoc))
       } else {
         return Token(kind: TokenKind(op: opStr), range: range(start: startLoc))
       }

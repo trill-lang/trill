@@ -30,7 +30,30 @@ enum Mangler {
         s += "M" + mangle(type, root: false)
         s += d.name.name.withCount
       case .operator(let op):
-        s += "O\(op)" // FIXME: Full support for mangling all operators
+        s += "O" // FIXME: Full support for mangling all operators
+        switch op {
+        case .plus: s += "p"
+        case .minus: s += "m"
+        case .star: s += "t"
+        case .divide: s += "d"
+        case .mod: s += "M"
+        case .equalTo: s += "e"
+        case .notEqualTo: s += "n"
+        case .lessThan: s += "l"
+        case .lessThanOrEqual: s += "L"
+        case .greaterThan: s += "g"
+        case .greaterThanOrEqual: s += "G"
+        case .and: s += "a"
+        case .or: s += "o"
+        case .xor: s += "x"
+        case .ampersand: s += "A"
+        case .bitwiseOr: s += "O"
+        case .not: s += "N"
+        case .bitwiseNot: s += "B"
+        case .leftShift: s += "s"
+        case .rightShift: s += "S"
+        default: fatalError("cannot mangle \(op)")
+        }
       default:
         s += d.name.name.withCount
       }
