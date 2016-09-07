@@ -114,17 +114,18 @@ extension IRGenerator {
   func coerce(_ value: LLVMValueRef, from fromType: DataType, to type: DataType) -> Result {
     let llvmType = resolveLLVMType(type)
     switch (context.canonicalType(fromType), context.canonicalType(type)) {
-    case (.int(let lhsWidth), .int(let rhsWidth)):
+    case (.int(let lhsWidth, _), .int(let rhsWidth, _)):
       if lhsWidth == rhsWidth { return value }
       if lhsWidth < rhsWidth {
+        
         return LLVMBuildSExt(builder, value, llvmType, "sext-coerce")
       } else {
         return LLVMBuildTrunc(builder, value, llvmType, "trunc-coerce")
       }
-    case (.int, .floating):
-      return LLVMBuildSIToFP(builder, value, llvmType, "inttofp-coerce")
-    case (.floating, .int):
-      return LLVMBuildFPToSI(builder, value, llvmType, "fptoint-coerce")
+    case (.int(_, let signed), .floating):
+      return (signed ? LLVMBuildSIToFP : LLVMBuildUIToFP)(builder, value, llvmType, "inttofp-coerce")
+    case (.floating, .int(_, let signed)):
+      return (signed ? LLVMBuildFPToSI : LLVMBuildFPToUI)(builder, value, llvmType, "fptoint-coerce")
     case (.pointer, .int):
       return LLVMBuildPtrToInt(builder, value, llvmType, "ptrtoint-coerce")
     case (.int, .pointer):
@@ -161,29 +162,33 @@ extension IRGenerator {
     case .plus:
       if case .floating = type {
         return LLVMBuildFAdd(builder, lhs, rhs, "addtmp")
-      } else if case .int = type {
-        return LLVMBuildAdd(builder, lhs, rhs, "addtmp")
+      } else if case .int(_, let signed) = type {
+        return (signed ? LLVMBuildNSWAdd : LLVMBuildNUWAdd)(builder, lhs, rhs, "addtmp")
       }
     case .minus:
       if case .floating = type {
         return LLVMBuildFSub(builder, lhs, rhs, "subtmp")
-      } else if case .int = type {
-        return LLVMBuildSub(builder, lhs, rhs, "subtmp")
+      } else if case .int(_, let signed) = type {
+        return (signed ? LLVMBuildNSWSub : LLVMBuildNUWSub)(builder, lhs, rhs, "subtmp")
       }
     case .star:
       if case .floating = type {
         return LLVMBuildFMul(builder, lhs, rhs, "multmp")
-      } else if case .int = type {
-        return LLVMBuildMul(builder, lhs, rhs, "multmp")
+      } else if case .int(_, let signed) = type {
+        return (signed ? LLVMBuildNSWMul : LLVMBuildNUWMul)(builder, lhs, rhs, "multmp")
       }
     case .divide:
       if case .floating = type {
         return LLVMBuildFDiv(builder, lhs, rhs, "divtmp")
-      } else if case .int = type {
-        return LLVMBuildSDiv(builder, lhs, rhs, "divtmp")
+      } else if case .int(_, let signed) = type {
+        return (signed ? LLVMBuildSDiv : LLVMBuildUDiv)(builder, lhs, rhs, "divtmp")
       }
     case .mod:
-      return LLVMBuildSRem(builder, lhs, rhs, "modtmp")
+      if case .floating = type {
+        return LLVMBuildFRem(builder, lhs, rhs, "divtmp")
+      } else if case .int(_, let signed) = type {
+        return (signed ? LLVMBuildSRem : LLVMBuildURem)(builder, lhs, rhs, "divtmp")
+      }
     case .equalTo:
       if case .floating = type {
         return LLVMBuildFCmp(builder, LLVMRealOEQ, lhs, rhs, "eqtmp")

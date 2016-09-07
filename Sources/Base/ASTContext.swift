@@ -86,30 +86,38 @@ public class ASTContext {
     .int16: TypeDecl(name: "Int16",  fields: []),
     .int32: TypeDecl(name: "Int32",  fields: []),
     .int64: TypeDecl(name: "Int",  fields: []),
+    .uint8: TypeDecl(name: "UInt8",  fields: []),
+    .uint16: TypeDecl(name: "UInt16",  fields: []),
+    .uint32: TypeDecl(name: "UInt32",  fields: []),
+    .uint64: TypeDecl(name: "UInt",  fields: []),
     .double: TypeDecl(name: "Double",  fields: []),
     .float: TypeDecl(name: "Float",  fields: []),
     .float80: TypeDecl(name: "Float80",  fields: []),
     .bool: TypeDecl(name: "Bool", fields: []),
     .void: TypeDecl(name: "Void", fields: [])
   ]
+  
+  private static let numericTypes: [DataType] = [.int8, .int16, .int32, .int64,
+                                                 .uint8, .uint16, .uint32, .uint64,
+                                                 .float, .double, .float80]
   private var operatorMap: [BuiltinOperator: [OperatorDecl]] = [
-    .plus: makeHomogenousOps(.plus, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .minus: makeHomogenousOps(.minus, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .star: makeHomogenousOps(.star, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .divide: makeHomogenousOps(.divide, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .mod: makeHomogenousOps(.mod, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .ampersand: makeHomogenousOps(.ampersand, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .bitwiseOr: makeHomogenousOps(.bitwiseOr, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .bitwiseNot: makeHomogenousOps(.bitwiseNot, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .leftShift: makeHomogenousOps(.leftShift, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .rightShift: makeHomogenousOps(.rightShift, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .xor: makeHomogenousOps(.xor, [.int8, .int16, .int32, .int64, .float, .double, .float80, .bool]),
-    .equalTo: makeBoolOps(.equalTo, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .notEqualTo: makeBoolOps(.notEqualTo, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .lessThan: makeBoolOps(.lessThan, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .lessThanOrEqual: makeBoolOps(.lessThanOrEqual, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .greaterThan: makeBoolOps(.greaterThan, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
-    .greaterThanOrEqual: makeBoolOps(.greaterThanOrEqual, [.int8, .int16, .int32, .int64, .float, .double, .float80]),
+    .plus: makeHomogenousOps(.plus, ASTContext.numericTypes),
+    .minus: makeHomogenousOps(.minus, ASTContext.numericTypes),
+    .star: makeHomogenousOps(.star, ASTContext.numericTypes),
+    .divide: makeHomogenousOps(.divide, ASTContext.numericTypes),
+    .mod: makeHomogenousOps(.mod, ASTContext.numericTypes),
+    .ampersand: makeHomogenousOps(.ampersand, ASTContext.numericTypes),
+    .bitwiseOr: makeHomogenousOps(.bitwiseOr, ASTContext.numericTypes),
+    .bitwiseNot: makeHomogenousOps(.bitwiseNot, ASTContext.numericTypes),
+    .leftShift: makeHomogenousOps(.leftShift, ASTContext.numericTypes),
+    .rightShift: makeHomogenousOps(.rightShift, ASTContext.numericTypes),
+    .xor: makeHomogenousOps(.xor, ASTContext.numericTypes + [.bool]),
+    .equalTo: makeBoolOps(.equalTo, ASTContext.numericTypes + [.bool]),
+    .notEqualTo: makeBoolOps(.notEqualTo, ASTContext.numericTypes + [.bool]),
+    .lessThan: makeBoolOps(.lessThan, ASTContext.numericTypes),
+    .lessThanOrEqual: makeBoolOps(.lessThanOrEqual, ASTContext.numericTypes),
+    .greaterThan: makeBoolOps(.greaterThan, ASTContext.numericTypes),
+    .greaterThanOrEqual: makeBoolOps(.greaterThanOrEqual, ASTContext.numericTypes),
     .and: makeBoolOps(.and, [.bool]),
     .or: makeBoolOps(.or, [.bool]),
     .not: makeBoolOps(.not, [.bool]),
@@ -135,7 +143,7 @@ public class ASTContext {
       _ = flags.insert(.exitCode)
     }
     if args.count == 2 {
-      if case (.int, .pointer(type: .pointer(type: .int(width: 8)))) = (args[0], args[1]) {
+      if case (.int, .pointer(type: .pointer(type: .int(width: 8, signed: true)))) = (args[0], args[1]) {
         _ = flags.insert(.args)
       }
     }

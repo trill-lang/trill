@@ -1,5 +1,3 @@
-foreign func malloc(_: Int) -> *Void
-
 func compare(_ _a: *Void, _ _b: *Void) -> Int32 {
   var a = *(_a as *Int)
   var b = *(_b as *Int)
@@ -27,7 +25,7 @@ func main() {
   var count = 10
   var nums = malloc(count * sizeof(Int)) as *Int
   for var i = 0; i < count; i += 1 {
-    nums[i] = arc4random_uniform(count as Int32) as Int
+    nums[i] = arc4random_uniform(count as UInt32) as Int
   }
   print(nums, count)
   qsort(nums as *Void, count as Int32, sizeof(Int) as Int32, compare)

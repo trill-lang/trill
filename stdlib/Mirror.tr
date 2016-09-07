@@ -12,7 +12,7 @@ type Mirror {
     }
 
     func sizeInBits() -> Int {
-        return trill_getTypeSizeInBits(self._metadata)
+        return trill_getTypeSizeInBits(self._metadata) as Int
     }
 
     func print() {
@@ -33,10 +33,10 @@ type Mirror {
     }
 
     func field(at index: Int) -> FieldMirror {
-        return FieldMirror(reflecting: trill_getFieldMetadata(self._metadata, index))
+        return FieldMirror(reflecting: trill_getFieldMetadata(self._metadata, index as UInt))
     }
     func numberOfFields() -> Int {
-        return trill_getNumFields(self._metadata)
+        return trill_getNumFields(self._metadata) as Int
     }
 }
 

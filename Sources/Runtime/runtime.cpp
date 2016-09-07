@@ -74,15 +74,13 @@ void *trill_alloc(size_t size) {
   }
   return ptr;
 }
-  
+
 void trill_registerDeinitializer(void *object, void (*deinitializer)(void *)) {
   GC_register_finalizer_no_order(object, (GC_finalization_proc)deinitializer, NULL, NULL, NULL);
 }
   
 void trill_handleSignal(int signal) {
-  fprintf(stderr, "%s\n", strsignal(signal));
-  print_stacktrace();
-  abort();
+  trill_fatalError(strsignal(signal));
 }
   
 void trill_init() {

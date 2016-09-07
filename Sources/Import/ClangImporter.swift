@@ -186,6 +186,7 @@ class ClangImporter: Pass {
   @discardableResult
   func importTypeDef(_ cursor: CXCursor, in context: ASTContext) -> TypeAliasDecl? {
     let name = clang_getCursorSpelling(cursor).asSwift()
+    guard ClangImporter.builtinTypeReplacements[name] == nil else { return nil }
     let type = clang_getTypedefDeclUnderlyingType(cursor)
     let decl = clang_getTypeDeclaration(type)
     var trillType: DataType?
@@ -298,6 +299,7 @@ class ClangImporter: Pass {
   }
   
   func importMacro(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
+    if clang_Cursor_isMacroFunctionLike(cursor) != 0 { return }
     let range = clang_getCursorExtent(cursor)
     
     var tokenCount: UInt32 = 0
@@ -415,10 +417,45 @@ class ClangImporter: Pass {
                                 hasVarArgs: false,
                                 modifiers: [.foreign, .noreturn],
                                 range: nil))
+    
+    // calloc and realloc is imported with `int` for their arguments.
+    // I need to override them with .int64 for their arguments.
+    self.context.add(synthesize(name: "malloc",
+                                args: [.int64],
+                                return: .pointer(type: .void),
+                                hasVarArgs: false,
+                                modifiers: [.foreign],
+                                range: nil))
+    self.context.add(synthesize(name: "calloc",
+                                args: [.int64, .int64],
+                                return: .pointer(type: .void),
+                                hasVarArgs: false,
+                                modifiers: [.foreign],
+                                range: nil))
+    self.context.add(synthesize(name: "realloc",
+                                args: [.pointer(type: .void), .int64],
+                                return: .pointer(type: .void),
+                                hasVarArgs: false,
+                                modifiers: [.foreign],
+                                range: nil))
     for path in ClangImporter.paths {
       self.importDeclarations(from: path, in: self.context)
     }
   }
+  
+  static let builtinTypeReplacements: [String: DataType] = [
+    "size_t": .int64,
+    "ssize_t": .int64,
+    "rsize_t": .int64,
+    "uint64_t": .uint64,
+    "uint32_t": .uint32,
+    "uint16_t": .uint16,
+    "uint8_t": .uint8,
+    "int64_t": .int64,
+    "int32_t": .int32,
+    "int16_t": .int16,
+    "int8_t": .int8
+  ]
   
   func convertToTrillType(_ type: CXType) -> DataType? {
     switch type.kind {
@@ -430,17 +467,17 @@ class ClangImporter: Pass {
     case CXType_Double: return .double
     case CXType_LongDouble: return .float80
     case CXType_Long: return .int64
-    case CXType_UInt: return .int32
+    case CXType_UInt: return .uint32
     case CXType_LongLong: return .int64
-    case CXType_ULong: return .int64
-    case CXType_ULongLong: return .int64
+    case CXType_ULong: return .uint64
+    case CXType_ULongLong: return .uint64
     case CXType_Short: return .int16
-    case CXType_UShort: return .int16
+    case CXType_UShort: return .uint16
     case CXType_SChar: return .int8
     case CXType_Char_S: return .int8
     case CXType_Char16: return .int16
     case CXType_Char32: return .int32
-    case CXType_UChar: return .int8
+    case CXType_UChar: return .uint8
     case CXType_WChar: return .int16
     case CXType_ObjCSel: return .pointer(type: .int8)
     case CXType_ObjCId: return .pointer(type: .int8)
@@ -474,6 +511,9 @@ class ClangImporter: Pass {
                             .asSwift()
                             .lastWord else {
           return nil
+      }
+      if let replacement = ClangImporter.builtinTypeReplacements[typeName] {
+        return replacement
       }
       return .custom(name: typeName)
     case CXType_Record:

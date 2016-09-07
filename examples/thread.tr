@@ -42,14 +42,14 @@ type ThreadArray {
         self._boundsCheck(index)
         self.count += 1
         self._growIfNeeded()
-        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Thread) as Int32)
+        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Thread))
         self.elements[index] = element
     }
     mutating func remove(at index: Int) -> Thread {
         self._boundsCheck(index)
         self._shrinkIfNeeded()
         self.count -= 1
-        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Thread) as Int32)
+        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Thread))
         return self.elements[self.count + 1]
     }
     func get(_ index: Int) -> Thread {
@@ -61,7 +61,7 @@ type ThreadArray {
         self.elements[index] = element
     }
     func dump() {
-        putchar('[' as Int32)
+        putchar('[')
         for var i = 0; i < self.count; i += 1 {
             printf("<Thread 0x%p>", self.elements[i])
             if i != self.count - 1 {

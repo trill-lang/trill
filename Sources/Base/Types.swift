@@ -10,7 +10,7 @@ enum FloatingPointType {
 }
 
 enum DataType: CustomStringConvertible, Hashable {
-  case int(width: Int)
+  case int(width: Int, signed: Bool)
   case floating(type: FloatingPointType)
   case bool
   case void
@@ -21,10 +21,14 @@ enum DataType: CustomStringConvertible, Hashable {
   indirect case array(field: DataType, length: Int?)
   indirect case tuple(fields: [DataType])
   
-  static let int64 = DataType.int(width: 64)
-  static let int32 = DataType.int(width: 32)
-  static let int16 = DataType.int(width: 16)
-  static let int8 = DataType.int(width: 8)
+  static let int64 = DataType.int(width: 64, signed: true)
+  static let int32 = DataType.int(width: 32, signed: true)
+  static let int16 = DataType.int(width: 16, signed: true)
+  static let int8 = DataType.int(width: 8, signed: true)
+  static let uint64 = DataType.int(width: 64, signed: false)
+  static let uint32 = DataType.int(width: 32, signed: false)
+  static let uint16 = DataType.int(width: 16, signed: false)
+  static let uint8 = DataType.int(width: 8, signed: false)
   static let float = DataType.floating(type: .float)
   static let double = DataType.floating(type: .double)
   static let float80 = DataType.floating(type: .float80)
@@ -38,6 +42,10 @@ enum DataType: CustomStringConvertible, Hashable {
     case "Int16": self = .int16
     case "Int32": self = .int32
     case "Int": self = .int64
+    case "UInt8": self = .uint8
+    case "UInt16": self = .uint16
+    case "UInt32": self = .uint32
+    case "UInt": self = .uint64
     case "Bool": self = .bool
     case "Void": self = .void
     case "Float": self = .float
@@ -61,8 +69,8 @@ enum DataType: CustomStringConvertible, Hashable {
   
   var description: String {
     switch self {
-    case .int(width: 64): return "Int"
-    case .int(let width): return "Int\(width)"
+    case .int(width: 64, let signed): return "\(signed ? "" : "U")Int"
+    case .int(let width, let signed): return "\(signed ? "" : "U")Int\(width)"
     case .bool: return "Bool"
     case .void: return "Void"
     case .array(let field, let length):
@@ -122,7 +130,8 @@ enum DataType: CustomStringConvertible, Hashable {
 
 func ==(lhs: DataType, rhs: DataType) -> Bool {
   switch (lhs, rhs) {
-  case (.int(let width), .int(let otherWidth)): return width == otherWidth
+  case (.int(let width, let signed), .int(let otherWidth, let otherSigned)):
+    return width == otherWidth && signed == otherSigned
   case (.bool, .bool): return true
   case (.void, .void): return true
   case (.custom(let lhsName), .custom(let rhsName)):

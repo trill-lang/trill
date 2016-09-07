@@ -1,5 +1,4 @@
 foreign var stdout: *FILE
-foreign func malloc(_: Int) -> *Void
 foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 
 func usage() {

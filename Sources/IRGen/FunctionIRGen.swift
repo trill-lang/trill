@@ -58,23 +58,22 @@ extension IRGenerator {
     return LLVMBuildBr(builder, currentContinueTarget)
   }
 
-  func synthesizeIntializer(_ expr: FuncDecl, function: LLVMValueRef) -> LLVMValueRef {
-    guard expr.isInitializer,
-        let body = expr.body,
+  func synthesizeIntializer(_ decl: FuncDecl, function: LLVMValueRef) -> LLVMValueRef {
+    guard decl.isInitializer,
+        let body = decl.body,
         body.exprs.isEmpty,
-      let type = expr.returnType.type,
+      let type = decl.returnType.type,
         let typeDecl = context.decl(for: type) else {
       fatalError("must synthesize an empty initializer")
     }
     let entryBB = LLVMAppendBasicBlock(function, "entry")
     LLVMPositionBuilderAtEnd(builder, entryBB)
-    
     var retLLVMType = resolveLLVMType(type)
     if typeDecl.isIndirect {
       retLLVMType = LLVMGetElementType(retLLVMType)
     }
     var initial = LLVMConstNull(retLLVMType)!
-    for (idx, arg) in expr.args.enumerated() {
+    for (idx, arg) in decl.args.enumerated() {
       let param = LLVMGetParam(function, UInt32(idx))!
       LLVMSetValueName(param, arg.name.name)
       initial = LLVMBuildInsertValue(builder, initial, param, UInt32(idx), "init-insert")
@@ -93,40 +92,40 @@ extension IRGenerator {
     return visitFuncDecl(decl)
   }
   
-  func visitFuncDecl(_ expr: FuncDecl) -> Result {
-    let function = codegenFunctionPrototype(expr)!
+  func visitFuncDecl(_ decl: FuncDecl) -> Result {
+    let function = codegenFunctionPrototype(decl)!
     
-    if expr === context.mainFunction {
+    if decl === context.mainFunction {
       mainFunction = function
     }
     
-    if expr.has(attribute: .foreign) { return function }
+    if decl.has(attribute: .foreign) { return function }
     
-    if expr.isInitializer, let body = expr.body, body.exprs.isEmpty {
-      return synthesizeIntializer(expr, function: function)
+    if decl.isInitializer, let body = decl.body, body.exprs.isEmpty {
+      return synthesizeIntializer(decl, function: function)
     }
     
     let entrybb = LLVMAppendBasicBlock(function, "entry")!
     let retbb = LLVMAppendBasicBlock(function, "return")!
-    let returnType = expr.returnType.type!
-    let type = resolveLLVMType(expr.returnType)
+    let returnType = decl.returnType.type!
+    let type = resolveLLVMType(decl.returnType)
     var res: VarBinding? = nil
     let storageKind = storage(for: returnType)
-    let isReferenceInitializer = expr.isInitializer && storage(for: returnType) == .reference
+    let isReferenceInitializer = decl.isInitializer && storage(for: returnType) == .reference
     withFunction {
       LLVMPositionBuilderAtEnd(builder, entrybb)
-      if expr.returnType != .void {
+      if decl.returnType != .void {
         if isReferenceInitializer {
           res = codegenAlloc(type: returnType)
         } else {
           res = createEntryBlockAlloca(function, type: type,
                                        name: "res", storage: storageKind)
         }
-        if expr.isInitializer {
+        if decl.isInitializer {
           varIRBindings["self"] = res!
         }
       }
-      for (idx, arg) in expr.args.enumerated() {
+      for (idx, arg) in decl.args.enumerated() {
         let param = LLVMGetParam(function, UInt32(idx))!
         LLVMSetValueName(param, arg.name.name)
         let type = arg.type
@@ -143,12 +142,12 @@ extension IRGenerator {
         varIRBindings[arg.name] = ptr
       }
       currentFunction = FunctionState(
-        function: expr,
+        function: decl,
         functionRef: function,
         returnBlock: retbb,
         resultAlloca: res?.ref
       )
-      _ = visit(expr.body!)
+      _ = visit(decl.body!)
       let insertBlock = LLVMGetInsertBlock(builder)!
       
       // break to the return block
@@ -159,9 +158,9 @@ extension IRGenerator {
       // build the ret in the return block.
       LLVMMoveBasicBlockAfter(retbb, LLVMGetLastBasicBlock(function))
       LLVMPositionBuilderAtEnd(builder, retbb)
-      if expr.has(attribute: .noreturn) {
+      if decl.has(attribute: .noreturn) {
         LLVMBuildUnreachable(builder)
-      } else if expr.returnType.type == .void {
+      } else if decl.returnType.type == .void {
         LLVMBuildRetVoid(builder)
       } else {
         let val: LLVMValueRef!

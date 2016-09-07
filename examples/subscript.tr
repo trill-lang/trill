@@ -1,5 +1,3 @@
-foreign func malloc(_: Int) -> *Void
-
 func println(_ n: Int8) {
   printf("%d\n", n)
 }

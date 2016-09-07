@@ -160,6 +160,10 @@ class IRGenerator: ASTVisitor, Pass {
     .int16: LLVMInt16Type(),
     .int32: LLVMInt32Type(),
     .int64: LLVMInt64Type(),
+    .uint8: LLVMInt8Type(),
+    .uint16: LLVMInt16Type(),
+    .uint32: LLVMInt32Type(),
+    .uint64: LLVMInt64Type(),
     
     .float: LLVMFloatType(),
     .double: LLVMDoubleType(),

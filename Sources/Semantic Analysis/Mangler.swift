@@ -52,7 +52,7 @@ enum Mangler {
         case .bitwiseNot: s += "B"
         case .leftShift: s += "s"
         case .rightShift: s += "S"
-        default: fatalError("cannot mangle \(op)")
+        default: s += "\(op)" // this will get caught by Sema
         }
       default:
         s += d.name.name.withCount
@@ -95,12 +95,12 @@ enum Mangler {
     case .array(let field, _):
       s += "A"
       s += mangle(field, root: false)
-    case .int(let width):
+    case .int(let width, let signed):
       s += "s"
       if width == 64 {
-        s += "I"
+        s += signed ? "I" : "U"
       } else {
-        s += "i\(width)"
+        s += (signed ? "i" : "u") + "\(width)"
       }
     case .floating(let type):
       s += "s"

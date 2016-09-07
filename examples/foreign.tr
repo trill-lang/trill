@@ -1,4 +1,3 @@
-foreign func malloc(_: Int) -> *Int8
 foreign func sleep(_: Int)
 
 func println(_ val: Int) {

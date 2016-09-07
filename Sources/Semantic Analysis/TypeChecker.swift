@@ -110,7 +110,7 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitNumExpr(_ expr: NumExpr) {
     guard let type = expr.type else { return }
     let canTy = context.canonicalType(type)
-    if case .int(let width) = canTy {
+    if case .int(let width, let signed) = canTy {
       var overflows = false
       switch width {
       case 8:
@@ -127,6 +127,9 @@ class TypeChecker: ASTTransformer, Pass {
         error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
               loc: expr.startLoc(), highlights: [expr.sourceRange])
         return
+      }
+      if !signed && expr.value < 0 {
+        fatalError("ASDFASDF")
       }
     }
   }
@@ -244,7 +247,7 @@ class TypeChecker: ASTTransformer, Pass {
       return
     } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
             let num = expr.rhs as? NumExpr,
-            case .int(let width)? = expr.type,
+            case .int(let width, _)? = expr.type,
             num.value >= IntMax(width) {
       error(TypeCheckError.shiftPastBitWidth(type: expr.type!, shiftWidth: num.value),
             loc: num.startLoc(),

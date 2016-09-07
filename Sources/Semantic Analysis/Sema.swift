@@ -41,6 +41,7 @@ enum SemaError: Error, CustomStringConvertible {
   case nonMatchingArrayType(DataType, DataType)
   case ambiguousType
   case operatorsMustHaveTwoArgs(op: BuiltinOperator)
+  case cannotOverloadOperator(op: BuiltinOperator, type: String)
   
   var description: String {
     switch self {
@@ -136,6 +137,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "type is ambiguous without more context"
     case .operatorsMustHaveTwoArgs(let op):
       return "definition for operator '\(op)' must have two arguments"
+    case .cannotOverloadOperator(let op, let type):
+      return "cannot overload \(type) operator '\(op)'"
     }
   }
 }
@@ -765,6 +768,15 @@ class Sema: ASTTransformer, Pass {
   override func visitOperatorDecl(_ decl: OperatorDecl) {
     guard decl.args.count == 2 else {
       error(SemaError.operatorsMustHaveTwoArgs(op: decl.op),
+            loc: decl.opRange?.start,
+            highlights: [
+              decl.opRange
+            ])
+      return
+    }
+    guard !decl.op.isAssign else {
+      let type = decl.op.isCompoundAssign ? "compound-assignment" : "assignment"
+      error(SemaError.cannotOverloadOperator(op: decl.op, type: type),
             loc: decl.opRange?.start,
             highlights: [
               decl.opRange

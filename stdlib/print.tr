@@ -1,9 +1,11 @@
 func print(_ string: String) {
-    printf("%s", string.cString())
+    println(string.cString())
 }
 
 func println(_ string: String) {
-    printf("%s\n", string.cString())
+    print("length: ")
+    println(string.length())
+    println(string.cString())
 }
 
 func print(_ string: *Int8) {
