@@ -99,7 +99,6 @@ extension SourceRange {
 }
 
 class ClangImporter: Pass {
-  
   static let headerFiles = [
     "stdlib.h",
     "stdio.h",
@@ -109,26 +108,42 @@ class ClangImporter: Pass {
     "string.h",
     "_types.h",
     "pthread.h",
-    "sys/_types/_timeval.h",
     "sys/time.h",
     "sys/resource.h",
-    "sched.h",
+    "sched.h"
   ]
-  
   #if os(macOS)
-  // TODO: PLEASE stop using these absolute Xcode paths.
-  static let paths = ["/usr/local/include/trill/trill.h"] + headerFiles.map { "/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/" + $0 }
+  static func loadSDKPath() -> String? {
+    let pipe = Pipe()
+    let xcrun = Process()
+    xcrun.launchPath = "/usr/bin/xcrun"
+    xcrun.arguments = ["--show-sdk-path", "--sdk", "macosx"]
+    xcrun.standardOutput = pipe
+    xcrun.launch()
+    xcrun.waitUntilExit()
+    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  static let sdkPath: String? = loadSDKPath()
+  static let includeDir = sdkPath.map { $0 + "/usr/include" }
   #else
-  static let paths = ["/usr/local/include/trill/trill.h"] + headerFiles.map { "/usr/local/include/" + $0 }
+  static let includeDir: String? = "/usr/local/include"
   #endif
   
   let context: ASTContext
+  let targetTriple: String
   
   var importedTypes = [Identifier: TypeDecl]()
   var importedFunctions = [Identifier: FuncDecl]()
   
   required init(context: ASTContext) {
+    fatalError("use init(context:target:)")
+  }
+  
+  init(context: ASTContext, target: String) {
     self.context = context
+    self.targetTriple = target
   }
   
   var title: String {
@@ -136,15 +151,17 @@ class ClangImporter: Pass {
   }
   
   func translationUnit(for path: String) throws -> CXTranslationUnit {
-    let index = clang_createIndex(0, 0)
+    let index = clang_createIndex(1, 1)
     var args = [
-      "-c",
-      "-I/usr/include",
-      "-I/usr/local/include",
-      "-I/usr/local/llvm/include",
+      "-I", "/usr/local/include/trill",
+      "-std=gnu11", "-fsyntax-only",
+      "-target", targetTriple
     ]
     #if os(macOS)
-      args.append("-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/")
+      if let sdkPath = ClangImporter.sdkPath {
+        args.append("-isysroot")
+        args.append(sdkPath)
+      }
     #endif
     defer {
       clang_disposeIndex(index)
@@ -157,8 +174,10 @@ class ClangImporter: Pass {
     
     return try args.withCArrayOfCStrings { ptr in
       var tu: CXTranslationUnit? = nil
-      let err = clang_parseTranslationUnit2(index, path,
-                                            ptr, 1, nil,
+    
+      let err = clang_parseTranslationUnit2(index,
+                                            path,
+                                            ptr, Int32(args.count), nil,
                                             0, flags, &tu)
       guard err == CXError_Success else {
         throw err
@@ -174,10 +193,19 @@ class ClangImporter: Pass {
                   return: DataType,
                   hasVarArgs: Bool,
                   modifiers: [DeclModifier],
-                  range: SourceRange?) -> FuncDecl {
+                  range: SourceRange?,
+                  argRanges: [SourceRange] = []) -> FuncDecl {
     return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
-                        args: args.map { FuncArgumentAssignDecl(name: "", type: $0.ref()) },
+                        args: args.enumerated().map { (idx, type) in
+                          let ref: TypeRefExpr
+                          if argRanges.count > idx {
+                            ref = type.ref(range: argRanges[idx])
+                          } else {
+                            ref = type.ref()
+                          }
+                          return FuncArgumentAssignDecl(name: "", type: ref)
+                        },
                         modifiers: modifiers,
                         hasVarArgs: hasVarArgs,
                         sourceRange: range)
@@ -202,10 +230,10 @@ class ClangImporter: Pass {
     guard let t = trillType, name != "\(t)" else {
       return nil
     }
-    let range = clang_getCursorExtent(cursor)
+    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
     let alias = TypeAliasDecl(name: Identifier(name: name),
-                              bound: t.ref(),
-                              sourceRange: SourceRange(clangRange: range))
+                              bound: t.ref(range: range),
+                              sourceRange: range)
     context.add(alias)
     return alias
   }
@@ -222,8 +250,14 @@ class ClangImporter: Pass {
     
     var values = [VarAssignDecl]()
     
+    var childIdx = 0
     let res = clang_visitChildrenWithBlock(cursor) { child, parent in
-      let fieldId = Identifier(name: clang_getCursorSpelling(child).asSwift(),
+      defer { childIdx += 1 }
+      var fieldName = clang_getCursorSpelling(child).asSwift()
+      if fieldName.isEmpty {
+        fieldName = "__unnamed_\(childIdx)"
+      }
+      let fieldId = Identifier(name: fieldName,
                                range: nil)
       let fieldTy = clang_getCursorType(child)
       guard let trillTy = self.convertToTrillType(fieldTy) else {
@@ -266,11 +300,18 @@ class ClangImporter: Pass {
     
     guard let trillRetTy = convertToTrillType(returnTy) else { return }
     
+    if name == "memmove" {
+      
+    }
     var args = [DataType]()
+    var argRanges = [SourceRange]()
     for i in 0..<numArgs {
       let type = clang_getArgType(funcType, UInt32(i))
+      let range = clang_getCursorExtent(clang_Cursor_getArgument(cursor, UInt32(i)))
+      
       guard let trillType = convertToTrillType(type) else { return }
       args.append(trillType)
+      argRanges.append(SourceRange(clangRange: range))
     }
     
     let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
@@ -279,7 +320,8 @@ class ClangImporter: Pass {
                           return: trillRetTy,
                           hasVarArgs: hasVarArgs,
                           modifiers: modifiers,
-                          range: range)
+                          range: range,
+                          argRanges: argRanges)
     importedFunctions[decl.name] = decl
     context.add(decl)
   }
@@ -287,6 +329,7 @@ class ClangImporter: Pass {
   func importEnum(_ cursor: CXCursor, in context: ASTContext) {
     clang_visitChildrenWithBlock(cursor) { child, parent in
       let name = Identifier(name: clang_getCursorSpelling(child).asSwift())
+      if context.global(named: name) != nil { return CXChildVisit_Continue }
       
       let range = SourceRange(clangRange: clang_getCursorExtent(child))
       let varExpr = VarAssignDecl(name: name,
@@ -296,6 +339,32 @@ class ClangImporter: Pass {
       context.add(varExpr)
       return CXChildVisit_Continue
     }
+  }
+  
+  func importUnion(_ cursor: CXCursor, context: ASTContext) {
+    let type = clang_getCursorType(cursor)
+    guard let typeName = clang_getTypeSpelling(type).asSwift().lastWord else {
+      return
+    }
+    var maxType: (CXType, Int)? = nil
+    clang_visitChildrenWithBlock(cursor) { child, parent in
+      let fieldType = clang_getCursorType(child)
+      let fieldSize = Int(clang_Type_getSizeOf(fieldType))
+      guard let max = maxType else {
+        maxType = (fieldType, fieldSize)
+        return CXChildVisit_Continue
+      }
+      if fieldSize > max.1 {
+        maxType = (fieldType, fieldSize)
+      }
+      return CXChildVisit_Continue
+    }
+    guard let max = maxType?.0,
+      let trillType = convertToTrillType(max) else {
+      return
+    }
+    let alias = makeAlias(name: typeName, type: trillType)
+    context.add(alias)
   }
   
   func importMacro(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
@@ -376,7 +445,7 @@ class ClangImporter: Pass {
                          sourceRange: range)
   }
   
-  func importDeclarations(from path: String, in context: ASTContext) {
+  func importDeclarations(for path: String, in context: ASTContext) {
     let tu: CXTranslationUnit
     do {
       tu = try translationUnit(for: path)
@@ -398,6 +467,8 @@ class ClangImporter: Pass {
         self.importFunction(child, in: context)
       case CXCursor_MacroDefinition:
         self.importMacro(child, in: tu, context: context)
+      case CXCursor_UnionDecl:
+        self.importUnion(child, context: context)
       default:
         break
       }
@@ -407,11 +478,13 @@ class ClangImporter: Pass {
   }
   
   func run(in context: ASTContext) {
-    self.context.add(makeAlias(name: "__builtin_va_list",
-                               type: .pointer(type: .int8)))
-    self.context.add(makeAlias(name: "__darwin_pthread_handler_rec",
-                               type: .pointer(type: .int8)))
-    self.context.add(synthesize(name: "trill_fatalError",
+    context.add(makeAlias(name: "__builtin_va_list",
+                          type: .pointer(type: .void)))
+    context.add(makeAlias(name: "__va_list_tag",
+                          type: .pointer(type: .void)))
+    context.add(makeAlias(name: "__darwin_pthread_handler_rec",
+                               type: .pointer(type: .void)))
+    context.add(synthesize(name: "trill_fatalError",
                                 args: [.pointer(type: .int8)],
                                 return: .void,
                                 hasVarArgs: false,
@@ -420,26 +493,30 @@ class ClangImporter: Pass {
     
     // calloc and realloc is imported with `int` for their arguments.
     // I need to override them with .int64 for their arguments.
-    self.context.add(synthesize(name: "malloc",
-                                args: [.int64],
-                                return: .pointer(type: .void),
-                                hasVarArgs: false,
-                                modifiers: [.foreign],
-                                range: nil))
-    self.context.add(synthesize(name: "calloc",
-                                args: [.int64, .int64],
-                                return: .pointer(type: .void),
-                                hasVarArgs: false,
-                                modifiers: [.foreign],
-                                range: nil))
-    self.context.add(synthesize(name: "realloc",
-                                args: [.pointer(type: .void), .int64],
-                                return: .pointer(type: .void),
-                                hasVarArgs: false,
-                                modifiers: [.foreign],
-                                range: nil))
-    for path in ClangImporter.paths {
-      self.importDeclarations(from: path, in: self.context)
+    context.add(synthesize(name: "malloc",
+                           args: [.int64],
+                           return: .pointer(type: .void),
+                           hasVarArgs: false,
+                           modifiers: [.foreign],
+                           range: nil))
+    context.add(synthesize(name: "calloc",
+                           args: [.int64, .int64],
+                           return: .pointer(type: .void),
+                           hasVarArgs: false,
+                           modifiers: [.foreign],
+                           range: nil))
+    context.add(synthesize(name: "realloc",
+                           args: [.pointer(type: .void), .int64],
+                           return: .pointer(type: .void),
+                           hasVarArgs: false,
+                           modifiers: [.foreign],
+                           range: nil))
+    importDeclarations(for: "/usr/local/include/trill/trill.h",
+                       in: context)
+    if let path = ClangImporter.includeDir {
+      for header in ClangImporter.headerFiles {
+        importDeclarations(for: "\(path)/\(header)", in: context)
+      }
     }
   }
   

@@ -21,7 +21,7 @@ extension IRGenerator {
     let alloc = codegenIntrinsic(named: "trill_alloc")
     let register = codegenIntrinsic(named: "trill_registerDeinitializer")
     guard let typeDecl = context.decl(for: type, canonicalized: true) else { fatalError("no decl?") }
-    var size = LLVMBuildTruncOrBitCast(builder, LLVMSizeOf(irType), LLVMInt32Type(), "")
+    var size = byteSize(of: type)
     let ptr = LLVMBuildCall(builder, alloc, &size, 1, "ptr")!
     var res = ptr
     if type != .pointer(type: .int8) {

@@ -63,7 +63,7 @@ extension Parser {
         let expr = try parseValExpr()
         guard let e = expr as? ConstantExpr else {
           throw Diagnostic.error(ParseError.caseMustBeConstant,
-                                 loc: expr.startLoc())
+                                 loc: expr.startLoc)
             .highlighting(expr.sourceRange!)
         }
         let caseRange = range(start: tok.range.start)

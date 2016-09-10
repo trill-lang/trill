@@ -26,6 +26,7 @@ var stdout = StandardTextOutputStream()
 func populate(driver: Driver, options: Options,
               sourceFiles: [SourceFile],
               context: ASTContext) throws {
+  var gen: IRGenerator? = nil
   driver.add("Lexing and Parsing") { context in
     let group = DispatchGroup()
     for file in sourceFiles {
@@ -37,9 +38,6 @@ func populate(driver: Driver, options: Options,
     for file in sourceFiles {
       context.merge(context: file.context)
     }
-  }
-  if options.importC {
-    driver.add(pass: ClangImporter.self)
   }
   switch options.mode {
   case .emitAST:
@@ -55,6 +53,14 @@ func populate(driver: Driver, options: Options,
   default: break
   }
   
+  if options.importC {
+    let irgen = try IRGenerator(context: context,
+                                options: options)
+    driver.add("Clang Importer") { context in
+      return ClangImporter(context: context, target: irgen.targetTriple).run(in: context)
+    }
+    gen = irgen
+  }
   driver.add(pass: Sema.self)
   driver.add(pass: TypeChecker.self)
   
@@ -67,9 +73,7 @@ func populate(driver: Driver, options: Options,
     return
   }
   
-  let gen = try IRGenerator(context: context,
-                            options: options)
-  driver.add("LLVM IR Generation", pass: gen.run)
+  driver.add("LLVM IR Generation", pass: gen!.run)
   
   switch options.mode {
   case .emitLLVM, .emitASM, .emitObj, .emitBinary:
@@ -81,7 +85,7 @@ func populate(driver: Driver, options: Options,
     default: outputType = .bin
     }
     driver.add("Serializing \(outputType)") { context in
-      try gen.emit(outputType, output: options.outputFilename)
+      try gen!.emit(outputType, output: options.outputFilename)
     }
     break
   case .jit:
@@ -89,7 +93,7 @@ func populate(driver: Driver, options: Options,
       // TODO: Fix sending args to the JIT
 //      var args = options.remainder
 //      args.insert("\(options.filename)", at: 0)
-      let ret = try gen.execute([])
+      let ret = try gen!.execute([])
       if ret != 0 {
         context.diag.error("program exited with non-zero exit code \(ret)")
       }

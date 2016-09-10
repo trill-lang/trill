@@ -48,8 +48,8 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
     topLevel.sort { e1, e2 in
       // foreign and implicit decls show up first
       guard
-        let e1Loc = e1.startLoc(),
-        let e2Loc = e2.startLoc()
+        let e1Loc = e1.startLoc,
+        let e2Loc = e2.startLoc
         else { return true }
       return e1Loc < e2Loc
     }

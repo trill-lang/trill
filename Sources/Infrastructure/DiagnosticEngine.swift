@@ -72,7 +72,9 @@ public class DiagnosticEngine {
     diagnostics.append(Diagnostic(message: message, diagnosticType: .note, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   
-  func add(_ diag: Diagnostic) { diagnostics.append(diag) }
+  func add(_ diag: Diagnostic) {
+    diagnostics.append(diag)
+  }
   
   func consumeDiagnostics() {
     for diag in diagnostics {

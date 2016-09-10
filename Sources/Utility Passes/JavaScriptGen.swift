@@ -153,7 +153,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
     if expr.op == .star || expr.op == .ampersand {
       error(JavaScriptError.unrepresentableExpr,
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -200,7 +200,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   override func visitSizeofExpr(_ expr: SizeofExpr) -> Result {
     _ = expr.value.map(visit)
     error(JavaScriptError.unrepresentableExpr,
-          loc: expr.startLoc(),
+          loc: expr.startLoc,
           highlights: [
             expr.sourceRange
       ])

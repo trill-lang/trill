@@ -1,6 +1,3 @@
 #!/usr/bin/env bash
 
-rm *.o
-rm *.ll
-rm *.s
-rm *.bc
+find . -d 1 -type f -not -name "*.tr" -not -name "*.sh" -exec rm {} \;

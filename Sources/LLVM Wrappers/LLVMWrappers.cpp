@@ -92,7 +92,6 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::opt<bool> emitObject("emit-object", cl::desc("Emit the generated object file"));
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
   cl::opt<bool> emitJS("emit-js", cl::desc("Emit the generated JavaScript to stdout"));
-  cl::opt<bool> noImport("no-import", cl::desc("Don't import C declarations"));
   cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
   cl::opt<bool> emitTiming("emit-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
@@ -109,13 +108,11 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
   
   RawMode mode;
-  bool importC = !noImport;
   if (onlyDiagnostics) {
     mode = OnlyDiagnostics;
   } else if (emitLLVM) {
     mode = EmitLLVM;
   } else if (emitJS) {
-    importC = false;
     mode = EmitJavaScript;
   } else if (emitAST) {
     mode = EmitAST;
@@ -131,6 +128,7 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = EmitBinary;
   }
   
+  bool importC = mode != EmitJavaScript && mode != PrettyPrint;
   
   auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
   auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());

@@ -159,7 +159,7 @@ class Sema: ASTTransformer, Pass {
     for expr in context.extensions {
       guard let typeDecl = context.decl(for: expr.type) else {
         error(SemaError.unknownType(type: expr.type),
-              loc: expr.startLoc(),
+              loc: expr.startLoc,
               highlights: [ expr.sourceRange ])
         continue
       }
@@ -176,7 +176,7 @@ class Sema: ASTTransformer, Pass {
         if fieldNames.contains(field.name.name) {
           error(SemaError.duplicateField(name: field.name,
                                          type: expr.type),
-                loc: field.startLoc(),
+                loc: field.startLoc,
                 highlights: [ expr.name.range ])
           continue
         }
@@ -188,7 +188,7 @@ class Sema: ASTTransformer, Pass {
         if methodNames.contains(mangled) {
           error(SemaError.duplicateMethod(name: method.name,
                                           type: expr.type),
-                loc: method.startLoc(),
+                loc: method.startLoc,
                 highlights: [ expr.name.range ])
           continue
         }
@@ -196,7 +196,7 @@ class Sema: ASTTransformer, Pass {
       }
       if context.isCircularType(expr) {
         error(SemaError.referenceSelfInProp(name: expr.name),
-              loc: expr.startLoc(),
+              loc: expr.startLoc,
               highlights: [
                 expr.name.range
           ])
@@ -226,14 +226,14 @@ class Sema: ASTTransformer, Pass {
       }
       if expr.hasVarArgs {
         error(SemaError.varArgsInNonForeignDecl,
-              loc: expr.startLoc())
+              loc: expr.startLoc)
         return
       }
     }
     let returnType = expr.returnType.type!
     if !context.isValidType(returnType) {
       error(SemaError.unknownType(type: returnType),
-            loc: expr.returnType.startLoc(),
+            loc: expr.returnType.startLoc,
             highlights: [
               expr.returnType.sourceRange
         ])
@@ -265,7 +265,7 @@ class Sema: ASTTransformer, Pass {
     super.visitVarAssignDecl(decl)
     if let rhs = decl.rhs, decl.has(attribute: .foreign) {
       error(SemaError.foreignVarWithRHS(name: decl.name),
-            loc: decl.startLoc(),
+            loc: decl.startLoc,
             highlights: [ rhs.sourceRange ])
       return
     }
@@ -273,7 +273,7 @@ class Sema: ASTTransformer, Pass {
     if let type = decl.typeRef?.type {
       if !context.isValidType(type) {
         error(SemaError.unknownType(type: type),
-              loc: decl.typeRef!.startLoc(),
+              loc: decl.typeRef!.startLoc,
               highlights: [
                 decl.typeRef!.sourceRange
           ])
@@ -296,7 +296,7 @@ class Sema: ASTTransformer, Pass {
       let canRhs = context.canonicalType(type)
       if case .void = canRhs {
         error(SemaError.incompleteTypeAccess(type: type, operation: "assign value from"),
-              loc: rhs.startLoc(),
+              loc: rhs.startLoc,
               highlights: [
                 rhs.sourceRange
           ])
@@ -338,7 +338,7 @@ class Sema: ASTTransformer, Pass {
     super.visitFuncArgumentAssignDecl(decl)
     guard context.isValidType(decl.type) else {
       error(SemaError.unknownType(type: decl.type),
-            loc: decl.typeRef?.startLoc(),
+            loc: decl.typeRef?.startLoc,
             highlights: [
               decl.typeRef?.sourceRange
         ])
@@ -391,7 +391,7 @@ class Sema: ASTTransformer, Pass {
     }
     if case .function = type {
       error(SemaError.fieldOfFunctionType(type: type),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -399,7 +399,7 @@ class Sema: ASTTransformer, Pass {
     }
     guard let typeDecl = context.decl(for: type) else {
       error(SemaError.unknownType(type: type.rootType),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -432,7 +432,7 @@ class Sema: ASTTransformer, Pass {
         return false
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
-              loc: expr.startLoc(),
+              loc: expr.startLoc,
               highlights: [
                 expr.sourceRange
           ])
@@ -440,7 +440,7 @@ class Sema: ASTTransformer, Pass {
       }
     } else {
       error(SemaError.unknownField(typeDecl: typeDecl, expr: expr),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [ expr.name.range ])
       return false
     }
@@ -450,7 +450,7 @@ class Sema: ASTTransformer, Pass {
     super.visitArrayExpr(expr)
     guard let first = expr.values.first?.type else {
       error(SemaError.ambiguousType,
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
             ])
@@ -460,7 +460,7 @@ class Sema: ASTTransformer, Pass {
       guard let type = value.type else { return }
       guard matches(type, first) else {
         error(SemaError.nonMatchingArrayType(first, type),
-              loc: value.startLoc(),
+              loc: value.startLoc,
               highlights: [
                 value.sourceRange
               ])
@@ -476,7 +476,7 @@ class Sema: ASTTransformer, Pass {
     let lhsCanTy = context.canonicalType(lhsTy)
     guard case .tuple(let fields) = lhsCanTy else {
       error(SemaError.indexIntoNonTuple,
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
             ])
@@ -504,13 +504,13 @@ class Sema: ASTTransformer, Pass {
       elementType = element
     default:
       error(SemaError.cannotSubscript(type: type),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [ expr.lhs.sourceRange ])
       return
     }
     guard elementType != .void else {
       error(SemaError.incompleteTypeAccess(type: elementType, operation: "subscript"),
-            loc: expr.lhs.startLoc(),
+            loc: expr.lhs.startLoc,
             highlights: [
               expr.lhs.sourceRange
             ])
@@ -522,7 +522,7 @@ class Sema: ASTTransformer, Pass {
   override func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
     guard let decl = context.decl(for: expr.type) else {
       error(SemaError.unknownType(type: expr.type),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [ expr.typeRef.name.range ])
       return
     }
@@ -556,7 +556,7 @@ class Sema: ASTTransformer, Pass {
         expr.type = funcDecl.type
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
-              loc: expr.startLoc(),
+              loc: expr.startLoc,
               highlights: [
                 expr.sourceRange
           ])
@@ -565,7 +565,7 @@ class Sema: ASTTransformer, Pass {
     }
     guard let decl = expr.decl else {
       error(SemaError.unknownVariableName(name: expr.name),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [ expr.sourceRange ])
       return
     }
@@ -577,7 +577,7 @@ class Sema: ASTTransformer, Pass {
   override func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
     if currentBreakTarget == nil {
       error(SemaError.continueNotAllowed,
-            loc: stmt.startLoc(),
+            loc: stmt.startLoc,
             highlights: [ stmt.sourceRange ])
     }
   }
@@ -585,7 +585,7 @@ class Sema: ASTTransformer, Pass {
   override func visitBreakStmt(_ stmt: BreakStmt) -> Result {
     if currentBreakTarget == nil {
       error(SemaError.breakNotAllowed,
-            loc: stmt.startLoc(),
+            loc: stmt.startLoc,
             highlights: [ stmt.sourceRange ])
     }
   }
@@ -608,7 +608,7 @@ class Sema: ASTTransformer, Pass {
     guard let bound = decl.bound.type else { return }
     guard context.isValidType(bound) else {
       error(SemaError.unknownType(type: bound),
-            loc: decl.bound.startLoc(),
+            loc: decl.bound.startLoc,
             highlights: [
               decl.bound.sourceRange
         ])
@@ -644,7 +644,7 @@ class Sema: ASTTransformer, Pass {
           candidates += [foreignDecl(args: args, ret: ret)]
         } else {
           error(SemaError.callNonFunction(type: type),
-                loc: lhs.startLoc(),
+                loc: lhs.startLoc,
                 highlights: [
                   expr.sourceRange
             ])
@@ -659,7 +659,7 @@ class Sema: ASTTransformer, Pass {
         candidates += [foreignDecl(args: args, ret: ret)]
       } else {
         error(SemaError.callNonFunction(type: expr.lhs.type ?? .void),
-              loc: expr.lhs.startLoc(),
+              loc: expr.lhs.startLoc,
               highlights: [
                 expr.lhs.sourceRange
           ])
@@ -734,7 +734,7 @@ class Sema: ASTTransformer, Pass {
           isContinue ? "continue" :
           isNoReturnFuncCall ? "call to noreturn function" : "break"
         warning("Code after \(type) will not be executed.",
-                loc: e.startLoc(),
+                loc: e.startLoc,
                 highlights: [ stmt.sourceRange ])
       }
     }
@@ -758,7 +758,7 @@ class Sema: ASTTransformer, Pass {
                                                       rhs: c.constant),
                !decl.returnType.type!.isPointer else {
         error(SemaError.cannotSwitch(type: valueType),
-              loc: stmt.value.startLoc(),
+              loc: stmt.value.startLoc,
               highlights: [ stmt.value.sourceRange ])
         continue
       }
@@ -804,7 +804,7 @@ class Sema: ASTTransformer, Pass {
       expr.type = .void
       if case .void = canRhs {
         error(SemaError.incompleteTypeAccess(type: canRhs, operation: "assign value from"),
-              loc: expr.rhs.startLoc(),
+              loc: expr.rhs.startLoc,
               highlights: [
                 expr.rhs.sourceRange
               ])
@@ -823,7 +823,7 @@ class Sema: ASTTransformer, Pass {
       if expr.rhs is NilExpr, let lhsType = expr.lhs.type {
         guard context.canBeNil(lhsType) else {
           error(SemaError.nonPointerNil(type: lhsType),
-                loc: expr.lhs.startLoc(),
+                loc: expr.lhs.startLoc,
                 highlights: [
                   expr.lhs.sourceRange,
                   expr.rhs.sourceRange
@@ -838,7 +838,7 @@ class Sema: ASTTransformer, Pass {
     if case .as = expr.op {
       guard context.isValidType(expr.rhs.type!) else {
         error(SemaError.unknownType(type: expr.rhs.type!),
-              loc: expr.rhs.startLoc(),
+              loc: expr.rhs.startLoc,
               highlights: [expr.rhs.sourceRange])
         return
       }
@@ -882,7 +882,7 @@ class Sema: ASTTransformer, Pass {
     super.visitPoundFunctionExpr(expr)
     guard let funcDecl = currentFunction else {
       error(SemaError.poundFunctionOutsideFunction,
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -893,9 +893,9 @@ class Sema: ASTTransformer, Pass {
   
   override func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) {
     if stmt.isError {
-      context.diag.error(stmt.text, loc: stmt.content.startLoc(), highlights: [])
+      context.diag.error(stmt.text, loc: stmt.content.startLoc, highlights: [])
     } else {
-      context.diag.warning(stmt.text, loc: stmt.content.startLoc(), highlights: [])
+      context.diag.warning(stmt.text, loc: stmt.content.startLoc, highlights: [])
     }
   }
   
@@ -930,7 +930,7 @@ class Sema: ASTTransformer, Pass {
       }
       guard subtype != .void else {
         error(SemaError.incompleteTypeAccess(type: subtype, operation: "dereference"),
-              loc: expr.startLoc(),
+              loc: expr.startLoc,
               highlights: [
                 expr.sourceRange
               ])

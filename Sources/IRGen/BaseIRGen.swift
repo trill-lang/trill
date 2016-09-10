@@ -552,7 +552,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will emit a diagnostic
   func visitClosureExpr(_ expr: ClosureExpr) -> Result {
     error(LLVMError.closuresUnsupported,
-          loc: expr.startLoc())
+          loc: expr.startLoc)
     return nil
   }
 }

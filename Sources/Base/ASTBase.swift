@@ -121,8 +121,8 @@ class ASTNode: Equatable, Hashable {
   init(sourceRange: SourceRange? = nil) {
     self.sourceRange = sourceRange
   }
-  func startLoc() -> SourceLocation? { return sourceRange?.start }
-  func endLoc() -> SourceLocation? { return sourceRange?.end }
+  var startLoc: SourceLocation? { return sourceRange?.start }
+  var endLoc: SourceLocation? { return sourceRange?.end }
   func equals(_ rhs: ASTNode) -> Bool {
     return false
   }

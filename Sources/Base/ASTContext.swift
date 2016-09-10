@@ -131,7 +131,7 @@ public class ASTContext {
   func setMain(_ main: FuncDecl) {
     guard mainFunction == nil else {
       error(ASTError.duplicateMain,
-            loc: main.startLoc(),
+            loc: main.startLoc,
             highlights: [
               main.name.range
         ])
@@ -152,7 +152,7 @@ public class ASTContext {
     let hasInvalidRet = ret != .void && !flags.contains(.exitCode)
     if hasInvalidRet || hasInvalidArgs {
       error(ASTError.invalidMain(got: main.type),
-            loc: main.startLoc(),
+            loc: main.startLoc,
             highlights: [
               main.name.range
         ])
@@ -226,7 +226,7 @@ public class ASTContext {
   func add(_ typeDecl: TypeDecl) -> Bool {
     guard decl(for: typeDecl.type) == nil else {
       error(ASTError.duplicateType(name: typeDecl.name),
-            loc: typeDecl.startLoc(),
+            loc: typeDecl.startLoc,
             highlights: [ typeDecl.name.range ])
       return false
     }
@@ -239,7 +239,7 @@ public class ASTContext {
   func add(_ global: VarAssignDecl) -> Bool {
     guard globalDeclMap[global.name.name] == nil else {
       error(ASTError.duplicateVar(name: global.name),
-            loc: global.startLoc(),
+            loc: global.startLoc,
             highlights: [
               global.sourceRange
         ])

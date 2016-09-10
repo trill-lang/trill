@@ -69,26 +69,26 @@ class TypeChecker: ASTTransformer, Pass {
       error(TypeCheckError.arityMismatch(name: name,
                                          gotCount: expr.args.count,
                                          expectedCount: declArgs.count),
-            loc: expr.startLoc())
+            loc: expr.startLoc)
       return
     }
     for (arg, val) in zip(declArgs, expr.args) {
       if let externalName = arg.externalName {
         guard let label = val.label else {
           error(TypeCheckError.missingArgumentLabel(expected: externalName),
-                loc: val.val.startLoc())
+                loc: val.val.startLoc)
           continue
         }
         if label.name != externalName.name {
           error(TypeCheckError.incorrectArgumentLabel(got: label, expected: externalName),
-                loc: val.val.startLoc(),
+                loc: val.val.startLoc,
                 highlights: [
                   val.val.sourceRange
             ])
         }
       } else if let label = val.label {
         error(TypeCheckError.extraArgumentLabel(got: label),
-              loc: val.val.startLoc())
+              loc: val.val.startLoc)
       }
       var argType = arg.type
       guard let type = val.val.type else {
@@ -99,7 +99,7 @@ class TypeChecker: ASTTransformer, Pass {
       }
       if !matches(argType, .any) && !matches(type, argType) {
         error(TypeCheckError.typeMismatch(expected: argType, got: type),
-              loc: val.val.startLoc(),
+              loc: val.val.startLoc,
               highlights: [
                 val.val.sourceRange
           ])
@@ -125,7 +125,7 @@ class TypeChecker: ASTTransformer, Pass {
       }
       if overflows {
         error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
-              loc: expr.startLoc(), highlights: [expr.sourceRange])
+              loc: expr.startLoc, highlights: [expr.sourceRange])
         return
       }
       if !signed && expr.value < 0 {
@@ -137,7 +137,7 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitSwitchStmt(_ stmt: SwitchStmt) {
     for c in stmt.cases where !matches(c.constant.type, stmt.value.type) {
       error(TypeCheckError.typeMismatch(expected: stmt.value.type!, got: c.constant.type!),
-            loc: c.constant.startLoc(),
+            loc: c.constant.startLoc,
             highlights: [c.constant.sourceRange!])
     }
   }
@@ -147,7 +147,7 @@ class TypeChecker: ASTTransformer, Pass {
     guard let type = expr.type else { return }
     if !matches(decl.type, type) {
       error(TypeCheckError.typeMismatch(expected: decl.type, got: type),
-            loc: expr.startLoc())
+            loc: expr.startLoc)
     }
     super.visitVarExpr(expr)
   }
@@ -157,7 +157,7 @@ class TypeChecker: ASTTransformer, Pass {
       guard let rhsType = rhs.type else { return }
       if !matches(decl.type, rhsType) {
         error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
-              loc: decl.startLoc())
+              loc: decl.startLoc)
         return
       }
     }
@@ -168,7 +168,7 @@ class TypeChecker: ASTTransformer, Pass {
     for (expr, _) in stmt.blocks {
       guard case .bool? = expr.type else {
         self.error(TypeCheckError.nonBoolCondition(got: expr.type),
-                   loc: expr.startLoc(),
+                   loc: expr.startLoc,
                    highlights: [
                     expr.sourceRange
           ])
@@ -181,7 +181,7 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
     if let rhsType = decl.rhs?.type, !matches(decl.type, rhsType) {
       error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
-            loc: decl.startLoc(),
+            loc: decl.startLoc,
             highlights: [
               decl.sourceRange
         ])
@@ -194,7 +194,7 @@ class TypeChecker: ASTTransformer, Pass {
     guard let valType = expr.value.type else { return }
     if !matches(valType, returnType) {
       error(TypeCheckError.typeMismatch(expected: returnType, got: valType),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -214,7 +214,7 @@ class TypeChecker: ASTTransformer, Pass {
     guard let falseType = expr.falseCase.type else { return }
     guard matches(condType, .bool) else {
       error(TypeCheckError.nonBooleanTernary(got: condType),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -222,7 +222,7 @@ class TypeChecker: ASTTransformer, Pass {
     }
     guard matches(trueType, falseType) else {
       error(TypeCheckError.typeMismatch(expected: trueType, got: falseType),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.sourceRange
         ])
@@ -240,7 +240,7 @@ class TypeChecker: ASTTransformer, Pass {
       // thrown from sema
     } else if expr.decl == nil  {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
-            loc: expr.startLoc(),
+            loc: expr.startLoc,
             highlights: [
               expr.lhs.sourceRange
         ])
@@ -250,7 +250,7 @@ class TypeChecker: ASTTransformer, Pass {
             case .int(let width, _)? = expr.type,
             num.value >= IntMax(width) {
       error(TypeCheckError.shiftPastBitWidth(type: expr.type!, shiftWidth: num.value),
-            loc: num.startLoc(),
+            loc: num.startLoc,
             highlights: [
               num.sourceRange
         ])
@@ -264,7 +264,7 @@ class TypeChecker: ASTTransformer, Pass {
     
     guard case .int(_) = context.canonicalType(amountType) else {
       error(TypeCheckError.subscriptWithInvalidType(type: amountType),
-            loc: expr.amount.startLoc(),
+            loc: expr.amount.startLoc,
             highlights: [
               expr.amount.sourceRange,
               expr.lhs.sourceRange
