@@ -1,0 +1,20 @@
+foreign func NSLog(_: ObjCBox, _: ...)
+let NSData = Class("NSData")
+
+extension ObjCBox {
+    func send(_ sel: *Int8, _ obj: *Int8, _ arg1: Int) -> ObjCBox {
+        return ObjCBox(obj: objc_msgSend(self.obj, sel_registerName(sel), obj, arg1))
+    }
+}
+
+extension ByteArray {
+  func asNSData() -> ObjCBox {
+    return NSData.alloc().send("initWithBytes:length:", self.bytes, self.length)
+  }
+}
+
+func main() {
+    var string = ByteArray("hello, world")
+    string.append("ahem")
+    NSLog(str("%@"), string.asNSData())
+}

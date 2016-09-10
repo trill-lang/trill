@@ -1,0 +1,29 @@
+func +(lhs: Bool, rhs: Bool) -> Bool {
+  return lhs && rhs
+}
+
+func -(lhs: Int, rhs: Bool) -> Int {
+  return lhs - (rhs ? 1 : 0)
+}
+
+func +(lhs: String, rhs: String) -> String {
+  var new = lhs.copy()
+  new.append(rhs)
+  return new
+}
+
+func main() {
+  let hello = String(cString: "hello, world\n")
+  let goodbye = String(cString: "goodbye, world\n")
+  println(hello)
+  println(goodbye)
+
+  var foo = false
+  foo += false
+
+  println(hello + goodbye)
+  let x = (100 as Double) * 1.5
+  let b = true + false
+  printf("1 - true = %d\n", 1 - true)
+  printf("1 - false = %d\n", 1 - false)
+}
