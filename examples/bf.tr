@@ -115,9 +115,8 @@ indirect type Program {
   }
 
   func printTrill() {
-    puts("foreign func calloc(_: Int, _: Int) -> *Int8")
     puts("func main() {")
-    puts("  var memory = calloc(30000, sizeof(Int8))")
+    puts("  var memory = calloc(30000, sizeof(Int8)) as *Int8")
     puts("  var p = 0")
     for var i = 0; i < self.count; i += 1 {
       let instr = self.instructions[i]

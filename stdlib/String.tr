@@ -33,6 +33,11 @@ type String {
         self._storage.append(cString)
         self._storage.append(0)
     }
+    mutating func append(_ cString: *Int8, length: Int) {
+        self._storage.remove(at: self.length())
+        self._storage.insert(cString, length: length, at: self.length())
+        self._storage.append(0)
+    }
     mutating func insert(_ cString: *Int8, length: Int, at index: Int) {
         if index == self.length() {
             self._storage.remove(at: self.length())

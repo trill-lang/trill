@@ -414,19 +414,23 @@ struct Lexer {
   }
   
   mutating func readCharacter() throws -> UnicodeScalar {
-    if currentChar() == "\\" {
-      advance()
-      switch currentChar() {
-      case "n"?:
+    guard let c = currentChar() else { throw LexError.unexpectedEOF }
+    advance()
+    if c == "\\" {
+      guard let escaped = currentChar() else {
+          throw LexError.unexpectedEOF
+      }
+      switch escaped {
+      case "n":
         advance()
         return "\n" as UnicodeScalar
-      case "t"?:
+      case "t":
         advance()
         return "\t" as UnicodeScalar
-      case "r"?:
+      case "r":
         advance()
         return "\r" as UnicodeScalar
-      case "x"?:
+      case "x":
         advance()
         guard currentChar() == "{" else {
           throw LexError.invalidCharacter(char: currentChar()!)
@@ -441,18 +445,14 @@ struct Lexer {
           throw LexError.invalidCharacterLiteral(literal: "\\x{\(literal)}")
         }
         return UnicodeScalar(lit)
-      case "\""?:
+      case "\"":
         advance()
         return "\"" as UnicodeScalar
       default:
-        throw LexError.invalidEscape(escapeChar: currentChar()!)
+        throw LexError.invalidEscape(escapeChar: c)
       }
-    } else if let c = currentChar() {
-      advance()
-      return c
-    } else {
-      throw LexError.unexpectedEOF
     }
+    return c
   }
   
   mutating func advanceToNextToken() throws -> Token {

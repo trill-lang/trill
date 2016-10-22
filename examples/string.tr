@@ -1,5 +1,3 @@
-foreign func calloc(_: Int, _: Int) -> *Int8
-foreign func realloc(_: *Int8, _: Int32) -> *Int8
 foreign func memcpy(_: *Int8, _: *Int8, _: Int)
 foreign func strlen(_: *Int8) -> Int
 foreign func isprint(_: Int8) -> Int
@@ -13,83 +11,12 @@ func putc(_ c: Int8) {
   putchar(c as Int32)
 }
 
-type String {
-  var bytes: *Int8
-  var length: Int
-  
-  mutating func append(_ string: *Int8, length: Int) {
-    self.bytes = realloc(self.bytes, (self.length + length + 1) as Int32)
-    memcpy(&self.bytes[self.length], string, length)
-    self.length += length
-    self.bytes[self.length] = 0 as Int8
-  }
-
-  mutating func append(_ string: *Int8) {
-    var length = strlen(string)
-    self.append(string, length: length)
-  }
-
-  mutating func append(_ string: String) {
-    self.append(string.bytes, length: string.length)
-  }
-
-  mutating func append(_ char: Int8) {
-    self.append(&char, length: 1)
-  }
-
-  func print() {
-    printf("%s", self.bytes)
-  }
-
-  func debugPrint() {
-    printf("\nlength: %d\nbytes: \n  ", self.length)
-    for var i = 0; i < self.length; i += 1 {
-      if i > 0 && i % 8 == 0 {
-        printf("\n  ")
-      }
-      printf("0x%02x ", self.bytes[i])
-    }
-    printf("\n")
-  }
-
-  func print(rowLength: Int) {
-    for var i = 0; i < self.length; i += 1 {
-      if i > 0 && i % rowLength == 0 {
-        putc('\n')
-      }
-      putc(self.bytes[i])
-    }
-    putc('\n')
-  }
-
-  func appending(_ string: String) -> String {
-    var c = self.copy()
-    c.append(string)
-    return c
-  }
-
-  func appending(_ string: *Int8) -> String {
-    var length = strlen(string)
-    var c = self.copy()
-    c.append(string, length: length)
-    return c
-  }
-
-  func copy() -> String {
-    var bytes = calloc(self.length, sizeof(Int8))
-    memcpy(bytes, self.bytes, self.length)
-    return String(bytes: bytes, length: self.length)
-  }
- 
-  mutating func destroy() {
-    free(self.bytes as *Void)
-  }
-
+extension String {
   func printCStrings() {
     var lastNonPrintable = 0 as *Int8
-    for var i = 0; i < self.length; i += 1 {
-      var ptr = &self.bytes[i]
-      var c = self.bytes[i]
+    for var i = 0; i < self.length(); i += 1 {
+      var ptr = &self._storage.bytes[i]
+      var c = self._storage.bytes[i]
       var length = (ptr as Int) - (lastNonPrintable as Int)
       if c == (0 as Int8) && (length > 4) {
         printf("%s\n", &lastNonPrintable[1])
@@ -101,17 +28,10 @@ type String {
   }
 }
 
-func str(_ cString: *Int8) -> String {
-  var length = strlen(cString)
-  var bytes = calloc(length, sizeof(Int8))
-  memcpy(bytes, cString, length)
-  return String(bytes: bytes, length: length)
-}
-
 func readInput() -> String {
-  var s = str("")
+  var s = String()
   var bufsize = 256
-  var buf = calloc(bufsize, sizeof(Int8)) 
+  var buf = calloc(bufsize, sizeof(Int8))  as *Int8
   var n = 0
   while true {
     var c = getchar() as Int8
@@ -135,11 +55,11 @@ func read(file: *Int8) -> String {
   var fsize = ftell(f)
   fseek(f, 0, SEEK_SET)
 
-  var str = calloc(0, fsize + 1)
-  fread(str as *Void, fsize as size_t, 1 as size_t, f)
+  var str = calloc(0, fsize + 1) as *Int8
+  fread(str as *Void, fsize, 1, f)
   fclose(f)
   str[fsize] = 0 as Int8
-  return String(bytes: str, length: fsize)
+  return String(_owning: str, length: fsize)
 }
 
 func main(argc: Int, argv: **Int8) {
@@ -150,5 +70,4 @@ func main(argc: Int, argv: **Int8) {
     s = read(file: argv[1])
   }
   s.printCStrings()
-  s.destroy()
 }
