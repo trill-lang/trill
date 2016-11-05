@@ -94,15 +94,14 @@ RawOptions ParseArguments(int argc, char **argv) {
                                            clEnumValN(Bitcode, "bitcode", "LLVM Bitcode (.bc)"),
                                            clEnumValN(AST, "ast", "A serailized Abstract Syntax Tree"),
                                            clEnumValN(JavaScript, "js", "JavaScript"),
-                                           clEnumValEnd),
-                                cl::init(Binary));
+                                           clEnumValEnd));
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
   cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
   cl::opt<bool> printTiming("debug-print-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
   cl::opt<bool> onlyDiagnostics("only-diagnostics", cl::desc("Only emit diagnostics"));
   cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
-  cl::opt<std::string> outputFile("o", cl::desc("output-filename"));
+  cl::opt<std::string> outputFile("o", cl::desc("Output filename"));
   cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
   cl::list<std::string> linkerFlags("Xlinker", cl::Positional,
                                     cl::PositionalEatsArgs,
@@ -110,6 +109,9 @@ RawOptions ParseArguments(int argc, char **argv) {
   cl::list<std::string> ccFlags("Xcc", cl::Positional,
                                 cl::PositionalEatsArgs,
                                 cl::desc("<extra clang flags>"));
+  cl::list<std::string> jitArgs("args", cl::Positional,
+                                cl::PositionalEatsArgs,
+                                cl::desc("<JIT arguments>"));
   cl::ParseCommandLineOptions(argc, argv);
   
   RawMode mode;
@@ -125,8 +127,9 @@ RawOptions ParseArguments(int argc, char **argv) {
   
   RawOutputFormat outputFormat;
   if (emit.hasArgStr()) {
-    mode = Emit;
     outputFormat = emit;
+  } else if (mode == Emit) {
+    outputFormat = Binary;
   }
   
   bool importC = !(mode == Emit && outputFormat == JavaScript) &&
@@ -139,6 +142,7 @@ RawOptions ParseArguments(int argc, char **argv) {
   auto filenamesPair = toCStrings(filenames);
   auto linkerPair = toCStrings(linkerFlags);
   auto ccPair = toCStrings(ccFlags);
+  auto jitPair = toCStrings(jitArgs);
   
   return RawOptions {
     optimizationLevel,
@@ -155,7 +159,9 @@ RawOptions ParseArguments(int argc, char **argv) {
     linkerPair.first,
     linkerPair.second,
     ccPair.first,
-    ccPair.second
+    ccPair.second,
+    jitPair.first,
+    jitPair.second
   };
 }
 

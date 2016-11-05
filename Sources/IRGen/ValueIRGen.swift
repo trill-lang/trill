@@ -158,6 +158,13 @@ extension IRGenerator {
   // %addtmp = add i64 %0, i64 %x
   
   func codegen(_ decl: OperatorDecl, lhs: LLVMValueRef, rhs: LLVMValueRef, type: DataType) -> Result {
+    if !decl.isBuiltin {
+      let function = codegenFunctionPrototype(decl)
+      var args: [LLVMValueRef?] = [lhs, rhs]
+      return args.withUnsafeMutableBufferPointer { buf in
+        return LLVMBuildCall(builder, function, buf.baseAddress, 2, "optmp")
+      }
+    }
     switch decl.op {
     case .plus:
       if case .floating = type {
@@ -248,11 +255,7 @@ extension IRGenerator {
     default:
       break
     }
-    let function = codegenFunctionPrototype(decl)
-    var args: [LLVMValueRef?] = [lhs, rhs]
-    return args.withUnsafeMutableBufferPointer { buf in
-      return LLVMBuildCall(builder, function, buf.baseAddress, 2, "optmp")
-    }
+    fatalError("unknown decl \(decl)")
   }
   
   func codegenShortCircuit(_ expr: InfixOperatorExpr) -> Result {

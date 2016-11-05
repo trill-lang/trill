@@ -282,6 +282,7 @@ class IRGenerator: ASTVisitor, Pass {
     finalizeGlobalInit()
     try validateModule()
     
+    print(args)
     return args.withCArrayOfCStrings { argv in
       return LLVMRunFunctionAsMain(jit, main, UInt32(args.count), argv, nil)
     }

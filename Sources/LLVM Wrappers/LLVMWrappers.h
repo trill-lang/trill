@@ -65,6 +65,8 @@ typedef struct RawOptions {
   size_t linkerFlagCount;
   char *_Nullable *_Nonnull ccFlags;
   size_t ccFlagCount;
+  char *_Nullable *_Nonnull jitFlags;
+  size_t jitFlagCount;
 } RawOptions;
 
 _Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef);

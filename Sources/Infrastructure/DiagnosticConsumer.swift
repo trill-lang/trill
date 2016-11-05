@@ -5,42 +5,14 @@
 
 import Foundation
 
-enum ANSIColor: String {
-  case black = "\u{001B}[30m"
-  case red = "\u{001B}[31m"
-  case green = "\u{001B}[32m"
-  case yellow = "\u{001B}[33m"
-  case blue = "\u{001B}[34m"
-  case magenta = "\u{001B}[35m"
-  case cyan = "\u{001B}[36m"
-  case white = "\u{001B}[37m"
-  case bold = "\u{001B}[1m"
-  case reset = "\u{001B}[0m"
-  
-  func name() -> String {
-    switch self {
-    case .black: return "Black"
-    case .red: return "Red"
-    case .green: return "Green"
-    case .yellow: return "Yellow"
-    case .blue: return "Blue"
-    case .magenta: return "Magenta"
-    case .cyan: return "Cyan"
-    case .white: return "White"
-    case .bold: return "Bold"
-    case .reset: return "Reset"
+extension Diagnostic.DiagnosticType {
+    var color: ANSIColor {
+        switch self {
+        case .error: return .red
+        case .warning: return .magenta
+        case .note: return .green
+        }
     }
-  }
-  
-  static func all() -> [ANSIColor] {
-    return [.black, .red, .green,
-            .yellow, .blue, .magenta,
-            .cyan, .white, .bold, .reset]
-  }
-}
-
-func + (left: ANSIColor, right: String) -> String {
-  return left.rawValue + right
 }
 
 protocol DiagnosticConsumer: class {
@@ -110,19 +82,8 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
   
   func consume(_ diagnostic: Diagnostic) {
     let file = sourceFile(for: diagnostic)
-    switch diagnostic.diagnosticType {
-    case .warning:
-      with([.bold, .magenta]) {
-        stream.write("warning: ")
-      }
-    case .error:
-      with([.bold, .red]) {
-        stream.write("error: ")
-      }
-    case .note:
-      with([.bold, .green]) {
-        stream.write("note: ")
-      }
+    with([.bold, diagnostic.diagnosticType.color]) {
+        stream.write("\(diagnostic.diagnosticType): ")
     }
     with([.bold]) {
       stream.write("\(diagnostic.message)\n")

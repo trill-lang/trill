@@ -60,11 +60,13 @@ public class Options {
   let isStdin: Bool
   let optimizationLevel: OptimizationLevel
   let raw: RawOptions
+  let jitArgs: [String]
   
   init(_ raw: RawOptions) {
     self.raw = raw
     self.mode = Mode(raw.mode, outputFormat: raw.outputFormat)
     self.filenames = swiftArrayFromCStrings(raw.filenames, count: raw.filenameCount)
+    self.jitArgs = swiftArrayFromCStrings(raw.jitFlags, count: raw.jitFlagCount)
     self.importC = raw.importC
     self.emitTiming = raw.emitTiming
     self.isStdin = raw.isStdin

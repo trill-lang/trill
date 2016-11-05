@@ -83,10 +83,9 @@ func populate(driver: Driver, options: Options,
     break
   case .jit:
     driver.add("Executing the JIT") { context in
-      // TODO: Fix sending args to the JIT
-//      var args = options.remainder
-//      args.insert("\(options.filename)", at: 0)
-      let ret = try gen!.execute([])
+      var args = options.jitArgs
+      args.insert("\(options.filenames.first!)", at: 0)
+      let ret = try gen!.execute(args)
       if ret != 0 {
         context.diag.error("program exited with non-zero exit code \(ret)")
       }
