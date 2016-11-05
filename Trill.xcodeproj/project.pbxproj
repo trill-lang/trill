@@ -152,6 +152,7 @@
 		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCC62B081D7A48610023F698 /* libLLVMTarget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC3E1C9007E300B84E25 /* libLLVMTarget.a */; };
 		DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCA97C81D58581900883183 /* libLLVMLinker.a */; };
+		DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCEF07FF1DCD6BA90075FE15 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
 		DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
@@ -295,7 +296,7 @@
 		DC17702F1D69130700FEFB85 /* TimingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimingViewController.swift; sourceTree = "<group>"; };
 		DC17704A1D69139900FEFB85 /* ASTDumper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTDumper.swift; sourceTree = "<group>"; };
 		DC17704B1D69139900FEFB85 /* ASTPrinter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTPrinter.swift; sourceTree = "<group>"; };
-		DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptGen.swift; sourceTree = "<group>"; };
+		DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = JavaScriptGen.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17705B1D6913EF00FEFB85 /* BaseParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseParser.swift; sourceTree = "<group>"; };
 		DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionParser.swift; sourceTree = "<group>"; };
 		DC17705D1D6913EF00FEFB85 /* Lexer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Lexer.swift; sourceTree = "<group>"; };
@@ -980,6 +981,7 @@
 			files = (
 				DC17703E1D69134B00FEFB85 /* ASTContext.swift in Sources */,
 				DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */,
+				DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */,
 				DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */,
 				DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
 				DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */,

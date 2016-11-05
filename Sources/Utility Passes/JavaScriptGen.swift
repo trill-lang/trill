@@ -27,16 +27,6 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     super.init(context: context)
   }
   
-  func jsTypeName(_ type: DataType) -> String {
-    switch type {
-    case .int: return "Number"
-    case .bool: return "Boolean"
-    case .custom(let name): return name
-    default:
-      fatalError("cannot represent \(type) in javascript")
-    }
-  }
-  
   required init(context: ASTContext) {
     fatalError("must call init(stream:context:)")
   }
@@ -93,7 +83,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("function (")
     stream.write(expr.args.map { $0.name.name }.joined(separator: ", "))
     stream.write(")")
-    visitCompoundStmt(expr.body) // JavaScript...
+    visitCompoundStmt(expr.body)
   }
   
   override func visitExtensionDecl(_ expr: ExtensionDecl) {
@@ -133,6 +123,16 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     withParens {
       if case .as = expr.op {
         visit(expr.lhs)
+        return
+      }
+      
+      if let decl = expr.decl, !decl.isBuiltin, !decl.has(attribute: .foreign) {
+        stream.write(Mangler.mangle(decl))
+        stream.write("(")
+        visit(expr.lhs)
+        stream.write(", ")
+        visit(expr.rhs)
+        stream.write(")")
         return
       }
       
@@ -357,5 +357,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     _ = expr.incrementer.map(visit)
     stream.write(") ")
     visitCompoundStmt(expr.body)
+  }
+    
+  override func visitOperatorDecl(_ decl: OperatorDecl) {
+    visitFuncDecl(decl)
   }
 }
