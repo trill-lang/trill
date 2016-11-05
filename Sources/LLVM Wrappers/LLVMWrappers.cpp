@@ -80,20 +80,25 @@ LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMT
 }
 
 RawOptions ParseArguments(int argc, char **argv) {
-  cl::opt<bool> emitAST("emit-ast", cl::desc("Emit the AST to stdout"));
   cl::opt<OptimizationLevel> optimizationLevel(cl::desc("Choose optimization level:"),
                                                cl::values(clEnumVal(O0 , "No optimizations, enable debugging"),
                                                           clEnumVal(O1, "Enable trivial optimizations"),
                                                           clEnumVal(O2, "Enable default optimizations"),
                                                           clEnumVal(O3, "Enable expensive optimizations"),
                                                           clEnumValEnd));
-  cl::opt<bool> emitLLVM("emit-llvm", cl::desc("Emit the generated LLVM IR"));
-  cl::opt<bool> emitASM("emit-asm", cl::desc("Emit the generated assembly"));
-  cl::opt<bool> emitObject("emit-object", cl::desc("Emit the generated object file"));
+  cl::opt<RawOutputFormat> emit("emit", cl::desc("Output format to emit"),
+                                cl::values(clEnumValN(Binary, "binary", "A binary executable"),
+                                           clEnumValN(Object, "object", "An object file that has not been linked (.o)"),
+                                           clEnumValN(ASM, "asm", "Assembly for the target (.s)"),
+                                           clEnumValN(LLVM, "ir", "Textual LLVM IR (.ll)"),
+                                           clEnumValN(Bitcode, "bitcode", "LLVM Bitcode (.bc)"),
+                                           clEnumValN(AST, "ast", "A serailized Abstract Syntax Tree"),
+                                           clEnumValN(JavaScript, "js", "JavaScript"),
+                                           clEnumValEnd),
+                                cl::init(Binary));
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
-  cl::opt<bool> emitJS("emit-js", cl::desc("Emit the generated JavaScript to stdout"));
   cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
-  cl::opt<bool> emitTiming("emit-timing", cl::desc("Emit pass times (for performance debugging)"));
+  cl::opt<bool> printTiming("debug-print-timing", cl::desc("Emit pass times (for performance debugging)"));
   cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
   cl::opt<bool> onlyDiagnostics("only-diagnostics", cl::desc("Only emit diagnostics"));
   cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
@@ -110,25 +115,22 @@ RawOptions ParseArguments(int argc, char **argv) {
   RawMode mode;
   if (onlyDiagnostics) {
     mode = OnlyDiagnostics;
-  } else if (emitLLVM) {
-    mode = EmitLLVM;
-  } else if (emitJS) {
-    mode = EmitJavaScript;
-  } else if (emitAST) {
-    mode = EmitAST;
-  } else if (emitASM) {
-    mode = EmitASM;
   } else if (prettyPrint) {
     mode = PrettyPrint;
   } else if (jit) {
     mode = JIT;
-  } else if (emitObject) {
-    mode = EmitObj;
   } else {
-    mode = EmitBinary;
+    mode = Emit;
   }
   
-  bool importC = mode != EmitJavaScript && mode != PrettyPrint;
+  RawOutputFormat outputFormat;
+  if (emit.hasArgStr()) {
+    mode = Emit;
+    outputFormat = emit;
+  }
+  
+  bool importC = !(mode == Emit && outputFormat == JavaScript) &&
+                 mode != PrettyPrint;
   
   auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
   auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());
@@ -141,10 +143,11 @@ RawOptions ParseArguments(int argc, char **argv) {
   return RawOptions {
     optimizationLevel,
     importC,
-    emitTiming,
+    printTiming,
     isStdin,
     jsonDiagnostics,
     mode,
+    outputFormat,
     targetMachine,
     outputFilename,
     filenamesPair.first,

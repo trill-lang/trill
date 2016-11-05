@@ -40,7 +40,7 @@ func populate(driver: Driver, options: Options,
     }
   }
   switch options.mode {
-  case .emitAST:
+  case .emit(.ast):
     driver.add("Dumping the AST") { context in
       return ASTDumper(stream: &stdout, context: context).run(in: context)
     }
@@ -66,7 +66,7 @@ func populate(driver: Driver, options: Options,
   
   if case .onlyDiagnostics = options.mode { return }
   
-  if case .emitJavaScript = options.mode {
+  if case .emit(.javaScript) = options.mode {
     driver.add("Generating JavaScript") { context in
       return JavaScriptGen(stream: &stdout, context: context).run(in: context)
     }
@@ -76,14 +76,7 @@ func populate(driver: Driver, options: Options,
   driver.add("LLVM IR Generation", pass: gen!.run)
   
   switch options.mode {
-  case .emitLLVM, .emitASM, .emitObj, .emitBinary:
-    let outputType: EmitType
-    switch options.mode {
-    case .emitLLVM: outputType = .llvm
-    case .emitObj: outputType = .obj
-    case .emitASM: outputType = .asm
-    default: outputType = .bin
-    }
+  case .emit(let outputType):
     driver.add("Serializing \(outputType)") { context in
       try gen!.emit(outputType, output: options.outputFilename)
     }

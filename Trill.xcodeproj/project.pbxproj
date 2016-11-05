@@ -261,14 +261,14 @@
 		DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
 		DC176FDD1D6911A200FEFB85 /* Driver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Driver.swift; sourceTree = "<group>"; };
 		DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFormatter.swift; sourceTree = "<group>"; };
-		DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseIRGen.swift; sourceTree = "<group>"; };
+		DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BaseIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionIRGen.swift; sourceTree = "<group>"; };
 		DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuntimeIRGen.swift; sourceTree = "<group>"; };
 		DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementIRGen.swift; sourceTree = "<group>"; };
 		DC176FE91D6911A200FEFB85 /* TypeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeIRGen.swift; sourceTree = "<group>"; };
 		DC176FEA1D6911A200FEFB85 /* ValueIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueIRGen.swift; sourceTree = "<group>"; };
-		DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LLVMWrappers.cpp; sourceTree = "<group>"; };
-		DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LLVMWrappers.h; sourceTree = "<group>"; };
+		DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; path = LLVMWrappers.cpp; sourceTree = "<group>"; tabWidth = 2; };
+		DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.h; path = LLVMWrappers.h; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FF11D6911A200FEFB85 /* Mangler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mangler.swift; sourceTree = "<group>"; };
 		DC176FF21D6911A200FEFB85 /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		DC176FF31D6911A200FEFB85 /* TypeChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeChecker.swift; sourceTree = "<group>"; };
@@ -353,7 +353,7 @@
 		DC5F391A1D1FBFDD003A8DED /* libclangTidyUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangTidyUtils.a; path = ../../../../usr/local/llvm/lib/libclangTidyUtils.a; sourceTree = "<group>"; };
 		DC5F394F1D1FC016003A8DED /* libclang_rt.osx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclang_rt.osx.a; path = ../../../../usr/local/llvm/lib/clang/3.8.0/lib/darwin/libclang_rt.osx.a; sourceTree = "<group>"; };
 		DC78DA411D7920930015035A /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defines.h; path = Sources/Runtime/defines.h; sourceTree = SOURCE_ROOT; };
-		DC7968311D76219B00FF7A02 /* Options.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Options.swift; path = Sources/Infrastructure/Options.swift; sourceTree = SOURCE_ROOT; };
+		DC7968311D76219B00FF7A02 /* Options.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; name = Options.swift; path = Sources/Infrastructure/Options.swift; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC7968331D765A1000FF7A02 /* libclangFrontend.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontend.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontend.a; sourceTree = "<group>"; };
 		DC7968351D765A1E00FF7A02 /* libclangEdit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangEdit.a; path = ../../../../../../usr/local/llvm/lib/libclangEdit.a; sourceTree = "<group>"; };
 		DC7968371D765A2000FF7A02 /* libclangFrontendTool.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontendTool.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontendTool.a; sourceTree = "<group>"; };

@@ -8,20 +8,31 @@
 
 import Foundation
 
-
-enum Mode: Int {
-  case emitLLVM, emitAST, emitASM, emitObj, emitBinary
-  case emitJavaScript, prettyPrint, jit, onlyDiagnostics
+enum OutputFormat {
+  case javaScript, ast, asm, obj, binary, llvm, bitCode
   
-  init(_ raw: RawMode) {
+  init(_ raw: RawOutputFormat) {
     switch raw {
-    case EmitLLVM: self = .emitLLVM
-    case EmitAST: self = .emitAST
-    case EmitASM: self = .emitASM
-    case EmitObj: self = .emitObj
-    case EmitBinary: self = .emitBinary
+    case LLVM: self = .llvm
+    case Bitcode: self = .bitCode
+    case Binary: self = .binary
+    case Object: self = .obj
+    case ASM: self = .asm
+    case AST: self = .ast
+    case JavaScript: self = .javaScript
+    default: fatalError("invalid output format \(raw)")
+    }
+  }
+}
+
+enum Mode {
+  case emit(OutputFormat)
+  case prettyPrint, jit, onlyDiagnostics
+  
+  init(_ raw: RawMode, outputFormat: RawOutputFormat) {
+    switch raw {
+    case Emit: self = .emit(OutputFormat(outputFormat))
     case PrettyPrint: self = .prettyPrint
-    case EmitJavaScript: self = .emitJavaScript
     case JIT: self = .jit
     case OnlyDiagnostics: self = .onlyDiagnostics
     default: fatalError("invalid mode \(raw)")
@@ -52,7 +63,7 @@ public class Options {
   
   init(_ raw: RawOptions) {
     self.raw = raw
-    self.mode = Mode(raw.mode)
+    self.mode = Mode(raw.mode, outputFormat: raw.outputFormat)
     self.filenames = swiftArrayFromCStrings(raw.filenames, count: raw.filenameCount)
     self.importC = raw.importC
     self.emitTiming = raw.emitTiming

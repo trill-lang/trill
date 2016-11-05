@@ -43,8 +43,7 @@ enum LLVMError: Error, CustomStringConvertible {
   }
 }
 
-enum EmitType: CustomStringConvertible {
-  case llvm, asm, obj, bin
+extension OutputFormat {
   
   func addExtension(to basename: String) -> String {
     var url = URL(fileURLWithPath: basename)
@@ -56,24 +55,32 @@ enum EmitType: CustomStringConvertible {
     switch self {
     case .llvm: return "ll"
     case .asm: return "s"
-    case .obj, .bin: return "o"
+    case .obj, .binary: return "o"
+    case .bitCode: return "bc"
+    case .javaScript: return "js"
+    default: fatalError("should not be serializing \(self)")
     }
   }
   
   var description: String {
     switch self {
     case .llvm: return "LLVM IR"
-    case .bin: return "Executable"
+    case .binary: return "Executable"
     case .asm: return "Assembly"
     case .obj: return "Object File"
+    case .javaScript: return "JavaScript File"
+    case .ast: return "AST"
+    case .bitCode: return "LLVM Bitcode File"
     }
   }
   
-  var llvmType: LLVMCodeGenFileType {
+  /// The LLVMCodeGenFileType for this output format
+  var llvmType: LLVMCodeGenFileType? {
     switch self {
-    case .llvm: fatalError("should not be handled here")
     case .asm: return LLVMAssemblyFile
-    case .bin, .obj: return LLVMObjectFile
+    case .binary, .obj: return LLVMObjectFile
+    case .bitCode: return nil
+    default: fatalError("should not be handled here")
     }
   }
 }
@@ -348,7 +355,7 @@ class IRGenerator: ASTVisitor, Pass {
     return function!
   }
   
-  func emit(_ type: EmitType, output: String? = nil) throws {
+  func emit(_ type: OutputFormat, output: String? = nil) throws {
     if mainFunction != nil {
       try codegenMain(forJIT: false)
     }
@@ -370,12 +377,19 @@ class IRGenerator: ASTVisitor, Pass {
       var err: UnsafeMutablePointer<Int8>?
       try outputFilename.withCString { cString in
         let mutable = strdup(cString)
-        LLVMTargetMachineEmitToFile(targetMachine, module, mutable, type.llvmType, &err)
-        free(mutable)
-        if let err = err {
-          throw LLVMError.llvmError(String(cString: err))
+        if let llvmType = type.llvmType {
+          LLVMTargetMachineEmitToFile(targetMachine, module, mutable, llvmType, &err)
+          if let err = err {
+            throw LLVMError.llvmError(String(cString: err))
+          }
+        } else {
+          // Dealing with LLVM Bitcode here
+          if LLVMWriteBitcodeToFile(module, mutable) != 0 {
+            throw LLVMError.llvmError("LLVMWriteBitcodeToFile failed for an unknown reason")
+          }
         }
-        if case .bin = type {
+        free(mutable)
+        if case .binary = type {
           targetTriple.withCString { trip in
             _ = clang_linkExecutableFromObject(trip, cString,
                                                options.raw.linkerFlags,

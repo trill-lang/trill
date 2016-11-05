@@ -15,6 +15,7 @@
 #define __STDC_LIMIT_MACROS
 #undef DEBUG
 #include <llvm-c/Analysis.h>
+#include <llvm-c/BitWriter.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Transforms/Scalar.h>
@@ -33,10 +34,14 @@ extern "C" {
 #endif
 
 TRILL_ASSUME_NONNULL_BEGIN
-  
+
+typedef enum RawOutputFormat {
+  Binary, Object, ASM, LLVM, Bitcode,
+  AST, JavaScript,
+} RawOutputFormat;
+
 typedef enum RawMode {
-  EmitBinary, EmitObj, EmitASM, EmitLLVM,
-  EmitAST, PrettyPrint, EmitJavaScript, JIT,
+  Emit, PrettyPrint, JIT,
   OnlyDiagnostics
 } RawMode;
 
@@ -51,6 +56,7 @@ typedef struct RawOptions {
   bool isStdin;
   bool jsonDiagnostics;
   RawMode mode;
+  RawOutputFormat outputFormat;
   char *_Nullable target;
   char *_Nullable outputFilename;
   char *_Nullable *_Nonnull filenames;
