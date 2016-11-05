@@ -515,21 +515,23 @@ public class ASTContext {
 }
 
 fileprivate func makeHomogenousOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
-  return types.map { type in makeOp(op, type, type, type) }
+  return types.map { type in OperatorDecl(op, type, type, type) }
 }
 fileprivate func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
-  return types.map { type in makeOp(op, type, type, .bool) }
+  return types.map { type in OperatorDecl(op, type, type, .bool) }
 }
 
-fileprivate func makeOp(_ op: BuiltinOperator,
-                    _ lhsType: DataType,
-                    _ rhsType: DataType,
-                    _ returnType: DataType) -> OperatorDecl {
-  return OperatorDecl(op: op, args: [
-    FuncArgumentAssignDecl(name: "", type: lhsType.ref()),
-    FuncArgumentAssignDecl(name: "", type: rhsType.ref()),
-    ], returnType: returnType.ref(),
-       body: CompoundStmt(exprs: []),
-       modifiers: [.implicit])
+extension OperatorDecl {
+    convenience init(_ op: BuiltinOperator,
+                     _ lhsType: DataType,
+                     _ rhsType: DataType,
+                     _ returnType: DataType) {
+        self.init(op: op, args: [
+            FuncArgumentAssignDecl(name: "lhs", type: lhsType.ref()),
+            FuncArgumentAssignDecl(name: "rhs", type: rhsType.ref()),
+            ], returnType: returnType.ref(),
+               body: CompoundStmt(exprs: []),
+               modifiers: [.implicit])
+    }
 }
   

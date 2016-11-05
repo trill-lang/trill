@@ -158,7 +158,7 @@ extension IRGenerator {
   // %addtmp = add i64 %0, i64 %x
   
   func codegen(_ decl: OperatorDecl, lhs: LLVMValueRef, rhs: LLVMValueRef, type: DataType) -> Result {
-    if !decl.isBuiltin {
+    if !decl.has(attribute: .implicit) {
       let function = codegenFunctionPrototype(decl)
       var args: [LLVMValueRef?] = [lhs, rhs]
       return args.withUnsafeMutableBufferPointer { buf in

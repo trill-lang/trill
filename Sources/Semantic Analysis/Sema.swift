@@ -239,7 +239,11 @@ class Sema: ASTTransformer, Pass {
         ])
       return
     }
-    if let body = expr.body, !body.hasReturn, returnType != .void, !expr.isInitializer {
+    if let body = expr.body,
+        !body.hasReturn,
+        returnType != .void,
+        !expr.has(attribute: .implicit),
+        !expr.isInitializer {
       error(SemaError.notAllPathsReturn(type: expr.returnType.type!),
             loc: expr.name.range?.start,
             highlights: [

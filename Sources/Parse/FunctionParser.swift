@@ -66,7 +66,6 @@ extension Parser {
                           returnType: returnType,
                           body: body,
                           modifiers: modifiers,
-                          isBuiltin: false,
                           opRange: nameRange)
     }
     return FuncDecl(name: name,

@@ -126,7 +126,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
         return
       }
       
-      if let decl = expr.decl, !decl.isBuiltin, !decl.has(attribute: .foreign) {
+      if let decl = expr.decl,
+        !decl.has(attribute: .foreign),
+        !decl.has(attribute: .implicit) {
         stream.write(Mangler.mangle(decl))
         stream.write("(")
         visit(expr.lhs)

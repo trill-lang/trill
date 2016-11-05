@@ -256,7 +256,7 @@
 		DC176FD31D6911A200FEFB85 /* Functions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Functions.swift; sourceTree = "<group>"; };
 		DC176FD41D6911A200FEFB85 /* Operators.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Operators.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FD51D6911A200FEFB85 /* Statements.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Statements.swift; sourceTree = "<group>"; };
-		DC176FD61D6911A200FEFB85 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		DC176FD61D6911A200FEFB85 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FD71D6911A200FEFB85 /* Values.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Values.swift; sourceTree = "<group>"; };
 		DC176FD91D6911A200FEFB85 /* ClangImporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClangImporter.swift; sourceTree = "<group>"; };
 		DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticConsumer.swift; sourceTree = "<group>"; };
