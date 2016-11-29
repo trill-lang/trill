@@ -146,6 +146,7 @@
 		DC98BBC31D59A33200677C66 /* libclangLex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38F61D1FBF69003A8DED /* libclangLex.a */; };
 		DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC98BBC51D5EE92F00677C66 /* libtinygc.a */; };
 		DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
+		DCA5CC491DEE442D001B66A1 /* metadata_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA5CC481DEE442D001B66A1 /* metadata_private.h */; };
 		DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */; };
 		DCAEBC541C90095500B84E25 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC531C90095500B84E25 /* libLLVMMC.a */; };
 		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
@@ -264,15 +265,15 @@
 		DC176FDD1D6911A200FEFB85 /* Driver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Driver.swift; sourceTree = "<group>"; };
 		DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFormatter.swift; sourceTree = "<group>"; };
 		DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BaseIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
-		DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionIRGen.swift; sourceTree = "<group>"; };
-		DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuntimeIRGen.swift; sourceTree = "<group>"; };
-		DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementIRGen.swift; sourceTree = "<group>"; };
+		DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FunctionIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DC176FE61D6911A200FEFB85 /* RuntimeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = RuntimeIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DC176FE71D6911A200FEFB85 /* StatementIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = StatementIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FE91D6911A200FEFB85 /* TypeIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeIRGen.swift; sourceTree = "<group>"; };
 		DC176FEA1D6911A200FEFB85 /* ValueIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ValueIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; path = LLVMWrappers.cpp; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.c.h; path = LLVMWrappers.h; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FF11D6911A200FEFB85 /* Mangler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mangler.swift; sourceTree = "<group>"; };
-		DC176FF21D6911A200FEFB85 /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
+		DC176FF21D6911A200FEFB85 /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FF31D6911A200FEFB85 /* TypeChecker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeChecker.swift; sourceTree = "<group>"; };
 		DC1770141D69128500FEFB85 /* demangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = demangle.cpp; path = Sources/Runtime/demangle.cpp; sourceTree = SOURCE_ROOT; };
 		DC1770151D69128500FEFB85 /* demangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = demangle.h; path = Sources/Runtime/demangle.h; sourceTree = SOURCE_ROOT; };
@@ -311,7 +312,7 @@
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
 		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; };
 		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; };
+		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC4CF0C71D7A76750090216B /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = SOURCE_ROOT; };
 		DC5996661D7A487C0040073F /* libLLVMDebugInfoCodeView.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDebugInfoCodeView.a; path = ../../../../../../usr/local/llvm/lib/libLLVMDebugInfoCodeView.a; sourceTree = "<group>"; };
 		DC5996671D7A487C0040073F /* libLLVMDebugInfoDWARF.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDebugInfoDWARF.a; path = ../../../../../../usr/local/llvm/lib/libLLVMDebugInfoDWARF.a; sourceTree = "<group>"; };
@@ -361,6 +362,7 @@
 		DC7968371D765A2000FF7A02 /* libclangFrontendTool.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangFrontendTool.a; path = ../../../../../../usr/local/llvm/lib/libclangFrontendTool.a; sourceTree = "<group>"; };
 		DC98BBC51D5EE92F00677C66 /* libtinygc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtinygc.a; path = ../../../../usr/local/lib/libtinygc.a; sourceTree = "<group>"; };
 		DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
+		DCA5CC481DEE442D001B66A1 /* metadata_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata_private.h; path = Sources/Runtime/metadata_private.h; sourceTree = SOURCE_ROOT; };
 		DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = /usr/local/llvm/lib/libLLVMCodeGen.a; sourceTree = "<absolute>"; };
 		DCAEBC381C9007E300B84E25 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = /usr/local/llvm/lib/libLLVMCore.a; sourceTree = "<absolute>"; };
 		DCAEBC391C9007E300B84E25 /* libLLVMObject.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMObject.a; path = /usr/local/llvm/lib/libLLVMObject.a; sourceTree = "<absolute>"; };
@@ -637,6 +639,7 @@
 				DC1770171D69128500FEFB85 /* runtime.h */,
 				DC4CF0C61D7A76750090216B /* metadata.cpp */,
 				DC4CF0C71D7A76750090216B /* metadata.h */,
+				DCA5CC481DEE442D001B66A1 /* metadata_private.h */,
 				DC78DA411D7920930015035A /* defines.h */,
 				DC1770181D69128500FEFB85 /* trill.h */,
 			);
@@ -828,6 +831,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC17701D1D69128500FEFB85 /* trill.h in Headers */,
+				DCA5CC491DEE442D001B66A1 /* metadata_private.h in Headers */,
 				DC78DA421D7920930015035A /* defines.h in Headers */,
 				DC17701A1D69128500FEFB85 /* demangle.h in Headers */,
 				DC17701C1D69128500FEFB85 /* runtime.h in Headers */,

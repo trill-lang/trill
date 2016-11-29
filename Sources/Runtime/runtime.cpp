@@ -58,7 +58,7 @@ void print_stacktrace() {
 TRILL_NORETURN
 void crash() {
   print_stacktrace();
-  abort();
+  exit(-1);
 }
 
 TRILL_NORETURN

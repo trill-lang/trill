@@ -103,6 +103,7 @@ enum TokenKind: Equatable {
     case "for": self = .for
     case "nil": self = .nil
     case "as": self = .operator(op: .as)
+    case "is": self = .operator(op: .is)
     case "#function": self = .poundFunction
     case "#file": self = .poundFile
     case "#line": self = .poundLine
@@ -176,8 +177,9 @@ enum TokenKind: Equatable {
          .poundLine, .poundWarning, .poundError:
          return true
     case .identifier(let value):
-      return DeclModifier(rawValue: value) != nil || value == "self"
+        return DeclModifier(rawValue: value) != nil || value == "self"
     case .operator(op: .as): return true
+    case .operator(op: .is): return true
     default: return false
     }
   }

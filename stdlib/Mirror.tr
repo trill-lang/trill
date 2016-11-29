@@ -15,6 +15,10 @@ type Mirror {
         return trill_getTypeSizeInBits(self._metadata) as Int
     }
 
+    func isReferenceType() -> Bool {
+      return trill_isReferenceType(self._metadata) != 0
+    }
+
     func print() {
         if (self._metadata == nil) {
             puts("Metadata is null!\n");

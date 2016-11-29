@@ -42,6 +42,7 @@ enum SemaError: Error, CustomStringConvertible {
   case ambiguousType
   case operatorsMustHaveTwoArgs(op: BuiltinOperator)
   case cannotOverloadOperator(op: BuiltinOperator, type: String)
+  case isCheckAlways(fails: Bool)
   
   var description: String {
     switch self {
@@ -139,6 +140,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "definition for operator '\(op)' must have two arguments"
     case .cannotOverloadOperator(let op, let type):
       return "cannot overload \(type) operator '\(op)'"
+    case .isCheckAlways(let fails):
+      return "`is` check always \(fails ? "fails" : "succeeds")"
     }
   }
 }
@@ -283,14 +286,6 @@ class Sema: ASTTransformer, Pass {
           ])
         return
       }
-      
-      if let rhs = decl.rhs, let rhsType = rhs.type {
-        if context.canCoerce(rhsType, to: type) {
-          rhs.type = type
-        } else {
-          propagateContextualType(type, to: rhs)
-        }
-      }
     }
     if decl.containingTypeDecl == nil {
       varBindings[decl.name.name] = decl
@@ -367,12 +362,12 @@ class Sema: ASTTransformer, Pass {
         if let externalName = candArg.externalName,
            exprArg.label != externalName { continue search }
         guard var valType = exprArg.val.type else { continue search }
-        let type = context.canonicalType(candArg.type)
+        let candType = context.canonicalType(candArg.type)
         // automatically coerce number literals.
-        if propagateContextualType(type, to: exprArg.val) {
-          valType = type
+        if propagateContextualType(candType, to: exprArg.val) {
+          valType = candType
         }
-        if !matches(type, .any) && !matches(type, valType) {
+        if !matches(candType, valType) {
           continue search
         }
       }
@@ -857,6 +852,26 @@ class Sema: ASTTransformer, Pass {
         return
       }
       expr.type = rhsType
+      return
+    }
+    if case .is = expr.op {
+      guard context.isValidType(expr.rhs.type!) else {
+        error(SemaError.unknownType(type: expr.rhs.type!),
+              loc: expr.rhs.startLoc,
+              highlights: [expr.rhs.sourceRange])
+        return
+      }
+      guard case .any? = expr.lhs.type else {
+        let matched = !matches(expr.lhs.type, expr.rhs.type)
+        error(SemaError.isCheckAlways(fails: matched),
+              loc: expr.opRange?.start,
+              highlights: [
+                expr.lhs.sourceRange,
+                expr.rhs.sourceRange
+          ])
+        return
+      }
+      expr.type = .bool
       return
     }
     let lookupOp = expr.op.associatedOp ?? expr.op

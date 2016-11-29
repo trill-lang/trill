@@ -483,6 +483,8 @@ class IRGenerator: ASTVisitor, Pass {
       return storage(for: type) == .value ? binding : LLVMPointerType(binding, 0)
     }
     switch type {
+    case .any:
+      fallthrough
     case .pointer(.void):
       return LLVMPointerType(LLVMInt8Type(), 0)
     case .array(let field, let length):
@@ -570,6 +572,16 @@ class IRGenerator: ASTVisitor, Pass {
           loc: expr.startLoc)
     return nil
   }
+  
+  func codegenDebugPrintf(format: String, _ values: LLVMValueRef...) {
+    var args: [LLVMValueRef?] = values
+    args.insert(visitStringExpr(StringExpr(value: format))!, at: 0)
+    let printfCall = codegenIntrinsic(named: "printf")
+    args.withUnsafeMutableBufferPointer { buf in
+      _ = LLVMBuildCall(builder, printfCall,
+                        buf.baseAddress, UInt32(buf.count), "")
+    }
+  }
 }
 
 extension LLVMBasicBlockRef {
@@ -594,7 +606,8 @@ extension LLVMPassManagerRef {
     
     if level == O2 { return }
     
-    LLVMAddFunctionInliningPass(self)
+//    LLVMAddFunctionInliningPass(self)
+    LLVMAddLoopUnrollPass(self)
     LLVMAddTailCallEliminationPass(self)
   }
 }

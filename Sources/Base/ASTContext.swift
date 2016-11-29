@@ -365,6 +365,14 @@ public class ASTContext {
     case (let t1?, let t2?):
       let t1Can = canonicalType(t1)
       let t2Can = canonicalType(t2)
+      
+      if case .any = t1Can {
+        return true
+      }
+      if case .any = t2Can {
+        return true
+      }
+      
       return t1Can == t2Can
     default:
       return false
@@ -509,6 +517,12 @@ public class ASTContext {
     }
     if isIndirect(type), case .pointer = other {
       return true
+    }
+    if case .any = other {
+        return true
+    }
+    if case .any = type {
+        return true
     }
     return type.canCoerceTo(other)
   }

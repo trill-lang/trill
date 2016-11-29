@@ -234,7 +234,7 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
     guard let lhsType = expr.lhs.type else { return }
     guard let rhsType = expr.rhs.type else { return }
-    if expr.op == .as {
+    if [.as, .is].contains(expr.op) {
       // thrown from sema
     } else if expr.op.isAssign {
       // thrown from sema

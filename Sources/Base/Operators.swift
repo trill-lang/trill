@@ -42,6 +42,7 @@ enum BuiltinOperator: String, CustomStringConvertible {
   case rightShiftAssign = ">>="
   case leftShiftAssign = "<<="
   case `as` = "as"
+  case `is` = "is"
   
   var isPrefix: Bool {
     return self == .bitwiseNot || self == .not ||
@@ -81,6 +82,7 @@ enum BuiltinOperator: String, CustomStringConvertible {
     switch self {
 
     case .as: return 170
+    case .is: return 170
       
     case .leftShift: return 160
     case .rightShift: return 160
@@ -149,6 +151,7 @@ class PrefixOperatorExpr: Expr {
     case (.not, .bool): return .bool
     case (.ampersand, let type): return .pointer(type: type)
     case (.bitwiseNot, .int): return argType
+    case (.is, _): return .bool
     default: return nil
     }
   }

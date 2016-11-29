@@ -1,0 +1,3 @@
+func main(argc: Int, argv: **Int8) -> Int {
+  return 0
+}

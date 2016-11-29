@@ -61,7 +61,7 @@ extension IRGenerator {
     let type = context.canonicalType(_type)
     if let cached = typeMetadataMap[type] { return cached }
     var pointerLevel = 0
-    let fullName = "\(type)"
+    let fullName = "\(type.rootType)"
     let name = Mangler.mangle(type)
     var fields = [(String?, DataType)]()
     switch type {
@@ -90,6 +90,7 @@ extension IRGenerator {
     var elementPtrs = [
       LLVMTypeOf(nameValue), // name string
       voidPointerTy,         // field types
+      LLVMInt8Type(),        // isReferenceType
       LLVMInt64Type(),       // size of type
       LLVMInt64Type(),       // number of fields
       LLVMInt64Type()        // pointer level
@@ -139,6 +140,7 @@ extension IRGenerator {
     var vals = [
       nameValue,
       LLVMBuildBitCast(builder, gep, LLVMPointerType(LLVMInt8Type(), 0), ""),
+      LLVMConstInt(LLVMInt8Type(), storage(for: type) == .reference ? 1 : 0, 1),
       LLVMConstInt(LLVMInt64Type(), LLVMSizeOfTypeInBits(layout, llvmType), 0),
       LLVMConstInt(LLVMInt64Type(), UInt64(fields.count), 1),
       LLVMConstInt(LLVMInt64Type(), UInt64(pointerLevel), 1)
@@ -232,9 +234,9 @@ extension IRGenerator {
     let isImplicitSelf = (expr.lhs as? VarExpr)?.isSelf ?? false
     if case .reference = storage(for: expr.lhs.type!),
       !isImplicitSelf {
-      ptr = LLVMBuildLoad(builder, ptr, "field-load")
+      ptr = LLVMBuildLoad(builder, ptr, "\(expr.name)-load")
     }
-    return LLVMBuildStructGEP(builder, ptr, UInt32(idx), "field-gep")
+    return LLVMBuildStructGEP(builder, ptr, UInt32(idx), "\(expr.name)-gep")
   }
   
   func visitFieldLookupExpr(_ expr: FieldLookupExpr) -> Result {

@@ -6,23 +6,14 @@
 //  Copyright © 2016 Harlan. All rights reserved.
 //
 
-#include "metadata.h"
+#include "metadata_private.h"
 #include "runtime.h"
+#include <string>
+#include <iostream>
+
+#define TYPE_PUN(ptr, ty) *((ty *)(ptr))
 
 namespace trill {
-
-typedef struct FieldMetadata {
-  const char *name;
-  const void *type;
-} FieldMetadata;
-
-typedef struct TypeMetadata {
-  const char *name;
-  const void *fields;
-  uint64_t sizeInBits;
-  uint64_t fieldCount;
-  uint64_t pointerLevel;
-} TypeMetadata;
 
 const char *trill_getTypeName(const void *typeMeta) {
   if (!typeMeta) return "<null>";
@@ -36,6 +27,12 @@ uint64_t trill_getTypeSizeInBits(const void *typeMeta) {
   return real->sizeInBits;
 }
 
+uint8_t trill_isReferenceType(const void *typeMeta) {
+  if (!typeMeta) return 0;
+  auto real = (TypeMetadata *)typeMeta;
+  return real->isReferenceType;
+}
+  
 uint64_t trill_getNumFields(const void *typeMeta) {
   if (!typeMeta) {
     return 0;
@@ -67,4 +64,102 @@ const void *_Nullable trill_getFieldType(const void *_Nullable fieldMeta) {
   return real->type;
 }
 
+void *_Nonnull trill_allocateAny(void *typeMetadata_) {
+  trill_assert(typeMetadata_ != NULL);
+  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
+  size_t fullSize = sizeof(AnyHeader) + typeMetadata->sizeInBits;
+  AnyHeader *ptr = (AnyHeader *)trill_alloc(fullSize);
+  ptr->typeMetadata = typeMetadata;
+  return ptr;
+}
+
+void *_Nonnull trill_copyAny(AnyHeader *any) {
+  trill_assert(any != nullptr);
+  uint64_t size = ((TypeMetadata *)any->typeMetadata)->sizeInBits;
+  AnyHeader *header = (AnyHeader *)trill_alloc(sizeof(AnyHeader) + size);
+  memcpy(header, any, sizeof(AnyHeader) + size);
+  return header;
+}
+
+inline void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
+  void *valPtr = (void *)((intptr_t)anyValue + sizeof(AnyHeader));
+  return valPtr;
+}
+  
+void *_Nonnull trill_getAnyTypeMetadata(void *_Nonnull anyValue) {
+  trill_assert(anyValue != nullptr);
+  return ((AnyHeader *)anyValue)->typeMetadata;
+}
+  
+void trill_debugPrintFields(const void *fields, uint64_t count, std::string indent = "") {
+  for (size_t i = 0; i < count; i++) {
+    FieldMetadata field = ((FieldMetadata *)fields)[i];
+    std::cout << indent << "  " << field.name << ": "
+              << trill_getTypeName(field.type) << std::endl;
+  }
+}
+  
+void trill_debugPrintTypeMetadata(const void *ptr_, std::string indent = "") {
+  if (!ptr_) {
+    std::cout << "<null>" << std::endl;
+    return;
+  }
+  TypeMetadata *ptr = (TypeMetadata *)ptr_;
+  std::cout << "TypeMetadata {" << std::endl;
+  std::cout << indent << "  const char *name = \"" << ptr->name << "\"" << std::endl;
+  std::cout << indent << "  const void *fields = [" << std::endl;
+  trill_debugPrintFields(ptr->fields, ptr->fieldCount, indent + "  ");
+  std::cout << indent << "  ]" << std::endl;
+  std::cout << indent << "  bool isReferenceType = " << !!ptr->isReferenceType << std::endl;
+  std::cout << indent << "  size_t sizeInBits = " << ptr->sizeInBits << std::endl;
+  std::cout << indent << "  size_t fieldCount = " << ptr->fieldCount << std::endl;
+  std::cout << indent << "  size_t pointerLevel = " << ptr->pointerLevel << std::endl;
+  std::cout << indent << "}" << std::endl;
+}
+  
+void trill_debugPrintAny(void *ptr_) {
+  if (!ptr_) {
+    std::cout << "<null>" << std::endl;
+    return;
+  }
+  AnyHeader *ptr = (AnyHeader *)ptr_;
+  std::cout << "AnyHeader {" << std::endl;
+  std::cout << "  void *typeMetadata = ";
+  trill_debugPrintTypeMetadata(ptr->typeMetadata, "  ");
+  if (ptr->typeMetadata) {
+    void *valuePtr = trill_getAnyValuePtr(ptr_);
+    TypeMetadata *meta = (TypeMetadata *)ptr->typeMetadata;
+    std::string typeName = meta->name;
+    if (typeName == "Int") {
+      std::cout << "  int64_t value = " << TYPE_PUN(valuePtr, int64_t) << std::endl;
+    } else if (typeName == "Bool") {
+      std::cout << "  bool value = " << (TYPE_PUN(valuePtr, bool) ? "true" : "false") << std::endl;
+    }
+  }
+  std::cout << "}" << std::endl;
+}
+  
+uint8_t trill_checkTypes(void *anyValue_, void *typeMetadata_) {
+  AnyHeader *anyValue = (AnyHeader *)anyValue_;
+  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
+  trill_assert(anyValue != nullptr);
+  TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
+  return anyMetadata == typeMetadata;
+}
+  
+void *trill_checkedCast(void *anyValue_, void *typeMetadata_) {
+  AnyHeader *anyValue = (AnyHeader *)anyValue_;
+  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
+  trill_assert(anyValue != nullptr);
+  TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
+  if (anyMetadata != typeMetadata) {
+    std::string failureDesc = "checked cast failed: cannot convert ";
+    failureDesc += trill_getTypeName(anyMetadata);
+    failureDesc += " to ";
+    failureDesc += trill_getTypeName(typeMetadata);
+    trill_fatalError(failureDesc.c_str());
+  }
+  return trill_getAnyValuePtr(anyValue_);
+}
+  
 }

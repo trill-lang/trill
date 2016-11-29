@@ -223,8 +223,8 @@ extension IRGenerator {
     }
     
     var argVals = [LLVMValueRef?]()
-    for arg in args {
-      var val = visit(arg.val)
+    for (idx, arg) in args.enumerated() {
+      var val = visit(arg.val)!
       if case .array(let field, _)? = arg.val.type {
         let alloca = createEntryBlockAlloca(currentFunction!.functionRef!,
                                             type: LLVMTypeOf(val),
@@ -235,6 +235,11 @@ extension IRGenerator {
                                alloca.ref,
                                LLVMPointerType(resolveLLVMType(field), 0),
                                "")
+      } else if
+                let declArg = decl.args[safe: idx],
+                declArg.type == .any,
+                arg.val.type != .any {
+        val = codegenPromoteToAny(value: val, type: arg.val.type!)
       }
       argVals.append(val)
     }
@@ -269,5 +274,12 @@ extension IRGenerator {
       LLVMBuildBr(builder, currentFunction.returnBlock)
     }
     return store
+  }
+}
+
+extension Array {
+  subscript(safe index: Int) -> Element? {
+    guard index < count else { return nil }
+    return self[index]
   }
 }

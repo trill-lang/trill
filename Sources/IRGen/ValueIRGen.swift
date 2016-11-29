@@ -132,6 +132,8 @@ extension IRGenerator {
       return LLVMBuildIntToPtr(builder, value, llvmType, "inttoptr-coerce")
     case (.pointer, .pointer):
       return LLVMBuildBitCast(builder, value, llvmType, "bitcast-coerce")
+    case (.any, let other):
+      return codegenCheckedCast(binding: value, type: other)
     default:
       return LLVMBuildBitCast(builder, value, llvmType, "bitcast-coerce")
     }
@@ -308,9 +310,17 @@ extension IRGenerator {
       return coerce(lhs, from: expr.lhs.type!, to: expr.type!)
     }
     
-    let rhs = visit(expr.rhs)!
+    if case .is = expr.op {
+      let lhs = visit(expr.lhs)!
+      return codegenTypeCheck(lhs, type: expr.rhs.type!)
+    }
+    
+    var rhs = visit(expr.rhs)!
     
     if case .assign = expr.op {
+      if case .any? = expr.lhs.type, expr.rhs.type != .any {
+        rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type!)
+      }
       let ptr = resolvePtr(expr.lhs)
       return LLVMBuildStore(builder, rhs, ptr)
     } else if context.canBeNil(expr.lhs.type!) && expr.rhs is NilExpr {

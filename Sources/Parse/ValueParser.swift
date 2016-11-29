@@ -183,7 +183,7 @@ extension Parser {
         let opRange = currentToken().range
         consumeToken()
         let val: Expr
-        if case .as = op {
+        if [.as, .is].contains(op) {
           val = try parseType()
         } else {
           val = try parseValExpr()

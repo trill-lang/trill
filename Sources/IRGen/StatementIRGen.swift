@@ -62,7 +62,9 @@ extension IRGenerator {
     var value: LLVMValueRef
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
-      if rhs.type! != type {
+      if case .any = type {
+        value = codegenPromoteToAny(value: value, type: rhs.type!)
+      } else if rhs.type! != type {
         value = coerce(value, from: rhs.type!, to: type)!
       }
     } else {

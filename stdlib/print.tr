@@ -3,8 +3,6 @@ func print(_ string: String) {
 }
 
 func println(_ string: String) {
-    print("length: ")
-    println(string.length())
     println(string.cString())
 }
 

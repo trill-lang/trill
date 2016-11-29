@@ -1,0 +1,32 @@
+type Foo {
+  let bar: Int
+  let baz: Bool
+}
+
+func foo(_ t: Any) -> Int {
+  printf("[%s] entered\n", #function)
+  if t is Int {
+    printf("t is an Int!!\n")
+  }
+  return t as Int
+}
+
+func main() {
+  printf("[%s] entered\n", #function)
+  let f = foo(1)
+  var v: Any = 1
+  if !(v is Bool) {
+    printf("v: %d\n", v as Int)
+  }
+  v = true
+  if v is Bool {
+    printf("v: %s\n", v as Bool ? "true" : "false")
+  }
+  v = Foo(bar: 20, baz: true)
+  if v is Foo {
+    let foo = v as Foo
+    printf("v: Foo(bar: %d, baz: %s)\n", foo.bar, foo.baz ? "true" : "false")
+  }
+  printf("[%s] foo returned\n", #function)
+  printf("%d\n", f)
+}
