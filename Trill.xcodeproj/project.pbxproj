@@ -310,7 +310,7 @@
 		DC217A061D4EAD3000729DF0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtrillRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
-		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; };
+		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC4CF0C71D7A76750090216B /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = SOURCE_ROOT; };

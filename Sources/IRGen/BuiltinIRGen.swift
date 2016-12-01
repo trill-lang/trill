@@ -12,10 +12,15 @@ extension IRGenerator {
   func codegenTypeOfCall(_ expr: FuncCallExpr) -> LLVMValueRef? {
     guard
       let arg = expr.args.first,
-      let type = arg.val.type,
-      let meta = codegenTypeMetadata(context.canonicalType(type)) else {
+      let type = arg.val.type else {
         return nil
     }
+    if case .any = type {
+        let getMetadata = codegenIntrinsic(named: "trill_getAnyTypeMetadata")
+        var binding = visit(expr.args[0].val)
+        return LLVMBuildCall(builder, getMetadata, &binding, 1, "any-binding")
+    }
+    let meta = codegenTypeMetadata(context.canonicalType(type))
     return LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "")
   }
 }

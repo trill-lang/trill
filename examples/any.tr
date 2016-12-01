@@ -29,4 +29,7 @@ func main() {
   }
   printf("[%s] foo returned\n", #function)
   printf("%d\n", f)
+
+  var val = 10
+  var anyPtr: *Any = &val
 }

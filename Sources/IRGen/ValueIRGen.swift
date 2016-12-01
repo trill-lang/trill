@@ -69,9 +69,17 @@ extension IRGenerator {
   
   func visitTupleExpr(_ expr: TupleExpr) -> LLVMValueRef? {
     let type = resolveLLVMType(expr.type!)
+    guard case .tuple(let tupleTypes)? = expr.type else {
+      fatalError("invalid tuple type")
+    }
     var initial = LLVMConstNull(type)!
     for (idx, field) in expr.values.enumerated() {
-      initial = LLVMBuildInsertValue(builder, initial, visit(field), UInt32(idx), "tuple-insert")
+      var val = visit(field)!
+      let canTupleTy = context.canonicalType(tupleTypes[idx])
+      if case .any = canTupleTy {
+        val = codegenPromoteToAny(value: val, type: field.type!)
+      }
+      initial = LLVMBuildInsertValue(builder, initial, val, UInt32(idx), "tuple-insert")
     }
     return initial
   }
@@ -318,7 +326,7 @@ extension IRGenerator {
     var rhs = visit(expr.rhs)!
     
     if case .assign = expr.op {
-      if case .any? = expr.lhs.type, expr.rhs.type != .any {
+      if case .any? = expr.lhs.type {
         rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type!)
       }
       let ptr = resolvePtr(expr.lhs)

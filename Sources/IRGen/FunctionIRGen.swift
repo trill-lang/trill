@@ -237,8 +237,7 @@ extension IRGenerator {
                                "")
       } else if
                 let declArg = decl.args[safe: idx],
-                declArg.type == .any,
-                arg.val.type != .any {
+                declArg.type == .any {
         val = codegenPromoteToAny(value: val, type: arg.val.type!)
       }
       argVals.append(val)

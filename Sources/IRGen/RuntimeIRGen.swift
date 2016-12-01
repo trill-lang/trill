@@ -15,6 +15,11 @@ extension IRGenerator {
   }
   
   func codegenPromoteToAny(value: LLVMValueRef, type: DataType) -> LLVMValueRef {
+    if case .any = type {
+      // If we're promoting an existing Any value, then this should just be a
+      // copy of the existing value.
+      return codegenCopyAny(value: value)
+    }
     let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
     let meta = codegenTypeMetadata(type)
     var castMeta = LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "meta-cast")
@@ -23,6 +28,10 @@ extension IRGenerator {
     let ptr = codegenAnyValuePtr(res, type: type)
     LLVMBuildStore(builder, value, ptr)
     return res
+  }
+  
+  func codegenCopyAny(value: LLVMValueRef) -> LLVMValueRef {
+    return buildCall(codegenIntrinsic(named: "trill_copyAny"), args: [value])
   }
   
   @discardableResult

@@ -48,6 +48,7 @@ extension IRGenerator {
   /// typedef struct TypeMetadata {
   ///   const char *name;
   ///   const void *fields;
+  ///   uint8_t isReferenceType;
   ///   uint64_t sizeInBits;
   ///   uint64_t fieldCount;
   ///   uint64_t pointerLevel;
@@ -71,7 +72,7 @@ extension IRGenerator {
       guard let decl = context.decl(for: type) else { return nil }
       fields = decl.fields.map { ($0.name.name, $0.type) }
     case .tuple(let types):
-      fields = types.map { (nil , $0) }
+      fields = types.map { (nil, $0) }
     default:
       break
     }

@@ -1,0 +1,107 @@
+type AnyArray {
+  var elements: *Any
+  var count: Int
+  var capacity: Int
+  init(capacity: Int) {
+    assert(capacity > 0, "Cannot initialize an array with 0 capacity")
+    self.elements = calloc(capacity, sizeof(Any)) as *Any
+    self.capacity = capacity
+    self.count = 0
+  }
+  init() {
+    self.elements = calloc(20, sizeof(Any)) as *Any
+    self.capacity = 20
+    self.count = 0
+  }
+  mutating func _growIfNeeded() {
+    if self._load() > 0.75 {
+      self.capacity = (self.capacity as Double * 1.5) as Int
+      self._reallocate()
+    }
+  }
+  mutating func _shrinkIfNeeded() {
+    if self._load() < 0.5 {
+      self.capacity = (self.capacity as Double / 1.5) as Int
+      self._reallocate()
+    }
+  }
+  mutating func _reallocate() {
+    self.elements = realloc(self.elements as *Void, self.capacity * sizeof(Any)) as *Any
+  }
+  func _load() -> Double {
+    return self.count as Double / self.capacity as Double
+  }
+  func _boundsCheck(_ index: Int) {
+    if index > self.count {
+      trill_fatalError("index out of bounds")
+    }
+  }
+  mutating func append(_ element: Any) {
+    self.elements[self.count] = element
+    self.count += 1
+    self._growIfNeeded()
+  }
+  mutating func insert(_ element: Any, at index: Int) {
+    self._boundsCheck(index)
+    self.count += 1
+    self._growIfNeeded()
+    memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Any) as UInt)
+    self.elements[index] = element
+  }
+  mutating func remove(at index: Int) -> Any {
+    self._boundsCheck(index)
+    self._shrinkIfNeeded()
+    self.count -= 1
+    memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Any) as UInt)
+    return self.elements[self.count + 1]
+  }
+  func get(_ index: Int) -> Any {
+    self._boundsCheck(index)
+    return self.elements[index]
+  }
+  mutating func set(_ element: Any, at index: Int) {
+    self._boundsCheck(index)
+    self.elements[index] = element
+  }
+  func dump() {
+    putchar('[' as Int32)
+    for var i = 0; i < self.count; i += 1 {
+      let elem = self.elements[i]
+      if elem is *Int8 {
+        printf("\"%s\"", elem as *Int8)
+      } else if elem is Int {
+        print(elem as Int)
+      } else if elem is Bool {
+        print(elem as Bool ? "true" : "false")
+      } else if elem is AnyArray {
+        (elem as AnyArray).dump()
+      } else {
+        printf("<%s 0x%p>", Mirror(reflecting: typeOf(elem)).name(), elem)
+      }
+      if i != self.count - 1 {
+        printf(", ")
+      }
+    }
+    putchar(']' as Int32)
+  }
+  func isEmpty() -> Bool {
+    return self.count == 0
+  }
+  func destroy() {
+    free(self.elements as *Void)
+  }
+}
+
+func main(argc: Int, argv: **Int8) {
+  var array = AnyArray()
+  for var i = 0; i < argc; i += 1 {
+    array.append(argv[i])
+    array.append(i)
+  }
+  var other = AnyArray()
+  other.append(100)
+  array.append(other)
+  array.dump()
+  println("")
+  array.destroy()
+}

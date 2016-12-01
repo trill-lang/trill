@@ -362,6 +362,12 @@ public class ASTContext {
     case (nil, nil): return true
     case (_, nil): return false
     case (nil, _): return false
+    case (.tuple(let fields1)?, .tuple(let fields2)?):
+        if fields1.count != fields2.count { return false }
+        for (type1, type2) in zip(fields1, fields2) {
+            if !matches(type1, type2) { return false }
+        }
+        return true
     case (let t1?, let t2?):
       let t1Can = canonicalType(t1)
       let t2Can = canonicalType(t2)

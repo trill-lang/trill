@@ -73,9 +73,10 @@ void *_Nonnull trill_allocateAny(void *typeMetadata_) {
   return ptr;
 }
 
-void *_Nonnull trill_copyAny(AnyHeader *any) {
+void *_Nonnull trill_copyAny(void *any) {
   trill_assert(any != nullptr);
-  uint64_t size = ((TypeMetadata *)any->typeMetadata)->sizeInBits;
+  AnyHeader *ptr = (AnyHeader *)any;
+  uint64_t size = ((TypeMetadata *)ptr->typeMetadata)->sizeInBits;
   AnyHeader *header = (AnyHeader *)trill_alloc(sizeof(AnyHeader) + size);
   memcpy(header, any, sizeof(AnyHeader) + size);
   return header;
