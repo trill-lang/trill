@@ -154,7 +154,8 @@ extension Parser {
     let val: Expr
     
     // HACK HACK HACK
-    if [.newline, .semicolon, .rightBrace, .case, .default].contains(peek()) {
+    let isAtEndOfBlock = [.rightBrace, .case, .default].contains(peek())
+    if isAtEndOfBlock || comesAfterLineSeparator() {
       val = VoidExpr()
     } else {
       val = try parseValExpr()
