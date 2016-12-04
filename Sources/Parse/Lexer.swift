@@ -31,6 +31,7 @@ enum TokenKind: Equatable {
   case Init
   case `deinit`
   case `extension`
+  case `subscript`
   case sizeOf
   case type
   case `while`
@@ -85,6 +86,7 @@ enum TokenKind: Equatable {
     case "deinit": self = .deinit
     case "type": self = .type
     case "extension": self = .extension
+    case "subscript": self = .subscript
     case "sizeof": self = .sizeOf
     case "while": self = .while
     case "if": self = .if
@@ -135,6 +137,7 @@ enum TokenKind: Equatable {
     case .dot: return "."
     case .func: return "func"
     case .extension: return "extension"
+    case .subscript: return "subscript"
     case .type: return "type"
     case .while: return "while"
     case .for: return "for"
@@ -172,9 +175,9 @@ enum TokenKind: Equatable {
   var isKeyword: Bool {
     switch self {
     case .func, .while, .if, .in, .else, .for, .nil, .break, .case, .switch,
-         .default, .continue, .return, .underscore, .extension, .sizeOf, .var,
-         .let, .type, .true, .false, .Init, .deinit, .poundFunction, .poundFile,
-         .poundLine, .poundWarning, .poundError:
+         .default, .continue, .return, .underscore, .extension, .sizeOf,
+         .subscript, .var, .let, .type, .true, .false, .Init, .deinit,
+         .poundFunction, .poundFile, .poundLine, .poundWarning, .poundError:
          return true
     case .identifier(let value):
         return DeclModifier(rawValue: value) != nil || value == "self"
@@ -244,6 +247,7 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   case (.Init, .Init): return true
   case (.deinit, .deinit): return true
   case (.extension, .extension): return true
+  case (.subscript, .subscript): return true
   case (.operator, .operator): return true
   case (.sizeOf, .sizeOf): return true
   case (.type, .type): return true

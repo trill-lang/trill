@@ -19,13 +19,17 @@ extension Parser {
     var hasVarArgs = false
     var kind: FunctionKind = .free
     var nameRange: SourceRange? = nil
-    if case .Init = peek(), type != nil {
+    if case .Init = peek(), let type = type {
       modifiers.append(.mutating)
-      kind = .initializer(type: type!)
+      kind = .initializer(type: type)
       nameRange = consumeToken().range
-    } else if isDeinit, case .deinit = peek(), type != nil {
-      kind = .deinitializer(type: type!)
+    } else if isDeinit, case .deinit = peek(), let type = type{
+      kind = .deinitializer(type: type)
       nameRange = consumeToken().range
+    } else if case .subscript = peek(), let type = type {
+      let tok = consumeToken()
+      nameRange = tok.range
+      kind = .subscript(type: type)
     } else {
       try consume(.func)
       if let type = type {
@@ -34,6 +38,9 @@ extension Parser {
         let tok = consumeToken()
         nameRange = tok.range
         kind = .operator(op: op)
+      } else if case .subscript = peek() {
+        throw Diagnostic.error(ParseError.globalSubscript,
+                               loc: currentToken().range.start)
       } else {
         kind = .free
       }
@@ -46,6 +53,8 @@ extension Parser {
       name = Identifier(name: "init", range: nameRange)
     case .operator(let op):
       name = Identifier(name: "operator\(op)", range: nameRange)
+    case .subscript:
+        name = Identifier(name: "subscript", range: nameRange)
     default:
       name = try parseIdentifier()
     }
@@ -67,6 +76,14 @@ extension Parser {
                           body: body,
                           modifiers: modifiers,
                           opRange: nameRange)
+    }
+    if case .subscript(let type) = kind {
+      return SubscriptDecl(returnType: returnType,
+                           args: args,
+                           parentType: type,
+                           body: body,
+                           modifiers: modifiers,
+                           sourceRange: range(start: startLoc))
     }
     return FuncDecl(name: name,
                     returnType: returnType,
@@ -201,11 +218,11 @@ extension Parser {
   /// Function Call Args
   ///
   /// func-call-args ::= ([<label>:] <val-expr>,*)
-  func parseFunCallArgs() throws -> [Argument] {
-    try consume(.leftParen)
+  func parseFunCallArgs(open: TokenKind, close: TokenKind) throws -> [Argument] {
+    try consume(open)
     var args = [Argument]()
     while true {
-      if case .rightParen = peek() {
+      if peek() == close {
         consumeToken()
         break
       }
@@ -222,7 +239,7 @@ extension Parser {
       let expr = try parseValExpr()
       args.append(Argument(val: expr, label: label))
       
-      if case .rightParen = peek() {
+      if peek() == close {
         consumeToken()
         break
       }

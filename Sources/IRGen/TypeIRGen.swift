@@ -171,6 +171,7 @@ extension IRGenerator {
     _ = expr.initializers.map(visitFuncDecl)
     _ = expr.methods.map(visitFuncDecl)
     _ = expr.deinitializer.map(visitFuncDecl)
+    _ = expr.subscripts.map(visitFuncDecl)
     
     return structure
   }
@@ -196,6 +197,15 @@ extension IRGenerator {
   ///                This allows you to call a method on an rvalue, even though
   ///                it doesn't necessarily have a stack variable.
   func resolvePtr(_ expr: Expr) -> Result {
+    let createTmpPointer: (Expr) -> LLVMValueRef = { expr in
+      guard let type = expr.type else { fatalError("unknown type") }
+      let llvmType = self.resolveLLVMType(type)
+      let alloca =  self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
+                                                type: llvmType, name: "ptrtmp",
+                                                storage: .value)
+      LLVMBuildStore(self.builder, self.visit(expr), alloca.ref)
+      return alloca.ref
+    }
     switch expr {
     case let expr as FieldLookupExpr:
       return elementPtr(expr)
@@ -206,21 +216,20 @@ extension IRGenerator {
       return binding.ref
     case let expr as PrefixOperatorExpr where expr.op == .star:
       return LLVMBuildLoad(builder, resolvePtr(expr.rhs), "deref-load")
-    case let expr as SubscriptExpr:
-      let lhs = visit(expr.lhs)
-      var indices = visit(expr.amount)
-      return LLVMBuildGEP(builder, lhs, &indices, 1, "gep")
     case let expr as TupleFieldLookupExpr:
       let lhs = resolvePtr(expr.lhs)
       return LLVMBuildStructGEP(builder, lhs, UInt32(expr.field), "tuple-ptr")
+    case let expr as SubscriptExpr:
+      let lhs = visit(expr.lhs)
+      switch expr.lhs.type! {
+      case .pointer, .array:
+        var indices = visit(expr.args[0].val)
+        return LLVMBuildGEP(builder, lhs, &indices, 1, "gep")
+      default:
+        return createTmpPointer(expr)
+      }
     default:
-      guard let type = expr.type else { fatalError("unknown type") }
-      let llvmType = resolveLLVMType(type)
-      let alloca =  createEntryBlockAlloca(currentFunction!.functionRef!,
-                                           type: llvmType, name: "ptrtmp",
-                                           storage: .value)
-      LLVMBuildStore(builder, visit(expr), alloca.ref)
-      return alloca.ref
+      return createTmpPointer(expr)
     }
   }
   

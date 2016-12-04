@@ -144,7 +144,7 @@ extension Parser {
         // Only allow function calls on the same line
         if peek(ahead: -1).isLineSeparator { break outer }
         
-        let args = try parseFunCallArgs()
+        let args = try parseFunCallArgs(open: .leftParen, close: .rightParen)
         expr = FuncCallExpr(lhs: expr, args: args,
                             sourceRange: range(start: startLoc))
       case .dot:
@@ -162,14 +162,9 @@ extension Parser {
           throw unexpectedToken()
         }
       case .leftBracket:
-        consumeToken()
-        let val = try parseValExpr()
-        guard case .rightBracket = peek() else {
-          throw unexpectedToken()
-        }
-        consumeToken()
+        let args = try parseFunCallArgs(open: .leftBracket, close: .rightBracket)
         expr = SubscriptExpr(lhs: expr,
-                             amount: val,
+                             args: args,
                              sourceRange: range(start: startLoc))
       case .questionMark:
         consumeToken()

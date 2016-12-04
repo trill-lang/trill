@@ -144,10 +144,12 @@ class ContinueStmt: Stmt {
 
 class ExtensionDecl: Decl {
   let methods: [FuncDecl]
+  let subscripts: [SubscriptDecl]
   let typeRef: TypeRefExpr
   var typeDecl: TypeDecl?
-  init(type: TypeRefExpr, methods: [FuncDecl], sourceRange: SourceRange? = nil) {
+    init(type: TypeRefExpr, methods: [FuncDecl], subscripts: [SubscriptDecl], sourceRange: SourceRange? = nil) {
     self.methods = methods.map { $0.addingImplicitSelf(type.type!) }
+    self.subscripts = subscripts.map { $0.addingImplicitSelf(type.type!) }
     self.typeRef = type
     super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)
   }

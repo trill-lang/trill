@@ -54,6 +54,8 @@ enum Mangler {
         case .rightShift: s += "S"
         default: s += "\(op)" // this will get caught by Sema
         }
+      case .subscript(let type):
+        s += "S" + mangle(type, root: false)
       default:
         s += d.name.name.withCount
       }

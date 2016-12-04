@@ -189,7 +189,7 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {
     visit(expr.lhs)
     stream.write("[")
-    visit(expr.amount)
+    visitArgs(expr.args)
     stream.write("]")
   }
   
@@ -246,17 +246,22 @@ class ASTPrinter<StreamType: TextOutputStream>: ASTTransformer {
   override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     visit(expr.lhs)
     stream.write("(")
-    for (idx, arg) in expr.args.enumerated() {
+    visitArgs(expr.args)
+    stream.write(")")
+  }
+    
+  func visitArgs(_ args: [Argument]) -> Result {
+    for (idx, arg) in args.enumerated() {
       if let label = arg.label {
         stream.write(label.name + ": ")
       }
       visit(arg.val)
-      if idx != expr.args.count - 1 {
+      if idx != args.count - 1 {
         stream.write(", ")
       }
     }
-    stream.write(")")
   }
+    
   override func visitTypeDecl(_ expr: TypeDecl) -> Result {
     for attribute in expr.modifiers {
       stream.write(attribute.rawValue + " ")

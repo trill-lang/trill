@@ -168,6 +168,7 @@ class Decl: ASTNode {
 class TypeDecl: Decl {
   private(set) var fields: [VarAssignDecl]
   private(set) var methods = [FuncDecl]()
+  private(set) var subscripts = [SubscriptDecl]()
   private(set) var initializers = [FuncDecl]()
   private var fieldDict = [String: DataType]()
   private var methodDict = [String: [FuncDecl]]()
@@ -191,6 +192,11 @@ class TypeDecl: Decl {
     var methods = methodDict[name] ?? []
     methods.append(decl)
     methodDict[name] = methods
+  }
+  
+  func addSubscript(_ decl: SubscriptDecl) {
+    let subscriptDecl = decl.hasImplicitSelf ? decl : decl.addingImplicitSelf(self.type)
+    self.subscripts.append(subscriptDecl)
   }
   
   func addField(_ field: VarAssignDecl) {
@@ -234,6 +240,7 @@ class TypeDecl: Decl {
        fields: [VarAssignDecl],
        methods: [FuncDecl] = [],
        initializers: [FuncDecl] = [],
+       subscripts: [SubscriptDecl] = [],
        modifiers: [DeclModifier] = [],
        deinit: FuncDecl? = nil,
        sourceRange: SourceRange? = nil) {
@@ -249,6 +256,9 @@ class TypeDecl: Decl {
     super.init(type: type, modifiers: modifiers, sourceRange: sourceRange)
     for method in methods {
       self.addMethod(method, named: method.name.name)
+    }
+    for subscriptDecl in subscripts {
+      self.addSubscript(subscriptDecl)
     }
     for field in fields {
       fieldDict[field.name.name] = field.type

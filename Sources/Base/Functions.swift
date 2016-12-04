@@ -10,6 +10,7 @@ enum FunctionKind {
   case deinitializer(type: DataType)
   case method(type: DataType)
   case `operator`(op: BuiltinOperator)
+  case `subscript`(type: DataType)
   case free
 }
 
@@ -75,7 +76,8 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
   }
   var parentType: DataType? {
     switch kind {
-    case .initializer(let type), .method(let type), .deinitializer(let type):
+    case .initializer(let type), .method(let type),
+         .deinitializer(let type), .subscript(let type):
       return type
     case .operator, .free:
       return nil
@@ -137,13 +139,13 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     arg.mutable = has(attribute: .mutating)
     args.insert(arg, at: 0)
     return FuncDecl(name: name,
-                        returnType: returnType,
-                        args: args,
-                        kind: kind,
-                        body: body,
-                        modifiers: Array(modifiers),
-                        hasVarArgs: hasVarArgs,
-                        sourceRange: sourceRange)
+                    returnType: returnType,
+                    args: args,
+                    kind: kind,
+                    body: body,
+                    modifiers: Array(modifiers),
+                    hasVarArgs: hasVarArgs,
+                    sourceRange: sourceRange)
   }
 }
 
@@ -161,6 +163,36 @@ class FuncArgumentAssignDecl: VarAssignDecl {
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? FuncArgumentAssignDecl else { return false }
     return name == node.name && externalName == node.externalName && rhs == node.rhs
+  }
+}
+
+class SubscriptDecl: FuncDecl {
+  init(returnType: TypeRefExpr, args: [FuncArgumentAssignDecl], parentType: DataType, body: CompoundStmt?, modifiers: [DeclModifier], sourceRange: SourceRange?) {
+    super.init(name: Identifier(name: "subscript"),
+               returnType: returnType,
+               args: args,
+               kind: .subscript(type: parentType),
+               body: body,
+               modifiers: modifiers,
+               hasVarArgs: false,
+               sourceRange: sourceRange)
+  }
+  
+  // HACK
+  override func addingImplicitSelf(_ type: DataType) -> SubscriptDecl {
+    var args = self.args
+    let typeName = Identifier(name: "\(type)")
+    let typeRef = TypeRefExpr(type: type, name: typeName)
+    let arg = FuncArgumentAssignDecl(name: "self", type: typeRef)
+    arg.isImplicitSelf = true
+    arg.mutable = has(attribute: .mutating)
+    args.insert(arg, at: 0)
+    return SubscriptDecl(returnType: returnType,
+                         args: args,
+                         parentType: type,
+                         body: body,
+                         modifiers: Array(modifiers),
+                         sourceRange: sourceRange)
   }
 }
 

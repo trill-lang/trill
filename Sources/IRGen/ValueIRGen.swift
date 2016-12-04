@@ -157,8 +157,12 @@ extension IRGenerator {
   }
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
-    let ptr = resolvePtr(expr)
-    return LLVMBuildLoad(builder, ptr, "subscript-load")
+    if expr.decl == nil {
+      let ptr = resolvePtr(expr)
+      return LLVMBuildLoad(builder, ptr, "subscript-load")
+    } else {
+      return visitFuncCallExpr(expr)
+    }
   }
   
   // 100 + x

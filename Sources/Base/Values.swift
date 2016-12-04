@@ -248,19 +248,7 @@ class SizeofExpr: Expr {
   }
 }
 
-class SubscriptExpr: Expr, LValue {
-  let lhs: Expr
-  let amount: Expr
-  init(lhs: Expr, amount: Expr, sourceRange: SourceRange? = nil) {
-    self.lhs = lhs
-    self.amount = amount
-    super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? SubscriptExpr else { return false }
-    return lhs == node.lhs && amount == node.amount
-  }
-}
+class SubscriptExpr: FuncCallExpr, LValue {}
 
 class FieldLookupExpr: Expr, LValue {
   let lhs: Expr

@@ -145,6 +145,10 @@ bool demangleFunction(std::string &symbol, std::string &out) {
       symbol.erase(0, 1);
       if (!readType(symbol, out)) { return false; }
       out += ".init";
+    } else if (symbol.front() == 'S') {
+      symbol.erase(0, 1);
+      if (!readType(symbol, out)) { return false; }
+      out += ".subscript";
     } else if (symbol.front() == 'O') {
       symbol.erase(0, 1);
       switch (symbol.front()) {

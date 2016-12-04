@@ -532,6 +532,20 @@ public class ASTContext {
     }
     return type.canCoerceTo(other)
   }
+  
+  func foreignDecl(args: [DataType], ret: DataType) -> FuncDecl {
+    let assigns: [FuncArgumentAssignDecl] = args.map {
+      let name = Identifier(name: "__implicit__")
+      return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
+    }
+    let retName = Identifier(name: "\(ret)")
+    let typeRef = TypeRefExpr(type: ret, name: retName)
+    return FuncDecl(name: "",
+                    returnType: typeRef,
+                    args: assigns,
+                    body: nil,
+                    modifiers: [.foreign, .implicit])
+  }
 }
 
 fileprivate func makeHomogenousOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {

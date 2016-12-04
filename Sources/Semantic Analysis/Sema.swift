@@ -169,6 +169,9 @@ class Sema: ASTTransformer, Pass {
       for method in expr.methods {
         typeDecl.addMethod(method, named: method.name.name)
       }
+      for subscriptDecl in expr.subscripts {
+        typeDecl.addSubscript(subscriptDecl)
+      }
     }
     for expr in context.types {
       let oldBindings = varBindings
@@ -495,6 +498,11 @@ class Sema: ASTTransformer, Pass {
   override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     super.visitSubscriptExpr(expr)
     guard let type = expr.lhs.type else { return }
+    let diagnose: () -> Void = {
+      self.error(SemaError.cannotSubscript(type: type),
+                 loc: expr.startLoc,
+                 highlights: [ expr.lhs.sourceRange ])
+    }
     let elementType: DataType
     switch type {
     case .pointer(let subtype):
@@ -502,10 +510,16 @@ class Sema: ASTTransformer, Pass {
     case .array(let element, _):
       elementType = element
     default:
-      error(SemaError.cannotSubscript(type: type),
-            loc: expr.startLoc,
-            highlights: [ expr.lhs.sourceRange ])
-      return
+      guard let decl = context.decl(for: type), !decl.subscripts.isEmpty else {
+        diagnose()
+        return
+      }
+      guard let candidate = candidate(forArgs: expr.args, candidates: decl.subscripts) as? SubscriptDecl else {
+        diagnose()
+        return
+      }
+      elementType = candidate.returnType.type!
+      expr.decl = candidate
     }
     guard elementType != .void else {
       error(SemaError.incompleteTypeAccess(type: elementType, operation: "subscript"),
@@ -589,20 +603,6 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  func foreignDecl(args: [DataType], ret: DataType) -> FuncDecl {
-    let assigns: [FuncArgumentAssignDecl] = args.map {
-      let name = Identifier(name: "__implicit__")
-      return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
-    }
-    let retName = Identifier(name: "\(ret)")
-    let typeRef = TypeRefExpr(type: ret, name: retName)
-    return FuncDecl(name: "",
-                        returnType: typeRef,
-                        args: assigns,
-                        body: nil,
-                        modifiers: [.foreign, .implicit])
-  }
-  
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
     guard let bound = decl.bound.type else { return }
     guard context.isValidType(bound) else {
@@ -629,7 +629,7 @@ class Sema: ASTTransformer, Pass {
       let assignedToField = visitFieldLookupExpr(lhs, callArgs: expr.args)
       guard let typeDecl = lhs.typeDecl else { return }
       if case .function(let args, let ret)? = lhs.type, assignedToField {
-        candidates.append(foreignDecl(args: args, ret: ret))
+        candidates.append(context.foreignDecl(args: args, ret: ret))
       }
       candidates += typeDecl.methods(named: lhs.name.name)
       name = lhs.name
@@ -640,7 +640,7 @@ class Sema: ASTTransformer, Pass {
       } else if let varDecl = varBindings[lhs.name.name] {
         let type = context.canonicalType(varDecl.type)
         if case .function(let args, let ret) = type {
-          candidates += [foreignDecl(args: args, ret: ret)]
+          candidates += [context.foreignDecl(args: args, ret: ret)]
         } else {
           error(SemaError.callNonFunction(type: type),
                 loc: lhs.startLoc,
@@ -655,7 +655,7 @@ class Sema: ASTTransformer, Pass {
     default:
       visit(expr.lhs)
       if case .function(let args, let ret)? = expr.lhs.type {
-        candidates += [foreignDecl(args: args, ret: ret)]
+        candidates += [context.foreignDecl(args: args, ret: ret)]
       } else {
         error(SemaError.callNonFunction(type: expr.lhs.type ?? .void),
               loc: expr.lhs.startLoc,

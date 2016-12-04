@@ -145,7 +145,7 @@ extension Parser {
   /// Return Expression
   ///
   /// return <val-expr>
-  func parseReturnExpr() throws -> ReturnStmt {
+  func parseReturnStmt() throws -> ReturnStmt {
     let startLoc = sourceLoc
     guard case .return = peek() else {
       throw unexpectedToken()
@@ -154,7 +154,7 @@ extension Parser {
     let val: Expr
     
     // HACK HACK HACK
-    let isAtEndOfBlock = [.rightBrace, .case, .default].contains(peek())
+    let isAtEndOfBlock = [.semicolon, .rightBrace, .case, .default].contains(peek())
     if isAtEndOfBlock || comesAfterLineSeparator() {
       val = VoidExpr()
     } else {

@@ -55,7 +55,7 @@ type AnyArray {
     memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Any) as UInt)
     return self.elements[self.count + 1]
   }
-  func get(_ index: Int) -> Any {
+  subscript(_ index: Int) -> Any {
     self._boundsCheck(index)
     return self.elements[index]
   }
@@ -103,5 +103,6 @@ func main(argc: Int, argv: **Int8) {
   array.append(other)
   array.dump()
   println("")
+  println(array[1] as Int)
   array.destroy()
 }

@@ -14,6 +14,7 @@ enum ParseError: Error, CustomStringConvertible {
   case unexpectedExpression(expected: String)
   case duplicateDeinit
   case invalidAttribute(DeclModifier, DeclKind)
+  case globalSubscript
   
   var description: String {
     switch self {
@@ -33,6 +34,8 @@ enum ParseError: Error, CustomStringConvertible {
       return "cannot have multiple 'deinit's within a type"
     case .invalidAttribute(let attr, let kind):
       return "'\(attr)' is not valid on \(kind)s"
+    case .globalSubscript:
+      return "subscript is only valid inside a type"
     }
   }
 }
@@ -218,7 +221,7 @@ class Parser {
     }
     let nextKind: DeclKind
     switch peek() {
-    case .func, .Init, .deinit, .operator:
+    case .func, .Init, .deinit, .operator, .subscript:
       nextKind = .function
     case .var, .let:
       nextKind = .variable
@@ -249,19 +252,25 @@ class Parser {
     }
     consumeToken()
     var methods = [FuncDecl]()
+    var subscripts = [SubscriptDecl]()
     while true {
       if case .rightBrace = peek() {
         consumeToken()
         break
       }
       let attrs = try parseAttributes()
-      guard case .func = peek()  else {
-        throw Diagnostic.error(ParseError.unexpectedExpression(expected: "function"),
+      switch peek() {
+      case .func:
+        methods.append(try parseFuncDecl(attrs, forType: type.type))
+      case .subscript:
+        subscripts.append(try parseFuncDecl(attrs, forType: type.type) as! SubscriptDecl)
+      default:
+        throw Diagnostic.error(ParseError.unexpectedExpression(expected: "function or subscript"),
                                loc: sourceLoc)
       }
-      methods.append(try parseFuncDecl(attrs, forType: type.type))
     }
     return ExtensionDecl(type: type, methods: methods,
+                         subscripts: subscripts,
                          sourceRange: range(start: startLoc))
   }
   
@@ -285,6 +294,7 @@ class Parser {
     try consume(.leftBrace)
     var fields = [VarAssignDecl]()
     var methods = [FuncDecl]()
+    var subscripts = [SubscriptDecl]()
     var initializers = [FuncDecl]()
     var deinitializer: FuncDecl?
     let type = DataType(name: name.name)
@@ -301,6 +311,8 @@ class Parser {
         methods.append(try parseFuncDecl(attrs, forType: type))
       case .Init:
         initializers.append(try parseFuncDecl(attrs, forType: type))
+      case .subscript:
+        subscripts.append(try parseFuncDecl(attrs, forType: type) as! SubscriptDecl)
       case .var, .let:
         fields.append(try parseVarAssignDecl(attrs))
       case .deinit:
@@ -315,6 +327,7 @@ class Parser {
     }
     return TypeDecl(name: name, fields: fields, methods: methods,
                         initializers: initializers,
+                        subscripts: subscripts,
                         modifiers: modifiers,
                         deinit: deinitializer,
                         sourceRange: range(start: startLoc))
@@ -365,7 +378,7 @@ class Parser {
     case .continue:
       return try parseContinueStmt()
     case .return:
-      return try parseReturnExpr()
+      return try parseReturnStmt()
     case .poundError, .poundWarning:
       return try parsePoundDiagnosticExpr()
     default:

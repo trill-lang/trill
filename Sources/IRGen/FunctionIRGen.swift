@@ -208,10 +208,21 @@ extension IRGenerator {
     
     var function: LLVMValueRef? = nil
     var args = expr.args
+    
+    let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
+      if let field = expr.lhs as? FieldLookupExpr {
+        return field.lhs
+      }
+      if case .subscript? = expr.decl?.kind {
+        return expr.lhs
+      }
+      return nil
+    }
+    
+    
     if
       let type = decl.parentType,
-      let field = expr.lhs as? FieldLookupExpr {
-      var implicitSelf = field.lhs
+      var implicitSelf = findImplicitSelf(expr) {
       if storage(for: type) == .value {
         implicitSelf = PrefixOperatorExpr(op: .ampersand, rhs: implicitSelf)
       }

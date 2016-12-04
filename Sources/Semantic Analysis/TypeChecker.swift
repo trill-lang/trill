@@ -14,6 +14,7 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case typeMismatch(expected: DataType, got: DataType)
   case nonBooleanTernary(got: DataType)
   case subscriptWithInvalidType(type: DataType)
+  case subscriptWithNoArgs
   case nonBoolCondition(got: DataType?)
   case overflow(raw: String, type: DataType)
   case shiftPastBitWidth(type: DataType, shiftWidth: IntMax)
@@ -34,6 +35,8 @@ enum TypeCheckError: Error, CustomStringConvertible {
       return "cannot apply binary operator '\(op)' to operands of type '\(lhs)' and '\(rhs)'"
     case .subscriptWithInvalidType(let type):
       return "cannot subscript with argument of type \(type)"
+    case .subscriptWithNoArgs:
+      return "cannot subscript with no arguments"
     case .nonBooleanTernary(let got):
       return "ternary condition must be a Bool (got '\(got)')"
     case .nonBoolCondition(let got):
@@ -246,9 +249,9 @@ class TypeChecker: ASTTransformer, Pass {
         ])
       return
     } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
-            let num = expr.rhs as? NumExpr,
-            case .int(let width, _)? = expr.type,
-            num.value >= IntMax(width) {
+      let num = expr.rhs as? NumExpr,
+      case .int(let width, _)? = expr.type,
+      num.value >= IntMax(width) {
       error(TypeCheckError.shiftPastBitWidth(type: expr.type!, shiftWidth: num.value),
             loc: num.startLoc,
             highlights: [
@@ -260,16 +263,15 @@ class TypeChecker: ASTTransformer, Pass {
   }
   
   override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
-    guard let amountType = expr.amount.type else { return }
-    
-    guard case .int(_) = context.canonicalType(amountType) else {
-      error(TypeCheckError.subscriptWithInvalidType(type: amountType),
-            loc: expr.amount.startLoc,
-            highlights: [
-              expr.amount.sourceRange,
-              expr.lhs.sourceRange
-        ])
-      return
+    switch expr.lhs.type! {
+    case .pointer(let subtype):
+      ensureTypesAndLabelsMatch(expr, decl: context.foreignDecl(args: [.int64], ret: subtype))
+    case .array(let subtype, _):
+      ensureTypesAndLabelsMatch(expr, decl: context.foreignDecl(args: [.int64], ret: subtype))
+    default:
+      guard let decl = expr.decl else { return }
+      ensureTypesAndLabelsMatch(expr, decl: decl)
     }
+    super.visitSubscriptExpr(expr)
   }
 }

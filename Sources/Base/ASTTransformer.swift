@@ -145,7 +145,9 @@ class ASTTransformer: ASTVisitor {
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) {
     visit(expr.lhs)
-    visit(expr.amount)
+    for arg in expr.args {
+        visit(arg.val)
+    }
   }
   
   func visitFuncCallExpr(_ expr: FuncCallExpr) {
@@ -178,15 +180,17 @@ class ASTTransformer: ASTVisitor {
       for field in decl.fields {
         visitVarAssignDecl(field)
       }
+      for subscriptDecl in decl.subscripts {
+        visitFuncDecl(subscriptDecl)
+      }
       if let deinitializer = decl.deinitializer {
         visitFuncDecl(deinitializer)
       }
     }
   }
   func visitExtensionDecl(_ decl: ExtensionDecl) {
-    for method in decl.methods {
-      visitFuncDecl(method)
-    }
+    decl.methods.forEach(visitFuncDecl)
+    decl.subscripts.forEach(visitFuncDecl)
   }
   
   func visitWhileStmt(_ stmt: WhileStmt) {
