@@ -303,13 +303,17 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
         stream.write(", ")
       }
     }
-    for (i, arg) in expr.args.enumerated() {
+    visitArgs(expr.args)
+    stream.write(")")
+  }
+  
+  func visitArgs(_ args: [Argument]) {
+    for (i, arg) in args.enumerated() {
       visit(arg.val)
-      if i != expr.args.count - 1 {
+      if i != args.count - 1 {
         stream.write(", ")
       }
     }
-    stream.write(")")
   }
   
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
@@ -333,6 +337,19 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     withParens { visit(expr.trueCase) }
     stream.write(" : ")
     withParens { visit(expr.falseCase) }
+  }
+  
+  override func visitSubscriptExpr(_ expr: SubscriptExpr) {
+    withParens {
+      visit(expr.lhs)
+    }
+    if let decl = expr.decl, !decl.has(attribute: .foreign) {
+      visitFuncCallExpr(expr)
+    } else {
+      stream.write("[")
+      visitArgs(expr.args)
+      stream.write("]")
+    }
   }
   
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {

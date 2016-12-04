@@ -126,7 +126,6 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
-
     add(attributes(for: decl.typeRef!))
     super.visitFuncArgumentAssignDecl(decl)
   }
@@ -161,6 +160,10 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     add(attributes(for: expr.returnType))
     super.visitClosureExpr(expr)
   }
+    
+    override func visitSubscriptExpr(_ expr: SubscriptExpr) {
+        visitFuncCallExpr(expr)
+    }
   
   func consume(_ diagnostic: Diagnostic) {
     for r in diagnostic.highlights {
