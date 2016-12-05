@@ -1019,20 +1019,11 @@ class Sema: ASTTransformer, Pass {
         case .tuple(let contextualFields) = canTy,
         case .tuple(let fields)? = expr.type,
         contextualFields.count == fields.count else { return false }
-      var currentFields = fields
       var changed = false
-      for ((offset: idx, element: ctxField), value) in zip(contextualFields.enumerated(), expr.values) {
-        let changedThis = propagateContextualType(ctxField, to: value)
-        if changedThis {
-          changed = true
-        } else if case .any = context.canonicalType(ctxField) {
-          currentFields[idx] = ctxField
-          changed = true
-        }
+      for (ctxField, value) in zip(contextualFields, expr.values) {
+        changed = changed || propagateContextualType(ctxField, to: value)
       }
-      if changed {
-        expr.type = .tuple(fields: currentFields)
-      }
+      expr.type = contextualType
       return changed
     default:
       break
