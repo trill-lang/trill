@@ -59,10 +59,18 @@ extension IRGenerator {
   }
   
   func visitArrayExpr(_ expr: ArrayExpr) -> Optional<LLVMValueRef> {
-    var initial = LLVMConstNull(resolveLLVMType(expr.type!))
+    guard case .array(let fieldTy, _)? = expr.type else {
+      fatalError("invalid array type")
+    }
+    let irType = resolveLLVMType(expr.type!)
+    var initial = LLVMConstNull(irType)
     for (idx, value) in expr.values.enumerated() {
+      var llvmValue = visit(value)!
       let index = LLVMConstInt(LLVMInt64Type(), UInt64(idx), 0)
-      initial = LLVMBuildInsertElement(builder, initial, visit(value), index, "")
+      if case .any = context.canonicalType(fieldTy) {
+        llvmValue = codegenPromoteToAny(value: llvmValue, type: value.type!)
+      }
+      initial = LLVMBuildInsertElement(builder, initial, llvmValue, index, "")
     }
     return initial
   }

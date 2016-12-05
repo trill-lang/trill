@@ -993,15 +993,15 @@ class Sema: ASTTransformer, Pass {
         return true
       }
     case let expr as ArrayExpr:
+      guard case .array(_, let length)? = expr.type else { return false }
       guard case .array(let ctx, _) = contextualType else {
         return false
       }
       var changed = false
       for value in expr.values {
-        let changedThis = propagateContextualType(ctx, to: value)
-        if !changed && changedThis { changed = true }
+        changed = changed || propagateContextualType(ctx, to: value)
       }
-      expr.type = ctx
+      expr.type = .array(field: ctx, length: length)
       return true
     case let expr as InfixOperatorExpr:
       if expr.lhs is NumExpr,

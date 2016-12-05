@@ -1,0 +1,11 @@
+type Foo {
+  let bar: (Bool, Any)
+  let baz: [Any]
+}
+
+func main() {
+  let f = Foo(bar: (true, true), baz: [1, 2, 3])
+  let b = f.bar
+  printf("Foo(bar: (%s, %s), baz: [%d, %d, %d])\n", (b.0 as Bool) ? "true" : "false", (b.1 as Bool) ? "true" : "false", f.baz[0] as Int, f.baz[1] as Int, f.baz[2] as Int)
+}
+
