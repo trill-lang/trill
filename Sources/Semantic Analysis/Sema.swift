@@ -472,6 +472,16 @@ class Sema: ASTTransformer, Pass {
     expr.type = .array(field: first, length: expr.values.count)
   }
   
+  override func visitTupleExpr(_ expr: TupleExpr) {
+    super.visitTupleExpr(expr)
+    var types = [DataType]()
+    for expr in expr.values {
+      guard let t = expr.type else { return }
+      types.append(t)
+    }
+    expr.type = .tuple(fields: types)
+  }
+  
   override func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
     super.visitTupleFieldLookupExpr(expr)
     guard let lhsTy = expr.lhs.type else { return }
@@ -1009,10 +1019,19 @@ class Sema: ASTTransformer, Pass {
         case .tuple(let contextualFields) = canTy,
         case .tuple(let fields)? = expr.type,
         contextualFields.count == fields.count else { return false }
+      var currentFields = fields
       var changed = false
-      for (ctxField, value) in zip(contextualFields, expr.values) {
+      for ((offset: idx, element: ctxField), value) in zip(contextualFields.enumerated(), expr.values) {
         let changedThis = propagateContextualType(ctxField, to: value)
-        if !changed && changedThis { changed = true }
+        if changedThis {
+          changed = true
+        } else if case .any = context.canonicalType(ctxField) {
+          currentFields[idx] = ctxField
+          changed = true
+        }
+      }
+      if changed {
+        expr.type = .tuple(fields: currentFields)
       }
       return changed
     default:

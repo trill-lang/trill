@@ -82,19 +82,6 @@ class TupleExpr: Expr {
     super.init(sourceRange: sourceRange)
   }
   
-  override var type: DataType? {
-    get {
-      var fieldTypes = [DataType]()
-      for v in self.values {
-        guard let type = v.type else { return nil }
-        fieldTypes.append(type)
-      }
-      return .tuple(fields: fieldTypes)
-    }
-    set {
-      fatalError("cannot set type on tuple expr")
-    }
-  }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? TupleExpr else { return false }
     return values == node.values

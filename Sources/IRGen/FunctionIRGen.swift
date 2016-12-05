@@ -219,7 +219,6 @@ extension IRGenerator {
       return nil
     }
     
-    
     if
       let type = decl.parentType,
       var implicitSelf = findImplicitSelf(expr) {
