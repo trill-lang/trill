@@ -3,8 +3,8 @@ type FieldMetadata = *Void
 
 type Mirror {
     let _metadata: MetaType
-    init(reflecting _type: MetaType) {
-        self._metadata = _type
+    init(reflecting value: Any) {
+        self._metadata = typeOf(value)
     }
 
     func name() -> *Int8 {

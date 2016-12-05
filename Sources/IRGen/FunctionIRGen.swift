@@ -225,6 +225,7 @@ extension IRGenerator {
       var implicitSelf = findImplicitSelf(expr) {
       if storage(for: type) == .value {
         implicitSelf = PrefixOperatorExpr(op: .ampersand, rhs: implicitSelf)
+        implicitSelf.type = .pointer(type: type)
       }
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }
@@ -236,20 +237,21 @@ extension IRGenerator {
     var argVals = [LLVMValueRef?]()
     for (idx, arg) in args.enumerated() {
       var val = visit(arg.val)!
-      if case .array(let field, _)? = arg.val.type {
+      var type = arg.val.type!
+      if case .array(let field, _) = type {
         let alloca = createEntryBlockAlloca(currentFunction!.functionRef!,
                                             type: LLVMTypeOf(val),
                                             name: "",
                                             storage: .value,
                                             initial: val)
+        type = .pointer(type: field)
         val = LLVMBuildBitCast(builder,
                                alloca.ref,
                                LLVMPointerType(resolveLLVMType(field), 0),
                                "")
-      } else if
-                let declArg = decl.args[safe: idx],
-                declArg.type == .any {
-        val = codegenPromoteToAny(value: val, type: arg.val.type!)
+      }
+      if let declArg = decl.args[safe: idx], declArg.type == .any {
+        val = codegenPromoteToAny(value: val, type: type)
       }
       argVals.append(val)
     }

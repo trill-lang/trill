@@ -76,7 +76,7 @@ type AnyArray {
       } else if elem is AnyArray {
         (elem as AnyArray).dump()
       } else {
-        printf("<%s 0x%p>", Mirror(reflecting: typeOf(elem)).name(), elem)
+        printf("<%s 0x%p>", Mirror(reflecting: elem).name(), elem)
       }
       if i != self.count - 1 {
         printf(", ")
@@ -101,6 +101,7 @@ func main(argc: Int, argv: **Int8) {
   var other = AnyArray()
   other.append(100)
   array.append(other)
+  other.append(100 as Int8)
   array.dump()
   println("")
   println(array[1] as Int)
