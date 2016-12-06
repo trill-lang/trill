@@ -80,7 +80,8 @@ extension IRGenerator {
     let voidPointerTy = LLVMPointerType(LLVMInt8Type(), 0)
     var fieldMetaElts = [
       voidPointerTy,         // name string
-      voidPointerTy          // type
+      voidPointerTy,         // type
+      LLVMInt64Type()        // offset
     ]
     let fieldMetaTy = fieldMetaElts.withUnsafeMutableBufferPointer { buf in
       LLVMStructType(buf.baseAddress, UInt32(buf.count), 0)
@@ -104,7 +105,7 @@ extension IRGenerator {
     typeMetadataMap[type] = global
     
     var fieldVals = [LLVMValueRef?]()
-    for (fieldName, type) in fields {
+    for (idx, (fieldName, type)) in fields.enumerated() {
       guard let meta = codegenTypeMetadata(type) else {
         LLVMDeleteGlobal(global)
         typeMetadataMap[type] = nil
@@ -119,7 +120,9 @@ extension IRGenerator {
       }
       var values = [
         LLVMBuildBitCast(builder, name, voidPointerTy, ""),
-        LLVMBuildBitCast(builder, meta, voidPointerTy, "")
+        LLVMBuildBitCast(builder, meta, voidPointerTy, ""),
+        LLVMConstInt(LLVMInt64Type(),
+                     LLVMOffsetOfElement(layout, llvmType, UInt32(idx)), 0)
       ]
       fieldVals.append(values.withUnsafeMutableBufferPointer { buf in
         LLVMConstStruct(buf.baseAddress, UInt32(buf.count), 0)
@@ -219,6 +222,11 @@ extension IRGenerator {
     case let expr as TupleFieldLookupExpr:
       let lhs = resolvePtr(expr.lhs)
       return LLVMBuildStructGEP(builder, lhs, UInt32(expr.field), "tuple-ptr")
+    case let expr as InfixOperatorExpr where expr.op == .as:
+      if let type = expr.type, case .any = context.canonicalType(type) {
+        return codegenAnyValuePtr(visit(expr)!, type: expr.rhs.type!)
+      }
+      return createTmpPointer(expr)
     case let expr as SubscriptExpr:
       let lhs = visit(expr.lhs)
       switch expr.lhs.type! {

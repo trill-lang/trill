@@ -31,6 +31,7 @@ const void *_Nullable trill_getFieldMetadata(const void *_Nullable typeMeta, uin
 uint64_t trill_getNumFields(const void *_Nullable typeMeta);
 const char *_Nullable trill_getFieldName(const void *_Nullable fieldMeta);
 const void *_Nullable trill_getFieldType(const void *_Nullable fieldMeta);
+size_t trill_getFieldOffset(const void *_Nullable fieldMeta);
 uint8_t trill_isReferenceType(const void *_Nullable typeMeta);
   
 #ifdef __cplusplus

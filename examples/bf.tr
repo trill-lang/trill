@@ -18,12 +18,11 @@ type Instruction {
 }
 
 indirect type Program {
-  let instructions: *Instruction
-  let count: Int
+  var instructions: AnyArray
   var memory: *Int8
   func dump() {
-    for var i = 0; i < self.count; i += 1 {
-        switch self.instructions[i].operator {
+    for var i = 0; i < self.instructions.count; i += 1 {
+        switch (self.instructions[i] as Instruction).operator {
         case '+': puts("Add")
         case '-': puts("Sub")
         case '<': puts("Left")
@@ -49,14 +48,13 @@ indirect type Program {
     }
   }
   deinit {
-    free(self.instructions as *Void)
     free(self.memory as *Void)
   }
   mutating func execute() {
     var pc = 0
     var p = 0
-    while pc < self.count {
-      let instr = self.instructions[pc]
+    while pc < self.instructions.count {
+      let instr = self.instructions[pc] as Instruction
       switch instr.operator {
       case '+':
         self.memory[p] += 1
@@ -89,8 +87,8 @@ indirect type Program {
     puts("int main() {")
     puts("char memory[30000];")
     puts("char *p = memory;")
-    for var i = 0; i < self.count; i += 1 {
-      let instr = self.instructions[i]
+    for var i = 0; i < self.instructions.count; i += 1 {
+      let instr = self.instructions[i] as Instruction
       switch instr.operator {
       case '+':
         puts("++*p;")
@@ -118,8 +116,8 @@ indirect type Program {
     puts("func main() {")
     puts("  var memory = calloc(30000, sizeof(Int8)) as *Int8")
     puts("  var p = 0")
-    for var i = 0; i < self.count; i += 1 {
-      let instr = self.instructions[i]
+    for var i = 0; i < self.instructions.count; i += 1 {
+      let instr = self.instructions[i] as Instruction
       switch instr.operator {
       case '+':
         puts("  memory[p] += 1")
@@ -145,11 +143,7 @@ indirect type Program {
   init(input: *Int8) {
     let length = strlen(input) as Int
     var pc = 0
-    var instructions = calloc(length as Int, sizeof(Instruction)) as *Instruction
-    if instructions == nil {
-      printf("could not calloc length %d", length)
-      abort()
-    }
+    var instructions = AnyArray()
     var stack = calloc(MaxStackDepth, sizeof(Int)) as *Int
     if stack == nil {
       printf("could not calloc length %d", MaxStackDepth)
@@ -163,7 +157,7 @@ indirect type Program {
           printf("Max stack depth exceeded.")
           abort()
         }
-        instructions[pc] = Instruction(operator: c, operand: 0)
+        instructions.append(Instruction(operator: c, operand: 0))
         stack[sp] = pc
         sp += 1
       } else if c == ']' {
@@ -172,18 +166,25 @@ indirect type Program {
           abort()
         }
         sp -= 1
+
+        // FIXME: Casting the result of a subscript should
+        //        yield a pointer to the inner storage, not
+        //        copy the storage to a temporary and give
+        //        a pointer
+
         let jmpPC = stack[sp]
-        instructions[pc] = Instruction(operator: c, operand: jmpPC)
-        instructions[jmpPC].operand = pc
+        instructions.append(Instruction(operator: c, operand: jmpPC))
+        let oldInst = instructions[jmpPC] as Instruction
+        oldInst.operand = pc
+        instructions.set(oldInst, at: jmpPC)
       } else {
-        instructions[pc] = Instruction(operator: c, operand: 0)
+        instructions.append(Instruction(operator: c, operand: 0))
       }
       pc += 1
     }
     free(stack as *Void)
     self.instructions = instructions
     self.memory = calloc(30000, sizeof(Int8)) as *Int8
-    self.count = length as Int
   }
 }
 

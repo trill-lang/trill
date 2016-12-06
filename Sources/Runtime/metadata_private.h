@@ -14,6 +14,7 @@
 typedef struct FieldMetadata {
     const char *name;
     const void *type;
+    size_t offset;
 } FieldMetadata;
 
 typedef struct TypeMetadata {

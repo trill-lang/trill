@@ -16,35 +16,31 @@
 namespace trill {
 
 const char *trill_getTypeName(const void *typeMeta) {
-  if (!typeMeta) return "<null>";
+  trill_assert(typeMeta != nullptr);
   auto real = (TypeMetadata *)typeMeta;
   return real->name;
 }
 
 uint64_t trill_getTypeSizeInBits(const void *typeMeta) {
-  if (!typeMeta) return 0;
+  trill_assert(typeMeta != nullptr);
   auto real = (TypeMetadata *)typeMeta;
   return real->sizeInBits;
 }
 
 uint8_t trill_isReferenceType(const void *typeMeta) {
-  if (!typeMeta) return 0;
+  trill_assert(typeMeta != nullptr);
   auto real = (TypeMetadata *)typeMeta;
   return real->isReferenceType;
 }
   
 uint64_t trill_getNumFields(const void *typeMeta) {
-  if (!typeMeta) {
-    return 0;
-  }
+  trill_assert(typeMeta != nullptr);
   auto real = (TypeMetadata *)typeMeta;
   return real->fieldCount;
 }
 
 const void *_Nullable trill_getFieldMetadata(const void *typeMeta, uint64_t field) {
-  if (!typeMeta) {
-    return nullptr;
-  }
+  trill_assert(typeMeta != nullptr);
   auto real = (TypeMetadata *)typeMeta;
   if (real->fieldCount <= field) {
     trill_fatalError("field index out of bounds");
@@ -53,19 +49,24 @@ const void *_Nullable trill_getFieldMetadata(const void *typeMeta, uint64_t fiel
 }
 
 const char *_Nullable trill_getFieldName(const void *_Nullable fieldMeta) {
-  if (!fieldMeta) return nullptr;
+  trill_assert(fieldMeta != nullptr);
   auto real = (FieldMetadata *)fieldMeta;
   return real->name;
 }
 
 const void *_Nullable trill_getFieldType(const void *_Nullable fieldMeta) {
-  if (!fieldMeta) return nullptr;
+  trill_assert(fieldMeta != nullptr);
   auto real = (FieldMetadata *)fieldMeta;
   return real->type;
 }
+  
+size_t trill_getFieldOffset(const void *_Nullable fieldMeta) {
+  trill_assert(fieldMeta != nullptr);
+  return ((FieldMetadata *)fieldMeta)->offset;
+}
 
 void *_Nonnull trill_allocateAny(void *typeMetadata_) {
-  trill_assert(typeMetadata_ != NULL);
+  trill_assert(typeMetadata_ != nullptr);
   TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
   size_t fullSize = sizeof(AnyHeader) + typeMetadata->sizeInBits;
   AnyHeader *ptr = (AnyHeader *)trill_alloc(fullSize);
@@ -83,8 +84,7 @@ void *_Nonnull trill_copyAny(void *any) {
 }
 
 inline void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
-  void *valPtr = (void *)((intptr_t)anyValue + sizeof(AnyHeader));
-  return valPtr;
+  return (void *)((intptr_t)anyValue + sizeof(AnyHeader));
 }
   
 void *_Nonnull trill_getAnyTypeMetadata(void *_Nonnull anyValue) {

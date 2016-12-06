@@ -30,7 +30,7 @@ enum Mangler {
         s += "M" + mangle(type, root: false)
         s += d.name.name.withCount
       case .operator(let op):
-        s += "O" // FIXME: Full support for mangling all operators
+        s += "O"
         switch op {
         case .plus: s += "p"
         case .minus: s += "m"
@@ -71,9 +71,8 @@ enum Mangler {
         s += arg.name.name.withCount
         s += mangle(arg.type, root: false)
       }
-      s += "_"
       let returnType = d.returnType.type ?? .void
-      if returnType != .void {
+      if returnType != .void && !d.isInitializer {
         s += "R" + mangle(returnType, root: false)
       }
     }

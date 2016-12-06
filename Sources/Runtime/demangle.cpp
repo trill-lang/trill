@@ -165,12 +165,11 @@ bool demangleFunction(std::string &symbol, std::string &out) {
     }
     out += '(';
     std::vector<std::string> args;
-    while (symbol.front() != '_') {
+    while (!symbol.empty() && symbol.front() != 'R') {
       std::string arg;
       if (!readArg(symbol, arg)) { return false; }
       args.push_back(arg);
     }
-    symbol.erase(0, 1);
     for (auto i = 0; i < args.size(); ++i) {
       out += args[i];
       if (i < args.size() - 1) {

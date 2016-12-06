@@ -91,19 +91,3 @@ type AnyArray {
     free(self.elements as *Void)
   }
 }
-
-func main(argc: Int, argv: **Int8) {
-  var array = AnyArray()
-  for var i = 0; i < argc; i += 1 {
-    array.append(argv[i])
-    array.append(i)
-  }
-  var other = AnyArray()
-  other.append(100)
-  array.append(other)
-  other.append(100 as Int8)
-  array.dump()
-  println("")
-  println(array[1] as Int)
-  array.destroy()
-}
