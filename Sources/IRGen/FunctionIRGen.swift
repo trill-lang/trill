@@ -276,7 +276,11 @@ extension IRGenerator {
     }
     var store: LLVMValueRef? = nil
     if !(expr.value is VoidExpr) {
-      let val = visit(expr.value)
+      var val = visit(expr.value)!
+      if let type = expr.value.type,
+         case .any = context.canonicalType(currentDecl.returnType.type!) {
+        val = codegenPromoteToAny(value: val, type: type)
+      }
       if !currentDecl.isInitializer {
         store = LLVMBuildStore(builder, val, currentFunction.resultAlloca)
       }

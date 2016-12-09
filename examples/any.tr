@@ -11,6 +11,10 @@ func foo(_ t: Any) -> Int {
   return t as Int
 }
 
+func duplicate(_ t: Any) -> Any {
+  return t as Int * 2
+}
+
 func main() {
   printf("[%s] entered\n", #function)
   let f = foo(1)
@@ -29,7 +33,6 @@ func main() {
   }
   printf("[%s] foo returned\n", #function)
   printf("%d\n", f)
+  printf("%d\n", duplicate(2) as Int)
 
-  var val = 10
-  var anyPtr: *Any = &val
 }
