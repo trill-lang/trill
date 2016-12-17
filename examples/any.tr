@@ -34,5 +34,4 @@ func main() {
   printf("[%s] foo returned\n", #function)
   printf("%d\n", f)
   printf("%d\n", duplicate(2) as Int)
-
 }

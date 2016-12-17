@@ -355,12 +355,14 @@ class Sema: ASTTransformer, Pass {
   }
   
   func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
+    var bestCandidate: (rank: Int, candidate: FuncDecl?) = (0, nil)
     search: for candidate in candidates {
       var candArgs = candidate.args
       if let first = candArgs.first, first.isImplicitSelf {
         candArgs.remove(at: 0)
       }
       if !candidate.hasVarArgs && candArgs.count != args.count { continue }
+      var totalRank = 0
       for (candArg, exprArg) in zip(candArgs, args) {
         if let externalName = candArg.externalName,
            exprArg.label != externalName { continue search }
@@ -370,13 +372,16 @@ class Sema: ASTTransformer, Pass {
         if propagateContextualType(candType, to: exprArg.val) {
           valType = candType
         }
-        if !matches(candType, valType) {
+        guard let rank = matchRank(candType, valType) else {
           continue search
         }
+        totalRank += rank.rawValue
       }
-      return candidate
+      if bestCandidate.rank <= totalRank {
+        bestCandidate = (rank: totalRank, candidate: candidate)
+      }
     }
-    return nil
+    return bestCandidate.candidate
   }
   
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
@@ -629,6 +634,7 @@ class Sema: ASTTransformer, Pass {
     expr.args.forEach {
       visit($0.val)
     }
+    
     for arg in expr.args {
       guard arg.val.type != nil else { return }
     }
@@ -636,13 +642,13 @@ class Sema: ASTTransformer, Pass {
     var name: Identifier? = nil
     switch expr.lhs {
     case let lhs as FieldLookupExpr:
+      name = lhs.name
       let assignedToField = visitFieldLookupExpr(lhs, callArgs: expr.args)
       guard let typeDecl = lhs.typeDecl else { return }
       if case .function(let args, let ret)? = lhs.type, assignedToField {
         candidates.append(context.foreignDecl(args: args, ret: ret))
       }
       candidates += typeDecl.methods(named: lhs.name.name)
-      name = lhs.name
     case let lhs as VarExpr:
       name = lhs.name
       if let typeDecl = context.decl(for: DataType(name: lhs.name.name)) {
@@ -675,6 +681,7 @@ class Sema: ASTTransformer, Pass {
         return
       }
     }
+    
     guard !candidates.isEmpty else {
       error(SemaError.unknownFunction(name: name!),
             loc: name?.range?.start,
@@ -999,17 +1006,19 @@ class Sema: ASTTransformer, Pass {
       }
       var changed = false
       for value in expr.values {
-        changed = changed || propagateContextualType(ctx, to: value)
+        if propagateContextualType(ctx, to: value) {
+          changed = true
+        }
       }
       expr.type = .array(field: ctx, length: length)
-      return true
+      return changed
     case let expr as InfixOperatorExpr:
       if expr.lhs is NumExpr,
         expr.rhs is NumExpr {
-        propagateContextualType(contextualType, to: expr.lhs)
-        propagateContextualType(contextualType, to: expr.rhs)
+        var changed = propagateContextualType(contextualType, to: expr.lhs)
+        changed = changed || propagateContextualType(contextualType, to: expr.rhs)
         visitInfixOperatorExpr(expr)
-        return true
+        return changed
       }
     case let expr as NilExpr where context.canBeNil(canTy):
       expr.type = contextualType
@@ -1021,9 +1030,13 @@ class Sema: ASTTransformer, Pass {
         contextualFields.count == fields.count else { return false }
       var changed = false
       for (ctxField, value) in zip(contextualFields, expr.values) {
-        changed = changed || propagateContextualType(ctxField, to: value)
+        if propagateContextualType(ctxField, to: value) {
+          changed = true
+        }
       }
-      expr.type = contextualType
+      if changed {
+        expr.type = contextualType
+      }
       return changed
     default:
       break

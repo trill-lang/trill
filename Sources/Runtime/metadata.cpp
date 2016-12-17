@@ -82,6 +82,58 @@ void *_Nonnull trill_copyAny(void *any) {
   memcpy(header, any, sizeof(AnyHeader) + size);
   return header;
 }
+  
+static FieldMetadata *trill_getAnyFieldMetadata(AnyHeader *any, uint64_t fieldNum) {
+  auto meta = (TypeMetadata *)any->typeMetadata;
+  trill_assert(meta != nullptr);
+  trill_assert(fieldNum < meta->fieldCount);
+  auto fieldMeta = (FieldMetadata *)trill_getFieldMetadata(meta, fieldNum);
+  trill_assert(fieldMeta != nullptr);
+  return fieldMeta;
+}
+  
+void trill_reportCastError(TypeMetadata *anyMetadata, TypeMetadata *typeMetadata) {
+  std::string failureDesc = "checked cast failed: cannot convert ";
+  failureDesc += trill_getTypeName(anyMetadata);
+  failureDesc += " to ";
+  failureDesc += trill_getTypeName(typeMetadata);
+  trill_fatalError(failureDesc.c_str());
+}
+
+void *_Nonnull trill_getAnyFieldValuePtr(void *any_, uint64_t fieldNum) {
+  trill_assert(any_ != nullptr);
+  auto any = (AnyHeader *)any_;
+  auto origPtr = trill_getAnyValuePtr(any);
+  auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
+  return (void *)((intptr_t)origPtr + fieldMeta->offset);
+}
+  
+void *_Nonnull trill_extractAnyField(void *any_, uint64_t fieldNum) {
+  trill_assert(any_ != nullptr);
+  auto any = (AnyHeader *)any_;
+  auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
+  auto fieldTypeMeta = (TypeMetadata *)fieldMeta->type;
+  auto newAny = (AnyHeader *)trill_allocateAny(fieldTypeMeta);
+  auto fieldPtr = trill_getAnyValuePtr(newAny);
+  memcpy(fieldPtr, trill_getAnyFieldValuePtr(any, fieldNum), fieldTypeMeta->sizeInBits);
+  return newAny;
+}
+  
+void trill_updateAny(void *any_, uint64_t fieldNum, void *newAny_) {
+  auto any = (AnyHeader *)any_;
+  auto newAny = (AnyHeader *)newAny_;
+  trill_assert(any != nullptr);
+  trill_assert(newAny != nullptr);
+  auto newType = (TypeMetadata *)newAny->typeMetadata;
+  trill_assert(newType);
+  auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
+  if (fieldMeta->type != newType) {
+    trill_reportCastError((TypeMetadata *)fieldMeta->type, (TypeMetadata *)newAny->typeMetadata);
+  }
+  auto fieldPtr = trill_getAnyFieldValuePtr(any, fieldNum);
+  auto newPtr = trill_getAnyValuePtr(newAny);
+  memcpy(fieldPtr, newPtr, newType->sizeInBits);
+}
 
 inline void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
   return (void *)((intptr_t)anyValue + sizeof(AnyHeader));
@@ -154,11 +206,7 @@ void *trill_checkedCast(void *anyValue_, void *typeMetadata_) {
   trill_assert(anyValue != nullptr);
   TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
   if (anyMetadata != typeMetadata) {
-    std::string failureDesc = "checked cast failed: cannot convert ";
-    failureDesc += trill_getTypeName(anyMetadata);
-    failureDesc += " to ";
-    failureDesc += trill_getTypeName(typeMetadata);
-    trill_fatalError(failureDesc.c_str());
+    trill_reportCastError(anyMetadata, typeMetadata);
   }
   return trill_getAnyValuePtr(anyValue_);
 }

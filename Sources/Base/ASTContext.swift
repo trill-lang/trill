@@ -38,6 +38,11 @@ enum Mutability {
   case mutable
 }
 
+enum TypeRank: Int {
+  case equal = 999
+  case any = 1
+}
+
 struct MainFuncFlags: OptionSet {
   var rawValue: Int8
   static let args = MainFuncFlags(rawValue: 1 << 0)
@@ -194,7 +199,7 @@ public class ASTContext {
     let canRhs = canonicalType(rhs.type!)
     let decls = operators(for: op)
     for decl in decls {
-      if matches(decl.args[0].type, canLhs) && matches(decl.args[1].type, canRhs) {
+      if matchRank(decl.args[0].type, canLhs) == nil && matchRank(decl.args[1].type, canRhs) == nil {
         return decl
       }
     }
@@ -341,7 +346,7 @@ public class ASTContext {
   }
   
   func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
-    if !base && matches(typeDecl.type, type) { return true }
+    if !base && matchRank(typeDecl.type, type) != nil { return true }
     for field in typeDecl.fields {
       if case .pointer = field.type { continue }
       if let decl = decl(for: field.type),
@@ -357,31 +362,31 @@ public class ASTContext {
     return containsInLayout(type: typeDecl.type, typeDecl: typeDecl, base: true)
   }
   
-  func matches(_ type1: DataType?, _ type2: DataType?) -> Bool {
+  func matchRank(_ type1: DataType?, _ type2: DataType?) -> TypeRank? {
     switch (type1, type2) {
-    case (nil, nil): return true
-    case (_, nil): return false
-    case (nil, _): return false
+    case (nil, nil): return .equal
+    case (_, nil): return .equal
+    case (nil, _): return .equal
     case (.tuple(let fields1)?, .tuple(let fields2)?):
-        if fields1.count != fields2.count { return false }
+        if fields1.count != fields2.count { return nil }
         for (type1, type2) in zip(fields1, fields2) {
-            if !matches(type1, type2) { return false }
+            if matchRank(type1, type2) == nil { return nil }
         }
-        return true
+        return .equal
     case (let t1?, let t2?):
       let t1Can = canonicalType(t1)
       let t2Can = canonicalType(t2)
       
       if case .any = t1Can {
-        return true
+        return .any
       }
       if case .any = t2Can {
-        return true
+        return .any
       }
       
-      return t1Can == t2Can
+      return t1Can == t2Can ? .equal : nil
     default:
-      return false
+      return nil
     }
   }
   

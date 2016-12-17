@@ -3,12 +3,15 @@ type FieldMetadata = *Void
 
 type Mirror {
   let _metadata: MetaType
+  let value: Any
+
   init(reflecting value: Any) {
     self._metadata = typeOf(value)
+    self.value = value
   }
 
-  init(reflectingType: *Void) {
-    self._metadata
+  init(reflectingType typeMeta: *Void) {
+    self._metadata = typeMeta
   }
 
   func name() -> *Int8 {
@@ -21,6 +24,24 @@ type Mirror {
 
   func isReferenceType() -> Bool {
     return trill_isReferenceType(self._metadata) != 0
+  }
+
+  func child(_ index: Int) -> Any {
+    return trill_extractAnyField(*((&self.value) as **Void), index as UInt)
+  }
+
+  func set(value: Any, forChild index: Int) {
+    trill_updateAny(*((&self.value) as **Void), index as UInt, *((&value) as **Void))
+  }
+
+  func set(value: Any, forKey name: *Int8) {
+    for var i = 0; i < self.numberOfFields(); i += 1 {
+      if strcmp(self.field(at: i).name(), name) == 0 {
+        self.set(value: value, forChild: i)
+        return
+      }
+    }
+    trill_fatalError("could not set value for unknown child")
   }
 
   func print() {
@@ -38,6 +59,8 @@ type Mirror {
         printf("%s: ", name)
       }
       printf("%s\n", field.typeMetadata().name());
+
+      // println(self.child(i))
     }
   }
 

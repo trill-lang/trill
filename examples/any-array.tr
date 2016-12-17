@@ -3,7 +3,7 @@ type AnyArray {
   var count: Int
   var capacity: Int
   init(capacity: Int) {
-    assert(capacity > 0, "Cannot initialize an array with 0 capacity")
+    // assert(capacity > 0, "Cannot initialize an array with 0 capacity")
     self.elements = calloc(capacity, sizeof(Any)) as *Any
     self.capacity = capacity
     self.count = 0
@@ -68,11 +68,11 @@ type AnyArray {
     for var i = 0; i < self.count; i += 1 {
       let elem = self.elements[i]
       if elem is *Int8 {
-        printf("\"%s\"", elem as *Int8)
+        printf("%d", "\"%s\"", elem as *Int8)
       } else if elem is Int {
-        print(elem as Int)
+        printf("%d", elem as Int)
       } else if elem is Bool {
-        print(elem as Bool ? "true" : "false")
+        printf("%d", elem as Bool ? "true" : "false")
       } else if elem is AnyArray {
         (elem as AnyArray).dump()
       } else {
@@ -89,5 +89,12 @@ type AnyArray {
   }
   func destroy() {
     free(self.elements as *Void)
+  }
+  func map(_ f: (Any) -> Any) -> AnyArray {
+    var new = AnyArray(capacity: self.capacity)
+    for var i = 0; i < self.count; i += 1 {
+      new.append(f(self[i]))
+    }
+    return new
   }
 }

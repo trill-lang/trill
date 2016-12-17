@@ -12,6 +12,8 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case arityMismatch(name: Identifier, gotCount: Int, expectedCount: Int)
   case invalidBinOpArgs(op: BuiltinOperator, lhs: DataType, rhs: DataType)
   case typeMismatch(expected: DataType, got: DataType)
+  case cannotDowncastFromAny(type: DataType)
+  case addExplicitCast(to: DataType)
   case nonBooleanTernary(got: DataType)
   case subscriptWithInvalidType(type: DataType)
   case subscriptWithNoArgs
@@ -46,6 +48,10 @@ enum TypeCheckError: Error, CustomStringConvertible {
       return "value '\(raw)' overflows when stored into '\(type)'"
     case .shiftPastBitWidth(let type, let shiftWidth):
       return "shift amount \(shiftWidth) is greater than or equal to \(type)'s size in bits"
+    case .cannotDowncastFromAny(let type):
+      return "cannot downcast from Any to type '\(type)'"
+    case .addExplicitCast(let toType):
+      return "add explicit cast (as \(toType)) to fix"
     }
   }
 }
@@ -100,7 +106,7 @@ class TypeChecker: ASTTransformer, Pass {
       if arg.isImplicitSelf {
         argType = argType.rootType
       }
-      if !matches(argType, .any) && !matches(type, argType) {
+      if matchRank(argType, .any) == nil && matchRank(type, argType) == nil {
         error(TypeCheckError.typeMismatch(expected: argType, got: type),
               loc: val.val.startLoc,
               highlights: [
@@ -182,7 +188,7 @@ class TypeChecker: ASTTransformer, Pass {
   }
   
   override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
-    if let rhsType = decl.rhs?.type, !matches(decl.type, rhsType) {
+    if let rhsType = decl.rhs?.type, matchRank(decl.type, rhsType) == nil {
       error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
             loc: decl.startLoc,
             highlights: [
@@ -241,6 +247,18 @@ class TypeChecker: ASTTransformer, Pass {
       // thrown from sema
     } else if expr.op.isAssign {
       // thrown from sema
+      if case .assign = expr.op {
+        if case .any = context.canonicalType(rhsType),
+           context.canonicalType(lhsType) != .any {
+          error(TypeCheckError.cannotDowncastFromAny(type: lhsType),
+                loc: expr.opRange?.start,
+                highlights: [
+                  expr.lhs.sourceRange,
+                  expr.rhs.sourceRange
+            ])
+          note(TypeCheckError.addExplicitCast(to: lhsType))
+        }
+      }
     } else if expr.decl == nil  {
       error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
             loc: expr.startLoc,

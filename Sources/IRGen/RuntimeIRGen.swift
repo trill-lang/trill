@@ -20,12 +20,15 @@ extension IRGenerator {
       // copy of the existing value.
       return codegenCopyAny(value: value)
     }
+    let irType = resolveLLVMType(type)
     let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
     let meta = codegenTypeMetadata(type)
     var castMeta = LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "meta-cast")
     let res = LLVMBuildCall(builder, allocateAny, &castMeta,
                             1, "allocate-any")!
-    let ptr = codegenAnyValuePtr(res, type: type)
+    let valPtr = codegenAnyValuePtr(res, type: type)
+    let ptr = LLVMBuildBitCast(builder, valPtr,
+                               LLVMPointerType(irType, 0), "")
     LLVMBuildStore(builder, value, ptr)
     return res
   }

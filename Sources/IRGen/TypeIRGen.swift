@@ -202,11 +202,15 @@ extension IRGenerator {
   func resolvePtr(_ expr: Expr) -> Result {
     let createTmpPointer: (Expr) -> LLVMValueRef = { expr in
       guard let type = expr.type else { fatalError("unknown type") }
+      let value = self.visit(expr)!
+      if case .any = self.context.canonicalType(type) {
+        return self.codegenAnyValuePtr(value, type: .pointer(type: .int8))
+      }
       let llvmType = self.resolveLLVMType(type)
       let alloca =  self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
                                                 type: llvmType, name: "ptrtmp",
                                                 storage: .value)
-      LLVMBuildStore(self.builder, self.visit(expr), alloca.ref)
+      LLVMBuildStore(self.builder, value, alloca.ref)
       return alloca.ref
     }
     switch expr {
