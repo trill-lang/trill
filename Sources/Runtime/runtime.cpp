@@ -37,7 +37,7 @@ std::string demangle(std::string symbol) {
   return out;
 }
 
-void print_stacktrace() {
+void trill_printStackTrace() {
   void *symbols[MAX_STACK_DEPTH];
   int frames = backtrace(symbols, MAX_STACK_DEPTH);
   fputs("Current stack trace:\n", stderr);
@@ -57,7 +57,7 @@ void print_stacktrace() {
 
 TRILL_NORETURN
 void crash() {
-  print_stacktrace();
+  trill_printStackTrace();
   exit(-1);
 }
 

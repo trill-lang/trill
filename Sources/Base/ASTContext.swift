@@ -43,6 +43,11 @@ enum TypeRank: Int {
   case any = 1
 }
 
+struct CandidateResult<DeclTy: Decl> {
+  let candidate: DeclTy
+  let rank: Int
+}
+
 struct MainFuncFlags: OptionSet {
   var rawValue: Int8
   static let args = MainFuncFlags(rawValue: 1 << 0)
@@ -196,14 +201,121 @@ public class ASTContext {
                           modifiers: [.implicit])
     }
     
+    var bestCandidate: CandidateResult<OperatorDecl>?
+    
     let canRhs = canonicalType(rhs.type!)
     let decls = operators(for: op)
+    
     for decl in decls {
-      if matchRank(decl.args[0].type, canLhs) == nil && matchRank(decl.args[1].type, canRhs) == nil {
-        return decl
+      let (lhs, rhs) = (decl.args[0], decl.args[1])
+      if let lhsRank = matchRank(lhs.type, canLhs),
+         let rhsRank = matchRank(rhs.type, canRhs) {
+        let totalRank = lhsRank.rawValue + rhsRank.rawValue
+        if bestCandidate == nil || bestCandidate!.rank <= totalRank {
+          bestCandidate = CandidateResult(candidate: decl, rank: totalRank)
+        }
       }
     }
-    return nil
+    return bestCandidate?.candidate
+  }
+  
+  
+  func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
+    var bestCandidate: CandidateResult<FuncDecl>?
+    search: for candidate in candidates {
+      var candArgs = candidate.args
+      if let first = candArgs.first, first.isImplicitSelf {
+        candArgs.remove(at: 0)
+      }
+      if !candidate.hasVarArgs && candArgs.count != args.count { continue }
+      var totalRank = 0
+      for (candArg, exprArg) in zip(candArgs, args) {
+        if let externalName = candArg.externalName {
+          if exprArg.label == "_owning" {
+            
+          }
+          if exprArg.label != externalName {
+            continue search
+          }
+        } else if exprArg.label != nil {
+          continue search
+        }
+        guard var valType = exprArg.val.type else { continue search }
+        let candType = canonicalType(candArg.type)
+        // automatically coerce number literals.
+        if propagateContextualType(candType, to: exprArg.val) {
+          valType = candType
+        }
+        guard let rank = matchRank(candType, valType) else {
+          continue search
+        }
+        totalRank += rank.rawValue
+      }
+      let newCand = CandidateResult(candidate: candidate, rank: totalRank)
+      
+      if bestCandidate == nil || bestCandidate!.rank <= totalRank {
+        bestCandidate = newCand
+      }
+    }
+    return bestCandidate?.candidate
+  }
+  
+  
+  @discardableResult
+  func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
+    let canTy = canonicalType(contextualType)
+    switch expr {
+    case let expr as NumExpr:
+      if case .int = canTy {
+        expr.type = contextualType
+        return true
+      }
+      if case .floating = canTy {
+        expr.type = contextualType
+        return true
+      }
+    case let expr as ArrayExpr:
+      guard case .array(_, let length)? = expr.type else { return false }
+      guard case .array(let ctx, _) = contextualType else {
+        return false
+      }
+      var changed = false
+      for value in expr.values {
+        if propagateContextualType(ctx, to: value) {
+          changed = true
+        }
+      }
+      expr.type = .array(field: ctx, length: length)
+      return changed
+    case let expr as InfixOperatorExpr:
+      if expr.lhs is NumExpr,
+        expr.rhs is NumExpr {
+        var changed = propagateContextualType(contextualType, to: expr.lhs)
+        changed = changed || propagateContextualType(contextualType, to: expr.rhs)
+        return changed
+      }
+    case let expr as NilExpr where canBeNil(canTy):
+      expr.type = contextualType
+      return true
+    case let expr as TupleExpr:
+      guard
+        case .tuple(let contextualFields) = canTy,
+        case .tuple(let fields)? = expr.type,
+        contextualFields.count == fields.count else { return false }
+      var changed = false
+      for (ctxField, value) in zip(contextualFields, expr.values) {
+        if propagateContextualType(ctxField, to: value) {
+          changed = true
+        }
+      }
+      if changed {
+        expr.type = contextualType
+      }
+      return changed
+    default:
+      break
+    }
+    return false
   }
   
   func add(_ funcDecl: FuncDecl) {

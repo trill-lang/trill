@@ -354,36 +354,6 @@ class Sema: ASTTransformer, Pass {
     varBindings[decl.name.name] = decl
   }
   
-  func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
-    var bestCandidate: (rank: Int, candidate: FuncDecl?) = (0, nil)
-    search: for candidate in candidates {
-      var candArgs = candidate.args
-      if let first = candArgs.first, first.isImplicitSelf {
-        candArgs.remove(at: 0)
-      }
-      if !candidate.hasVarArgs && candArgs.count != args.count { continue }
-      var totalRank = 0
-      for (candArg, exprArg) in zip(candArgs, args) {
-        if let externalName = candArg.externalName,
-           exprArg.label != externalName { continue search }
-        guard var valType = exprArg.val.type else { continue search }
-        let candType = context.canonicalType(candArg.type)
-        // automatically coerce number literals.
-        if propagateContextualType(candType, to: exprArg.val) {
-          valType = candType
-        }
-        guard let rank = matchRank(candType, valType) else {
-          continue search
-        }
-        totalRank += rank.rawValue
-      }
-      if bestCandidate.rank <= totalRank {
-        bestCandidate = (rank: totalRank, candidate: candidate)
-      }
-    }
-    return bestCandidate.candidate
-  }
-  
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
     _ = visitFieldLookupExpr(expr, callArgs: nil)
   }
@@ -432,7 +402,7 @@ class Sema: ASTTransformer, Pass {
       return true
     } else if !candidateMethods.isEmpty {
       if let args = callArgs,
-         let funcDecl = candidate(forArgs: args, candidates: candidateMethods) {
+         let funcDecl = context.candidate(forArgs: args, candidates: candidateMethods) {
         expr.decl = funcDecl
         let types = funcDecl.args.map { $0.type }
         expr.type = .function(args: types, returnType: funcDecl.returnType.type!)
@@ -529,7 +499,7 @@ class Sema: ASTTransformer, Pass {
         diagnose()
         return
       }
-      guard let candidate = candidate(forArgs: expr.args, candidates: decl.subscripts) as? SubscriptDecl else {
+      guard let candidate = context.candidate(forArgs: expr.args, candidates: decl.subscripts) as? SubscriptDecl else {
         diagnose()
         return
       }
@@ -688,7 +658,7 @@ class Sema: ASTTransformer, Pass {
             highlights: [ name?.range ])
       return
     }
-    guard let decl = candidate(forArgs: expr.args, candidates: candidates) else {
+    guard let decl = context.candidate(forArgs: expr.args, candidates: candidates) else {
       error(SemaError.noViableOverload(name: name!,
                                        args: expr.args),
             loc: name?.range?.start,
@@ -810,9 +780,9 @@ class Sema: ASTTransformer, Pass {
     let canLhs = context.canonicalType(lhsType)
     let canRhs = context.canonicalType(rhsType)
     
-    if propagateContextualType(rhsType, to: expr.lhs) {
+    if context.propagateContextualType(rhsType, to: expr.lhs) {
       lhsType = rhsType
-    } else if propagateContextualType(lhsType, to: expr.rhs) {
+    } else if context.propagateContextualType(lhsType, to: expr.rhs) {
       rhsType = lhsType
     }
     
@@ -937,7 +907,7 @@ class Sema: ASTTransformer, Pass {
   
   override func visitReturnStmt(_ stmt: ReturnStmt) {
     guard let returnType = currentClosure?.returnType.type ?? currentFunction?.returnType.type else { return }
-    propagateContextualType(returnType, to: stmt.value)
+    context.propagateContextualType(returnType, to: stmt.value)
     super.visitReturnStmt(stmt)
   }
   
@@ -984,63 +954,5 @@ class Sema: ASTTransformer, Pass {
         return
       }
     }
-  }
-  
-  @discardableResult
-  func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
-    let canTy = context.canonicalType(contextualType)
-    switch expr {
-    case let expr as NumExpr:
-      if case .int = canTy {
-        expr.type = contextualType
-        return true
-      }
-      if case .floating = canTy {
-        expr.type = contextualType
-        return true
-      }
-    case let expr as ArrayExpr:
-      guard case .array(_, let length)? = expr.type else { return false }
-      guard case .array(let ctx, _) = contextualType else {
-        return false
-      }
-      var changed = false
-      for value in expr.values {
-        if propagateContextualType(ctx, to: value) {
-          changed = true
-        }
-      }
-      expr.type = .array(field: ctx, length: length)
-      return changed
-    case let expr as InfixOperatorExpr:
-      if expr.lhs is NumExpr,
-        expr.rhs is NumExpr {
-        var changed = propagateContextualType(contextualType, to: expr.lhs)
-        changed = changed || propagateContextualType(contextualType, to: expr.rhs)
-        visitInfixOperatorExpr(expr)
-        return changed
-      }
-    case let expr as NilExpr where context.canBeNil(canTy):
-      expr.type = contextualType
-      return true
-    case let expr as TupleExpr:
-      guard
-        case .tuple(let contextualFields) = canTy,
-        case .tuple(let fields)? = expr.type,
-        contextualFields.count == fields.count else { return false }
-      var changed = false
-      for (ctxField, value) in zip(contextualFields, expr.values) {
-        if propagateContextualType(ctxField, to: value) {
-          changed = true
-        }
-      }
-      if changed {
-        expr.type = contextualType
-      }
-      return changed
-    default:
-      break
-    }
-    return false
   }
 }

@@ -21,6 +21,8 @@ extern "C" {
 #define trill_assert(x) if (!(x)) trill_fatalError(": assertion failed: "#x)
 
 void trill_init();
+
+void trill_printStackTrace();
   
 void *_Nonnull trill_alloc(size_t size);
 

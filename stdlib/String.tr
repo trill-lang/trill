@@ -102,3 +102,8 @@ type String {
         return String(_storage: self._storage.mergeSorted())
     }
 }
+
+func ==(lhs: String, rhs: String) -> Bool {
+  if lhs.length() != rhs.length() { return false }
+  return strncmp(lhs._storage.bytes, rhs._storage.bytes, lhs.length() as UInt) == 0
+}
