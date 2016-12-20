@@ -210,6 +210,9 @@ extension IRGenerator {
     var args = expr.args
     
     let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
+      if case .property? = expr.decl?.kind {
+        return nil
+      }
       if case .subscript? = expr.decl?.kind {
         return expr.lhs
       }
@@ -228,7 +231,11 @@ extension IRGenerator {
       }
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }
-    function = codegenFunctionPrototype(decl)
+    if case .property = decl.kind {
+      function = visit(expr.lhs)
+    } else {
+      function = codegenFunctionPrototype(decl)
+    }
     if function == nil {
       function = visit(expr.lhs)
     }

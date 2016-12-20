@@ -231,20 +231,26 @@ public class ASTContext {
       var totalRank = 0
       for (candArg, exprArg) in zip(candArgs, args) {
         if let externalName = candArg.externalName {
-          if exprArg.label == "_owning" {
-            
-          }
           if exprArg.label != externalName {
             continue search
           }
         } else if exprArg.label != nil {
           continue search
         }
-        guard var valType = exprArg.val.type else { continue search }
+        guard let valSugaredType = exprArg.val.type else {
+          continue search
+        }
+        var valType = canonicalType(valSugaredType)
         let candType = canonicalType(candArg.type)
         // automatically coerce number literals.
         if propagateContextualType(candType, to: exprArg.val) {
           valType = candType
+        }
+        
+        // Even though they 'match', we don't want to demote an any to a specific
+        // type without being asked.
+        if candType != .any && valType == .any {
+          continue search
         }
         guard let rank = matchRank(candType, valType) else {
           continue search
@@ -650,7 +656,7 @@ public class ASTContext {
     return type.canCoerceTo(other)
   }
   
-  func foreignDecl(args: [DataType], ret: DataType) -> FuncDecl {
+  func foreignDecl(args: [DataType], ret: DataType, kind: FunctionKind = .free) -> FuncDecl {
     let assigns: [FuncArgumentAssignDecl] = args.map {
       let name = Identifier(name: "__implicit__")
       return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
@@ -660,6 +666,7 @@ public class ASTContext {
     return FuncDecl(name: "",
                     returnType: typeRef,
                     args: assigns,
+                    kind: kind,
                     body: nil,
                     modifiers: [.foreign, .implicit])
   }

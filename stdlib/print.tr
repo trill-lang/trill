@@ -1,5 +1,4 @@
 func print(_ value: Any) {
-  printf("[%s]: any value: %p\n", #function, value)
   if value is *Int8 {
     print(value as *Int8)
   } else if value is Int {

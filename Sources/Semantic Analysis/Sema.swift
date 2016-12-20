@@ -615,8 +615,13 @@ class Sema: ASTTransformer, Pass {
       name = lhs.name
       let assignedToField = visitFieldLookupExpr(lhs, callArgs: expr.args)
       guard let typeDecl = lhs.typeDecl else { return }
-      if case .function(let args, let ret)? = lhs.type, assignedToField {
-        candidates.append(context.foreignDecl(args: args, ret: ret))
+      if case .function(var args, let ret)? = lhs.type, assignedToField {
+        candidates.append(context.foreignDecl(args: args,
+                                              ret: ret,
+                                              kind: .property(type: typeDecl.type))
+                                 .addingImplicitSelf(typeDecl.type))
+        args.insert(typeDecl.type, at: 0)
+        lhs.type = .function(args: args, returnType: ret)
       }
       candidates += typeDecl.methods(named: lhs.name.name)
     case let lhs as VarExpr:
