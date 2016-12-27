@@ -1,0 +1,10 @@
+func buildStack(_ n: Int) {
+  if n == 0 {
+    trill_fatalError("Stack exploded!")
+  } else {
+    buildStack(n-1)
+  }
+}
+func main() {
+  buildStack(10)
+}

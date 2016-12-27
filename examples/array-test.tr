@@ -1,0 +1,13 @@
+func plusOne(_ a: Any) -> Any {
+  return (a as Int) + 1
+}
+func main() {
+  var arr = AnyArray()
+
+  for var i = 0; i < 100; i += 1 {
+    arr.append(i)
+  }
+
+  // arr.dump()
+  arr.map(plusOne).dump()
+}

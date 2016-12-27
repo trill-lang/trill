@@ -12,6 +12,7 @@ enum FunctionKind {
   case `operator`(op: BuiltinOperator)
   case `subscript`(type: DataType)
   case property(type: DataType)
+  case variable
   case free
 }
 
@@ -81,7 +82,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
          .deinitializer(let type), .subscript(let type),
          .property(let type):
       return type
-    case .operator, .free:
+    case .operator, .free, .variable:
       return nil
     }
   }

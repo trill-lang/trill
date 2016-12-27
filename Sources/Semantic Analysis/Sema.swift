@@ -251,7 +251,7 @@ class Sema: ASTTransformer, Pass {
         !expr.has(attribute: .implicit),
         !expr.isInitializer {
       error(SemaError.notAllPathsReturn(type: expr.returnType.type!),
-            loc: expr.name.range?.start,
+            loc: expr.sourceRange?.start,
             highlights: [
               expr.name.range,
               expr.returnType.sourceRange
@@ -631,7 +631,7 @@ class Sema: ASTTransformer, Pass {
       } else if let varDecl = varBindings[lhs.name.name] {
         let type = context.canonicalType(varDecl.type)
         if case .function(let args, let ret) = type {
-          candidates += [context.foreignDecl(args: args, ret: ret)]
+          candidates += [context.foreignDecl(args: args, ret: ret, kind: .variable)]
         } else {
           error(SemaError.callNonFunction(type: type),
                 loc: lhs.startLoc,

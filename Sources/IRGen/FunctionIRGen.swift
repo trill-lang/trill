@@ -233,6 +233,8 @@ extension IRGenerator {
     }
     if case .property = decl.kind {
       function = visit(expr.lhs)
+    } else if case .variable = decl.kind {
+      function = visit(expr.lhs)
     } else {
       function = codegenFunctionPrototype(decl)
     }

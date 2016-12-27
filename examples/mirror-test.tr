@@ -1,0 +1,21 @@
+type Foo {
+  let a: Int
+  let b: Bool
+  let c: Int8
+  let d: *Int8
+  let e: Any
+  // let f: (Bool, Any)
+}
+
+func main() {
+  var f = Foo(a: 1, b: true, c: 8, d: "Hello, world", e: false) //, f: (true, 1))
+
+  printf("f.a: %d\n", f.a)
+  let mirror = Mirror(reflecting: f)
+  mirror.set(value: 2, forKey: "a")
+  printf("mirror.set(value: 2, forKey: \"a\")\n")
+  f = mirror.value as Foo
+  printf("f.a: %d\n", f.a)
+
+  mirror.print()
+}

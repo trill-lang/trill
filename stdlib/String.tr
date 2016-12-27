@@ -15,7 +15,6 @@ type String {
         return self._storage.length
     }
     func cString() -> *Int8 {
-        self._storage.dump()
         return self._storage.bytes
     }
     mutating func append(_ char: Int8) {
@@ -106,4 +105,20 @@ type String {
 func ==(lhs: String, rhs: String) -> Bool {
   if lhs.length() != rhs.length() { return false }
   return strncmp(lhs._storage.bytes, rhs._storage.bytes, lhs.length() as UInt) == 0
+}
+
+func !=(lhs: String, rhs: String) -> Bool {
+  return !(lhs == rhs)
+}
+
+func +(lhs: String, rhs: String) -> String {
+  var copy = lhs.copy()
+  copy.append(rhs)
+  return copy
+}
+
+func +(lhs: *Int8, rhs: *Int8) -> String {
+  var str = String(cString: lhs)
+  str.append(rhs)
+  return str
 }

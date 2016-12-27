@@ -16,9 +16,15 @@ extension IRGenerator {
   
   func codegenPromoteToAny(value: LLVMValueRef, type: DataType) -> LLVMValueRef {
     if case .any = type {
-      // If we're promoting an existing Any value, then this should just be a
-      // copy of the existing value.
-      return codegenCopyAny(value: value)
+      if storage(for: type) == .reference {
+        // If we're promoting an existing Any value of a reference type, just
+        // thread it through.
+        return value
+      } else {
+        // If we're promoting an existing Any value of a value type, 
+        // then this should just be a copy of the existing value.
+        return codegenCopyAny(value: value)
+      }
     }
     let irType = resolveLLVMType(type)
     let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
@@ -34,7 +40,7 @@ extension IRGenerator {
   }
   
   func codegenCopyAny(value: LLVMValueRef) -> LLVMValueRef {
-    return buildCall(codegenIntrinsic(named: "trill_copyAny"), args: [value])
+    return buildCall(codegenIntrinsic(named: "trill_copyAny"), args: [value], resultName: "copy-any")
   }
   
   @discardableResult

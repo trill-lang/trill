@@ -1,0 +1,122 @@
+indirect type Bucket {
+  let key: String
+  let value: Any
+}
+
+type AnyDictionary {
+  var storage: *Bucket
+  var capacity: Int
+  var count: Int
+
+  init(capacity: Int) {
+    assert(capacity > 0, "Cannot initialize a dictionary with 0 capacity")
+    self.storage = calloc(capacity, sizeof(Any)) as *Bucket
+    self.capacity = capacity
+    self.count = 0
+  }
+  init() {
+    let capacity = 20
+    self.storage = calloc(capacity, sizeof(Any)) as *Bucket
+    self.capacity = capacity
+    self.count = 0
+  }
+
+  func _load() -> Double {
+    return (self.count as Double) / (self.capacity as Double)
+  }
+
+  mutating func _growIfNeeded() {
+    if self._load() < 0.75 {
+      return
+    }
+    let oldCap = self.capacity
+    self.capacity *= 2
+    self._rehash(oldCapacity: oldCap)
+  }
+
+  mutating func _shrinkIfNeeded() {
+    if self._load() > 0.5 {
+      return
+    }
+    let oldCap = self.capacity
+    self.capacity /= 2
+    self._rehash(oldCapacity: oldCap)
+  }
+
+  mutating func insert(_ bucket: Bucket) {
+    self._growIfNeeded()
+    let hash = bucket.key.hash()
+    var index = hash % self.capacity
+    while self.storage[index] != nil {
+      index += 1
+      if index >= self.capacity {
+        index = 0
+      }
+    }
+    self.count += 1
+    self.storage[index] = bucket
+  }
+
+  mutating func insert(_ value: Any, forKey key: String) {
+    self.insert(Bucket(key: key, value: value))
+  }
+
+  mutating func insert(_ value: Any, forKey key: *Int8) {
+    self.insert(Bucket(key: String(cString: key), value: value))
+  }
+
+  func contains(_ key: String) -> Bool {
+    return self._findBucket(key) != nil
+  }
+
+  func _findBucket(_ key: String) -> Bucket {
+    var index = key.hash()
+    while self.storage[index] != nil {
+      if self.storage[index].key == key {
+        return self.storage[index]
+      }
+      index += 1
+      if index >= self.capacity {
+        index = 0
+      }
+    }
+    return nil
+  }
+
+  subscript(_ key: *Int8) -> Any {
+    return self[String(cString: key)]
+  }
+
+  subscript(_ key: String) -> Any {
+    let bucket = self._findBucket(key)
+    if bucket == nil {
+      return nil
+    } else {
+      return bucket.value
+    }
+  }
+
+  mutating func _rehash(oldCapacity: Int) {
+    var oldStorage = self.storage
+    self.storage = calloc(self.capacity, sizeof(Any)) as *Bucket
+    for var i = 0; i < oldCapacity; i += 1 {
+      let bucket = self.storage[i]
+      if bucket == nil { continue }
+      self.insert(bucket)
+    }
+  }
+
+  func dump() {
+    printf("size: %d\ncapacity: %d\nelements: [\n", self.count, self.capacity)
+    for var i = 0; i < self.capacity; i += 1 {
+      let bucket = self.storage[i]
+      if bucket == nil {
+        printf("  <nil>\n")
+      } else {
+        printf("  \"%s\": ", bucket.key.cString())
+        println(bucket.value)
+      }
+    }
+    printf("]\n")
+  }
+}
