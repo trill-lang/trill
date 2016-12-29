@@ -315,6 +315,8 @@ class IRGenerator: ASTVisitor, Pass {
     let function = LLVMAddFunction(module, mainName, mainType)
     let entry = LLVMAppendBasicBlockInContext(llvmContext, function, "entry")
     LLVMPositionBuilderAtEnd(builder, entry)
+    
+    LLVMBuildCall(builder, codegenIntrinsic(named: "trill_init"), nil, 0, "")
         
     let val: LLVMValueRef?
     if hasArgcArgv {
