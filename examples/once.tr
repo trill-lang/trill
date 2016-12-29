@@ -1,0 +1,11 @@
+func onlyCalledOnce() {
+  printf("This function will only actually be called one time!\n")
+}
+
+let onceToken = 0 as UInt
+
+func main() {
+  for var i = 0; i < 100; i += 1 {
+    trill_once(&onceToken, onlyCalledOnce)
+  }
+}

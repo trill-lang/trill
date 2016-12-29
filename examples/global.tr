@@ -10,4 +10,5 @@ func garbage() -> Int {
 func main() {
   printf("Garbage hasn't been called yet\n")
   printf("Foo: %d, bar: %d\n", foo, bar)
+  printf("Bar: %d\n", bar)
 }
