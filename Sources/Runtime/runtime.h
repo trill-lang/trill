@@ -22,6 +22,8 @@ extern "C" {
 
 void trill_init();
 
+void trill_once(uint64_t *_Nonnull predicate, void (*_Nonnull initializer)());
+    
 void trill_printStackTrace();
   
 void *_Nonnull trill_alloc(size_t size);

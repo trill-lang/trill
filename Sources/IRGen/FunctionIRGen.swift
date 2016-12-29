@@ -20,7 +20,10 @@ extension IRGenerator {
     if let initial = initial {
       LLVMBuildStore(builder, initial, alloca)
     }
-    return VarBinding(ref: alloca, storage: storage)
+    return VarBinding(ref: alloca,
+                      storage: storage,
+                      read: { LLVMBuildLoad(self.builder, alloca, "") },
+                      write: { LLVMBuildStore(self.builder, $0, alloca) })
   }
   
   @discardableResult
@@ -131,7 +134,16 @@ extension IRGenerator {
         let type = arg.type
         let argType = resolveLLVMType(type)
         let storageKind = storage(for: type)
-        var ptr = VarBinding(ref: param, storage: storageKind)
+        let read: () -> LLVMValueRef
+        if arg.isImplicitSelf {
+          read = { param }
+        } else {
+          read = { LLVMBuildLoad(self.builder, param, "") }
+        }
+        var ptr = VarBinding(ref: param,
+                             storage: storageKind,
+                             read: read,
+                             write: { LLVMBuildStore(self.builder, $0, param) })
         if !arg.isImplicitSelf {
           ptr = createEntryBlockAlloca(function,
                                        type: argType,
@@ -175,28 +187,6 @@ extension IRGenerator {
     }
     LLVMRunFunctionPassManager(passManager, function)
     return function
-  }
-  
-  func codegenGlobalInit() -> Result {
-    let name = Mangler.mangle(FuncDecl(name: "globalInit", returnType: DataType.void.ref(), args: []))
-    let existing = LLVMGetNamedFunction(module, name)
-    if existing != nil { return existing! }
-    let fType = LLVMFunctionType(LLVMVoidType(), nil, 0, 0)
-    let function = LLVMAddFunction(module, name, fType)
-    let currBB = LLVMGetInsertBlock(builder)
-    let bb = LLVMAppendBasicBlockInContext(llvmContext, function, "entry")
-    LLVMPositionBuilderAtEnd(builder, bb)
-    let decl = codegenIntrinsic(named: "trill_init")
-    LLVMBuildCall(builder, decl, nil, 0, "")
-    LLVMPositionBuilderAtEnd(builder, currBB)
-    return function!
-  }
-  
-  func finalizeGlobalInit() {
-    let globalInit = codegenGlobalInit()
-    let entry = LLVMGetEntryBasicBlock(globalInit)
-    LLVMPositionBuilderAtEnd(builder, entry)
-    LLVMBuildRetVoid(builder)
   }
   
   func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {

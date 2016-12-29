@@ -14,6 +14,16 @@ extension IRGenerator {
     return codegenFunctionPrototype(decl)!
   }
   
+  @discardableResult
+  func codegenOnceCall(function: LLVMValueRef) -> (token: LLVMValueRef, call: LLVMValueRef) {
+    let token = LLVMAddGlobal(module, LLVMInt64Type(), "once_token")!
+    LLVMSetInitializer(token, LLVMConstNull(LLVMInt64Type()))
+    let call = buildCall(codegenIntrinsic(named: "trill_once"),
+                         args: [token, function],
+                         resultName: "")
+    return (token: token, call: call)
+  }
+  
   func codegenPromoteToAny(value: LLVMValueRef, type: DataType) -> LLVMValueRef {
     if case .any = type {
       if storage(for: type) == .reference {
@@ -117,7 +127,10 @@ extension IRGenerator {
         LLVMBuildCall(builder, register, buf.baseAddress, UInt32(buf.count), "")
       }
     }
-    return VarBinding(ref: res, storage: .reference)
+    return VarBinding(ref: res,
+                      storage: .reference,
+                      read: { LLVMBuildLoad(self.builder, res, "") },
+                      write: { LLVMBuildStore(self.builder, $0, res) })
   }
     
   

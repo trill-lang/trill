@@ -99,10 +99,8 @@ extension IRGenerator {
   }
   
   func visitVarExpr(_ expr: VarExpr) -> Result {
-    let (shouldLoad, _binding) = resolveVarBinding(expr)
-    guard let binding = _binding else { return nil }
-    if !shouldLoad { return binding.ref }
-    return LLVMBuildLoad(builder, binding.ref, expr.name.name)
+    guard let binding = resolveVarBinding(expr) else { return nil }
+    return binding.read()
   }
   
   func visitSizeofExpr(_ expr: SizeofExpr) -> Result {

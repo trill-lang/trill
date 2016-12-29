@@ -12,7 +12,10 @@ extension IRGenerator {
     let type = resolveLLVMType(decl.type)
     let global = LLVMAddGlobal(module, type, decl.name.name)!
     LLVMSetAlignment(global, 8)
-    let binding = VarBinding(ref: global, storage: .value)
+    let binding = VarBinding(ref: global,
+                             storage: .value,
+                             read: { return LLVMBuildLoad(self.builder, global, "") },
+                             write: { val in LLVMBuildStore(self.builder, val, global) })
     globalVarIRBindings[decl.name] = binding
     return binding
   }
@@ -36,23 +39,34 @@ extension IRGenerator {
       LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
       return binding
     }
-    if rhs is NumExpr || rhs is StringExpr || rhs is CharExpr {
+    if rhs is ConstantExpr {
       LLVMSetInitializer(binding.ref, visit(rhs))
+      return binding
     } else {
       LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
-      let globalInit = codegenGlobalInit()
-      let currentBB = LLVMGetInsertBlock(builder)
-      let entry = LLVMGetFirstBasicBlock(globalInit)!
-      LLVMPositionBuilderAtEnd(builder, entry)
-      let value = visit(rhs)!
-      LLVMBuildStore(builder, value, binding.ref)
-      LLVMPositionBuilderAtEnd(builder, currentBB)
+      let currentBlock = LLVMGetInsertBlock(builder)
+      
+      let initFn = LLVMAddFunction(module, "\(decl.name)_global_init",
+                                   LLVMFunctionType(LLVMVoidType(), nil, 0, 0))!
+      LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(initFn, "entry"))
+      LLVMBuildStore(builder, visit(rhs), binding.ref)
+      LLVMBuildRetVoid(builder)
+      
+      let lazyInit = LLVMAddFunction(module, "\(decl.name)_global_accessor",
+                                     LLVMFunctionType(llvmType, nil, 0, 0))!
+      LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(lazyInit, "entry"))
+      codegenOnceCall(function: initFn)
+      LLVMBuildRet(builder, LLVMBuildLoad(builder, binding.ref, "global-res"))
+      
+      LLVMPositionBuilderAtEnd(builder, currentBlock)
+      return VarBinding(ref: binding.ref, storage: binding.storage,
+                        read: { return LLVMBuildCall(self.builder, lazyInit, nil, 0, "") },
+                        write: { LLVMBuildStore(self.builder, $0, binding.ref) })
     }
-    return binding
   }
   
   func visitGlobalVarAssignExpr(_ decl: VarAssignDecl) -> Result {
-    return visitGlobal(decl).ref
+    return nil
   }
   
   func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {

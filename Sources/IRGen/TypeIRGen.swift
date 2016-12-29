@@ -217,7 +217,7 @@ extension IRGenerator {
     case let expr as FieldLookupExpr:
       return elementPtr(expr)
     case let expr as VarExpr:
-      guard case (_, let binding?) = resolveVarBinding(expr) else {
+      guard let binding = resolveVarBinding(expr) else {
         fatalError("no binding?")
       }
       return binding.ref

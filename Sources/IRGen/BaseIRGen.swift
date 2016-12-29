@@ -103,22 +103,6 @@ struct FunctionState {
   let resultAlloca: LLVMValueRef?
 }
 
-/// Possible ways a binding should be accessed. Determines if a binding
-/// is a value or reference type, and
-enum Storage {
-  /// The binding will always be passed by value into functions.
-  case value
-  
-  /// The binding will always be passed by reference into functions
-  case reference
-}
-
-/// Represents a variable binding and its corresponding binding type.
-struct VarBinding {
-  let ref: LLVMValueRef
-  let storage: Storage
-}
-
 /// Generates and executes LLVM IR for a given AST.
 class IRGenerator: ASTVisitor, Pass {
   
@@ -279,7 +263,6 @@ class IRGenerator: ASTVisitor, Pass {
     }
     try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit)
     let main = try codegenMain(forJIT: true)
-    finalizeGlobalInit()
     try validateModule()
     
     print(args)
@@ -332,9 +315,7 @@ class IRGenerator: ASTVisitor, Pass {
     let function = LLVMAddFunction(module, mainName, mainType)
     let entry = LLVMAppendBasicBlockInContext(llvmContext, function, "entry")
     LLVMPositionBuilderAtEnd(builder, entry)
-    
-    LLVMBuildCall(builder, codegenGlobalInit(), nil, 0, "")
-    
+        
     let val: LLVMValueRef?
     if hasArgcArgv {
       var args = [
@@ -360,7 +341,6 @@ class IRGenerator: ASTVisitor, Pass {
     if mainFunction != nil {
       try codegenMain(forJIT: false)
     }
-    finalizeGlobalInit()
     try validateModule()
     let outputBase = options.isStdin ? "out" : output ?? options.filenames.first ?? "out"
     let outputFilename = type.addExtension(to: outputBase)
@@ -529,19 +509,22 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will search first through local and global bindings, then will search
   /// through free functions at global scope.
   /// Will always resolve to a pointer.
-  func resolveVarBinding(_ expr: VarExpr) -> (Bool, VarBinding?) {
+  func resolveVarBinding(_ expr: VarExpr) -> VarBinding? {
     if let binding = varIRBindings[expr.name] ?? globalVarIRBindings[expr.name] {
-      var shouldLoad = true
-      if expr.isSelf && storage(for: expr.type!) == .reference {
-        shouldLoad = false
-      }
-      return (shouldLoad, binding)
+      return binding
     } else if let global = context.global(named: expr.name) {
-      return (true, visitGlobal(global))
+      return visitGlobal(global)
     } else if let funcDecl = expr.decl as? FuncDecl {
       let mangled = Mangler.mangle(funcDecl)
       if let function = LLVMGetNamedFunction(module, mangled) {
-        return (false, VarBinding(ref: function, storage: .value))
+        let binding = VarBinding(ref: function, storage: .value,
+                                 read: {
+                                   return function
+                                 },
+                                 write: { value in
+                                   fatalError("Cannot reassign function")
+                                 })
+        return binding
       }
     }
     fatalError("unknown var \(expr.name.name)")

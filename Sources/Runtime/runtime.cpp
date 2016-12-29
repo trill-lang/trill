@@ -11,6 +11,7 @@
 #include <libgen.h>
 #include <inttypes.h>
 #include <string>
+#include <mutex>
 #include <cxxabi.h>
 #include <signal.h>
 
@@ -35,6 +36,10 @@ std::string demangle(std::string symbol) {
   }
   out = symbol;
   return out;
+}
+    
+void trill_once(uint64_t *predicate, void (*initializer)()) {
+    std::call_once(*((std::once_flag *)predicate), initializer);
 }
 
 void trill_printStackTrace() {
