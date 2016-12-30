@@ -29,6 +29,9 @@ enum Mangler {
       case .method(let type):
         s += "M" + mangle(type, root: false)
         s += d.name.name.withCount
+      case .staticMethod(let type):
+        s += "m" + mangle(type, root: false)
+        s += d.name.name.withCount
       case .operator(let op):
         s += "O"
         switch op {

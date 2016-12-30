@@ -181,6 +181,9 @@ class ASTTransformer: ASTVisitor {
       for method in decl.methods {
         visitFuncDecl(method)
       }
+      for method in decl.staticMethods {
+        visitFuncDecl(method)
+      }
       for field in decl.fields {
         visitVarAssignDecl(field)
       }

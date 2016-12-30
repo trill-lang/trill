@@ -141,6 +141,12 @@ bool demangleFunction(std::string &symbol, std::string &out) {
       if (!readType(symbol, out)) { return false; }
       out += '.';
       if (!readName(symbol, out)) { return false; }
+    } else if (symbol.front() == 'm') {
+      symbol.erase(0, 1);
+      out += "static ";
+      if (!readType(symbol, out)) { return false; }
+      out += '.';
+      if (!readName(symbol, out)) { return false; }
     } else if (symbol.front() == 'I') {
       symbol.erase(0, 1);
       if (!readType(symbol, out)) { return false; }

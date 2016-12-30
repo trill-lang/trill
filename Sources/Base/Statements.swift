@@ -144,18 +144,27 @@ class ContinueStmt: Stmt {
 
 class ExtensionDecl: Decl {
   let methods: [FuncDecl]
+  let staticMethods: [FuncDecl]
   let subscripts: [SubscriptDecl]
   let typeRef: TypeRefExpr
   var typeDecl: TypeDecl?
-    init(type: TypeRefExpr, methods: [FuncDecl], subscripts: [SubscriptDecl], sourceRange: SourceRange? = nil) {
+  init(type: TypeRefExpr,
+       methods: [FuncDecl],
+       staticMethods: [FuncDecl],
+       subscripts: [SubscriptDecl],
+       sourceRange: SourceRange? = nil) {
     self.methods = methods.map { $0.addingImplicitSelf(type.type!) }
     self.subscripts = subscripts.map { $0.addingImplicitSelf(type.type!) }
+    self.staticMethods = staticMethods
     self.typeRef = type
     super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)
   }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? ExtensionDecl else { return false }
-    return methods == node.methods && typeRef == node.typeRef
+    return   methods == node.methods
+          && subscripts == node.subscripts
+          && staticMethods == node.staticMethods
+          && typeRef == node.typeRef
   }
 }
 

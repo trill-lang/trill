@@ -6,13 +6,13 @@
 import Foundation
 
 extension Diagnostic.DiagnosticType {
-    var color: ANSIColor {
-        switch self {
-        case .error: return .red
-        case .warning: return .magenta
-        case .note: return .green
-        }
+  var color: ANSIColor {
+    switch self {
+    case .error: return .red
+    case .warning: return .magenta
+    case .note: return .green
     }
+  }
 }
 
 protocol DiagnosticConsumer: class {
@@ -26,26 +26,11 @@ extension DiagnosticConsumer {
 
 class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
   let files: [SourceFile]
-  let colored: Bool
-  
-  var stream: StreamType
+  var stream: ColoredStream<StreamType>
   
   init(files: [SourceFile], stream: inout StreamType, colored: Bool) {
     self.files = files
-    self.colored = colored
-    self.stream = stream
-  }
-  
-  func with(_ colors: [ANSIColor], block: () -> ()) {
-    if colored {
-      for color in colors {
-        stream.write(color.rawValue)
-      }
-    }
-    block()
-    if colored {
-      stream.write(ANSIColor.reset.rawValue)
-    }
+    self.stream = ColoredStream(&stream, colored: colored)
   }
   
   func highlightString(forDiag diag: Diagnostic) -> String {
@@ -82,24 +67,18 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
   
   func consume(_ diagnostic: Diagnostic) {
     let file = sourceFile(for: diagnostic)
-    with([.bold, diagnostic.diagnosticType.color]) {
-        stream.write("\(diagnostic.diagnosticType): ")
-    }
-    with([.bold]) {
-      stream.write("\(diagnostic.message)\n")
-    }
+    stream.write("\(diagnostic.diagnosticType): ",
+                 with: [.bold, diagnostic.diagnosticType.color])
+    stream.write("\(diagnostic.message)\n", with: [.bold])
     if let loc = diagnostic.loc,
-       let line = file?.lines[loc.line - 1],
-       loc.line > 0 {
-      with([.bold]) {
-        stream.write(" --> ")
-      }
+      let line = file?.lines[loc.line - 1],
+      loc.line > 0 {
+      stream.write(" --> ", with: [.bold])
       let filename = file?.path.basename ?? "<unknown>"
       stream.write("\(filename)")
       if let sourceLoc = diagnostic.loc {
-        with([.bold]) {
-          stream.write(":\(sourceLoc.line):\(sourceLoc.column)")
-        }
+        stream.write(":\(sourceLoc.line):\(sourceLoc.column)",
+          with: [.bold])
       }
       stream.write("\n")
       let lineStr = "\(loc.line)"
@@ -107,9 +86,8 @@ class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
       stream.write(" \(indentation)|\n")
       stream.write(" \(lineStr)| \(line)\n")
       stream.write(" \(indentation)| ")
-      with([.bold, .green]) {
-        stream.write(highlightString(forDiag: diagnostic))
-      }
+      stream.write(highlightString(forDiag: diagnostic),
+                   with: [.bold, .green])
       stream.write("\n\n")
     }
   }

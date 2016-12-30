@@ -200,16 +200,18 @@ extension IRGenerator {
     var args = expr.args
     
     let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
-      if case .property? = expr.decl?.kind {
+      guard let kind = expr.decl?.kind else { return nil }
+      switch kind {
+      case .subscript:
+        return expr.lhs
+      case .staticMethod, .property:
+        return nil
+      default:
+        if let field = expr.lhs as? FieldLookupExpr {
+          return field.lhs
+        }
         return nil
       }
-      if case .subscript? = expr.decl?.kind {
-        return expr.lhs
-      }
-      if let field = expr.lhs as? FieldLookupExpr {
-        return field.lhs
-      }
-      return nil
     }
     
     if

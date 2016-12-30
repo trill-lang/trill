@@ -23,7 +23,7 @@ extension IRGenerator {
       LLVMStructSetBody(structure, buf.baseAddress, UInt32(buf.count), 0)
     }
     
-    for method in expr.methods {
+    for method in expr.methods + expr.staticMethods {
       codegenFunctionPrototype(method)
     }
     
@@ -160,7 +160,7 @@ extension IRGenerator {
   ///   - expr: The ExtensionDecl to declare.
   @discardableResult
   func codegenExtensionPrototype(_ expr: ExtensionDecl) {
-    for method in expr.methods {
+    for method in expr.methods + expr.staticMethods {
       codegenFunctionPrototype(method)
     }
   }
@@ -175,13 +175,14 @@ extension IRGenerator {
     _ = expr.methods.map(visitFuncDecl)
     _ = expr.deinitializer.map(visitFuncDecl)
     _ = expr.subscripts.map(visitFuncDecl)
+    _ = expr.staticMethods.map(visitFuncDecl)
     
     return structure
   }
   
   @discardableResult
   func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
-    for method in expr.methods {
+    for method in expr.methods + expr.staticMethods {
       _ = visit(method)
     }
     return nil

@@ -168,10 +168,12 @@ class Decl: ASTNode {
 class TypeDecl: Decl {
   private(set) var fields: [VarAssignDecl]
   private(set) var methods = [FuncDecl]()
+  private(set) var staticMethods = [FuncDecl]()
   private(set) var subscripts = [SubscriptDecl]()
   private(set) var initializers = [FuncDecl]()
   private var fieldDict = [String: DataType]()
   private var methodDict = [String: [FuncDecl]]()
+  private var staticMethodDict = [String: [FuncDecl]]()
   
   let name: Identifier
   let deinitializer: FuncDecl?
@@ -194,6 +196,13 @@ class TypeDecl: Decl {
     methodDict[name] = methods
   }
   
+  func addStaticMethod(_ decl: FuncDecl, named name: String) {
+    self.staticMethods.append(decl)
+    var methods = staticMethodDict[name] ?? []
+    methods.append(decl)
+    staticMethodDict[name] = methods
+  }
+  
   func addSubscript(_ decl: SubscriptDecl) {
     let subscriptDecl = decl.hasImplicitSelf ? decl : decl.addingImplicitSelf(self.type)
     self.subscripts.append(subscriptDecl)
@@ -206,6 +215,10 @@ class TypeDecl: Decl {
   
   func methods(named name: String) -> [FuncDecl] {
     return methodDict[name] ?? []
+  }
+  
+  func staticMethods(named name: String) -> [FuncDecl] {
+    return staticMethodDict[name] ?? []
   }
   
   func field(named name: String) -> VarAssignDecl? {
@@ -239,6 +252,7 @@ class TypeDecl: Decl {
   init(name: Identifier,
        fields: [VarAssignDecl],
        methods: [FuncDecl] = [],
+       staticMethods: [FuncDecl] = [],
        initializers: [FuncDecl] = [],
        subscripts: [SubscriptDecl] = [],
        modifiers: [DeclModifier] = [],
@@ -256,6 +270,9 @@ class TypeDecl: Decl {
     super.init(type: type, modifiers: modifiers, sourceRange: sourceRange)
     for method in methods {
       self.addMethod(method, named: method.name.name)
+    }
+    for method in staticMethods {
+      self.addStaticMethod(method, named: method.name.name)
     }
     for subscriptDecl in subscripts {
       self.addSubscript(subscriptDecl)

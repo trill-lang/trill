@@ -157,7 +157,9 @@ extension Parser {
                                  sourceRange: range(start: loc))
         } else if case .number(let n, _) = peek() {
           let tok = consumeToken()
-          expr = TupleFieldLookupExpr(lhs: expr, field: Int(n), fieldRange: tok.range)
+            expr = TupleFieldLookupExpr(lhs: expr, field: Int(n),
+                                        fieldRange: tok.range,
+                                        sourceRange: range(start: startLoc))
         } else {
           throw unexpectedToken()
         }

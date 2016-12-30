@@ -33,7 +33,11 @@ extension Parser {
     } else {
       try consume(.func)
       if let type = type {
-        kind = .method(type: type)
+        if modifiers.contains(.static) {
+          kind = .staticMethod(type: type)
+        } else {
+          kind = .method(type: type)
+        }
       } else if case .operator(let op) = peek() {
         let tok = consumeToken()
         nameRange = tok.range

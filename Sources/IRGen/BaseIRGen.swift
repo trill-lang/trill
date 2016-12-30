@@ -399,6 +399,9 @@ class IRGenerator: ASTVisitor, Pass {
       for method in type.methods {
         codegenFunctionPrototype(method)
       }
+      for method in type.staticMethods {
+        codegenFunctionPrototype(method)
+      }
     }
     for ext in context.extensions {
       codegenExtensionPrototype(ext)

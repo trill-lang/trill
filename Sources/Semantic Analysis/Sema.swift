@@ -146,6 +146,10 @@ enum SemaError: Error, CustomStringConvertible {
   }
 }
 
+enum FieldKind {
+  case method, staticMethod, property
+}
+
 class Sema: ASTTransformer, Pass {
   var varBindings = [String: VarAssignDecl]()
   
@@ -189,7 +193,7 @@ class Sema: ASTTransformer, Pass {
         fieldNames.insert(field.name.name)
       }
       var methodNames = Set<String>()
-      for method in expr.methods {
+      for method in expr.methods + expr.staticMethods {
         let mangled = Mangler.mangle(method)
         if methodNames.contains(mangled) {
           error(SemaError.duplicateMethod(name: method.name,
@@ -359,12 +363,12 @@ class Sema: ASTTransformer, Pass {
   }
   
   /// - returns: true if the resulting decl is a field of function type,
-  ///           instead of a method
-  func visitFieldLookupExpr(_ expr: FieldLookupExpr, callArgs: [Argument]?) -> Bool {
+  ///            instead of a method
+  func visitFieldLookupExpr(_ expr: FieldLookupExpr, callArgs: [Argument]?) -> FieldKind {
     super.visitFieldLookupExpr(expr)
     guard let type = expr.lhs.type else {
       // An error will already have been thrown from here
-      return false
+      return .property
     }
     if case .function = type {
       error(SemaError.fieldOfFunctionType(type: type),
@@ -372,7 +376,7 @@ class Sema: ASTTransformer, Pass {
             highlights: [
               expr.sourceRange
         ])
-      return false
+      return .property
     }
     guard let typeDecl = context.decl(for: type) else {
       error(SemaError.unknownType(type: type.rootType),
@@ -380,9 +384,14 @@ class Sema: ASTTransformer, Pass {
             highlights: [
               expr.sourceRange
         ])
-      return false
+      return .property
     }
     expr.typeDecl = typeDecl
+    if let varExpr = expr.lhs as? VarExpr, varExpr.isTypeVar {
+      expr.decl = varExpr.decl
+      expr.type = varExpr.decl?.type
+      return .staticMethod
+    }
     let candidateMethods = typeDecl.methods(named: expr.name.name)
     if let callArgs = callArgs,
        let index = typeDecl.indexOf(fieldName: expr.name) {
@@ -392,34 +401,34 @@ class Sema: ASTTransformer, Pass {
         if types.count == callArgs.count && args == types {
           expr.decl = field
           expr.type = field.type
-          return true
+          return .property
         }
       }
     }
     if let decl = typeDecl.field(named: expr.name.name) {
       expr.decl = decl
       expr.type = decl.type
-      return true
+      return .property
     } else if !candidateMethods.isEmpty {
       if let args = callArgs,
          let funcDecl = context.candidate(forArgs: args, candidates: candidateMethods) {
         expr.decl = funcDecl
         let types = funcDecl.args.map { $0.type }
         expr.type = .function(args: types, returnType: funcDecl.returnType.type!)
-        return false
+        return .method
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
               loc: expr.startLoc,
               highlights: [
                 expr.sourceRange
           ])
-        return false
+        return .property
       }
     } else {
       error(SemaError.unknownField(typeDecl: typeDecl, expr: expr),
             loc: expr.startLoc,
             highlights: [ expr.name.range ])
-      return false
+      return .property
     }
   }
   
@@ -560,6 +569,10 @@ class Sema: ASTTransformer, Pass {
           ])
         return
       }
+    } else if let decl = context.decl(for: DataType(name: expr.name.name)) {
+      expr.isTypeVar = true
+      expr.decl = decl
+      expr.type = DataType(name: expr.name.name)
     }
     guard let decl = expr.decl else {
       error(SemaError.unknownVariableName(name: expr.name),
@@ -613,17 +626,25 @@ class Sema: ASTTransformer, Pass {
     switch expr.lhs {
     case let lhs as FieldLookupExpr:
       name = lhs.name
-      let assignedToField = visitFieldLookupExpr(lhs, callArgs: expr.args)
-      guard let typeDecl = lhs.typeDecl else { return }
-      if case .function(var args, let ret)? = lhs.type, assignedToField {
-        candidates.append(context.foreignDecl(args: args,
-                                              ret: ret,
-                                              kind: .property(type: typeDecl.type))
-                                 .addingImplicitSelf(typeDecl.type))
-        args.insert(typeDecl.type, at: 0)
-        lhs.type = .function(args: args, returnType: ret)
+      let fieldKind = visitFieldLookupExpr(lhs, callArgs: expr.args)
+      guard let typeDecl = lhs.typeDecl else {
+        return
       }
-      candidates += typeDecl.methods(named: lhs.name.name)
+      switch fieldKind {
+      case .property:
+        if case .function(var args, let ret)? = lhs.type {
+          candidates.append(context.foreignDecl(args: args,
+                                                ret: ret,
+                                                kind: .property(type: typeDecl.type))
+            .addingImplicitSelf(typeDecl.type))
+          args.insert(typeDecl.type, at: 0)
+          lhs.type = .function(args: args, returnType: ret)
+        }
+      case .staticMethod:
+        candidates += typeDecl.staticMethods(named: lhs.name.name)
+      case .method:
+        candidates += typeDecl.methods(named: lhs.name.name)
+      }
     case let lhs as VarExpr:
       name = lhs.name
       if let typeDecl = context.decl(for: DataType(name: lhs.name.name)) {

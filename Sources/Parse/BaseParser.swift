@@ -252,6 +252,7 @@ class Parser {
     }
     consumeToken()
     var methods = [FuncDecl]()
+    var staticMethods = [FuncDecl]()
     var subscripts = [SubscriptDecl]()
     while true {
       if case .rightBrace = peek() {
@@ -261,7 +262,12 @@ class Parser {
       let attrs = try parseAttributes()
       switch peek() {
       case .func:
-        methods.append(try parseFuncDecl(attrs, forType: type.type))
+        let decl = try parseFuncDecl(attrs, forType: type.type)
+        if attrs.contains(.static) {
+          staticMethods.append(decl)
+        } else {
+          methods.append(decl)
+        }
       case .subscript:
         subscripts.append(try parseFuncDecl(attrs, forType: type.type) as! SubscriptDecl)
       default:
@@ -269,7 +275,9 @@ class Parser {
                                loc: sourceLoc)
       }
     }
-    return ExtensionDecl(type: type, methods: methods,
+    return ExtensionDecl(type: type,
+                         methods: methods,
+                         staticMethods: staticMethods,
                          subscripts: subscripts,
                          sourceRange: range(start: startLoc))
   }
@@ -294,6 +302,7 @@ class Parser {
     try consume(.leftBrace)
     var fields = [VarAssignDecl]()
     var methods = [FuncDecl]()
+    var staticMethods = [FuncDecl]()
     var subscripts = [SubscriptDecl]()
     var initializers = [FuncDecl]()
     var deinitializer: FuncDecl?
@@ -308,7 +317,12 @@ class Parser {
       case .poundError, .poundWarning:
         context.add(try parsePoundDiagnosticExpr())
       case .func:
-        methods.append(try parseFuncDecl(attrs, forType: type))
+        let decl = try parseFuncDecl(attrs, forType: type)
+        if decl.has(attribute: .static) {
+          staticMethods.append(decl)
+        } else {
+          methods.append(decl)
+        }
       case .Init:
         initializers.append(try parseFuncDecl(attrs, forType: type))
       case .subscript:
@@ -325,12 +339,14 @@ class Parser {
       }
       try consumeAtLeastOneLineSeparator()
     }
-    return TypeDecl(name: name, fields: fields, methods: methods,
-                        initializers: initializers,
-                        subscripts: subscripts,
-                        modifiers: modifiers,
-                        deinit: deinitializer,
-                        sourceRange: range(start: startLoc))
+    return TypeDecl(name: name, fields: fields,
+                    methods: methods,
+                    staticMethods: staticMethods,
+                    initializers: initializers,
+                    subscripts: subscripts,
+                    modifiers: modifiers,
+                    deinit: deinitializer,
+                    sourceRange: range(start: startLoc))
   }
   
   /// Braced Expression Block
