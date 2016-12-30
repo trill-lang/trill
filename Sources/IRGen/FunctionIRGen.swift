@@ -135,7 +135,7 @@ extension IRGenerator {
         let argType = resolveLLVMType(type)
         let storageKind = storage(for: type)
         let read: () -> LLVMValueRef
-        if arg.isImplicitSelf {
+        if arg.isImplicitSelf && storageKind == .reference {
           read = { param }
         } else {
           read = { LLVMBuildLoad(self.builder, param, "") }

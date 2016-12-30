@@ -264,8 +264,6 @@ class IRGenerator: ASTVisitor, Pass {
     try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit)
     let main = try codegenMain(forJIT: true)
     try validateModule()
-    
-    print(args)
     return args.withCArrayOfCStrings { argv in
       return LLVMRunFunctionAsMain(jit, main, UInt32(args.count), argv, nil)
     }
@@ -299,7 +297,7 @@ class IRGenerator: ASTVisitor, Pass {
         throw LLVMError.noMainFunction
     }
     let hasArgcArgv = mainFlags.contains(.args)
-    let ret = mainFlags.contains(.exitCode) ? resolveLLVMType(.int64) : LLVMVoidType()
+    let ret = resolveLLVMType(.int64)
     
     var params = [
       LLVMInt32Type(),
@@ -334,7 +332,7 @@ class IRGenerator: ASTVisitor, Pass {
     if mainFlags.contains(.exitCode) {
       LLVMBuildRet(builder, val)
     } else {
-      LLVMBuildRetVoid(builder)
+      LLVMBuildRet(builder, LLVMConstNull(ret))
     }
     return function!
   }
