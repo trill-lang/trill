@@ -11,10 +11,27 @@ extension String {
   }
 }
 
+enum GlobalDeclKind {
+  case initializer, accessor
+}
+
 enum Mangler {
   static func mangle(_ c: ClosureExpr, in d: FuncDecl) -> String {
     return "_WC" + mangle(d, root: false)  // FIXME: number closures.
   }
+  
+  static func mangle(global decl: VarAssignDecl, kind: GlobalDeclKind) -> String {
+    var s = "_W"
+    switch kind {
+    case .initializer:
+      s.append("G")
+    case .accessor:
+      s.append("g")
+    }
+    s += decl.name.name.withCount
+    return s
+  }
+  
   static func mangle(_ d: FuncDecl, root: Bool = true) -> String {
     if d.has(attribute: .foreign) {
       return d.name.name

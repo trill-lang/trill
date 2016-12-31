@@ -46,13 +46,13 @@ extension IRGenerator {
       LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
       let currentBlock = LLVMGetInsertBlock(builder)
       
-      let initFn = LLVMAddFunction(module, "\(decl.name)_global_init",
+      let initFn = LLVMAddFunction(module, Mangler.mangle(global: decl, kind: .initializer),
                                    LLVMFunctionType(LLVMVoidType(), nil, 0, 0))!
       LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(initFn, "entry"))
       LLVMBuildStore(builder, visit(rhs), binding.ref)
       LLVMBuildRetVoid(builder)
       
-      let lazyInit = LLVMAddFunction(module, "\(decl.name)_global_accessor",
+      let lazyInit = LLVMAddFunction(module, Mangler.mangle(global: decl, kind: .accessor),
                                      LLVMFunctionType(llvmType, nil, 0, 0))!
       LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(lazyInit, "entry"))
       codegenOnceCall(function: initFn)

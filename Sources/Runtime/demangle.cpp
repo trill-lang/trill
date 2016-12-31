@@ -201,6 +201,14 @@ bool demangleType(std::string &symbol, std::string &out) {
   symbol.erase(0, 1);
   return readType(symbol, out);
 }
+  
+bool demangleGlobal(std::string &symbol, std::string &out, const char *kind) {
+  symbol.erase(0, 1);
+  out += kind;
+  out += " for global ";
+  if (!readName(symbol, out)) { return false; }
+  return true;
+}
 
 bool demangleClosure(std::string &symbol, std::string &out) {
   assert(false && "closure demangling is unimplemented");
@@ -221,7 +229,11 @@ bool demangle(std::string &symbol, std::string &out) {
   case 'F':
     return demangleFunction(symbol, out);
   case 'T':
-    return demangleType(symbol, out);
+      return demangleType(symbol, out);
+  case 'g':
+    return demangleGlobal(symbol, out, "accessor");
+  case 'G':
+    return demangleGlobal(symbol, out, "initializer");
   }
   return false;
 }

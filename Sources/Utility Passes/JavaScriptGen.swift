@@ -64,19 +64,24 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   
   override func visitCompoundStmt(_ stmt: CompoundStmt) {
     stream.write("{\n")
+    writeCompoundBody(stmt)
+    write("}")
+  }
+  
+  func writeCompoundBody(_ stmt: CompoundStmt) {
     withIndent {
       withScope(stmt) {
         for e in stmt.exprs {
           write("")
           visit(e)
-          if (!(e is IfStmt || e is ForStmt || e is WhileStmt)) {
+          if (!(e is IfStmt || e is ForStmt || e is WhileStmt || e is SwitchStmt)) {
             stream.write(";")
           }
           stream.write("\n")
         }
       }
     }
-    write("}")
+
   }
   
   override func visitClosureExpr(_ expr: ClosureExpr) -> Result {
@@ -87,7 +92,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitExtensionDecl(_ expr: ExtensionDecl) {
-    for method in expr.methods {
+    for method in expr.methods + expr.staticMethods {
       visitFuncDecl(method)
     }
   }
@@ -98,14 +103,26 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     write("function \(Mangler.mangle(expr))(\(names.joined(separator: ", "))) ")
     if expr.isInitializer {
       stream.write("{\n")
-      withIndent {
-        write("return {\n")
+      if expr.has(attribute: .implicit) {
         withIndent {
-          for arg in names {
-            write("\(arg): \(arg),\n")
+          write("return {\n")
+          withIndent {
+            for arg in names {
+              write("\(arg): \(arg),\n")
+            }
           }
+          write("};\n")
         }
-        write("}\n")
+      } else {
+        withIndent {
+          write("var self = {};\n")
+        }
+        if let body = expr.body {
+          writeCompoundBody(body)
+        }
+        withIndent {
+          write("return self;\n")
+        }
       }
       stream.write("}\n")
     } else {
@@ -120,27 +137,33 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
-    withParens {
+    let emit: () -> Void = {
       if case .as = expr.op {
-        visit(expr.lhs)
+        self.visit(expr.lhs)
         return
       }
       
       if let decl = expr.decl,
         !decl.has(attribute: .foreign),
         !decl.has(attribute: .implicit) {
-        stream.write(Mangler.mangle(decl))
-        stream.write("(")
-        visit(expr.lhs)
-        stream.write(", ")
-        visit(expr.rhs)
-        stream.write(")")
+        self.stream.write(Mangler.mangle(decl))
+        self.stream.write("(")
+        self.visit(expr.lhs)
+        self.stream.write(", ")
+        self.visit(expr.rhs)
+        self.stream.write(")")
         return
       }
       
-      visit(expr.lhs)
-      stream.write(" \(expr.op.rawValue) ")
-      visit(expr.rhs)
+      self.visit(expr.lhs)
+      self.stream.write(" \(expr.op.rawValue) ")
+      self.visit(expr.rhs)
+    }
+    
+    if expr.op.isAssign {
+      emit()
+    } else {
+      withParens(emit)
     }
   }
   
@@ -317,7 +340,11 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
-    withParens {
+    if !(expr.lhs is VarExpr) {
+      withParens {
+        visit(expr.lhs)
+      }
+    } else {
       visit(expr.lhs)
     }
     stream.write(".\(expr.name)")
@@ -354,6 +381,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
     if decl.has(attribute: .foreign) { return }
+    if currentType != nil && currentFunction == nil { return }
     stream.write("var \(decl.name)")
     if let rhs = decl.rhs {
       stream.write(" = ")

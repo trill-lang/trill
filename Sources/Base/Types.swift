@@ -264,7 +264,7 @@ class TypeDecl: Decl {
     self.deinitializer = `deinit`?.addingImplicitSelf(type)
     let synthInit = TypeDecl.synthesizeInitializer(fields: fields,
                                                        name: name,
-                                                       modifiers: modifiers)
+                                                       modifiers: modifiers + [.implicit])
     self.initializers.append(synthInit)
     self.name = name
     super.init(type: type, modifiers: modifiers, sourceRange: sourceRange)
