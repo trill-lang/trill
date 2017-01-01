@@ -14,10 +14,7 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   var stream: ColoredStream<StreamType>
   init(stream: inout StreamType, context: ASTContext, files: [SourceFile], colored: Bool) {
     self.stream = ColoredStream(&stream, colored: colored)
-    self.sourceFiles = Set(files.flatMap { sourceFile in
-      guard case .file(let url) = sourceFile.path else { return nil }
-      return url.lastPathComponent
-    })
+    self.sourceFiles = Set(files.map { $0.path.basename })
     super.init(context: context)
   }
   
