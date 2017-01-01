@@ -37,6 +37,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       stream.write("=")
       if attr.hasPrefix("\"") {
         stream.write(attr, with: [.red])
+      } else if attr == "true" || attr == "false" ||
+                Int(attr) != nil || Double(attr) != nil {
+        stream.write(attr, with: [.cyan])
       } else {
         stream.write(attr)
       }
@@ -90,10 +93,14 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
     printNode(expr)
   }
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
-    printNode(decl)
+    printNode(decl) {
+      super.visitVarAssignDecl(decl)
+    }
   }
   override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
-    printNode(decl)
+    printNode(decl) {
+      super.visitFuncArgumentAssignDecl(decl)
+    }
   }
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
     guard decl.startLoc != nil else { return }

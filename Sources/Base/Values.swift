@@ -10,7 +10,7 @@ class Expr: ASTNode {
   override func attributes() -> [String : Any] {
     var attrs = super.attributes()
     if let type = type {
-      attrs["type"] = type
+      attrs["type"] = "\(type)"
     }
     return attrs
   }
@@ -267,7 +267,9 @@ class VarExpr: Expr, LValue {
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["name"] = name.name
-    superAttrs["isTypeVar"] = isTypeVar
+    if isTypeVar {
+      superAttrs["isTypeVar"] = true
+    }
     return superAttrs
   }
 }
