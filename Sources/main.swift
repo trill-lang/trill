@@ -40,19 +40,6 @@ func populate(driver: Driver, options: Options,
       context.merge(context: file.context)
     }
   }
-  switch options.mode {
-  case .emit(.ast):
-    driver.add("Dumping the AST") { context in
-      return ASTDumper(stream: &stdout, context: context, colored: isATTY).run(in: context)
-    }
-    return
-  case .prettyPrint:
-    driver.add("Pretty Printing the AST") { context in
-      return ASTPrinter(stream: &stdout, context: context).run(in: context)
-    }
-    return
-  default: break
-  }
   
   if options.importC {
     let irgen = try IRGenerator(context: context,
@@ -64,6 +51,23 @@ func populate(driver: Driver, options: Options,
   }
   driver.add(pass: Sema.self)
   driver.add(pass: TypeChecker.self)
+  
+  switch options.mode {
+  case .emit(.ast):
+    driver.add("Dumping the AST") { context in
+      return ASTDumper(stream: &stdout,
+                       context: context,
+                       files: sourceFiles,
+                       colored: isATTY).run(in: context)
+    }
+    return
+  case .prettyPrint:
+    driver.add("Pretty Printing the AST") { context in
+      return ASTPrinter(stream: &stdout, context: context).run(in: context)
+    }
+    return
+  default: break
+  }
   
   if case .onlyDiagnostics = options.mode { return }
   

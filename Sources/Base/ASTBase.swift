@@ -132,11 +132,7 @@ class ASTNode: Equatable, Hashable {
   }
     
   func attributes() -> [String: Any] {
-    var attrs = [String: Any]()
-    if let loc = startLoc {
-      attrs["loc"] = "\(loc)"
-    }
-    return attrs
+    return [:]
   }
 }
 

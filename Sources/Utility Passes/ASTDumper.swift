@@ -9,10 +9,15 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   typealias Result = Void
   
   var indentLevel = 0
+  let sourceFiles: Set<String>
   
   var stream: ColoredStream<StreamType>
-  init(stream: inout StreamType, context: ASTContext, colored: Bool) {
+  init(stream: inout StreamType, context: ASTContext, files: [SourceFile], colored: Bool) {
     self.stream = ColoredStream(&stream, colored: colored)
+    self.sourceFiles = Set(files.flatMap { sourceFile in
+      guard case .file(let url) = sourceFile.path else { return nil }
+      return url.lastPathComponent
+    })
     super.init(context: context)
   }
   
@@ -50,6 +55,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   func printNode(_ node: ASTNode, then: (() -> Void)? = nil) {
+    guard let loc = node.startLoc, let file = loc.file else { return }
+    let component = URL(fileURLWithPath: file).lastPathComponent
+    guard sourceFiles.contains(component) else { return }
     if indentLevel != 0 {
       stream.write("\n")
     }
@@ -57,6 +65,12 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
     let nodeName = "\(type(of: node))".snakeCase()
     stream.write("(")
     stream.write("\(nodeName) ", with: [.bold, .magenta])
+    stream.write(component, with: [.cyan])
+    stream.write(":")
+    stream.write("\(loc.line)", with: [.cyan])
+    stream.write(":")
+    stream.write("\(loc.column)", with: [.cyan])
+    stream.write(" ")
     printAttributes(node.attributes())
     if let then = then {
       indent()

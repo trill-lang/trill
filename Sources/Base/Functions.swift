@@ -43,6 +43,14 @@ class FuncCallExpr: Expr {
     guard let node = node as? FuncCallExpr else { return false }
     return lhs == node.lhs && args == node.args
   }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    if let decl = decl {
+      superAttrs["decl"] = decl.formattedName
+    }
+    return superAttrs
+  }
 }
 
 class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
