@@ -5,15 +5,15 @@
 
 import Foundation
 
-class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
+class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
   typealias Result = Void
   
   var indentLevel = 0
   let sourceFiles: Set<String>
   
-  var stream: ColoredStream<StreamType>
-  init(stream: inout StreamType, context: ASTContext, files: [SourceFile], colored: Bool) {
-    self.stream = ColoredStream(&stream, colored: colored)
+  var stream: StreamType
+  init(stream: inout StreamType, context: ASTContext, files: [SourceFile]) {
+    self.stream = stream
     self.sourceFiles = Set(files.map { $0.path.basename })
     super.init(context: context)
   }

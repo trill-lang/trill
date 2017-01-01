@@ -7,11 +7,11 @@ import Foundation
 
 class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
     let files: [SourceFile]
-    var stream: ColoredStream<StreamType>
+    var stream: ColoredANSIStream<StreamType>
     
     init(files: [SourceFile], stream: inout StreamType, colored: Bool) {
         self.files = files
-        self.stream = ColoredStream(&stream, colored: colored)
+        self.stream = ColoredANSIStream(&stream, colored: colored)
     }
     
     func highlightString(forDiag diag: Diagnostic) -> String {

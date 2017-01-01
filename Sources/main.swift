@@ -55,10 +55,10 @@ func populate(driver: Driver, options: Options,
   switch options.mode {
   case .emit(.ast):
     driver.add("Dumping the AST") { context in
-      return ASTDumper(stream: &stdout,
+      var stream = ColoredANSIStream(&stdout, colored: isATTY)
+      return ASTDumper(stream: &stream,
                        context: context,
-                       files: sourceFiles,
-                       colored: isATTY).run(in: context)
+                       files: sourceFiles).run(in: context)
     }
     return
   case .prettyPrint:

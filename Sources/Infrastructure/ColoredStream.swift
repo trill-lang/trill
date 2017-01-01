@@ -8,7 +8,20 @@
 
 import Foundation
 
-class ColoredStream<StreamType: TextOutputStream>: TextOutputStream {
+protocol ColoredStream: TextOutputStream {
+    mutating func write(_ string: String, with: [ANSIColor])
+}
+
+extension ColoredStream {
+    mutating func write(_ string: String) {
+        write(string, with: [])
+    }
+}
+
+class ColoredANSIStream<StreamTy: TextOutputStream>: ColoredStream {
+
+    typealias StreamType = StreamTy
+
     var currentColors = [ANSIColor]()
     var stream: StreamType
     let colored: Bool
@@ -16,6 +29,11 @@ class ColoredStream<StreamType: TextOutputStream>: TextOutputStream {
     init(_ stream: inout StreamType, colored: Bool = true) {
         self.stream = stream
         self.colored = colored
+    }
+    
+    required init(_ stream: inout StreamType) {
+        self.stream = stream
+        self.colored = true
     }
     
     func addColor(_ color: ANSIColor) {

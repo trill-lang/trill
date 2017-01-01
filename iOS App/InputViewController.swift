@@ -170,7 +170,13 @@ class ViewController: UIViewController, UITextViewDelegate {
       }
     case .showAST:
       driver.add("Dumping the AST") { context in
-        return ASTDumper(stream: &stream, context: context, colored: false).run(in: context)
+        var attrStream = AttributedStringStream(palette: colorScheme)
+        ASTDumper(stream: &attrStream,
+                  context: context,
+                  files: [sourceFile]).run(in: context)
+        DispatchQueue.main.async {
+            dest.textView.attributedText = attrStream.storage
+        }
       }
     case .run:
       var runner = JavaScriptRunner(output: block, context: context)

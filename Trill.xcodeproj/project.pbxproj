@@ -124,6 +124,7 @@
 		DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
 		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
+		DC47F5D01E197AC900595DCD /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */; };
 		DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
 		DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
 		DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
@@ -316,6 +317,7 @@
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
 		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = AttributedStringStream.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC4CF0C71D7A76750090216B /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = SOURCE_ROOT; };
 		DC5996661D7A487C0040073F /* libLLVMDebugInfoCodeView.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMDebugInfoCodeView.a; path = ../../../../../../usr/local/llvm/lib/libLLVMDebugInfoCodeView.a; sourceTree = "<group>"; };
@@ -601,6 +603,7 @@
 				DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */,
 				DC17702E1D69130700FEFB85 /* SourceDocument.swift */,
 				DC17702F1D69130700FEFB85 /* TimingViewController.swift */,
+				DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */,
 			);
 			path = "iOS App";
 			sourceTree = SOURCE_ROOT;
@@ -1011,6 +1014,7 @@
 				DC1770561D6913B700FEFB85 /* TableFormatter.swift in Sources */,
 				DC1770571D6913CA00FEFB85 /* Mangler.swift in Sources */,
 				DC1770671D6913EF00FEFB85 /* StatementParser.swift in Sources */,
+				DC47F5D01E197AC900595DCD /* AttributedStringStream.swift in Sources */,
 				DC1770581D6913CA00FEFB85 /* Sema.swift in Sources */,
 				DC1770591D6913CA00FEFB85 /* TypeChecker.swift in Sources */,
 				DC1770441D69134B00FEFB85 /* Functions.swift in Sources */,
