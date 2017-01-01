@@ -25,6 +25,7 @@ var stdout = StandardTextOutputStream()
 
 func populate(driver: Driver, options: Options,
               sourceFiles: [SourceFile],
+              isATTY: Bool,
               context: ASTContext) throws {
   var gen: IRGenerator? = nil
   driver.add("Lexing and Parsing") { context in
@@ -42,7 +43,7 @@ func populate(driver: Driver, options: Options,
   switch options.mode {
   case .emit(.ast):
     driver.add("Dumping the AST") { context in
-      return ASTDumper(stream: &stdout, context: context).run(in: context)
+      return ASTDumper(stream: &stdout, context: context, colored: isATTY).run(in: context)
     }
     return
   case .prettyPrint:
@@ -114,18 +115,19 @@ func main() -> Int32 {
   let context = ASTContext(diagnosticEngine: diag)
   let driver = Driver(context: context)
   var files = [SourceFile]()
+  let isATTY = isatty(STDERR_FILENO) != 0
   do {
     files = try sourceFiles(options: options, diag: diag)
     
     try populate(driver: driver,
                  options: options,
                  sourceFiles: files,
+                 isATTY: isATTY,
                  context: context)
     driver.run(in: context)
   } catch {
     diag.error(error)
   }
-  let isATTY = isatty(STDERR_FILENO) != 0
   if options.jsonDiagnostics {
     let consumer = JSONDiagnosticConsumer(stream: &stderr)
     diag.register(consumer)

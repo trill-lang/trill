@@ -10,9 +10,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   
   var indentLevel = 0
   
-  var stream: StreamType
-  init(stream: inout StreamType, context: ASTContext) {
-    self.stream = stream
+  var stream: ColoredStream<StreamType>
+  init(stream: inout StreamType, context: ASTContext, colored: Bool) {
+    self.stream = ColoredStream(&stream, colored: colored)
     super.init(context: context)
   }
   
@@ -21,18 +21,29 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
   }
     
   func printAttributes(_ attributes: [String: Any]) {
-    var attrs = [String]()
+    var attrs = [(String, String)]()
     for key in attributes.keys.sorted() {
-      var s = "\(key)="
       guard let val = attributes[key] else { continue }
+      let attr: (String, String)
       if let val = val as? String {
-        s += "\"\(val.escaped())\""
+        attr = (key, "\"\(val.escaped())\"")
       } else {
-        s += "\(val)"
+        attr = (key, "\(val)")
       }
-      attrs.append(s)
+      attrs.append(attr)
     }
-    stream.write(attrs.joined(separator: " "))
+    for (index, (key, attr)) in attrs.enumerated() {
+      stream.write(key, with: [.green])
+      stream.write("=")
+      if attr.hasPrefix("\"") {
+        stream.write(attr, with: [.red])
+      } else {
+        stream.write(attr)
+      }
+      if index != attrs.endIndex - 1 {
+        stream.write(" ")
+      }
+    }
   }
   
   func printNode(_ node: ASTNode, then: (() -> Void)? = nil) {
@@ -41,7 +52,8 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
     }
     stream.write(String(repeating: " ", count: indentLevel))
     let nodeName = "\(type(of: node))".snakeCase()
-    stream.write("(\(nodeName) ")
+    stream.write("(")
+    stream.write("\(nodeName) ", with: [.bold, .magenta])
     printAttributes(node.attributes())
     if let then = then {
       indent()
@@ -49,6 +61,9 @@ class ASTDumper<StreamType: TextOutputStream>: ASTTransformer {
       dedent()
     }
     stream.write(")")
+    if indentLevel == 0 {
+      stream.write("\n")
+    }
   }
   
   func indent() {

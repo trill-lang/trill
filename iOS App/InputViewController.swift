@@ -170,7 +170,7 @@ class ViewController: UIViewController, UITextViewDelegate {
       }
     case .showAST:
       driver.add("Dumping the AST") { context in
-        return ASTDumper(stream: &stream, context: context).run(in: context)
+        return ASTDumper(stream: &stream, context: context, colored: false).run(in: context)
       }
     case .run:
       var runner = JavaScriptRunner(output: block, context: context)

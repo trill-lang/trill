@@ -138,6 +138,7 @@
 		DC7968341D765A1000FF7A02 /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968331D765A1000FF7A02 /* libclangFrontend.a */; };
 		DC7968361D765A1E00FF7A02 /* libclangEdit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968351D765A1E00FF7A02 /* libclangEdit.a */; };
 		DC7968381D765A2000FF7A02 /* libclangFrontendTool.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968371D765A2000FF7A02 /* libclangFrontendTool.a */; };
+		DC9254DF1E18B57F00587BC4 /* ColoredStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5EA0C51E16ED1200875545 /* ColoredStream.swift */; };
 		DC98BBBB1D59A31400677C66 /* libclangAST.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E01D1FBF52003A8DED /* libclangAST.a */; };
 		DC98BBBC1D59A31500677C66 /* libclangParse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E41D1FBF52003A8DED /* libclangParse.a */; };
 		DC98BBBD1D59A31700677C66 /* libclangSema.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E61D1FBF52003A8DED /* libclangSema.a */; };
@@ -992,14 +993,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC9254DF1E18B57F00587BC4 /* ColoredStream.swift in Sources */,
 				DC17703E1D69134B00FEFB85 /* ASTContext.swift in Sources */,
 				DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */,
-				DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */,
 				DC1770411D69134B00FEFB85 /* ASTTransformer.swift in Sources */,
 				DC1770631D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
 				DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */,
 				DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */,
 				DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */,
+				DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */,
 				DC1770431D69134B00FEFB85 /* ASTBase.swift in Sources */,
 				DC1770521D6913B700FEFB85 /* Utilities.swift in Sources */,
 				DC1770531D6913B700FEFB85 /* DiagnosticConsumer.swift in Sources */,
