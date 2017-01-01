@@ -163,6 +163,15 @@ class Decl: ASTNode {
     self.type = type
     super.init(sourceRange: sourceRange)
   }
+  
+  override func attributes() -> [String : Any] {
+    var attrs = super.attributes()
+    attrs["type"] = "\(type)"
+    if !modifiers.isEmpty {
+      attrs["modifiers"] = modifiers.map { "\($0)" }.sorted().joined(separator: ", ")
+    }
+    return attrs
+  }
 }
 
 class TypeDecl: Decl {

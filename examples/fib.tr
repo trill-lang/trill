@@ -5,6 +5,7 @@ func fib(_ n: Int) -> Int {
         let tmp = prev
         prev = curr
         curr += tmp
+        println(curr)
     }
     return curr
 }
@@ -15,6 +16,5 @@ func fibRec(_ n: Int) -> Int {
 
 func main(argc: Int, argv: **Int8) {
     let n = atoi(argv[1]) as Int
-    println(fib(n))
-    println(fibRec(n))
+    fib(n)
 }

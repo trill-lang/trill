@@ -43,6 +43,13 @@ class VarAssignDecl: Decl {
     guard rhs == node.rhs else { return false }
     return true
   }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["name"] = name.name
+    superAttrs["kind"] = mutable ? "let" : "var"
+    return superAttrs
+  }
 }
 
 class CompoundStmt: Stmt {
@@ -179,5 +186,13 @@ class PoundDiagnosticStmt: Stmt {
   
   var text: String {
     return content.text
+  }
+  
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["text"] = text
+    superAttrs["kind"] = isError ? "error" : "warning"
+    return superAttrs
   }
 }

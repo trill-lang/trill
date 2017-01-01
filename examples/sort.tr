@@ -1,6 +1,6 @@
 func compare(_ _a: *Void, _ _b: *Void) -> Int32 {
-  var a = *(_a as *Int)
-  var b = *(_b as *Int)
+  let a = *(_a as *Int)
+  let b = *(_b as *Int)
   if a == b { return 0 }
   if a < b { return -1 }
   return 1
@@ -22,13 +22,13 @@ func print(_ nums: *Int, _ count: Int) {
 }
 
 func main() {
-  var count = 10
+  let count = 10
   var nums = malloc(count * sizeof(Int)) as *Int
   for var i = 0; i < count; i += 1 {
     nums[i] = arc4random_uniform(count as UInt32) as Int
   }
   print(nums, count)
-  qsort(nums as *Void, count as Int32, sizeof(Int) as Int32, compare)
+  qsort(nums as *Void, count, sizeof(Int), compare)
   print(nums, count)
   free(nums as *Void)
 }

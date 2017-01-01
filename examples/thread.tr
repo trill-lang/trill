@@ -1,83 +1,5 @@
 foreign func sleep(_: Int)
 
-type ThreadArray {
-    var elements: *Thread
-    var count: Int
-    var capacity: Int
-    init(capacity: Int) {
-        assert(capacity > 0, "Cannot initialize an array with 0 capacity")
-        self.elements = calloc(capacity, sizeof(Thread)) as *Thread
-        self.capacity = capacity
-        self.count = 0
-    }
-    mutating func _growIfNeeded() {
-        if self._load() > 0.75 {
-            self.capacity = (self.capacity as Double * 1.5) as Int
-            self._reallocate()
-        }
-    }
-    mutating func _shrinkIfNeeded() {
-        if self._load() < 0.5 {
-            self.capacity = (self.capacity as Double / 1.5) as Int
-            self._reallocate()
-        }
-    }
-    mutating func _reallocate() {
-        self.elements = realloc(self.elements as *Void, self.capacity * sizeof(Thread)) as *Thread
-    }
-    func _load() -> Double {
-        return self.count as Double / self.capacity as Double
-    }
-    func _boundsCheck(_ index: Int) {
-        if index > self.count {
-            trill_fatalError("index out of bounds")
-        }
-    }
-    mutating func append(_ element: Thread) {
-        self.elements[self.count] = element
-        self.count += 1
-        self._growIfNeeded()
-    }
-    mutating func insert(_ element: Thread, at index: Int) {
-        self._boundsCheck(index)
-        self.count += 1
-        self._growIfNeeded()
-        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Thread))
-        self.elements[index] = element
-    }
-    mutating func remove(at index: Int) -> Thread {
-        self._boundsCheck(index)
-        self._shrinkIfNeeded()
-        self.count -= 1
-        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Thread))
-        return self.elements[self.count + 1]
-    }
-    func get(_ index: Int) -> Thread {
-        self._boundsCheck(index)
-        return self.elements[index]
-    }
-    mutating func set(_ element: Thread, at index: Int) {
-        self._boundsCheck(index)
-        self.elements[index] = element
-    }
-    func dump() {
-        putchar('[')
-        for var i = 0; i < self.count; i += 1 {
-            printf("<Thread 0x%p>", self.elements[i])
-            if i != self.count - 1 {
-                printf(", ")
-            }
-        }
-        puts("]")
-    }
-    func isEmpty() -> Bool {
-        return self.count == 0
-    }
-    func destroy() {
-        free(self.elements as *Void)
-    }
-}
-
 func _Thread_invoke(_ thread: *Void) -> *Void {
     (thread as Thread)._run()
     return nil
@@ -111,14 +33,14 @@ indirect type Thread {
 
 func main() {
     let count = 100
-    var threads = ThreadArray(capacity: count)
+    var threads = AnyArray(capacity: count)
     for var i = 0; i < count; i += 1 {
         let t = Thread(number: i)
         threads.append(t)
         t.run()
     }
-    sleep(20)
+    sleep(5)
     for var i = 0; i < threads.count; i += 1 {
-        threads.get(i).stop()
+        (threads[i] as Thread).stop()
     }
 }

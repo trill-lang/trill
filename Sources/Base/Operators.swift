@@ -155,6 +155,12 @@ class PrefixOperatorExpr: Expr {
     default: return nil
     }
   }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["operator"] = "\(op)"
+    return superAttrs
+  }
 }
 
 class InfixOperatorExpr: Expr {
@@ -175,6 +181,12 @@ class InfixOperatorExpr: Expr {
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? InfixOperatorExpr else { return false }
     return op == node.op && rhs == node.rhs && lhs == node.lhs
+  }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["operator"] = "\(op)"
+    return superAttrs
   }
 }
 
@@ -204,5 +216,11 @@ class OperatorDecl: FuncDecl {
       return false
     }
     return op == node.op && super.equals(node)
+  }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["operator"] = "\(op)"
+    return superAttrs
   }
 }

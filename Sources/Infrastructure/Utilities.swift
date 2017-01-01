@@ -28,3 +28,24 @@ func format(time: Double) -> String {
 func indent(_ n: Int) -> String {
   return String(repeating: " ", count: n)
 }
+
+extension String {
+    func splitCapitals() -> [String] {
+        var s = ""
+        var words = [String]()
+        for char in unicodeScalars {
+            if isupper(Int32(char.value)) != 0 && !s.isEmpty {
+                words.append(s)
+                s = ""
+            }
+            s.append(String(char))
+        }
+        if !s.isEmpty {
+            words.append(s)
+        }
+        return words
+    }
+    func snakeCase() -> String {
+        return splitCapitals().map { $0.lowercased() }.joined(separator: "_")
+    }
+}

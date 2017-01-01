@@ -7,6 +7,13 @@ import Foundation
 
 class Expr: ASTNode {
   var type: DataType? = nil
+  override func attributes() -> [String : Any] {
+    var attrs = super.attributes()
+    if let type = type {
+      attrs["type"] = type
+    }
+    return attrs
+  }
 }
 
 class ConstantExpr: Expr {
@@ -52,6 +59,12 @@ class NumExpr: ConstantExpr { // 1234567
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? NumExpr else { return false }
     return value == node.value
+  }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    superAttrs["raw"] = raw
+    return superAttrs
   }
 }
 
@@ -117,6 +130,12 @@ class TupleFieldLookupExpr: Expr {
     guard lhs == node.lhs else { return false }
     return true
   }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["field"] = field
+    return superAttrs
+  }
 }
 
 class FloatExpr: ConstantExpr {
@@ -137,6 +156,12 @@ class FloatExpr: ConstantExpr {
     guard let node = node as? FloatExpr else { return false }
     return value == node.value
   }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    superAttrs["raw"] = raw
+    return superAttrs
+  }
 }
 
 class BoolExpr: ConstantExpr {
@@ -154,6 +179,11 @@ class BoolExpr: ConstantExpr {
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? BoolExpr else { return false }
     return value == node.value
+  }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    return superAttrs
   }
 }
 
@@ -173,6 +203,11 @@ class StringExpr: ConstantExpr {
     guard let node = node as? StringExpr else { return false }
     return value == node.value
   }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    return superAttrs
+  }
 }
 
 class PoundFunctionExpr: StringExpr {
@@ -182,6 +217,11 @@ class PoundFunctionExpr: StringExpr {
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? PoundFunctionExpr else { return false }
     return value == node.value
+  }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    return superAttrs
   }
 }
 
@@ -202,6 +242,11 @@ class CharExpr: ConstantExpr {
     guard let node = node as? CharExpr else { return false }
     return value == node.value
   }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["value"] = value
+    return superAttrs
+  }
 }
 
 protocol LValue {}
@@ -218,6 +263,12 @@ class VarExpr: Expr, LValue {
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? VarExpr else { return false }
     return name == node.name
+  }
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["name"] = name.name
+    superAttrs["isTypeVar"] = isTypeVar
+    return superAttrs
   }
 }
 
@@ -252,6 +303,13 @@ class FieldLookupExpr: Expr, LValue {
     guard name == node.name else { return false }
     guard lhs == node.lhs else { return false }
     return true
+  }
+  
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["fieldName"] = name.name
+    return superAttrs
   }
 }
 

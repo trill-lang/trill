@@ -127,9 +127,16 @@ class ASTNode: Equatable, Hashable {
     return false
   }
   
-  
   var hashValue: Int {
     return ObjectIdentifier(self).hashValue ^ 0x2a0294ba
+  }
+    
+  func attributes() -> [String: Any] {
+    var attrs = [String: Any]()
+    if let loc = startLoc {
+      attrs["loc"] = "\(loc)"
+    }
+    return attrs
   }
 }
 
