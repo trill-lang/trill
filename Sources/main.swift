@@ -5,23 +5,15 @@
 
 import Foundation
 
-class StandardErrorTextOutputStream: TextOutputStream {
-  func write(_ string: String) {
-    let stderr = FileHandle.standardError
-    stderr.write(string.data(using: .utf8)!)
+extension FileHandle: TextOutputStream {
+  public func write(_ string: String) {
+    write(string.data(using: .utf8)!)
   }
 }
 
-var stderr = StandardErrorTextOutputStream()
 
-class StandardTextOutputStream: TextOutputStream {
-  func write(_ string: String) {
-    let stdout = FileHandle.standardOutput
-    stdout.write(string.data(using: .utf8)!)
-  }
-}
-
-var stdout = StandardTextOutputStream()
+var stderr = FileHandle.standardError
+var stdout = FileHandle.standardOutput
 
 func populate(driver: Driver, options: Options,
               sourceFiles: [SourceFile],
@@ -49,24 +41,30 @@ func populate(driver: Driver, options: Options,
     }
     gen = irgen
   }
+  
+  let addASTPass: () -> Bool = {
+    if case .emit(.ast) = options.mode {
+      driver.add("Dumping the AST") { context in
+        var stream = ColoredANSIStream(&stdout, colored: isATTY)
+        return ASTDumper(stream: &stream,
+                         context: context,
+                         files: sourceFiles,
+                         showImports: options.showImports).run(in: context)
+      }
+      return true
+    }
+    return false
+  }
+  
+  if options.parseOnly && addASTPass() {
+    return
+  }
+  
   driver.add(pass: Sema.self)
   driver.add(pass: TypeChecker.self)
   
-  switch options.mode {
-  case .emit(.ast):
-    driver.add("Dumping the AST") { context in
-      var stream = ColoredANSIStream(&stdout, colored: isATTY)
-      return ASTDumper(stream: &stream,
-                       context: context,
-                       files: sourceFiles).run(in: context)
-    }
+  if !options.parseOnly && addASTPass() {
     return
-  case .prettyPrint:
-    driver.add("Pretty Printing the AST") { context in
-      return ASTPrinter(stream: &stdout, context: context).run(in: context)
-    }
-    return
-  default: break
   }
   
   if case .onlyDiagnostics = options.mode { return }
@@ -101,13 +99,17 @@ func populate(driver: Driver, options: Options,
 
 func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile] {
   if options.isStdin {
-    return [try SourceFile(path: .stdin,
-                           context: ASTContext(diagnosticEngine: diag))]
+    let context = ASTContext(diagnosticEngine: diag)
+    let file = try SourceFile(path: .stdin,
+                              context: context)
+    context.sourceFiles.append(file)
+    return [file]
   } else {
     return try options.filenames.map { path in
       let context = ASTContext(diagnosticEngine: diag)
       let url = URL(fileURLWithPath: path)
-      return try SourceFile(path: .file(url), context: context)
+      let file = try SourceFile(path: .file(url), context: context)
+      context.sourceFiles.append(file)
     }
   }
 }
@@ -136,7 +138,8 @@ func main() -> Int32 {
     let consumer = JSONDiagnosticConsumer(stream: &stderr)
     diag.register(consumer)
   } else {
-    let consumer = StreamConsumer(files: files, stream: &stderr, colored: isATTY)
+    var stream = ColoredANSIStream(&stderr, colored: isATTY)
+    let consumer = StreamConsumer(files: files, stream: &stream)
     diag.register(consumer)
   }
   diag.consumeDiagnostics()

@@ -41,7 +41,7 @@ typedef enum RawOutputFormat {
 } RawOutputFormat;
 
 typedef enum RawMode {
-  Emit, PrettyPrint, JIT,
+  Emit, JIT,
   OnlyDiagnostics
 } RawMode;
 
@@ -53,8 +53,10 @@ typedef struct RawOptions {
   OptimizationLevel optimizationLevel;
   bool importC;
   bool emitTiming;
+  bool parseOnly;
   bool isStdin;
   bool jsonDiagnostics;
+  bool showImports;
   RawMode mode;
   RawOutputFormat outputFormat;
   char *_Nullable target;

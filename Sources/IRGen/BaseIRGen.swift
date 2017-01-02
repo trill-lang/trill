@@ -9,7 +9,7 @@ import Foundation
   import LLVM
 #endif
 
-private var fatalErrorConsumer: StreamConsumer<StandardErrorTextOutputStream>? = nil
+private var fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
 
 /// An error that represents a problem with LLVM IR generation or JITting.
 enum LLVMError: Error, CustomStringConvertible {
@@ -200,12 +200,13 @@ class IRGenerator: ASTVisitor, Pass {
     passManager = LLVMCreateFunctionPassManagerForModule(module)
     passManager.addPasses(for: options.optimizationLevel)
     
+    var stream = ColoredANSIStream(&stderr,
+                                   colored: true)
     fatalErrorConsumer = StreamConsumer(files: [],
-                                        stream: &stderr,
-                                        colored: true)
+                                        stream: &stream)
     LLVMEnablePrettyStackTrace()
     LLVMInstallFatalErrorHandler {
-      fatalErrorConsumer!.consume(Diagnostic.error(LLVMError.llvmError(String(cString: $0!))))
+      fatalErrorConsumer?.consume(Diagnostic.error(LLVMError.llvmError(String(cString: $0!))))
     }
     LLVMInitializeFunctionPassManager(passManager)
     LLVMInitializeNativeAsmPrinter()

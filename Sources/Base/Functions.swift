@@ -164,7 +164,6 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     var superAttrs = super.attributes()
     superAttrs["signature"] = formattedName
     superAttrs["name"] = name.name
-    superAttrs["hasImplicitSelf"] = hasImplicitSelf
     superAttrs["kind"] = "\(kind)"
     return superAttrs
   }

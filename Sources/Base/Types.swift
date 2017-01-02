@@ -315,14 +315,20 @@ class TypeAliasDecl: Decl {
   let name: Identifier
   let bound: TypeRefExpr
   var decl: TypeDecl?
-  init(name: Identifier, bound: TypeRefExpr, sourceRange: SourceRange? = nil) {
+  init(name: Identifier, bound: TypeRefExpr, modifiers: [DeclModifier] = [], sourceRange: SourceRange? = nil) {
     self.name = name
     self.bound = bound
-    super.init(type: bound.type!, modifiers: [], sourceRange: sourceRange)
+    super.init(type: bound.type!, modifiers: modifiers, sourceRange: sourceRange)
   }
   override func equals(_ rhs: ASTNode) -> Bool {
     guard let rhs = rhs as? TypeAliasDecl else { return false }
     return name == rhs.name && bound == rhs.bound
+  }
+  
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["name"] = name.name
+    return superAttrs
   }
 }
 

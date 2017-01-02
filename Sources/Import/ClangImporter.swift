@@ -266,7 +266,7 @@ class ClangImporter: Pass {
       let range = SourceRange(clangRange: clang_getCursorExtent(child))
       let expr = VarAssignDecl(name: fieldId,
                                typeRef: trillTy.ref(),
-                               modifiers: [.foreign],
+                               modifiers: [.foreign, .implicit],
                                mutable: true,
                                sourceRange: range)
       values.append(expr)
@@ -277,7 +277,7 @@ class ClangImporter: Pass {
     }
     
     let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
-    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign],
+    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign, .implicit],
                         sourceRange: range)
     importedTypes[name] = expr
     context.add(expr)
@@ -290,7 +290,7 @@ class ClangImporter: Pass {
     if !existing.isEmpty { return }
     let numArgs = clang_Cursor_getNumArguments(cursor)
     guard numArgs != -1 else { return }
-    var modifiers = [DeclModifier.foreign]
+    var modifiers = [DeclModifier.foreign, DeclModifier.implicit]
     if clang_isNoReturn(cursor) != 0 {
       modifiers.append(.noreturn)
     }
@@ -334,6 +334,7 @@ class ClangImporter: Pass {
       let range = SourceRange(clangRange: clang_getCursorExtent(child))
       let varExpr = VarAssignDecl(name: name,
                                   typeRef: DataType.int32.ref(),
+                                  modifiers: [.foreign, .implicit],
                                   mutable: false,
                                   sourceRange: range)
       context.add(varExpr)
@@ -427,13 +428,14 @@ class ClangImporter: Pass {
       case .number(let value, let raw):
         expr = NumExpr(value: value, raw: raw, sourceRange: range)
       case .identifier(let name):
-        expr = VarExpr(name: Identifier(name: name), sourceRange: range)
+        expr = VarExpr(name: Identifier(name: name, range: range), sourceRange: range)
       default:
         return nil
       }
       return VarAssignDecl(name: Identifier(name: name),
                            typeRef: expr.type?.ref(),
                            rhs: expr,
+                           modifiers: [.implicit],
                            mutable: false,
                            sourceRange: range)
     } catch { return nil }
@@ -442,6 +444,7 @@ class ClangImporter: Pass {
   func makeAlias(name: String, type: DataType, range: SourceRange? = nil) -> TypeAliasDecl {
     return TypeAliasDecl(name: Identifier(name: name),
                          bound: type.ref(),
+                         modifiers: [.implicit],
                          sourceRange: range)
   }
   

@@ -34,7 +34,7 @@ enum SourceFileType {
 
 struct SourceFile {
   let path: SourceFileType
-  let context: ASTContext
+  var context: ASTContext
   let contents: String
   let lines: [String]
   

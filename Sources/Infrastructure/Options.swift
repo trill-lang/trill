@@ -27,12 +27,11 @@ enum OutputFormat {
 
 enum Mode {
   case emit(OutputFormat)
-  case prettyPrint, jit, onlyDiagnostics
+  case jit, onlyDiagnostics
   
   init(_ raw: RawMode, outputFormat: RawOutputFormat) {
     switch raw {
     case Emit: self = .emit(OutputFormat(outputFormat))
-    case PrettyPrint: self = .prettyPrint
     case JIT: self = .jit
     case OnlyDiagnostics: self = .onlyDiagnostics
     default: fatalError("invalid mode \(raw)")
@@ -57,7 +56,9 @@ public class Options {
   let importC: Bool
   let emitTiming: Bool
   let jsonDiagnostics: Bool
+  let parseOnly: Bool
   let isStdin: Bool
+  let showImports: Bool
   let optimizationLevel: OptimizationLevel
   let raw: RawOptions
   let jitArgs: [String]
@@ -72,6 +73,8 @@ public class Options {
     self.isStdin = raw.isStdin
     self.optimizationLevel = raw.optimizationLevel
     self.jsonDiagnostics = raw.jsonDiagnostics
+    self.parseOnly = raw.parseOnly
+    self.showImports = raw.showImports
     if let outputFilename = raw.outputFilename {
       self.outputFilename = String(cString: outputFilename)
     } else {

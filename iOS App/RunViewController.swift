@@ -11,7 +11,6 @@ class RunViewController: UIViewController {
   @IBOutlet weak var textView: UITextView!
   
   weak var driver: Driver!
-  var consumer: AttributedStringConsumer!
   var hasRun: Bool = false
   
   override func viewDidLoad() {
@@ -24,11 +23,13 @@ class RunViewController: UIViewController {
     hasRun = true
     DispatchQueue.global(qos: .default).async {
       self.driver.run(in: self.driver.context)
-      
+      var stream = AttributedStringStream(palette: colorScheme)
+      self.driver.context.diag.register(StreamConsumer(files: self.driver.context.sourceFiles,
+                                                       stream: &stream))
       self.driver.context.diag.consumeDiagnostics()
       if self.driver.context.diag.hasErrors {
         DispatchQueue.main.async {
-          self.textView.attributedText = self.consumer.attributedString
+          self.textView.attributedText = stream.storage
         }
       }
     }

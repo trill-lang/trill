@@ -5,13 +5,13 @@
 
 import Foundation
 
-class StreamConsumer<StreamType: TextOutputStream>: DiagnosticConsumer {
+class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
     let files: [SourceFile]
-    var stream: ColoredANSIStream<StreamType>
+    var stream: StreamType
     
-    init(files: [SourceFile], stream: inout StreamType, colored: Bool) {
+    init(files: [SourceFile], stream: inout StreamType) {
         self.files = files
-        self.stream = ColoredANSIStream(&stream, colored: colored)
+        self.stream = stream
     }
     
     func highlightString(forDiag diag: Diagnostic) -> String {

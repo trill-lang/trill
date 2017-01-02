@@ -96,10 +96,11 @@ RawOptions ParseArguments(int argc, char **argv) {
                                            clEnumValN(JavaScript, "js", "JavaScript"),
                                            clEnumValEnd));
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
+  cl::opt<bool> parseOnly("parse-only", cl::desc("Only parse, do not run semantic analysis"));
+  cl::opt<bool> showImports("show-imports", cl::desc("Show imported items in the AST dump"));
   cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
   cl::opt<bool> printTiming("debug-print-timing", cl::desc("Emit pass times (for performance debugging)"));
-  cl::opt<bool> prettyPrint("pretty-print", cl::desc("Emit pretty-printed AST"));
-  cl::opt<bool> onlyDiagnostics("only-diagnostics", cl::desc("Only emit diagnostics"));
+  cl::opt<bool> onlyDiagnostics("diagnostics-only", cl::desc("Only emit diagnostics"));
   cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
   cl::opt<std::string> outputFile("o", cl::desc("Output filename"));
   cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
@@ -117,8 +118,6 @@ RawOptions ParseArguments(int argc, char **argv) {
   RawMode mode;
   if (onlyDiagnostics) {
     mode = OnlyDiagnostics;
-  } else if (prettyPrint) {
-    mode = PrettyPrint;
   } else if (jit) {
     mode = JIT;
   } else {
@@ -132,8 +131,7 @@ RawOptions ParseArguments(int argc, char **argv) {
     outputFormat = Binary;
   }
   
-  bool importC = !(mode == Emit && outputFormat == JavaScript) &&
-                 mode != PrettyPrint;
+  bool importC = !(mode == Emit && outputFormat == JavaScript);
   
   auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
   auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());
@@ -148,8 +146,10 @@ RawOptions ParseArguments(int argc, char **argv) {
     optimizationLevel,
     importC,
     printTiming,
+    parseOnly,
     isStdin,
     jsonDiagnostics,
+    showImports,
     mode,
     outputFormat,
     targetMachine,

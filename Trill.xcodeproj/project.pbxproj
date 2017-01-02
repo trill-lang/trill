@@ -80,7 +80,6 @@
 		DC1770301D69130700FEFB85 /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */; };
 		DC1770311D69130700FEFB85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770221D69130700FEFB85 /* AppDelegate.swift */; };
 		DC1770321D69130700FEFB85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC1770231D69130700FEFB85 /* Assets.xcassets */; };
-		DC1770331D69130700FEFB85 /* AttributedStringConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */; };
 		DC1770341D69130700FEFB85 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC1770251D69130700FEFB85 /* Main.storyboard */; };
 		DC1770351D69130700FEFB85 /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770271D69130700FEFB85 /* DocumentViewController.swift */; };
 		DC1770371D69130700FEFB85 /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770291D69130700FEFB85 /* InputViewController.swift */; };
@@ -100,7 +99,6 @@
 		DC1770471D69134B00FEFB85 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD61D6911A200FEFB85 /* Types.swift */; };
 		DC1770481D69134B00FEFB85 /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FD71D6911A200FEFB85 /* Values.swift */; };
 		DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704A1D69139900FEFB85 /* ASTDumper.swift */; };
-		DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704B1D69139900FEFB85 /* ASTPrinter.swift */; };
 		DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */; };
 		DC1770501D6913AA00FEFB85 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */; };
 		DC1770511D6913AC00FEFB85 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17704A1D69139900FEFB85 /* ASTDumper.swift */; };
@@ -155,6 +153,7 @@
 		DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */; };
 		DCAEBC541C90095500B84E25 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC531C90095500B84E25 /* libLLVMMC.a */; };
 		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
+		DCC28A511E1ADF21009769A2 /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5EA0C71E185C8300875545 /* StreamConsumer.swift */; };
 		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCC62B081D7A48610023F698 /* libLLVMTarget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC3E1C9007E300B84E25 /* libLLVMTarget.a */; };
 		DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCA97C81D58581900883183 /* libLLVMLinker.a */; };
@@ -289,19 +288,17 @@
 		DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnnotatedTextStorage.swift; sourceTree = "<group>"; };
 		DC1770221D69130700FEFB85 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DC1770231D69130700FEFB85 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AttributedStringConsumer.swift; sourceTree = "<group>"; };
 		DC1770261D69130700FEFB85 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		DC1770271D69130700FEFB85 /* DocumentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentViewController.swift; sourceTree = "<group>"; };
 		DC1770281D69130700FEFB85 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DC1770291D69130700FEFB85 /* InputViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputViewController.swift; sourceTree = "<group>"; };
 		DC17702A1D69130700FEFB85 /* JavaScriptRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptRunner.swift; sourceTree = "<group>"; };
 		DC17702B1D69130700FEFB85 /* NavController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavController.swift; sourceTree = "<group>"; };
-		DC17702C1D69130700FEFB85 /* RunViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RunViewController.swift; sourceTree = "<group>"; };
+		DC17702C1D69130700FEFB85 /* RunViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = RunViewController.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SourceAnnotator.swift; sourceTree = "<group>"; };
 		DC17702E1D69130700FEFB85 /* SourceDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceDocument.swift; sourceTree = "<group>"; };
 		DC17702F1D69130700FEFB85 /* TimingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimingViewController.swift; sourceTree = "<group>"; };
 		DC17704A1D69139900FEFB85 /* ASTDumper.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ASTDumper.swift; sourceTree = "<group>"; tabWidth = 2; };
-		DC17704B1D69139900FEFB85 /* ASTPrinter.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ASTPrinter.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = JavaScriptGen.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17705B1D6913EF00FEFB85 /* BaseParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BaseParser.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17705C1D6913EF00FEFB85 /* FunctionParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = FunctionParser.swift; sourceTree = "<group>"; tabWidth = 2; };
@@ -592,7 +589,6 @@
 				DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */,
 				DC1770221D69130700FEFB85 /* AppDelegate.swift */,
 				DC1770231D69130700FEFB85 /* Assets.xcassets */,
-				DC1770241D69130700FEFB85 /* AttributedStringConsumer.swift */,
 				DC1770251D69130700FEFB85 /* Main.storyboard */,
 				DC1770271D69130700FEFB85 /* DocumentViewController.swift */,
 				DC1770281D69130700FEFB85 /* Info.plist */,
@@ -612,7 +608,6 @@
 			isa = PBXGroup;
 			children = (
 				DC17704A1D69139900FEFB85 /* ASTDumper.swift */,
-				DC17704B1D69139900FEFB85 /* ASTPrinter.swift */,
 				DC17704C1D69139900FEFB85 /* JavaScriptGen.swift */,
 			);
 			name = "Utility Passes";
@@ -1005,6 +1000,7 @@
 				DC1770421D69134B00FEFB85 /* ASTVisitor.swift in Sources */,
 				DCF80B611D74BB3D00463CBB /* SourceFile.swift in Sources */,
 				DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */,
+				DCC28A511E1ADF21009769A2 /* StreamConsumer.swift in Sources */,
 				DC1770431D69134B00FEFB85 /* ASTBase.swift in Sources */,
 				DC1770521D6913B700FEFB85 /* Utilities.swift in Sources */,
 				DC1770531D6913B700FEFB85 /* DiagnosticConsumer.swift in Sources */,
@@ -1028,7 +1024,6 @@
 				DC17703D1D69130700FEFB85 /* TimingViewController.swift in Sources */,
 				DC1770381D69130700FEFB85 /* JavaScriptRunner.swift in Sources */,
 				DC1770391D69130700FEFB85 /* NavController.swift in Sources */,
-				DC1770331D69130700FEFB85 /* AttributedStringConsumer.swift in Sources */,
 				DC17703C1D69130700FEFB85 /* SourceDocument.swift in Sources */,
 				DC1770371D69130700FEFB85 /* InputViewController.swift in Sources */,
 				DC17703B1D69130700FEFB85 /* SourceAnnotator.swift in Sources */,
@@ -1090,7 +1085,6 @@
 				DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */,
 				DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
 				DC07FA1A1D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift in Sources */,
-				DC17704E1D69139900FEFB85 /* ASTPrinter.swift in Sources */,
 				DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */,
 				DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */,
 				DC176FFB1D6911A200FEFB85 /* Operators.swift in Sources */,

@@ -130,6 +130,7 @@ class ViewController: UIViewController, UITextViewDelegate {
     let sourceFile = try! SourceFile(path: .input(url: document.fileURL,
                                                   contents: document.sourceText),
                                      context: context)
+    context.sourceFiles.append(sourceFile)
     driver = Driver(context: context)
     let text = storage.string
     driver.add("Lexer and Parser") { context in
@@ -150,18 +151,13 @@ class ViewController: UIViewController, UITextViewDelegate {
     driver.add(pass: Sema.self)
     driver.add(pass: TypeChecker.self)
     
-    let block: (String) -> () = { str in
+    let appendText: (String) -> () = { str in
       DispatchQueue.main.async {
         dest.textView.text = dest.textView.text + str
       }
     }
     
-    var stream = BlockStream(block: block)
-    
-    let consumer = AttributedStringConsumer(file: sourceFile, palette: colorScheme)
-    diagnosticEngine.register(consumer)
-    
-    dest.consumer = consumer
+    var stream = BlockStream(block: appendText)
     
     switch sender {
     case .showJS:
@@ -179,7 +175,7 @@ class ViewController: UIViewController, UITextViewDelegate {
         }
       }
     case .run:
-      var runner = JavaScriptRunner(output: block, context: context)
+      var runner = JavaScriptRunner(output: appendText, context: context)
       runner.objCReceiver = self.textView
       driver.add("Generating JavaScript") { context in
         JavaScriptGen(stream: &runner, context: context).run(in: context)

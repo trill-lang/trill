@@ -11,10 +11,13 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
   var indentLevel = 0
   let sourceFiles: Set<String>
   
+  let showImports: Bool
+  
   var stream: StreamType
-  init(stream: inout StreamType, context: ASTContext, files: [SourceFile]) {
+  init(stream: inout StreamType, context: ASTContext, files: [SourceFile], showImports: Bool = false) {
     self.stream = stream
     self.sourceFiles = Set(files.map { $0.path.basename })
+    self.showImports = showImports
     super.init(context: context)
   }
   
@@ -54,7 +57,12 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
   func printNode(_ node: ASTNode, then: (() -> Void)? = nil) {
     guard let loc = node.startLoc, let file = loc.file else { return }
     let component = URL(fileURLWithPath: file).lastPathComponent
-    guard sourceFiles.contains(component) else { return }
+    if !showImports {
+      guard sourceFiles.contains(component) else { return }
+      if let decl = node as? Decl, decl.has(attribute: .implicit) {
+        return
+      }
+    }
     if indentLevel != 0 {
       stream.write("\n")
     }
@@ -114,14 +122,12 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
     }
   }
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
-    guard decl.startLoc != nil else { return }
     printNode(decl) {
       super.visitTypeAliasDecl(decl)
     }
   }
   
   override func visitFuncDecl(_ decl: FuncDecl) -> Result {
-    if decl.has(attribute: .foreign) { return }
     printNode(decl) {
       super.visitFuncDecl(decl)
     }
@@ -132,7 +138,9 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
     }
   }
   override func visitReturnStmt(_ stmt: ReturnStmt) -> Result {
-    printNode(stmt)
+    printNode(stmt) {
+      super.visitReturnStmt(stmt)
+    }
   }
   override func visitBreakStmt(_ stmt: BreakStmt) -> Result {
     printNode(stmt)
@@ -172,7 +180,6 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
     }
   }
   override func visitTypeDecl(_ decl: TypeDecl) -> Result {
-    if decl.has(attribute: .foreign) { return }
     printNode(decl) {
       super.visitTypeDecl(decl)
     }
@@ -243,6 +250,8 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
     }
   }
   override func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> () {
-    printNode(stmt)
+    printNode(stmt) {
+      super.visitPoundDiagnosticStmt(stmt)
+    }
   }
 }

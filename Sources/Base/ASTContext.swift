@@ -82,6 +82,7 @@ public class ASTContext {
     diag.note(msg, loc: loc, highlights: highlights)
   }
   
+  var sourceFiles = [SourceFile]()
   var functions = [FuncDecl]()
   var operators = [OperatorDecl]()
   var types = [TypeDecl]()
@@ -420,6 +421,11 @@ public class ASTContext {
     }
     for alias in context.typeAliases {
       add(alias)
+    }
+    for file in context.sourceFiles {
+      var f = file
+      f.context = self
+      sourceFiles.append(f)
     }
   }
   
