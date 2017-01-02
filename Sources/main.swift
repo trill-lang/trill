@@ -110,6 +110,7 @@ func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile
       let url = URL(fileURLWithPath: path)
       let file = try SourceFile(path: .file(url), context: context)
       context.sourceFiles.append(file)
+      return file
     }
   }
 }
