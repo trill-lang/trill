@@ -30,8 +30,7 @@ struct PopulateJSDecls: Pass {
                           modifiers: [.foreign])
       context.add(decl)
     }
-    context.add(OperatorDecl(.plus, .any, .string, .string))
-    context.add(OperatorDecl(.plus, .string, .any, .string))
+    context.add(OperatorDecl(.plus, .any, .string, .string, modifiers: [.foreign]))
   }
   var title: String {
     return "Populating JavaScript Decls"

@@ -307,7 +307,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     }
     let isMethod = decl.parentType != nil
     let isForeign = decl.has(attribute: .foreign)
-    if decl.has(attribute: .implicit) || (isMethod && isForeign) || (decl.isInitializer && isForeign) {
+    if (isMethod && isForeign) || (decl.isInitializer && isForeign) {
       if expr.lhs is ClosureExpr {
         withParens {
           visit(expr.lhs)

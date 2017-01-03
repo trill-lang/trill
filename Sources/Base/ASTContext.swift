@@ -689,13 +689,14 @@ extension OperatorDecl {
     convenience init(_ op: BuiltinOperator,
                      _ lhsType: DataType,
                      _ rhsType: DataType,
-                     _ returnType: DataType) {
+                     _ returnType: DataType,
+                     modifiers: [DeclModifier] = [.implicit]) {
         self.init(op: op, args: [
             FuncArgumentAssignDecl(name: "lhs", type: lhsType.ref()),
             FuncArgumentAssignDecl(name: "rhs", type: rhsType.ref()),
             ], returnType: returnType.ref(),
-               body: CompoundStmt(exprs: []),
-               modifiers: [.implicit])
+               body: nil,
+               modifiers: modifiers)
     }
 }
   
