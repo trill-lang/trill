@@ -54,7 +54,7 @@ extension Parser {
     case .deinitializer:
       name = Identifier(name: "deinit", range: nameRange)
     case .initializer:
-      name = Identifier(name: "init", range: nameRange)
+      name = Identifier(name: "\(type!)", range: nameRange)
     case .operator(let op):
       name = Identifier(name: "operator\(op)", range: nameRange)
     case .subscript:
