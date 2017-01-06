@@ -283,9 +283,9 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     switch expr.lhs.type! {
     case .pointer(let subtype):
-      ensureTypesAndLabelsMatch(expr, decl: context.foreignDecl(args: [.int64], ret: subtype))
+      ensureTypesAndLabelsMatch(expr, decl: context.implicitDecl(args: [.int64], ret: subtype))
     case .array(let subtype, _):
-      ensureTypesAndLabelsMatch(expr, decl: context.foreignDecl(args: [.int64], ret: subtype))
+      ensureTypesAndLabelsMatch(expr, decl: context.implicitDecl(args: [.int64], ret: subtype))
     default:
       guard let decl = expr.decl else { return }
       ensureTypesAndLabelsMatch(expr, decl: decl)

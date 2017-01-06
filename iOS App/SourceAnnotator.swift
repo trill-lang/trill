@@ -20,19 +20,32 @@ import Foundation
 struct TextAttributes {
   let font: Font
   let boldFont: Font
-  let keyword: Color
-  let literal: Color
-  let normal: Color
-  let comment: Color
-  let string: Color
-  let internalName: Color
-  let externalName: Color
+  let keyword: TextStyle
+  let literal: TextStyle
+  let normal: TextStyle
+  let comment: TextStyle
+  let string: TextStyle
+  let internalName: TextStyle
+  let externalName: TextStyle
+}
+
+struct TextStyle {
+  let bold: Bool
+  let color: Color
 }
 
 struct Attribute {
   let name: String
   let value: Any
   let range: NSRange
+  
+  init(name: String, value: Any, range: NSRange) {
+    print("\(name): \(value) (loc: \(range.location), length: \(range.length))")
+    
+    self.name = name
+    self.value = value
+    self.range = range
+  }
 }
 
 class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
@@ -47,8 +60,16 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     fatalError("init(context:) has not been implemented")
   }
   
-  func add(color: Color, range: NSRange) {
-    sourceAttributes.append(Attribute(name: NSForegroundColorAttributeName, value: color, range: range))
+  func add(style: TextStyle, range: NSRange) {
+    sourceAttributes.append(Attribute(name: NSForegroundColorAttributeName,
+                                      value: style.color,
+                                      range: range))
+    
+    if style.bold {
+      sourceAttributes.append(Attribute(name: NSFontAttributeName,
+                                        value: attributes.boldFont,
+                                        range: range))
+    }
   }
   
   func add(_ attributes: [Attribute]) {
@@ -70,8 +91,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
       }
     } else {
       if let type = typeRef.type, let range = typeRef.sourceRange?.nsRange {
-        let color = self.color(for: type)
-        attrs.append(Attribute(name: NSForegroundColorAttributeName, value: color, range: range))
+        add(style: style(for: type), range: range)
       }
     }
     return attrs
@@ -80,47 +100,26 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   var sourceAttributes = [Attribute]()
   var errorAttributes = [Attribute]()
   
-  override func visitFuncCallExpr(_ expr: FuncCallExpr) {
-    super.visitFuncCallExpr(expr)
-    let decl = expr.decl!
-    let color: Color
-    if case .initializer(let type) = decl.kind {
-      color = self.color(for: type)
-    } else {
-      color = decl.sourceRange == nil ? attributes.externalName : attributes.internalName
+  func style(for type: DataType) -> TextStyle {
+    if case .any = type {
+      return attributes.keyword
     }
-    switch expr.lhs {
-    case let lhs as VarExpr:
-      if let range = lhs.sourceRange?.nsRange {
-        add(color: color, range: range)
-      }
-    case let lhs as FieldLookupExpr:
-      if let range = lhs.name.range?.nsRange {
-        add(color: color, range: range)
-      }
-    default:
-      visit(expr.lhs)
-    }
-  }
-  
-  func color(for type: DataType) -> Color {
     return context.isIntrinsic(type: type) ? attributes.externalName : attributes.internalName
   }
   
   override func visitStringExpr(_ expr: StringExpr) {
     if let range = expr.sourceRange?.nsRange {
-      add(color: attributes.string, range: range)
+      add(style: expr is PoundFileExpr ? attributes.keyword : attributes.string,
+          range: range)
     }
     super.visitStringExpr(expr)
   }
   
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
-    guard let decl = expr.decl else {
-      return
-    }
-    if let range =  expr.name.range?.nsRange, let decl = decl as? Decl {
-      let color = context.isIntrinsic(decl: decl) ? attributes.externalName : attributes.internalName
-      add(color: color, range: range)
+    guard let decl = expr.decl else { return }
+    if let range =  expr.name.range?.nsRange {
+      let style = context.isIntrinsic(decl: decl) ? attributes.externalName : attributes.internalName
+      add(style: style, range: range)
     }
     super.visitFieldLookupExpr(expr)
   }
@@ -161,9 +160,41 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     super.visitClosureExpr(expr)
   }
     
-    override func visitSubscriptExpr(_ expr: SubscriptExpr) {
-        visitFuncCallExpr(expr)
+  override func visitSubscriptExpr(_ expr: SubscriptExpr) {
+    visitFuncCallExpr(expr)
+  }
+  
+  override func visitVarExpr(_ expr: VarExpr) {
+    super.visitVarExpr(expr)
+    guard let decl = expr.decl else { return }
+    guard let range = expr.sourceRange?.nsRange else { return }
+    if expr.isTypeVar {
+      let type = DataType(name: expr.name.name)
+      let typeStyle = self.style(for: type)
+      add(style: typeStyle, range: range)
+      return
     }
+    let kind = (decl as? VarAssignDecl)?.kind ?? .global
+    var style = attributes.normal
+    switch kind {
+    case .local:
+      break
+    case .global:
+      style = attributes.internalName
+    case .implicitSelf:
+      style = attributes.keyword
+    case .property:
+      style = attributes.internalName
+    }
+    if decl.has(attribute: .foreign) {
+      style = attributes.externalName
+    }
+    add(style: style, range: range)
+  }
+  
+  override func run(in context: ASTContext) {
+    super.run(in: context)
+  }
   
   func consume(_ diagnostic: Diagnostic) {
     for r in diagnostic.highlights {

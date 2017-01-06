@@ -624,6 +624,16 @@ public class ASTContext {
     return type
   }
   
+  func isGlobalConstant(_ expr: Expr) -> Bool {
+    if expr is ConstantExpr { return true }
+    if let expr = expr as? VarExpr,
+       let assign = expr.decl as? VarAssignDecl,
+       case .global = assign.kind {
+        return !assign.mutable
+    }
+    return false
+  }
+  
   func isValidType(_ type: DataType) -> Bool {
     switch type {
     case .pointer(let subtype):
@@ -662,7 +672,7 @@ public class ASTContext {
     return type.canCoerceTo(other)
   }
   
-  func foreignDecl(args: [DataType], ret: DataType, kind: FunctionKind = .free) -> FuncDecl {
+  func implicitDecl(args: [DataType], ret: DataType, kind: FunctionKind = .free) -> FuncDecl {
     let assigns: [FuncArgumentAssignDecl] = args.map {
       let name = Identifier(name: "__implicit__")
       return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
@@ -674,7 +684,7 @@ public class ASTContext {
                     args: assigns,
                     kind: kind,
                     body: nil,
-                    modifiers: [.foreign, .implicit])
+                    modifiers: [.implicit])
   }
 }
 

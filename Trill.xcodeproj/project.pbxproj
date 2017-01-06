@@ -295,7 +295,7 @@
 		DC17702A1D69130700FEFB85 /* JavaScriptRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptRunner.swift; sourceTree = "<group>"; };
 		DC17702B1D69130700FEFB85 /* NavController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavController.swift; sourceTree = "<group>"; };
 		DC17702C1D69130700FEFB85 /* RunViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = RunViewController.swift; sourceTree = "<group>"; tabWidth = 2; };
-		DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SourceAnnotator.swift; sourceTree = "<group>"; };
+		DC17702D1D69130700FEFB85 /* SourceAnnotator.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = SourceAnnotator.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC17702E1D69130700FEFB85 /* SourceDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceDocument.swift; sourceTree = "<group>"; };
 		DC17702F1D69130700FEFB85 /* TimingViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimingViewController.swift; sourceTree = "<group>"; };
 		DC17704A1D69139900FEFB85 /* ASTDumper.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ASTDumper.swift; sourceTree = "<group>"; tabWidth = 2; };

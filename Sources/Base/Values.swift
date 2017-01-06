@@ -33,7 +33,7 @@ class VoidExpr: Expr {
   }
 }
 
-class NilExpr: Expr {
+class NilExpr: ConstantExpr {
   override init(sourceRange: SourceRange? = nil) {
     super.init(sourceRange: sourceRange)
     self.type = .pointer(type: .int8)
@@ -115,7 +115,7 @@ class ArrayExpr: Expr {
 
 class TupleFieldLookupExpr: Expr {
   let lhs: Expr
-  var decl: ASTNode? = nil
+  var decl: Decl? = nil
   let field: Int
   let fieldRange: SourceRange
   init(lhs: Expr, field: Int, fieldRange: SourceRange, sourceRange: SourceRange? = nil) {
@@ -225,6 +225,8 @@ class PoundFunctionExpr: StringExpr {
   }
 }
 
+class PoundFileExpr: StringExpr {}
+
 class CharExpr: ConstantExpr {
   override var type: DataType? {
     get { return .int8 } set { }
@@ -292,7 +294,7 @@ class SubscriptExpr: FuncCallExpr, LValue {}
 
 class FieldLookupExpr: Expr, LValue {
   let lhs: Expr
-  var decl: ASTNode? = nil
+  var decl: Decl? = nil
   var typeDecl: TypeDecl? = nil
   let name: Identifier
   init(lhs: Expr, name: Identifier, sourceRange: SourceRange? = nil) {

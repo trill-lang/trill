@@ -90,8 +90,8 @@ extension Parser {
                          sourceRange: tok.range)
     case .poundFile:
       consumeToken()
-      valExpr = StringExpr(value: filename,
-                           sourceRange: tok.range)
+      valExpr = PoundFileExpr(value: filename,
+                              sourceRange: tok.range)
     case .poundLine:
       consumeToken()
       valExpr = NumExpr(value: IntMax(sourceLoc.line),

@@ -24,8 +24,9 @@ class RunViewController: UIViewController {
     DispatchQueue.global(qos: .default).async {
       self.driver.run(in: self.driver.context)
       var stream = AttributedStringStream(palette: colorScheme)
-      self.driver.context.diag.register(StreamConsumer(files: self.driver.context.sourceFiles,
-                                                       stream: &stream))
+      self.driver.context.diag.register(
+        StreamConsumer(files: self.driver.context.sourceFiles,
+                       stream: &stream))
       self.driver.context.diag.consumeDiagnostics()
       if self.driver.context.diag.hasErrors {
         DispatchQueue.main.async {

@@ -178,7 +178,7 @@ class FuncArgumentAssignDecl: VarAssignDecl {
        rhs: Expr? = nil,
        sourceRange: SourceRange? = nil) {
     self.externalName = externalName
-    super.init(name: name, typeRef: type, rhs: rhs, mutable: false, sourceRange: sourceRange)
+    super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)
   }
   override func equals(_ node: ASTNode) -> Bool {
     guard let node = node as? FuncArgumentAssignDecl else { return false }

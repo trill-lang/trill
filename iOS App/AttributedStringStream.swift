@@ -24,11 +24,11 @@ class AttributedStringStream: ColoredStream {
         let uiColor: UIColor? = {
           switch color {
           case .black: return .black
-          case .red: return palette.string
-          case .magenta: return palette.keyword
-          case .blue: return palette.externalName
-          case .green: return palette.internalName
-          case .cyan: return palette.externalName
+          case .red: return palette.string.color
+          case .magenta: return palette.keyword.color
+          case .blue: return palette.externalName.color
+          case .green: return palette.internalName.color
+          case .cyan: return palette.externalName.color
           case .white: return .white
           default: return nil
           }

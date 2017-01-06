@@ -10,7 +10,6 @@ enum ParseError: Error, CustomStringConvertible {
   case missingLineSeparator
   case expectedIdentifier(got: TokenKind)
   case duplicateDefault
-  case caseMustBeConstant
   case unexpectedExpression(expected: String)
   case duplicateDeinit
   case invalidAttribute(DeclModifier, DeclKind)
@@ -24,8 +23,6 @@ enum ParseError: Error, CustomStringConvertible {
       return "missing line separator"
     case .expectedIdentifier(let got):
       return "expected identifier (got '\(got.text)')"
-    case .caseMustBeConstant:
-      return "case statement expressions must be constants"
     case .duplicateDefault:
       return "only one default statement is allowed in a switch"
     case .unexpectedExpression(let expected):

@@ -19,19 +19,46 @@ class ReturnStmt: Stmt { // return <expr>;
   }
 }
 
+enum VarKind: Equatable {
+  case local(FuncDecl)
+  case global
+  case property(TypeDecl)
+  case implicitSelf(FuncDecl, TypeDecl)
+  
+  static func ==(lhs: VarKind, rhs: VarKind) -> Bool {
+    switch (lhs, rhs) {
+    case (.local(let fn), .local(let fn2)):
+      return fn === fn2
+    case (.global, .global):
+      return true
+    case (.property(let t), .property(let t2)):
+      return t === t2
+    case (.implicitSelf(let fn, let ty), .implicitSelf(let fn2, let ty2)):
+      return fn === fn2 && ty === ty2
+    default: return false
+    }
+  }
+}
+
 class VarAssignDecl: Decl {
   let rhs: Expr?
   let name: Identifier
   var typeRef: TypeRefExpr?
-  var containingTypeDecl: TypeDecl?
+  var kind: VarKind
   var mutable: Bool
-  init(name: Identifier, typeRef: TypeRefExpr?, rhs: Expr? = nil, containingTypeDecl: TypeDecl? = nil, modifiers: [DeclModifier] = [], mutable: Bool = true, sourceRange: SourceRange? = nil) {
+  init(name: Identifier,
+       typeRef: TypeRefExpr?,
+       kind: VarKind = .global,
+       rhs: Expr? = nil,
+       modifiers: [DeclModifier] = [],
+       mutable: Bool = true,
+       sourceRange: SourceRange? = nil) {
     precondition(rhs != nil || typeRef != nil)
     self.rhs = rhs
     self.typeRef = typeRef
     self.mutable = mutable
     self.name = name
-    self.containingTypeDecl = containingTypeDecl
+    self.kind = kind
     super.init(type: typeRef?.type ?? .void,
                modifiers: modifiers,
                sourceRange: sourceRange)
@@ -48,7 +75,8 @@ class VarAssignDecl: Decl {
     var superAttrs = super.attributes()
     superAttrs["type"] = typeRef?.type?.description
     superAttrs["name"] = name.name
-    superAttrs["kind"] = mutable ? "let" : "var"
+    superAttrs["kind"] = kind
+    superAttrs["mutable"] = mutable
     return superAttrs
   }
 }
@@ -129,9 +157,9 @@ class SwitchStmt: Stmt {
 }
 
 class CaseStmt: Stmt {
-  let constant: ConstantExpr
+  let constant: Expr
   let body: CompoundStmt
-  init(constant: ConstantExpr, body: CompoundStmt, sourceRange: SourceRange? = nil) {
+  init(constant: Expr, body: CompoundStmt, sourceRange: SourceRange? = nil) {
     self.constant = constant
     self.body = body
     super.init(sourceRange: sourceRange)

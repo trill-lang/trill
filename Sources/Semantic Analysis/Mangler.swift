@@ -33,68 +33,66 @@ enum Mangler {
   }
   
   static func mangle(_ d: FuncDecl, root: Bool = true) -> String {
-    if d.has(attribute: .foreign) {
+    if d.has(attribute: .foreign) && !(d is OperatorDecl) {
       return d.name.name
     }
     var s = root ? "_WF" : ""
-    if case .deinitializer(let type) = d.kind {
+    switch d.kind {
+    case .deinitializer(let type):
       s += "D" + mangle(type, root: false)
-    } else {
-      switch d.kind {
-      case .initializer(let type):
-        s += "I" + mangle(type, root: false)
-      case .method(let type):
-        s += "M" + mangle(type, root: false)
-        s += d.name.name.withCount
-      case .staticMethod(let type):
-        s += "m" + mangle(type, root: false)
-        s += d.name.name.withCount
-      case .operator(let op):
-        s += "O"
-        switch op {
-        case .plus: s += "p"
-        case .minus: s += "m"
-        case .star: s += "t"
-        case .divide: s += "d"
-        case .mod: s += "M"
-        case .equalTo: s += "e"
-        case .notEqualTo: s += "n"
-        case .lessThan: s += "l"
-        case .lessThanOrEqual: s += "L"
-        case .greaterThan: s += "g"
-        case .greaterThanOrEqual: s += "G"
-        case .and: s += "a"
-        case .or: s += "o"
-        case .xor: s += "x"
-        case .ampersand: s += "A"
-        case .bitwiseOr: s += "O"
-        case .not: s += "N"
-        case .bitwiseNot: s += "B"
-        case .leftShift: s += "s"
-        case .rightShift: s += "S"
-        default: s += "\(op)" // this will get caught by Sema
+    case .initializer(let type):
+      s += "I" + mangle(type, root: false)
+    case .method(let type):
+      s += "M" + mangle(type, root: false)
+      s += d.name.name.withCount
+    case .staticMethod(let type):
+      s += "m" + mangle(type, root: false)
+      s += d.name.name.withCount
+    case .operator(let op):
+      s += "O"
+      switch op {
+      case .plus: s += "p"
+      case .minus: s += "m"
+      case .star: s += "t"
+      case .divide: s += "d"
+      case .mod: s += "M"
+      case .equalTo: s += "e"
+      case .notEqualTo: s += "n"
+      case .lessThan: s += "l"
+      case .lessThanOrEqual: s += "L"
+      case .greaterThan: s += "g"
+      case .greaterThanOrEqual: s += "G"
+      case .and: s += "a"
+      case .or: s += "o"
+      case .xor: s += "x"
+      case .ampersand: s += "A"
+      case .bitwiseOr: s += "O"
+      case .not: s += "N"
+      case .bitwiseNot: s += "B"
+      case .leftShift: s += "s"
+      case .rightShift: s += "S"
+      default: s += "\(op)" // this will get caught by Sema
+      }
+    case .subscript(let type):
+      s += "S" + mangle(type, root: false)
+    default:
+      s += d.name.name.withCount
+    }
+    for arg in d.args where !arg.isImplicitSelf {
+      if let external = arg.externalName {
+        if external == arg.name {
+          s += "S"
+        } else {
+          s += "E"
+          s += external.name.withCount
         }
-      case .subscript(let type):
-        s += "S" + mangle(type, root: false)
-      default:
-        s += d.name.name.withCount
       }
-      for arg in d.args where !arg.isImplicitSelf {
-        if let external = arg.externalName {
-          if external == arg.name {
-            s += "S"
-          } else {
-            s += "E"
-            s += external.name.withCount
-          }
-        }
-        s += arg.name.name.withCount
-        s += mangle(arg.type, root: false)
-      }
-      let returnType = d.returnType.type ?? .void
-      if returnType != .void && !d.isInitializer {
-        s += "R" + mangle(returnType, root: false)
-      }
+      s += arg.name.name.withCount
+      s += mangle(arg.type, root: false)
+    }
+    let returnType = d.returnType.type ?? .void
+    if returnType != .void && !d.isInitializer {
+      s += "R" + mangle(returnType, root: false)
     }
     return s
   }
@@ -134,6 +132,8 @@ enum Mangler {
       s += "sb"
     case .void:
       s += "sv"
+    case .any:
+      s += "sa"
     case .pointer:
       let level = t.pointerLevel()
       if level > 0 {

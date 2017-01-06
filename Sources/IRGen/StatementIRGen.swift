@@ -224,13 +224,17 @@ extension IRGenerator {
     } else {
       defaultBlock = endbb!
     }
+    var constants = [LLVMValueRef]()
+    for c in stmt.cases {
+      constants.append(visit(c.constant)!)
+    }
     let switchRef = LLVMBuildSwitch(builder, visit(stmt.value), defaultBlock, UInt32(stmt.cases.count))
     for (i, c) in stmt.cases.enumerated() {
       let block = LLVMAppendBasicBlockInContext(llvmContext, function, "case-\(i)")
       LLVMPositionBuilderAtEnd(builder, block)
       visit(c.body)
       LLVMBuildBr(builder, endbb)
-      LLVMAddCase(switchRef, visit(c.constant), block)
+      LLVMAddCase(switchRef, constants[i], block)
     }
     LLVMPositionBuilderAtEnd(builder, endbb)
     return nil

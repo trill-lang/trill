@@ -22,6 +22,7 @@ enum SemaError: Error, CustomStringConvertible {
   case cannotSwitch(type: DataType)
   case nonPointerNil(type: DataType)
   case notAllPathsReturn(type: DataType)
+  case caseMustBeConstant
   case noViableOverload(name: Identifier, args: [Argument])
   case candidates([FuncDecl])
   case ambiguousReference(name: Identifier)
@@ -72,6 +73,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "varargs in non-foreign declarations are not yet supported"
     case .nonPointerNil(let type):
       return "cannot set non-pointer type '\(type)' to nil"
+    case .caseMustBeConstant:
+      return "case statement expressions must be constants"
     case .dereferenceNonPointer(let type):
       return "cannot dereference a value of non-pointer type '\(type)'"
     case .addressOfRValue:
@@ -182,7 +185,7 @@ class Sema: ASTTransformer, Pass {
       defer { varBindings = oldBindings }
       var fieldNames = Set<String>()
       for field in expr.fields {
-        field.containingTypeDecl = expr
+        field.kind = .property(expr)
         if fieldNames.contains(field.name.name) {
           error(SemaError.duplicateField(name: field.name,
                                          type: expr.type),
@@ -294,9 +297,20 @@ class Sema: ASTTransformer, Pass {
         return
       }
     }
-    if decl.containingTypeDecl == nil {
-      varBindings[decl.name.name] = decl
+    if let fn = currentFunction {
+      decl.kind = .local(fn)
+    } else if let type = currentType {
+      decl.kind = .property(type)
+    } else {
+      decl.kind = .global
     }
+    
+    switch decl.kind {
+    case .local, .global:
+      varBindings[decl.name.name] = decl
+    default: break
+    }
+    
     if let rhs = decl.rhs, decl.typeRef == nil {
       guard let type = rhs.type else { return }
       let canRhs = context.canonicalType(type)
@@ -350,6 +364,7 @@ class Sema: ASTTransformer, Pass {
         ])
       return
     }
+    decl.kind = .local(currentFunction!)
     let canTy = context.canonicalType(decl.type)
     if case .custom = canTy,
       context.decl(for: canTy)!.isIndirect {
@@ -545,7 +560,7 @@ class Sema: ASTTransformer, Pass {
       let fn = currentFunction,
       fn.isInitializer,
       expr.name == "self" {
-      expr.decl = VarAssignDecl(name: "self", typeRef: fn.returnType)
+      expr.decl = VarAssignDecl(name: "self", typeRef: fn.returnType, kind: .implicitSelf(fn, currentType!))
       expr.isSelf = true
       expr.type = fn.returnType.type!
       return
@@ -623,6 +638,9 @@ class Sema: ASTTransformer, Pass {
     }
     var candidates = [FuncDecl]()
     var name: Identifier? = nil
+    
+    var setLHSDecl: (Decl) -> Void = {_ in }
+    
     switch expr.lhs {
     case let lhs as FieldLookupExpr:
       name = lhs.name
@@ -633,10 +651,10 @@ class Sema: ASTTransformer, Pass {
       switch fieldKind {
       case .property:
         if case .function(var args, let ret)? = lhs.type {
-          candidates.append(context.foreignDecl(args: args,
-                                                ret: ret,
-                                                kind: .property(type: typeDecl.type))
-            .addingImplicitSelf(typeDecl.type))
+          candidates.append(context.implicitDecl(args: args,
+                                                 ret: ret,
+                                                 kind: .property(type: typeDecl.type))
+                                   .addingImplicitSelf(typeDecl.type))
           args.insert(typeDecl.type, at: 0)
           lhs.type = .function(args: args, returnType: ret)
         }
@@ -645,14 +663,18 @@ class Sema: ASTTransformer, Pass {
       case .method:
         candidates += typeDecl.methods(named: lhs.name.name)
       }
+      setLHSDecl = { lhs.decl = $0 }
     case let lhs as VarExpr:
+      setLHSDecl = { lhs.decl = $0 }
       name = lhs.name
       if let typeDecl = context.decl(for: DataType(name: lhs.name.name)) {
         candidates.append(contentsOf: typeDecl.initializers)
       } else if let varDecl = varBindings[lhs.name.name] {
+        setLHSDecl = { _ in } // override the decl if this is a function variable
+        lhs.decl = varDecl
         let type = context.canonicalType(varDecl.type)
         if case .function(let args, let ret) = type {
-          candidates += [context.foreignDecl(args: args, ret: ret, kind: .variable)]
+          candidates += [context.implicitDecl(args: args, ret: ret, kind: .variable)]
         } else {
           error(SemaError.callNonFunction(type: type),
                 loc: lhs.startLoc,
@@ -667,7 +689,7 @@ class Sema: ASTTransformer, Pass {
     default:
       visit(expr.lhs)
       if case .function(let args, let ret)? = expr.lhs.type {
-        candidates += [context.foreignDecl(args: args, ret: ret)]
+        candidates += [context.implicitDecl(args: args, ret: ret)]
       } else {
         error(SemaError.callNonFunction(type: expr.lhs.type ?? .void),
               loc: expr.lhs.startLoc,
@@ -694,6 +716,7 @@ class Sema: ASTTransformer, Pass {
       note(SemaError.candidates(candidates))
       return
     }
+    setLHSDecl(decl)
     expr.decl = decl
     expr.type = decl.returnType.type
     
@@ -765,6 +788,12 @@ class Sema: ASTTransformer, Pass {
     super.visitSwitchStmt(stmt)
     guard let valueType = stmt.value.type else { return }
     for c in stmt.cases {
+      guard context.isGlobalConstant(c.constant) else {
+        error(SemaError.caseMustBeConstant,
+              loc: c.constant.startLoc,
+              highlights: [c.constant.sourceRange])
+        return
+      }
       guard let decl = context.infixOperatorCandidate(.equalTo,
                                                       lhs: stmt.value,
                                                       rhs: c.constant),

@@ -255,7 +255,15 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   }
   
   override func visitCaseStmt(_ expr: CaseStmt) -> Result {
-    write("case \(expr.constant.text): ")
+    let text: String
+    if let varExpr = expr.constant as? VarExpr {
+      text = varExpr.name.name
+    } else if let constant = expr.constant as? ConstantExpr {
+      text = constant.text
+    } else {
+      fatalError("invalid case expr?")
+    }
+    write("case \(text): ")
     var newExprs = expr.body.exprs
     newExprs.append(BreakStmt())
     visitCompoundStmt(CompoundStmt(exprs: newExprs))
@@ -315,6 +323,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       } else {
         visit(expr.lhs)
       }
+    } else if let lhs = expr.lhs as? VarExpr,
+           case .local? = (lhs.decl as? VarAssignDecl)?.kind {
+      stream.write(lhs.name.name)
     } else {
       let mangled = Mangler.mangle(decl)
       stream.write("\(mangled)")

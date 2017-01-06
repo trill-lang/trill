@@ -92,24 +92,24 @@ class LexerTextStorage: NSTextStorage {
                  value: attributes.font,
                  range: fullRange)
     addAttribute(NSForegroundColorAttributeName,
-                 value: attributes.normal,
+                 value: attributes.normal.color,
                  range: fullRange)
     for token in tokens  {
       if token.isKeyword {
         addAttribute(NSForegroundColorAttributeName,
-                     value: attributes.keyword,
+                     value: attributes.keyword.color,
                      range: token.range.nsRange)
       } else if token.isLiteral {
         addAttribute(NSForegroundColorAttributeName,
-                     value: attributes.literal,
+                     value: attributes.literal.color,
                      range: token.range.nsRange)
       } else if token.isString {
         addAttribute(NSForegroundColorAttributeName,
-                     value: attributes.string,
+                     value: attributes.string.color,
                      range: token.range.nsRange)
       } else if !token.isEOF {
         addAttribute(NSForegroundColorAttributeName,
-                     value: attributes.normal,
+                     value: attributes.normal.color,
                      range: token.range.nsRange)
       }
     }
@@ -147,7 +147,7 @@ class LexerTextStorage: NSTextStorage {
     
     for r in [commentRegex, multilineCommentRegex, inProgressMultilineCommentRegex] {
       r.enumerateMatches(in: string, options: [], range: fullRange) { result, _, _ in
-        self.addAttribute(NSForegroundColorAttributeName, value: self.attributes.comment, range: result!.range)
+        self.addAttribute(NSForegroundColorAttributeName, value: self.attributes.comment.color, range: result!.range)
       }
     }
     super.processEditing()

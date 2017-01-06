@@ -15,5 +15,6 @@ SPECIAL_TYPE('d', "Double")
 SPECIAL_TYPE('F', "Float80")
 SPECIAL_TYPE('b', "Bool")
 SPECIAL_TYPE('v', "Void")
+SPECIAL_TYPE('a', "Any")
 
 #endif /* SpecialTypes_def_h */

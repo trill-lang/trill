@@ -30,7 +30,8 @@ struct PopulateJSDecls: Pass {
                           modifiers: [.foreign])
       context.add(decl)
     }
-    context.add(OperatorDecl(.plus, .any, .string, .string, modifiers: [.foreign]))
+    context.add(OperatorDecl(.plus, .any, .string, .string, modifiers: [.foreign, .implicit]))
+    context.add(OperatorDecl(.plus, .string, .any, .string, modifiers: [.foreign, .implicit]))
   }
   var title: String {
     return "Populating JavaScript Decls"
@@ -41,13 +42,24 @@ struct PopulateJSDecls: Pass {
 
 let colorScheme = TextAttributes(font: Font(name: "Menlo", size: 14.0)!,
                                  boldFont: Font(name: "Menlo-Bold", size: 14.0)!,
-                                 keyword: Color(red: 178.0/255.0, green: 24.0/255.0, blue: 137.0/255.0, alpha: 1.0),
-                                 literal: Color(red: 120.0/255.0, green: 109.0/255.0, blue: 196.0/255.0, alpha: 1.0),
-                                 normal: Color.white,
-                                 comment: Color(red: 65.0/255.0, green: 182.0/255.0, blue: 69.0/255.0, alpha: 1.0),
-                                 string: Color(red: 219.0/255.0, green: 44.0/255.0, blue: 56.0/255.0, alpha: 1.0),
-                                 internalName: Color(red: 131.0/255.0, green: 192.0/255.0, blue: 87.0/255.0, alpha: 1.0),
-                                 externalName: Color(red: 0.0/255.0, green: 160.0/255.0, blue: 190.0/255.0, alpha: 1.0))
+                                 keyword: TextStyle(bold: false, color: #colorLiteral(red: 0.8717985749, green: 0.1707525551, blue: 0.6193057895, alpha: 1)),
+                                 literal: TextStyle(bold: false, color: #colorLiteral(red: 0.4705882353, green: 0.4274509804, blue: 0.768627451, alpha: 1)),
+                                 normal: TextStyle(bold: false, color: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)),
+                                 comment: TextStyle(bold: false, color: #colorLiteral(red: 0.3207378387, green: 0.7909296155, blue: 0.3154229522, alpha: 1)),
+                                 string: TextStyle(bold: false, color: #colorLiteral(red: 0.8840605617, green: 0.2192999125, blue: 0.2169525027, alpha: 1)),
+                                 internalName: TextStyle(bold: true, color: #colorLiteral(red: 0.09483132511, green: 0.7192143798, blue: 0.7049412131, alpha: 1)),
+                                 externalName: TextStyle(bold: false, color: #colorLiteral(red: 0.1427748409, green: 0.5633252992, blue: 0.55766396, alpha: 1)))
+
+
+//let colorScheme = TextAttributes(font: Font(name: "Menlo", size: 14.0)!,
+//                                 boldFont: Font(name: "Menlo-Bold", size: 14.0)!,
+//                                 keyword: #colorLiteral(red: 0.6980392157, green: 0.09411764706, blue: 0.537254902, alpha: 1),
+//                                 literal: #colorLiteral(red: 0.4705882353, green: 0.4274509804, blue: 0.768627451, alpha: 1),
+//                                 normal: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0),
+//                                 comment: #colorLiteral(red: 0.2549019608, green: 0.7137254902, blue: 0.2705882353, alpha: 1),
+//                                 string: #colorLiteral(red: 0.8588235294, green: 0.1725490196, blue: 0.2196078431, alpha: 1),
+//                                 internalName: #colorLiteral(red: 0.5137254902, green: 0.7529411765, blue: 0.3411764706, alpha: 1),
+//                                 externalName: #colorLiteral(red: 0, green: 0.6274509804, blue: 0.7450980392, alpha: 1))
 
 class ViewController: UIViewController, UITextViewDelegate {
   var diagnosticEngine = DiagnosticEngine()

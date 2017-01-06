@@ -61,17 +61,12 @@ extension Parser {
       if case .case = peek() {
         let tok = consumeToken()
         let expr = try parseValExpr()
-        guard let e = expr as? ConstantExpr else {
-          throw Diagnostic.error(ParseError.caseMustBeConstant,
-                                 loc: expr.startLoc)
-            .highlighting(expr.sourceRange!)
-        }
         let caseRange = range(start: tok.range.start)
         try consume(.colon)
         let bodyExprs = try parseStatementExprs(terminators: terminators)
         let sourceRange = range(start: startLoc)
         let body = CompoundStmt(exprs: bodyExprs, sourceRange: sourceRange)
-        cases.append(CaseStmt(constant: e, body: body, sourceRange: caseRange))
+        cases.append(CaseStmt(constant: expr, body: body, sourceRange: caseRange))
       } else if case .default = peek() {
         consumeToken()
         guard defaultBody == nil else {
