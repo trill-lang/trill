@@ -157,6 +157,13 @@
 		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCC62B081D7A48610023F698 /* libLLVMTarget.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC3E1C9007E300B84E25 /* libLLVMTarget.a */; };
 		DCCA97C91D58581900883183 /* libLLVMLinker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCCA97C81D58581900883183 /* libLLVMLinker.a */; };
+		DCCE9AA91E2090D100319709 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AA81E2090D100319709 /* Module.swift */; };
+		DCCE9AAB1E2096C800319709 /* LLVMType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AAA1E2096C800319709 /* LLVMType.swift */; };
+		DCCE9AAD1E2096EB00319709 /* LLVMValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AAC1E2096EB00319709 /* LLVMValue.swift */; };
+		DCCE9AAF1E209C1D00319709 /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AAE1E209C1D00319709 /* IRBuilder.swift */; };
+		DCCE9AB11E20ABF600319709 /* PassManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB01E20ABF600319709 /* PassManager.swift */; };
+		DCCE9AB31E20C0A200319709 /* TargetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB21E20C0A200319709 /* TargetData.swift */; };
+		DCCE9AB51E20C6B800319709 /* ORCJIT.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB41E20C6B800319709 /* ORCJIT.swift */; };
 		DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCEF07FF1DCD6BA90075FE15 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
@@ -405,6 +412,13 @@
 		DCAEBC791C9009ED00B84E25 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = /usr/local/llvm/lib/libLLVMTransformUtils.a; sourceTree = "<absolute>"; };
 		DCC4EF471D690D3D00E1CF5B /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DCCA97C81D58581900883183 /* libLLVMLinker.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLinker.a; path = ../../../../usr/local/llvm/lib/libLLVMLinker.a; sourceTree = "<group>"; };
+		DCCE9AA81E2090D100319709 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
+		DCCE9AAA1E2096C800319709 /* LLVMType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LLVMType.swift; sourceTree = "<group>"; };
+		DCCE9AAC1E2096EB00319709 /* LLVMValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LLVMValue.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9AAE1E209C1D00319709 /* IRBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9AB01E20ABF600319709 /* PassManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassManager.swift; sourceTree = "<group>"; };
+		DCCE9AB21E20C0A200319709 /* TargetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetData.swift; sourceTree = "<group>"; };
+		DCCE9AB41E20C6B800319709 /* ORCJIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ORCJIT.swift; sourceTree = "<group>"; };
 		DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ANSIColor.swift; sourceTree = "<group>"; };
 		DCF80B5F1D7487DB00463CBB /* SourceFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -565,8 +579,15 @@
 		DC176FEC1D6911A200FEFB85 /* LLVM Wrappers */ = {
 			isa = PBXGroup;
 			children = (
+				DCCE9AA81E2090D100319709 /* Module.swift */,
+				DCCE9AB41E20C6B800319709 /* ORCJIT.swift */,
+				DCCE9AB21E20C0A200319709 /* TargetData.swift */,
+				DCCE9AB01E20ABF600319709 /* PassManager.swift */,
 				DC176FED1D6911A200FEFB85 /* LLVMWrappers.cpp */,
 				DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */,
+				DCCE9AAA1E2096C800319709 /* LLVMType.swift */,
+				DCCE9AAC1E2096EB00319709 /* LLVMValue.swift */,
+				DCCE9AAE1E209C1D00319709 /* IRBuilder.swift */,
 			);
 			name = "LLVM Wrappers";
 			path = "Sources/LLVM Wrappers";
@@ -1065,6 +1086,8 @@
 				DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */,
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
+				DCCE9AA91E2090D100319709 /* Module.swift in Sources */,
+				DCCE9AAD1E2096EB00319709 /* LLVMValue.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
 				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
 				DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */,
@@ -1073,11 +1096,15 @@
 				DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */,
 				DC1770121D6911A200FEFB85 /* Sema.swift in Sources */,
 				DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */,
+				DCCE9AB31E20C0A200319709 /* TargetData.swift in Sources */,
 				DC1770681D6913EF00FEFB85 /* ValueParser.swift in Sources */,
+				DCCE9AAF1E209C1D00319709 /* IRBuilder.swift in Sources */,
 				DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */,
 				DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */,
 				DC31C10E1C82681E00F85807 /* main.swift in Sources */,
 				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
+				DCCE9AB51E20C6B800319709 /* ORCJIT.swift in Sources */,
+				DCCE9AAB1E2096C800319709 /* LLVMType.swift in Sources */,
 				DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */,
 				DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */,
 				DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */,
@@ -1098,6 +1125,7 @@
 				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
 				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
 				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,
+				DCCE9AB11E20ABF600319709 /* PassManager.swift in Sources */,
 				DC5EA0C81E185C8300875545 /* StreamConsumer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -8,11 +8,10 @@ import Foundation
 extension IRGenerator {
   func codegenGlobalStringPtr(_ string: String) -> Result {
     if let global = globalStringMap[string] { return global }
-    let length = UInt32(string.utf8.count)
-    let globalArray = LLVMAddGlobal(module,
-                                    LLVMArrayType(LLVMInt8Type(), length + 1),
-                                    "str")!
-    LLVMSetAlignment(globalArray, 1)
+    let length = string.utf8.count
+    var globalArray = builder.addGlobal("str", type:
+      ArrayType(elementType: IntType.int8, count: length + 1))
+    globalArray.alignment = 1
     var utf8String = string.utf8CString
     utf8String.withUnsafeMutableBufferPointer { buf in
       let str = LLVMConstStringInContext(llvmContext, buf.baseAddress, length, 0)
@@ -22,7 +21,7 @@ extension IRGenerator {
     return globalArray
   }
   
-  func codegenTupleType(_ type: DataType) -> LLVMTypeRef {
+  func codegenTupleType(_ type: DataType) -> LLVMType {
     guard case .tuple(let fields) = type else { fatalError("must be tuple type") }
     let name = Mangler.mangle(context.canonicalType(type))
     if let existing = LLVMGetTypeByName(module, name) { return existing }

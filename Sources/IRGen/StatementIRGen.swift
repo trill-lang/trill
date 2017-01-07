@@ -10,8 +10,8 @@ extension IRGenerator {
   func codegenGlobalPrototype(_ decl: VarAssignDecl) -> VarBinding {
     if let binding = globalVarIRBindings[decl.name] { return binding }
     let type = resolveLLVMType(decl.type)
-    let global = LLVMAddGlobal(module, type, decl.name.name)!
-    LLVMSetAlignment(global, 8)
+    let global = builder.addGlobal(decl.name.name, type: type)
+    global.alignment = 8
     let binding = VarBinding(ref: global,
                              storage: .value,
                              read: { return LLVMBuildLoad(self.builder, global, "") },
