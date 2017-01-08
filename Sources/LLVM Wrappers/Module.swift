@@ -1,13 +1,3 @@
-//
-//  Module.swift
-//  Trill
-//
-//  Created by Harlan Haskins on 1/6/17.
-//  Copyright © 2017 Harlan. All rights reserved.
-//
-
-import Foundation
-
 public class Context {
   internal let llvm: LLVMContextRef
   public static let global = Context(llvm: LLVMGetGlobalContext()!)

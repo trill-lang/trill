@@ -1,10 +1,3 @@
-//
-//  LLVMType.swift
-//  Trill
-//
-
-import Foundation
-
 public protocol LLVMType {
   func asLLVM() -> LLVMTypeRef
 }

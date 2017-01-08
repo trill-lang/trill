@@ -1,5 +1,3 @@
-import Foundation
-
 public enum Attribute {
   case zExt, sExt, noReturn, inReg, structRet, noUnwind, noAlias
   case byVal, nest, readOnly, noInline, alwaysInline, optimizeForSize
@@ -106,8 +104,21 @@ public class Function: LLVMValue {
 public struct Parameter: LLVMValue {
   internal let llvm: LLVMValueRef
   
+  func addAttribute(_ attr: Attribute) {
+    LLVMAddAttribute(asLLVM(), attr.asLLVM())
+  }
+  
+  func removeAttribute(_ attr: Attribute) {
+    LLVMRemoveAttribute(asLLVM(), attr.asLLVM())
+  }
+  
   public func next() -> Parameter? {
     guard let param = LLVMGetNextParam(llvm) else { return nil }
+    return Parameter(llvm: param)
+  }
+  
+  public func previous() -> Parameter? {
+    guard let param = LLVMGetPreviousParam(llvm) else { return nil }
     return Parameter(llvm: param)
   }
   

@@ -1,13 +1,3 @@
-//
-//  BasicBlock.swift
-//  Trill
-//
-//  Created by Harlan Haskins on 1/7/17.
-//  Copyright © 2017 Harlan. All rights reserved.
-//
-
-import Foundation
-
 public struct BasicBlock: LLVMValue, Sequence {
     internal let llvm: LLVMBasicBlockRef
     public init(llvm: LLVMBasicBlockRef) {

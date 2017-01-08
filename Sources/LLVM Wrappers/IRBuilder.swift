@@ -1,13 +1,3 @@
-//
-//  IRBuilder.swift
-//  Trill
-//
-//  Created by Harlan Haskins on 1/6/17.
-//  Copyright © 2017 Harlan. All rights reserved.
-//
-
-import Foundation
-
 public enum OverflowBehavior {
   case `default`, noSignedWrap, noUnsignedWrap
 }

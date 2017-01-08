@@ -1,10 +1,3 @@
-//
-//  PhiNode.swift
-//  Trill
-//
-
-import Foundation
-
 public struct PhiNode: LLVMValue {
   internal let llvm: LLVMValueRef
   

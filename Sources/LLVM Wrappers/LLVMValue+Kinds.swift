@@ -1,10 +1,3 @@
-//
-//  LLVMValue+Kinds.swift
-//  Trill
-//
-
-import Foundation
-
 // Automatically generated from the macros in llvm/Core.h
 
 public extension LLVMValue {

@@ -1,10 +1,3 @@
-//
-//  LLVMValue.swift
-//  Trill
-//
-
-import Foundation
-
 public protocol LLVMValue {
   func asLLVM() -> LLVMValueRef
 }

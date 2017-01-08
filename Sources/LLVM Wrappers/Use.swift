@@ -1,10 +1,3 @@
-//
-//  Use.swift
-//  Trill
-//
-
-import Foundation
-
 public struct Use {
     internal let llvm: LLVMUseRef
     
