@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum FunctionPass {
+public enum FunctionPass {
     case aggressiveDCE
     case bitTrackingDCE
     case alignmentFromAssumptions
@@ -48,8 +48,8 @@ enum FunctionPass {
     case basicAliasAnalysis
 }
 
-class FunctionPassManager {
-    let llvm: LLVMPassManagerRef
+public class FunctionPassManager {
+    internal let llvm: LLVMPassManagerRef
     
     private static let passMapping: [FunctionPass: (LLVMPassManagerRef) -> Void] = [
         .aggressiveDCE: LLVMAddAggressiveDCEPass,
@@ -91,18 +91,18 @@ class FunctionPassManager {
         .basicAliasAnalysis: LLVMAddBasicAliasAnalysisPass,
     ]
     
-    init(module: Module) {
+    public init(module: Module) {
         llvm = LLVMCreateFunctionPassManagerForModule(module.llvm)!
         LLVMInitializeFunctionPassManager(llvm)
     }
     
-    func add(_ passes: FunctionPass...) {
+    public func add(_ passes: FunctionPass...) {
         for pass in passes {
             FunctionPassManager.passMapping[pass]!(llvm)
         }
     }
     
-    func run(on function: Function) {
+    public func run(on function: Function) {
         LLVMRunFunctionPassManager(llvm, function.asLLVM())
     }
 }

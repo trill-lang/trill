@@ -8,20 +8,20 @@
 
 import Foundation
 
-class Context {
-  let llvm: LLVMContextRef
-  static let global = Context(llvm: LLVMGetGlobalContext()!)
-  init(llvm: LLVMContextRef) {
+public class Context {
+  internal let llvm: LLVMContextRef
+  public static let global = Context(llvm: LLVMGetGlobalContext()!)
+  public init(llvm: LLVMContextRef) {
     self.llvm = llvm
   }
 }
 
-enum ModuleError: Error, CustomStringConvertible {
+public enum ModuleError: Error, CustomStringConvertible {
   case didNotPassVerification(String)
   case couldNotPrint(path: String, error: String)
   case couldNotEmitBitCode(path: String)
   
-  var description: String {
+  public var description: String {
     switch self {
     case .didNotPassVerification(let message):
       return "module did not pass verification: \(message)"
@@ -33,9 +33,9 @@ enum ModuleError: Error, CustomStringConvertible {
   }
 }
 
-class Module {
-  let llvm: LLVMModuleRef
-  init(name: String, context: Context? = nil) {
+public final class Module {
+  internal let llvm: LLVMModuleRef
+  public init(name: String, context: Context? = nil) {
     if let context = context {
       llvm = LLVMModuleCreateWithNameInContext(name, context.llvm)
       self.context = context
@@ -45,13 +45,13 @@ class Module {
     }
   }
   
-  let context: Context
+  public let context: Context
   
-  var dataLayout: TargetData {
+  public var dataLayout: TargetData {
     return TargetData(llvm: LLVMGetModuleDataLayout(llvm))
   }
   
-  func print(to path: String) throws {
+  public func print(to path: String) throws {
     var err: UnsafeMutablePointer<Int8>?
     path.withCString { cString in
       let mutable = strdup(cString)
@@ -64,7 +64,7 @@ class Module {
     }
   }
   
-  func emitBitCode(to path: String) throws {
+  public func emitBitCode(to path: String) throws {
     let status = path.withCString { cString -> Int32 in
       let mutable = strdup(cString)
       defer { free(mutable) }
@@ -76,17 +76,17 @@ class Module {
     }
   }
   
-  func type(named name: String) -> LLVMType? {
+  public func type(named name: String) -> LLVMType? {
     guard let type = LLVMGetTypeByName(llvm, name) else { return nil }
     return convertType(type)
   }
   
-  func function(named name: String) -> Function? {
+  public func function(named name: String) -> Function? {
     guard let fn = LLVMGetNamedFunction(llvm, name) else { return nil }
     return Function(llvm: fn)
   }
   
-  func verify() throws {
+  public func verify() throws {
     var message: UnsafeMutablePointer<Int8>?
     let status = Int(LLVMVerifyModule(llvm, LLVMReturnStatusAction, &message))
     if let message = message, status == 1 {
@@ -95,13 +95,13 @@ class Module {
     }
   }
   
-  func dump() {
+  public func dump() {
     LLVMDumpModule(llvm)
   }
 }
 
 extension Bool {
-  var llvm: LLVMBool {
+  internal var llvm: LLVMBool {
     return self ? 1 : 0
   }
 }

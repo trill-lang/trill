@@ -1,6 +1,6 @@
 import Foundation
 
-enum Attribute {
+public enum Attribute {
   case zExt, sExt, noReturn, inReg, structRet, noUnwind, noAlias
   case byVal, nest, readOnly, noInline, alwaysInline, optimizeForSize
   case stackProtect, stackProtectReq, alignment, noCapture, noRedZone
@@ -14,7 +14,7 @@ enum Attribute {
    case nonNull, jumpTable, convergent, safeStack, swiftSelf, swiftError
    */
   
-  static let mapping: [Attribute: LLVMAttribute] = [
+  private static let mapping: [Attribute: LLVMAttribute] = [
     .zExt: LLVMZExtAttribute, .sExt: LLVMSExtAttribute, .noReturn: LLVMNoReturnAttribute,
     .inReg: LLVMInRegAttribute, .structRet: LLVMStructRetAttribute, .noUnwind: LLVMNoUnwindAttribute,
     .noAlias: LLVMNoAliasAttribute, .byVal: LLVMByValAttribute, .nest: LLVMNestAttribute,
@@ -27,33 +27,33 @@ enum Attribute {
     .returnsTwice: LLVMReturnsTwice, .uwTable: LLVMUWTable, .nonLazyBind: LLVMNonLazyBind
   ]
   
-  func asLLVM() -> LLVMAttribute {
+  public func asLLVM() -> LLVMAttribute {
     return Attribute.mapping[self]!
   }
 }
 
-class Function: LLVMValue {
-  let llvm: LLVMValueRef
+public class Function: LLVMValue {
+  internal let llvm: LLVMValueRef
   internal init(llvm: LLVMValueRef) {
     self.llvm = llvm
   }
   
-  var entryBlock: BasicBlock? {
+  public var entryBlock: BasicBlock? {
     guard let blockRef = LLVMGetEntryBasicBlock(llvm) else { return nil }
     return BasicBlock(llvm: blockRef)
   }
   
-  var firstBlock: BasicBlock? {
+  public var firstBlock: BasicBlock? {
     guard let blockRef = LLVMGetFirstBasicBlock(llvm) else { return nil }
     return BasicBlock(llvm: blockRef)
   }
   
-  var lastBlock: BasicBlock? {
+  public var lastBlock: BasicBlock? {
     guard let blockRef = LLVMGetLastBasicBlock(llvm) else { return nil }
     return BasicBlock(llvm: blockRef)
   }
   
-  var basicBlocks: [BasicBlock] {
+  public var basicBlocks: [BasicBlock] {
     var blocks = [BasicBlock]()
     var current = firstBlock
     while let block = current {
@@ -63,22 +63,22 @@ class Function: LLVMValue {
     return blocks
   }
   
-  func parameter(at index: Int) -> Parameter? {
+  public func parameter(at index: Int) -> Parameter? {
     guard let value = LLVMGetParam(llvm, UInt32(index)) else { return nil }
     return Parameter(llvm: value)
   }
   
-  var firstParameter: Parameter? {
+  public var firstParameter: Parameter? {
     guard let value = LLVMGetFirstParam(llvm) else { return nil }
     return Parameter(llvm: value)
   }
   
-  var lastParameter: Parameter? {
+  public var lastParameter: Parameter? {
     guard let value = LLVMGetLastParam(llvm) else { return nil }
     return Parameter(llvm: value)
   }
   
-  var parameters: [LLVMValue] {
+  public var parameters: [LLVMValue] {
     var current = firstParameter
     var params = [Parameter]()
     while let param = current {
@@ -88,7 +88,7 @@ class Function: LLVMValue {
     return params
   }
   
-  func appendBasicBlock(named name: String, in context: Context? = nil) -> BasicBlock {
+  public func appendBasicBlock(named name: String, in context: Context? = nil) -> BasicBlock {
     let block: LLVMBasicBlockRef
     if let context = context {
       block = LLVMAppendBasicBlockInContext(context.llvm, llvm, name)
@@ -98,20 +98,20 @@ class Function: LLVMValue {
     return BasicBlock(llvm: block)
   }
   
-  func asLLVM() -> LLVMValueRef {
+  public func asLLVM() -> LLVMValueRef {
     return llvm
   }
 }
 
-struct Parameter: LLVMValue {
-  let llvm: LLVMValueRef
+public struct Parameter: LLVMValue {
+  internal let llvm: LLVMValueRef
   
-  func next() -> Parameter? {
+  public func next() -> Parameter? {
     guard let param = LLVMGetNextParam(llvm) else { return nil }
     return Parameter(llvm: param)
   }
   
-  func asLLVM() -> LLVMValueRef {
+  public func asLLVM() -> LLVMValueRef {
     return llvm
   }
 }

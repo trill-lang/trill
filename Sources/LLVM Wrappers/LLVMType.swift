@@ -5,24 +5,24 @@
 
 import Foundation
 
-protocol LLVMType {
+public protocol LLVMType {
   func asLLVM() -> LLVMTypeRef
 }
 
-extension LLVMType {
-  func null() -> LLVMValue {
+public extension LLVMType {
+  public func null() -> LLVMValue {
     return LLVMConstNull(asLLVM())
   }
   
-  func undef() -> LLVMValue {
+  public func undef() -> LLVMValue {
     return LLVMGetUndef(asLLVM())
   }
   
-  func constPointerNull() -> LLVMValue {
+  public func constPointerNull() -> LLVMValue {
     return LLVMConstPointerNull(asLLVM())
   }
   
-  func dump() {
+  public func dump() {
     LLVMDumpType(asLLVM())
   }
 }
@@ -79,77 +79,77 @@ internal func convertType(_ type: LLVMTypeRef) -> LLVMType {
   }
 }
 
-struct VoidType: LLVMType {
-  func asLLVM() -> LLVMTypeRef {
+public struct VoidType: LLVMType {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMVoidType()
   }
 }
 
-struct IntType: LLVMType {
-  let width: Int
+public struct IntType: LLVMType {
+  public let width: Int
   
-  static let int1 = IntType(width: 1)
-  static let int8 = IntType(width: 8)
-  static let int16 = IntType(width: 16)
-  static let int32 = IntType(width: 32)
-  static let int64 = IntType(width: 64)
-  static let int128 = IntType(width: 128)
+  public static let int1 = IntType(width: 1)
+  public static let int8 = IntType(width: 8)
+  public static let int16 = IntType(width: 16)
+  public static let int32 = IntType(width: 32)
+  public static let int64 = IntType(width: 64)
+  public static let int128 = IntType(width: 128)
   
-  func zero() -> LLVMValue {
+  public func zero() -> LLVMValue {
     return null()
   }
   
-  func constant<IntTy: Integer>(_ value: IntTy, signExtend: Bool = false) -> LLVMValueRef {
+  public func constant<IntTy: Integer>(_ value: IntTy, signExtend: Bool = false) -> LLVMValueRef {
     return LLVMConstInt(asLLVM(),
                         unsafeBitCast(value.toIntMax(), to: UInt64.self),
                         signExtend.llvm)
   }
   
-  func allOnes() -> LLVMValue {
+  public func allOnes() -> LLVMValue {
     return LLVMConstAllOnes(asLLVM())
   }
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMIntType(UInt32(width))
   }
 }
 
-struct ArrayType: LLVMType {
-  let elementType: LLVMType
-  let count: Int
-  static func constant(_ values: [LLVMValue], type: LLVMType) -> LLVMValue {
+public struct ArrayType: LLVMType {
+  public let elementType: LLVMType
+  public let count: Int
+  public static func constant(_ values: [LLVMValue], type: LLVMType) -> LLVMValue {
     var vals = values.map { $0.asLLVM() as Optional }
     return vals.withUnsafeMutableBufferPointer { buf in
       return LLVMConstArray(type.asLLVM(), buf.baseAddress, UInt32(buf.count))
     }
   }
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMArrayType(elementType.asLLVM(), UInt32(count))
   }
 }
 
-struct MetadataType: LLVMType {
-  let llvm: LLVMTypeRef
-  func asLLVM() -> LLVMTypeRef {
+public struct MetadataType: LLVMType {
+  internal let llvm: LLVMTypeRef
+  public func asLLVM() -> LLVMTypeRef {
     return llvm
   }
 }
 
-struct LabelType: LLVMType {
-  func asLLVM() -> LLVMTypeRef {
+public struct LabelType: LLVMType {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMLabelType()
   }
 }
 
-enum FloatType: LLVMType {
+public enum FloatType: LLVMType {
   case half, float, double, x86FP80, fp128, ppcFP128
   
-  func constant(_ value: Double) -> LLVMValue {
+  public func constant(_ value: Double) -> LLVMValue {
     return LLVMConstReal(asLLVM(), value)
   }
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     switch self {
     case .half: return LLVMHalfType()
     case .float: return LLVMFloatType()
@@ -161,33 +161,33 @@ enum FloatType: LLVMType {
   }
 }
 
-struct PointerType: LLVMType {
-  let pointee: LLVMType
-  let addressSpace: Int
-  init(pointee: LLVMType, addressSpace: Int = 0) {
+public struct PointerType: LLVMType {
+  public let pointee: LLVMType
+  public let addressSpace: Int
+  public init(pointee: LLVMType, addressSpace: Int = 0) {
     self.pointee = pointee
     self.addressSpace = addressSpace
   }
   
-  static let toVoid = PointerType(pointee: IntType.int8)
+  public static let toVoid = PointerType(pointee: IntType.int8)
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMPointerType(pointee.asLLVM(), UInt32(addressSpace))
   }
 }
 
-struct FunctionType: LLVMType {
-  let argTypes: [LLVMType]
-  let returnType: LLVMType
-  let isVarArg: Bool
+public struct FunctionType: LLVMType {
+  public let argTypes: [LLVMType]
+  public let returnType: LLVMType
+  public let isVarArg: Bool
   
-  init(argTypes: [LLVMType], returnType: LLVMType, isVarArg: Bool = false) {
+  public init(argTypes: [LLVMType], returnType: LLVMType, isVarArg: Bool = false) {
     self.argTypes = argTypes
     self.returnType = returnType
     self.isVarArg = isVarArg
   }
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     var argLLVMTypes = argTypes.map { $0.asLLVM() as Optional }
     return argLLVMTypes.withUnsafeMutableBufferPointer { buf in
       return LLVMFunctionType(returnType.asLLVM(),
@@ -198,14 +198,14 @@ struct FunctionType: LLVMType {
   }
 }
 
-class StructType: LLVMType {
-  let llvm: LLVMTypeRef
+public class StructType: LLVMType {
+  internal let llvm: LLVMTypeRef
 
-  init(llvm: LLVMTypeRef) {
+  public init(llvm: LLVMTypeRef) {
     self.llvm = llvm
   }
 
-  init(elementTypes: [LLVMType], isPacked: Bool = false, llvm: LLVMValueRef? = nil) {
+  public init(elementTypes: [LLVMType], isPacked: Bool = false, llvm: LLVMValueRef? = nil) {
     if let llvm = llvm {
       self.llvm = llvm
     } else {
@@ -216,43 +216,43 @@ class StructType: LLVMType {
     }
   }
 
-  func setBody(_ types: [LLVMType], isPacked: Bool = false) {
+  public func setBody(_ types: [LLVMType], isPacked: Bool = false) {
     var _types = types.map { $0.asLLVM() as Optional }
     _types.withUnsafeMutableBufferPointer { buf in
       LLVMStructSetBody(asLLVM(), buf.baseAddress, UInt32(buf.count), isPacked.llvm)
     }
   }
   
-  static func constant(values: [LLVMValue], isPacked: Bool = false) -> LLVMValue {
+  public static func constant(values: [LLVMValue], isPacked: Bool = false) -> LLVMValue {
     var vals = values.map { $0.asLLVM() as Optional }
     return vals.withUnsafeMutableBufferPointer { buf in
       return LLVMConstStruct(buf.baseAddress, UInt32(buf.count), isPacked.llvm)
     }
   }
 
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     return llvm
   }
 }
 
-struct X86MMXType: LLVMType {
-  func asLLVM() -> LLVMTypeRef {
+public struct X86MMXType: LLVMType {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMX86MMXType()
   }
 }
 
-struct TokenType: LLVMType {
-  let llvm: LLVMTypeRef
-  func asLLVM() -> LLVMTypeRef {
+public struct TokenType: LLVMType {
+  internal let llvm: LLVMTypeRef
+  public func asLLVM() -> LLVMTypeRef {
     return llvm
   }
 }
 
-struct VectorType: LLVMType {
-  let elementType: LLVMType
-  let count: Int
+public struct VectorType: LLVMType {
+  public let elementType: LLVMType
+  public let count: Int
   
-  func asLLVM() -> LLVMTypeRef {
+  public func asLLVM() -> LLVMTypeRef {
     return LLVMVectorType(elementType.asLLVM(), UInt32(count))
   }
 }

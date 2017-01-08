@@ -8,53 +8,53 @@
 
 import Foundation
 
-struct BasicBlock: LLVMValue, Sequence {
-    let llvm: LLVMBasicBlockRef
-    init(llvm: LLVMBasicBlockRef) {
+public struct BasicBlock: LLVMValue, Sequence {
+    internal let llvm: LLVMBasicBlockRef
+    public init(llvm: LLVMBasicBlockRef) {
         self.llvm = llvm
     }
     
-    var firstInstruction: Instruction? {
+    public var firstInstruction: Instruction? {
         guard let val = LLVMGetFirstInstruction(llvm) else { return nil }
         return Instruction(llvm: val)
     }
     
-    var lastInstruction: Instruction? {
+    public var lastInstruction: Instruction? {
         guard let val = LLVMGetLastInstruction(llvm) else { return nil }
         return Instruction(llvm: val)
     }
     
-    func parent() -> BasicBlock? {
+    public func parent() -> BasicBlock? {
         guard let blockRef = LLVMGetBasicBlockParent(llvm) else { return nil }
         return BasicBlock(llvm: blockRef)
     }
     
-    func asLLVM() -> LLVMValueRef {
+    public func asLLVM() -> LLVMValueRef {
         return llvm
     }
     
-    func next() -> BasicBlock? {
+    public func next() -> BasicBlock? {
         guard let blockRef = LLVMGetNextBasicBlock(llvm) else { return nil }
         return BasicBlock(llvm: blockRef)
     }
     
-    func delete() {
+    public func delete() {
         LLVMDeleteBasicBlock(llvm)
     }
     
-    func removeFromParent() {
+    public func removeFromParent() {
         LLVMRemoveBasicBlockFromParent(llvm)
     }
     
-    func moveBefore(_ block: BasicBlock) {
+    public func moveBefore(_ block: BasicBlock) {
         LLVMMoveBasicBlockBefore(llvm, block.llvm)
     }
     
-    func moveAfter(_ block: BasicBlock) {
+    public func moveAfter(_ block: BasicBlock) {
         LLVMMoveBasicBlockAfter(llvm, block.llvm)
     }
     
-    func makeIterator() -> AnyIterator<Instruction> {
+    public func makeIterator() -> AnyIterator<Instruction> {
         var current = firstInstruction
         return AnyIterator {
             defer { current = current?.next() }
@@ -63,23 +63,23 @@ struct BasicBlock: LLVMValue, Sequence {
     }
 }
 
-struct Instruction: LLVMValue {
-    let llvm: LLVMValueRef
+public struct Instruction: LLVMValue {
+    internal let llvm: LLVMValueRef
     
-    init(llvm: LLVMValueRef) {
+    public init(llvm: LLVMValueRef) {
         self.llvm = llvm
     }
     
-    func asLLVM() -> LLVMValueRef {
+    public func asLLVM() -> LLVMValueRef {
         return llvm
     }
     
-    func previous() -> Instruction? {
+    public func previous() -> Instruction? {
         guard let val = LLVMGetPreviousInstruction(llvm) else { return nil }
         return Instruction(llvm: val)
     }
     
-    func next() -> Instruction? {
+    public func next() -> Instruction? {
         guard let val = LLVMGetNextInstruction(llvm) else { return nil }
         return Instruction(llvm: val)
     }

@@ -8,14 +8,14 @@
 
 import Foundation
 
-struct Switch: LLVMValue {
-    let llvm: LLVMValueRef
+public struct Switch: LLVMValue {
+    internal let llvm: LLVMValueRef
     
-    func addCase(_ value: LLVMValue, _ block: BasicBlock) {
+    public func addCase(_ value: LLVMValue, _ block: BasicBlock) {
         LLVMAddCase(llvm, value.asLLVM(), block.asLLVM())
     }
     
-    func asLLVM() -> LLVMValueRef {
+    public func asLLVM() -> LLVMValueRef {
         return llvm
     }
 }

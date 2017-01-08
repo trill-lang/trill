@@ -8,10 +8,10 @@
 
 import Foundation
 
-enum CodegenFileType {
+public enum CodegenFileType {
     case object, assembly, bitCode
     
-    func asLLVM() -> LLVMCodeGenFileType {
+    public func asLLVM() -> LLVMCodeGenFileType {
         switch self {
         case .object: return LLVMObjectFile
         case .assembly: return LLVMAssemblyFile
@@ -20,13 +20,13 @@ enum CodegenFileType {
     }
 }
 
-enum TargetMachineError: Error, CustomStringConvertible {
+public enum TargetMachineError: Error, CustomStringConvertible {
     case couldNotEmit(String)
     case couldNotEmitBitCode
     case invalidTriple(String)
     case couldNotCreateTarget(String, String)
     
-    var description: String {
+    public var description: String {
         switch self {
         case .couldNotCreateTarget(let triple, let message):
             return "could not create target for '\(triple)': \(message)"
@@ -40,19 +40,19 @@ enum TargetMachineError: Error, CustomStringConvertible {
     }
 }
 
-class Target {
-    let llvm: LLVMTargetRef
-    init(llvm: LLVMTargetRef) {
+public class Target {
+    internal let llvm: LLVMTargetRef
+    public init(llvm: LLVMTargetRef) {
         self.llvm = llvm
     }
 }
 
-class TargetMachine {
-    let llvm: LLVMTargetMachineRef
-    let target: Target
-    let dataLayout: TargetData
-    let triple: String
-    init(triple: String? = nil, cpu: String = "", features: String = "",
+public class TargetMachine {
+    internal let llvm: LLVMTargetMachineRef
+    public  let target: Target
+    public let dataLayout: TargetData
+    public let triple: String
+    public init(triple: String? = nil, cpu: String = "", features: String = "",
          optLevel: CodeGenOptLevel = .default, relocMode: RelocMode = .default,
          codeModel: CodeModel = .default) throws {
         self.triple = triple ?? String(cString: LLVMGetDefaultTargetTriple()!)
@@ -72,7 +72,7 @@ class TargetMachine {
         self.dataLayout = TargetData(llvm: LLVMCreateTargetDataLayout(self.llvm))
     }
     
-    func emitToFile(module: Module, type: CodegenFileType, path: String) throws {
+    public func emitToFile(module: Module, type: CodegenFileType, path: String) throws {
         if case .bitCode = type {
             if LLVMWriteBitcodeToFile(module.llvm, path) != 0 {
                 throw TargetMachineError.couldNotEmitBitCode
@@ -92,23 +92,23 @@ class TargetMachine {
     }
 }
 
-struct TargetData {
-    let llvm: LLVMTargetDataRef
-    init(llvm: LLVMTargetDataRef) {
+public struct TargetData {
+    internal let llvm: LLVMTargetDataRef
+    public init(llvm: LLVMTargetDataRef) {
         self.llvm = llvm
     }
-    func offsetOfElement(_ element: Int, type: StructType) -> Int {
+    public func offsetOfElement(_ element: Int, type: StructType) -> Int {
         return Int(LLVMOffsetOfElement(llvm, type.asLLVM(), UInt32(element)))
     }
-    func sizeOfTypeInBits(_ type: LLVMType) -> Int {
+    public func sizeOfTypeInBits(_ type: LLVMType) -> Int {
         return Int(LLVMSizeOfTypeInBits(llvm, type.asLLVM()))
     }
 }
 
-enum CodeGenOptLevel {
+public enum CodeGenOptLevel {
     case none, less, `default`, aggressive
     
-    func asLLVM() -> LLVMCodeGenOptLevel {
+    public func asLLVM() -> LLVMCodeGenOptLevel {
         switch self {
         case .none: return LLVMCodeGenLevelNone
         case .less: return LLVMCodeGenLevelLess
@@ -118,10 +118,10 @@ enum CodeGenOptLevel {
     }
 }
 
-enum RelocMode {
+public enum RelocMode {
     case `default`, `static`, pic, dynamicNoPIC
     
-    func asLLVM() -> LLVMRelocMode {
+    public func asLLVM() -> LLVMRelocMode {
         switch self {
         case .default: return LLVMRelocDefault
         case .static: return LLVMRelocStatic
@@ -131,10 +131,10 @@ enum RelocMode {
     }
 }
 
-enum CodeModel {
+public enum CodeModel {
     case `default`, jitDefault, small, kernel, medium, large
     
-    func asLLVM() -> LLVMCodeModel {
+    public func asLLVM() -> LLVMCodeModel {
         switch self {
         case .default: return LLVMCodeModelDefault
         case .jitDefault: return LLVMCodeModelJITDefault

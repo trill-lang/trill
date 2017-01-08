@@ -5,19 +5,19 @@
 
 import Foundation
 
-struct Use {
-    let llvm: LLVMUseRef
+public struct Use {
+    internal let llvm: LLVMUseRef
     
-    func next() -> Use? {
+    public func next() -> Use? {
         guard let next = LLVMGetNextUse(llvm) else { return nil }
         return Use(llvm: next)
     }
     
-    func user() -> LLVMValue? {
+    public func user() -> LLVMValue? {
         return LLVMGetUser(llvm)
     }
     
-    func usedValue() -> LLVMValue? {
+    public func usedValue() -> LLVMValue? {
         return LLVMGetUsedValue(llvm)
     }
 }

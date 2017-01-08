@@ -5,10 +5,10 @@
 
 import Foundation
 
-struct PhiNode: LLVMValue {
-  let llvm: LLVMValueRef
+public struct PhiNode: LLVMValue {
+  internal let llvm: LLVMValueRef
   
-  func addIncoming(_ valueMap: [(LLVMValue, BasicBlock)]) {
+  public func addIncoming(_ valueMap: [(LLVMValue, BasicBlock)]) {
     var values = valueMap.map { $0.0.asLLVM() as Optional }
     var blocks = valueMap.map { $0.1.asLLVM() as Optional }
     
@@ -22,7 +22,7 @@ struct PhiNode: LLVMValue {
     }
   }
   
-  var incoming: [(LLVMValue, BasicBlock)] {
+  public var incoming: [(LLVMValue, BasicBlock)] {
     let count = Int(LLVMCountIncoming(llvm))
     var values = [(LLVMValue, BasicBlock)]()
     for i in 0..<count {
@@ -33,16 +33,16 @@ struct PhiNode: LLVMValue {
     return values
   }
   
-  func incomingValue(at index: Int) -> LLVMValue? {
+  public func incomingValue(at index: Int) -> LLVMValue? {
     return LLVMGetIncomingValue(llvm, UInt32(index))
   }
   
-  func incomingBlock(at index: Int) -> BasicBlock? {
+  public func incomingBlock(at index: Int) -> BasicBlock? {
     guard let blockRef = LLVMGetIncomingBlock(llvm, UInt32(index)) else { return nil }
     return BasicBlock(llvm: blockRef)
   }
   
-  func asLLVM() -> LLVMValueRef {
+  public func asLLVM() -> LLVMValueRef {
     return llvm
   }
 }
