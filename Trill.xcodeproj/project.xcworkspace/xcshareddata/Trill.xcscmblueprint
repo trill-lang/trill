@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : 9223372036854775807,
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "EE0E44EB-A09D-42BA-B49A-CFA68EF1EAD1",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : "trill\/LLVMSwift\/",
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : "trill\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Trill",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "Trill.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:harlanhaskins\/LLVMSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "32E9A4F24A891D682A50DDAB6DE720492519A2F6"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:harlanhaskins\/trill.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6"
+    }
+  ]
+}

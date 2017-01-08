@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import LLVMSwift
 
 extension IRGenerator {
   func codegenTypeOfCall(_ expr: FuncCallExpr) -> Result {

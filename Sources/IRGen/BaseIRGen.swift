@@ -4,10 +4,7 @@
 //
 
 import Foundation
-
-#if !XCODE
-  import LLVM
-#endif
+import LLVMSwift
 
 private var fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
 
