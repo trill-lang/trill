@@ -19,7 +19,6 @@ enum LLVMError: Error, CustomStringConvertible {
   case invalidModule(String)
   case brokenJIT
   case llvmError(String)
-  case invalidTarget(String)
   case couldNotDetermineTarget
   var description: String {
     switch self {
@@ -35,8 +34,6 @@ enum LLVMError: Error, CustomStringConvertible {
       return "module file is invalid:\n\(msg)"
     case .llvmError(let msg):
       return "LLVM Error: \(msg)"
-    case .invalidTarget(let target):
-      return "invalid target '\(target)'"
     case .couldNotDetermineTarget:
       return "could not determine target for host platform"
     }
@@ -75,11 +72,11 @@ extension OutputFormat {
   }
   
   /// The LLVMCodeGenFileType for this output format
-  var llvmType: LLVMCodeGenFileType? {
+  var llvmType: CodegenFileType? {
     switch self {
-    case .asm: return LLVMAssemblyFile
-    case .binary, .obj: return LLVMObjectFile
-    case .bitCode: return nil
+    case .asm: return .assembly
+    case .binary, .obj: return .object
+    case .bitCode: return .bitCode
     default: fatalError("should not be handled here")
     }
   }
@@ -93,14 +90,14 @@ struct FunctionState {
   /// The AST node of the current function being codegenned.
   let function: FuncDecl?
   
-  /// The LLVMValueRef of the current function being codegenned.
-  let functionRef: LLVMValueRef?
+  /// The LLVMValue of the current function being codegenned.
+  let functionRef: Function?
   
   /// The beginning of the return section of a function.
-  let returnBlock: LLVMBasicBlockRef?
+  let returnBlock: BasicBlock?
   
   /// The return stack variable for the current function.
-  let resultAlloca: LLVMValueRef?
+  let resultAlloca: LLVMValue?
 }
 
 /// Generates and executes LLVM IR for a given AST.
@@ -120,11 +117,8 @@ class IRGenerator: ASTVisitor, Pass {
   /// The target machine we're codegenning for
   let targetMachine: TargetMachine
   
-  /// The target triple we're codegenning for
-  let targetTriple: String
-  
   /// The data layout for the current target
-  let layout: LLVMTargetDataRef
+  let layout: TargetData
   
   /// The ASTContext currently being generated
   let context: ASTContext
@@ -139,10 +133,10 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will be destroyed when scopes are exited.
   var varIRBindings = [Identifier: VarBinding]()
   
-  /// A map of types to their LLVMTypeRefs
+  /// A map of types to their LLVMTypes
   var typeIRBindings = IRGenerator.builtinTypeBindings
   
-  var typeMetadataMap = [DataType: LLVMValueRef]()
+  var typeMetadataMap = [DataType: Global]()
   
   /// A static set of mappings between all the builtin Trill types to their
   /// LLVM counterparts.
@@ -172,10 +166,10 @@ class IRGenerator: ASTVisitor, Pass {
   var currentFunction: FunctionState?
   
   /// The target basic block that a `break` will break to.
-  var currentBreakTarget: LLVMBasicBlockRef? = nil
+  var currentBreakTarget: BasicBlock? = nil
   
   /// The target basic block that a `continue` will break to.
-  var currentContinueTarget: LLVMBasicBlockRef? = nil
+  var currentContinueTarget: BasicBlock? = nil
   
   /// The LLVM value for the `main` function.
   var mainFunction: LLVMValue? = nil
@@ -211,28 +205,7 @@ class IRGenerator: ASTVisitor, Pass {
     LLVMInitializeNativeAsmPrinter()
     LLVMInitializeNativeTarget()
     
-    self.targetTriple = options.targetTriple ?? {
-      let triple = LLVMGetDefaultTargetTriple()!
-      defer {
-        LLVMDisposeMessage(triple)
-      }
-      return String(cString: triple)
-    }()
-    let targetTriple = self.targetTriple
-    self.targetMachine = try targetTriple.withCString { cString in
-      var target: LLVMTargetRef?
-      if LLVMGetTargetFromTriple(cString, &target, nil) != 0 {
-        throw LLVMError.invalidTarget(targetTriple)
-      }
-      return LLVMCreateTargetMachine(target!,
-                                     cString,
-                                     "", // TODO: Figure out what to put here
-                                     "", //       because I don't know how to
-                                         //       get the CPU and features
-                                         options.optimizationLevel.llvmLevel,
-                                         LLVMRelocDefault,
-                                         LLVMCodeModelDefault)
-    }
+    self.targetMachine = try TargetMachine(triple: options.targetTriple)
     
     layout = module.dataLayout
     
@@ -246,16 +219,19 @@ class IRGenerator: ASTVisitor, Pass {
   /// Executes the main function, forwarding the arguments into the JIT.
   /// - parameters:
   ///   - args: The command line arguments that will be sent to the JIT main.
-  func execute(_ args: [String]) throws -> Int32 {
-    guard let jit = LLVMCreateOrcMCJITReplacement(module.llvm, targetMachine) else {
+  func execute(_ args: [String]) throws -> Int {
+    guard let jit = ORCJIT(module: module, machine: targetMachine) else {
       throw LLVMError.brokenJIT
     }
-    try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit)
+    try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit.llvm)
     let main = try codegenMain(forJIT: true)
-    try module.verify()
-    return args.withCArrayOfCStrings { argv in
-      return LLVMRunFunctionAsMain(jit, main, UInt32(args.count), argv, nil)
+    do {
+      try module.verify()
+    } catch {
+      module.dump()
+      throw error // rethrow after dumping
     }
+    return jit.runFunctionAsMain(main, argv: args)
   }
   
   /// Adds a static archive to the JIT while running.
@@ -279,7 +255,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// ```
   /// - throws: LLVMError.noMainFunction if there wasn't a user-supplied main.
   @discardableResult
-  func codegenMain(forJIT: Bool) throws -> Result {
+  func codegenMain(forJIT: Bool) throws -> Function {
     guard
       let mainFunction = mainFunction,
       let mainFlags = context.mainFlags else {
@@ -288,78 +264,64 @@ class IRGenerator: ASTVisitor, Pass {
     let hasArgcArgv = mainFlags.contains(.args)
     let ret = resolveLLVMType(.int64)
     
-    var params = [
-      LLVMInt32Type(),
-      LLVMPointerType(LLVMPointerType(LLVMInt8Type(), 0), 0)
-    ]
-    
-    let mainType = params.withUnsafeMutableBufferPointer { buf in
-      LLVMFunctionType(ret, buf.baseAddress, UInt32(buf.count), 0)
-    }
+    let mainType = FunctionType(argTypes: [
+      IntType.int32,
+      PointerType(pointee: PointerType(pointee: IntType.int8))
+    ], returnType: ret)
     
     // The JIT can't use 'main' because then it'll resolve to the main from Swift.
     let mainName = forJIT ? "trill_main" : "main"
-    let function = LLVMAddFunction(module, mainName, mainType)
-    let entry = LLVMAppendBasicBlockInContext(llvmContext, function, "entry")
-    LLVMPositionBuilderAtEnd(builder, entry)
+    let function = builder.addFunction(mainName, type: mainType)
+    let entry = function.appendBasicBlock(named: "entry", in: llvmContext)
+    builder.positionAtEnd(of: entry)
     
-    LLVMBuildCall(builder, codegenIntrinsic(named: "trill_init"), nil, 0, "")
-        
-    let val: LLVMValueRef?
+    builder.buildCall(codegenIntrinsic(named: "trill_init"), args: [])
+    
+    let val: LLVMValue
     if hasArgcArgv {
-      var args = [
-        LLVMBuildSExt(builder, LLVMGetParam(function, 0), LLVMInt64Type(), "argc-ext"),
-        LLVMGetParam(function, 1)
-      ]
-      val = args.withUnsafeMutableBufferPointer { buf in
-        LLVMBuildCall(builder, mainFunction, buf.baseAddress, UInt32(buf.count), "")
-      }
+      val = builder.buildCall(mainFunction, args: [
+        builder.buildSExt(function.parameter(at: 0)!, type: IntType.int64, name: "argc-ext"),
+        function.parameter(at: 1)!
+      ])
     } else {
-      val = LLVMBuildCall(builder, mainFunction, nil, 0, "")
+      val = builder.buildCall(mainFunction, args: [])
     }
     
     if mainFlags.contains(.exitCode) {
-      LLVMBuildRet(builder, val)
+      builder.buildRet(val)
     } else {
-      LLVMBuildRet(builder, LLVMConstNull(ret))
+      builder.buildRet(ret.null())
     }
-    return function!
+    return function
   }
   
   func emit(_ type: OutputFormat, output: String? = nil) throws {
     if mainFunction != nil {
       try codegenMain(forJIT: false)
     }
-    try module.verify()
+    do {
+      try module.verify()
+    } catch {
+      module.dump()
+      throw error // rethrow after dumping
+    }
     let outputBase = options.isStdin ? "out" : output ?? options.filenames.first ?? "out"
     let outputFilename = type.addExtension(to: outputBase)
     if case .llvm = type {
-      try module.printToFile(outputFilename)
+      try module.print(to: outputFilename)
     } else {
-      var err: UnsafeMutablePointer<Int8>?
-      try outputFilename.withCString { cString in
-        let mutable = strdup(cString)
-        if let llvmType = type.llvmType {
-          LLVMTargetMachineEmitToFile(targetMachine, module, mutable, llvmType, &err)
-          if let err = err {
-            throw LLVMError.llvmError(String(cString: err))
-          }
-        } else {
-          // Dealing with LLVM Bitcode here
-          if LLVMWriteBitcodeToFile(module, mutable) != 0 {
-            throw LLVMError.llvmError("LLVMWriteBitcodeToFile failed for an unknown reason")
-          }
-        }
-        free(mutable)
-        if case .binary = type {
-          targetTriple.withCString { trip in
-            _ = clang_linkExecutableFromObject(trip, cString,
-                                               options.raw.linkerFlags,
-                                               options.raw.linkerFlagCount,
-                                               options.raw.ccFlags,
-                                               options.raw.ccFlagCount)
-          }
-        }
+      if let llvmType = type.llvmType {
+        try targetMachine.emitToFile(module: module,
+                                     type: llvmType,
+                                     path: outputFilename)
+      }
+      if case .binary = type {
+        _ = clang_linkExecutableFromObject(targetMachine.triple, outputFilename,
+                                           options.raw.linkerFlags,
+                                           options.raw.linkerFlagCount,
+                                           options.raw.ccFlags,
+                                           options.raw.ccFlagCount)
+        
       }
     }
   }
@@ -432,7 +394,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// Shortcut for resolving the LLVM type of a TypeRefExpr
   /// - parameters:
   ///   - type: A TypeRefExpr from an expression.
-  func resolveLLVMType(_ type: TypeRefExpr) -> LLVMTypeRef {
+  func resolveLLVMType(_ type: TypeRefExpr) -> LLVMType {
     return resolveLLVMType(type.type!)
   }
   
@@ -461,7 +423,7 @@ class IRGenerator: ASTVisitor, Pass {
       let llvmType = resolveLLVMType(subtype)
       return PointerType(pointee: llvmType)
     case .function(let args, let ret):
-      var argTypes: [LLVMType] = args.map(resolveLLVMType)
+      let argTypes = args.map(resolveLLVMType)
       let retTy = resolveLLVMType(ret)
       return PointerType(pointee: FunctionType(argTypes: argTypes, returnType: retTy))
     case .tuple:
@@ -469,7 +431,7 @@ class IRGenerator: ASTVisitor, Pass {
     case .custom:
       if let decl = context.decl(for: type) {
         let proto = codegenTypePrototype(decl)
-        return storage(for: type) == .value ? proto : LLVMPointerType(proto, 0)
+        return storage(for: type) == .value ? proto : PointerType(pointee: proto)
       }
     default: break
     }
@@ -481,7 +443,7 @@ class IRGenerator: ASTVisitor, Pass {
     print("===")
     for (name, binding) in varIRBindings {
       print("\(name):\n", terminator: "")
-      LLVMDumpValue(binding.ref)
+      binding.ref.dump()
       print("storage: \(binding.storage)")
     }
     print("===")
@@ -498,7 +460,7 @@ class IRGenerator: ASTVisitor, Pass {
       return visitGlobal(global)
     } else if let funcDecl = expr.decl as? FuncDecl {
       let mangled = Mangler.mangle(funcDecl)
-      if let function = LLVMGetNamedFunction(module, mangled) {
+      if let function = module.function(named: mangled) {
         let binding = VarBinding(ref: function, storage: .value,
                                  read: {
                                    return function
@@ -538,21 +500,18 @@ class IRGenerator: ASTVisitor, Pass {
     return nil
   }
   
-  func codegenDebugPrintf(format: String, _ values: LLVMValueRef...) {
-    var args: [LLVMValueRef?] = values
+  func codegenDebugPrintf(format: String, _ values: LLVMValue...) {
+    var args = Array(values)
     args.insert(visitStringExpr(StringExpr(value: format))!, at: 0)
     let printfCall = codegenIntrinsic(named: "printf")
-    args.withUnsafeMutableBufferPointer { buf in
-      _ = LLVMBuildCall(builder, printfCall,
-                        buf.baseAddress, UInt32(buf.count), "")
-    }
+    builder.buildCall(printfCall, args: args)
   }
 }
 
-extension LLVMBasicBlockRef {
+extension BasicBlock {
   var endsWithTerminator: Bool {
-    guard let lastInst = LLVMGetLastInstruction(self) else { return false }
-    return LLVMIsATerminatorInst(lastInst) != nil
+    guard let lastInst = lastInstruction else { return false }
+    return lastInst.isATerminatorInst
   }
 }
 

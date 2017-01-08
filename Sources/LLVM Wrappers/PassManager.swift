@@ -101,4 +101,8 @@ class FunctionPassManager {
             FunctionPassManager.passMapping[pass]!(llvm)
         }
     }
+    
+    func run(on function: Function) {
+        LLVMRunFunctionPassManager(llvm, function.asLLVM())
+    }
 }

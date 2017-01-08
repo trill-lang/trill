@@ -164,6 +164,13 @@
 		DCCE9AB11E20ABF600319709 /* PassManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB01E20ABF600319709 /* PassManager.swift */; };
 		DCCE9AB31E20C0A200319709 /* TargetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB21E20C0A200319709 /* TargetData.swift */; };
 		DCCE9AB51E20C6B800319709 /* ORCJIT.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB41E20C6B800319709 /* ORCJIT.swift */; };
+		DCCE9AB71E219EFB00319709 /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB61E219EFB00319709 /* BasicBlock.swift */; };
+		DCCE9AB91E21AAB000319709 /* Function.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AB81E21AAB000319709 /* Function.swift */; };
+		DCCE9ABB1E21B06000319709 /* Use.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9ABA1E21B06000319709 /* Use.swift */; };
+		DCCE9ABD1E21B16C00319709 /* PhiNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9ABC1E21B16C00319709 /* PhiNode.swift */; };
+		DCCE9ABF1E21CC9200319709 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9ABE1E21CC9200319709 /* Global.swift */; };
+		DCCE9AC11E21DF0C00319709 /* LLVMValue+Kinds.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AC01E21DF0C00319709 /* LLVMValue+Kinds.swift */; };
+		DCCE9AC31E21E8DC00319709 /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCCE9AC21E21E8DC00319709 /* Switch.swift */; };
 		DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCEF07FF1DCD6BA90075FE15 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
@@ -412,13 +419,20 @@
 		DCAEBC791C9009ED00B84E25 /* libLLVMTransformUtils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMTransformUtils.a; path = /usr/local/llvm/lib/libLLVMTransformUtils.a; sourceTree = "<absolute>"; };
 		DCC4EF471D690D3D00E1CF5B /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		DCCA97C81D58581900883183 /* libLLVMLinker.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMLinker.a; path = ../../../../usr/local/llvm/lib/libLLVMLinker.a; sourceTree = "<group>"; };
-		DCCE9AA81E2090D100319709 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
-		DCCE9AAA1E2096C800319709 /* LLVMType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LLVMType.swift; sourceTree = "<group>"; };
+		DCCE9AA81E2090D100319709 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9AAA1E2096C800319709 /* LLVMType.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LLVMType.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DCCE9AAC1E2096EB00319709 /* LLVMValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = LLVMValue.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DCCE9AAE1E209C1D00319709 /* IRBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DCCE9AB01E20ABF600319709 /* PassManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassManager.swift; sourceTree = "<group>"; };
 		DCCE9AB21E20C0A200319709 /* TargetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetData.swift; sourceTree = "<group>"; };
 		DCCE9AB41E20C6B800319709 /* ORCJIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ORCJIT.swift; sourceTree = "<group>"; };
+		DCCE9AB61E219EFB00319709 /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicBlock.swift; sourceTree = "<group>"; };
+		DCCE9AB81E21AAB000319709 /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Function.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9ABA1E21B06000319709 /* Use.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Use.swift; sourceTree = "<group>"; };
+		DCCE9ABC1E21B16C00319709 /* PhiNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = PhiNode.swift; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9ABE1E21CC9200319709 /* Global.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		DCCE9AC01E21DF0C00319709 /* LLVMValue+Kinds.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = "LLVMValue+Kinds.swift"; sourceTree = "<group>"; tabWidth = 2; };
+		DCCE9AC21E21E8DC00319709 /* Switch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
 		DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ANSIColor.swift; sourceTree = "<group>"; };
 		DCF80B5F1D7487DB00463CBB /* SourceFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SourceFile.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -580,6 +594,7 @@
 			isa = PBXGroup;
 			children = (
 				DCCE9AA81E2090D100319709 /* Module.swift */,
+				DCCE9AB61E219EFB00319709 /* BasicBlock.swift */,
 				DCCE9AB41E20C6B800319709 /* ORCJIT.swift */,
 				DCCE9AB21E20C0A200319709 /* TargetData.swift */,
 				DCCE9AB01E20ABF600319709 /* PassManager.swift */,
@@ -587,7 +602,13 @@
 				DC176FEE1D6911A200FEFB85 /* LLVMWrappers.h */,
 				DCCE9AAA1E2096C800319709 /* LLVMType.swift */,
 				DCCE9AAC1E2096EB00319709 /* LLVMValue.swift */,
+				DCCE9AB81E21AAB000319709 /* Function.swift */,
+				DCCE9ABE1E21CC9200319709 /* Global.swift */,
+				DCCE9ABA1E21B06000319709 /* Use.swift */,
+				DCCE9AC01E21DF0C00319709 /* LLVMValue+Kinds.swift */,
 				DCCE9AAE1E209C1D00319709 /* IRBuilder.swift */,
+				DCCE9ABC1E21B16C00319709 /* PhiNode.swift */,
+				DCCE9AC21E21E8DC00319709 /* Switch.swift */,
 			);
 			name = "LLVM Wrappers";
 			path = "Sources/LLVM Wrappers";
@@ -1087,12 +1108,17 @@
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DCCE9AA91E2090D100319709 /* Module.swift in Sources */,
+				DCCE9AB71E219EFB00319709 /* BasicBlock.swift in Sources */,
 				DCCE9AAD1E2096EB00319709 /* LLVMValue.swift in Sources */,
+				DCCE9AC11E21DF0C00319709 /* LLVMValue+Kinds.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
 				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
 				DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */,
+				DCCE9AB91E21AAB000319709 /* Function.swift in Sources */,
 				DC5EA0C41E15A10E00875545 /* VarBinding.swift in Sources */,
+				DCCE9AC31E21E8DC00319709 /* Switch.swift in Sources */,
 				DC1770021D6911A200FEFB85 /* Driver.swift in Sources */,
+				DCCE9ABB1E21B06000319709 /* Use.swift in Sources */,
 				DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */,
 				DC1770121D6911A200FEFB85 /* Sema.swift in Sources */,
 				DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */,
@@ -1102,6 +1128,7 @@
 				DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */,
 				DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */,
 				DC31C10E1C82681E00F85807 /* main.swift in Sources */,
+				DCCE9ABF1E21CC9200319709 /* Global.swift in Sources */,
 				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
 				DCCE9AB51E20C6B800319709 /* ORCJIT.swift in Sources */,
 				DCCE9AAB1E2096C800319709 /* LLVMType.swift in Sources */,
@@ -1123,6 +1150,7 @@
 				DC176FFD1D6911A200FEFB85 /* Types.swift in Sources */,
 				DC176FFA1D6911A200FEFB85 /* Functions.swift in Sources */,
 				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
+				DCCE9ABD1E21B16C00319709 /* PhiNode.swift in Sources */,
 				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
 				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,
 				DCCE9AB11E20ABF600319709 /* PassManager.swift in Sources */,

@@ -7,24 +7,23 @@ import Foundation
 
 extension IRGenerator {
   
-  func codegenIntrinsic(named name: String) -> LLVMValueRef {
+  func codegenIntrinsic(named name: String) -> Function {
     guard let decl = context.functions(named: Identifier(name: name)).first else {
       fatalError("No intrinsic \(name)")
     }
-    return codegenFunctionPrototype(decl)!
+    return codegenFunctionPrototype(decl)
   }
   
   @discardableResult
-  func codegenOnceCall(function: LLVMValueRef) -> (token: LLVMValueRef, call: LLVMValueRef) {
-    let token = LLVMAddGlobal(module, LLVMInt64Type(), "once_token")!
-    LLVMSetInitializer(token, LLVMConstNull(LLVMInt64Type()))
-    let call = buildCall(codegenIntrinsic(named: "trill_once"),
-                         args: [token, function],
-                         resultName: "")
+  func codegenOnceCall(function: LLVMValue) -> (token: LLVMValue, call: LLVMValue) {
+    var token = builder.addGlobal("once_token", type: IntType.int64)
+    token.initializer = IntType.int64.zero()
+    let call = builder.buildCall(codegenIntrinsic(named: "trill_once"),
+                                 args: [token, function])
     return (token: token, call: call)
   }
   
-  func codegenPromoteToAny(value: LLVMValueRef, type: DataType) -> LLVMValueRef {
+  func codegenPromoteToAny(value: LLVMValue, type: DataType) -> LLVMValue {
     if case .any = type {
       if storage(for: type) == .reference {
         // If we're promoting an existing Any value of a reference type, just
@@ -39,33 +38,28 @@ extension IRGenerator {
     let irType = resolveLLVMType(type)
     let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
     let meta = codegenTypeMetadata(type)
-    var castMeta = LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "meta-cast")
-    let res = LLVMBuildCall(builder, allocateAny, &castMeta,
-                            1, "allocate-any")!
+    let castMeta = builder.buildBitCast(meta,
+                                        type: PointerType.toVoid,
+                                        name: "meta-cast")
+    let res = builder.buildCall(allocateAny, args: [castMeta],
+                                name: "allocate-any")
     let valPtr = codegenAnyValuePtr(res, type: type)
-    let ptr = LLVMBuildBitCast(builder, valPtr,
-                               LLVMPointerType(irType, 0), "")
-    LLVMBuildStore(builder, value, ptr)
+    let ptr = builder.buildBitCast(valPtr, type: PointerType(pointee: irType))
+    builder.buildStore(value, to: ptr)
     return res
   }
   
-  func codegenCopyAny(value: LLVMValueRef) -> LLVMValueRef {
-    return buildCall(codegenIntrinsic(named: "trill_copyAny"), args: [value], resultName: "copy-any")
+  func codegenCopyAny(value: LLVMValue) -> LLVMValue {
+    return builder.buildCall(codegenIntrinsic(named: "trill_copyAny"),
+                             args: [value], name: "copy-any")
   }
   
-  @discardableResult
-  func buildCall(_ function: LLVMValueRef, args: [LLVMValueRef], resultName: String = "") -> LLVMValueRef {
-    var mutArgs: [LLVMValueRef?] = args
-    return mutArgs.withUnsafeMutableBufferPointer { buf in
-      LLVMBuildCall(builder, function, buf.baseAddress, UInt32(buf.count), resultName)
-    }
-  }
-  
-  func codegenAnyValuePtr(_ binding: LLVMValueRef, type: DataType) -> LLVMValueRef {
+  func codegenAnyValuePtr(_ binding: LLVMValue, type: DataType) -> LLVMValue {
     let irType = resolveLLVMType(type)
-    let pointerType = LLVMPointerType(irType, 0)
-    let ptrValue = buildCall(codegenIntrinsic(named: "trill_getAnyValuePtr"), args: [binding])
-    return LLVMBuildBitCast(builder, ptrValue, pointerType, "cast-ptr")
+    let pointerType = PointerType(pointee: irType)
+    let ptrValue = builder.buildCall(codegenIntrinsic(named: "trill_getAnyValuePtr"),
+                                     args: [binding])
+    return builder.buildBitCast(ptrValue, type: pointerType, name: "cast-ptr")
   }
   
   /// Creates a runtime type check expression between an Any expression and
@@ -76,29 +70,26 @@ extension IRGenerator {
   ///   - type: The type to check
   /// - Returns: An i1 value telling if the Any value has the same underlying
   ///            type as the passed-in type
-  func codegenTypeCheck(_ binding: LLVMValueRef, type: DataType) -> LLVMValueRef {
+  func codegenTypeCheck(_ binding: LLVMValue, type: DataType) -> LLVMValue {
     let typeCheck = codegenIntrinsic(named: "trill_checkTypes")
     let meta = codegenTypeMetadata(type)
-    let castMeta = LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "meta-cast")!
-    var args: [LLVMValueRef?] = [binding, castMeta]
-    let result = args.withUnsafeMutableBufferPointer { buf in
-      LLVMBuildCall(builder, typeCheck, buf.baseAddress, UInt32(buf.count), "type-check")!
-    }
-    return LLVMBuildICmp(builder, LLVMIntNE, result, LLVMConstNull(LLVMInt8Type()), "type-check-result")
+    let castMeta = builder.buildBitCast(meta, type: PointerType.toVoid, name: "meta-cast")
+    let result = builder.buildCall(typeCheck, args: [binding, castMeta])
+    return builder.buildICmp(result, IntType.int8.zero(), .ne, name: "type-check-result")
   }
   
-  func codegenCheckedCast(binding: LLVMValueRef, type: DataType) -> LLVMValueRef {
+  func codegenCheckedCast(binding: LLVMValue, type: DataType) -> LLVMValue {
     let checkedCast = codegenIntrinsic(named: "trill_checkedCast")
     let meta = codegenTypeMetadata(type)
-    let castMeta = LLVMBuildBitCast(builder, meta, LLVMPointerType(LLVMInt8Type(), 0), "meta-cast")
-    var args = [binding, castMeta]
-    let res = args.withUnsafeMutableBufferPointer { buf in
-      return LLVMBuildCall(builder, checkedCast, buf.baseAddress,
-                           UInt32(buf.count), "checked-cast")!
-    }
+    let castMeta = builder.buildBitCast(meta,
+                                        type: PointerType.toVoid,
+                                        name: "meta-cast")
+    let res = builder.buildCall(checkedCast, args: [binding, castMeta])
     let irType = resolveLLVMType(type)
-    let castResult = LLVMBuildBitCast(builder, res, LLVMPointerType(irType, 0), "cast-result")
-    return LLVMBuildLoad(builder, castResult, "cast-load")!
+    let castResult = builder.buildBitCast(res,
+                                          type: PointerType(pointee: irType),
+                                          name: "cast-result")
+    return builder.buildLoad(castResult, name: "cast-load")
   }
   
   /// Allocates a heap box in the garbage collector, and registers a finalizer
@@ -107,30 +98,29 @@ extension IRGenerator {
     let irType = resolveLLVMType(type)
     let alloc = codegenIntrinsic(named: "trill_alloc")
     let register = codegenIntrinsic(named: "trill_registerDeinitializer")
-    guard let typeDecl = context.decl(for: type, canonicalized: true) else { fatalError("no decl?") }
-    var size = byteSize(of: type)
-    let ptr = LLVMBuildCall(builder, alloc, &size, 1, "ptr")!
+    guard let typeDecl = context.decl(for: type, canonicalized: true) else {
+      fatalError("no decl?")
+    }
+    let size = byteSize(of: type)
+    let ptr = builder.buildCall(alloc, args: [size], name: "ptr")
     var res = ptr
     if type != .pointer(type: .int8) {
-      res = LLVMBuildBitCast(builder, res, irType, "alloc-cast")
+      res = builder.buildBitCast(res, type: irType, name: "alloc-cast")
     }
     
     if let deinitializer = typeDecl.deinitializer {
-      var voidPointerTy = LLVMPointerType(LLVMInt8Type(), 0)
-      let deinitializerTy = LLVMFunctionType(LLVMVoidType(), &voidPointerTy, 1, 0)
+      let deinitializerTy = FunctionType(argTypes: [PointerType.toVoid],
+                                         returnType: VoidType())
       let deinitializer = codegenFunctionPrototype(deinitializer)
-      let deinitializerCast = LLVMBuildBitCast(builder, deinitializer,
-                                            LLVMPointerType(deinitializerTy, 0),
-                                            "deinitializer-cast")
-      var args: [LLVMValueRef?] = [ptr, deinitializerCast]
-      _ = args.withUnsafeMutableBufferPointer { buf in
-        LLVMBuildCall(builder, register, buf.baseAddress, UInt32(buf.count), "")
-      }
+      let deinitializerCast = builder.buildBitCast(deinitializer,
+                                                   type: PointerType(pointee: deinitializerTy),
+                                                   name: "deinitializer-cast")
+      builder.buildCall(register, args: [ptr, deinitializerCast])
     }
     return VarBinding(ref: res,
                       storage: .reference,
-                      read: { LLVMBuildLoad(self.builder, res, "") },
-                      write: { LLVMBuildStore(self.builder, $0, res) })
+                      read: { self.builder.buildLoad(res) },
+                      write: { self.builder.buildStore($0, to: res) })
   }
     
   

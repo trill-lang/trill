@@ -10,19 +10,21 @@ extension IRGenerator {
   func codegenGlobalPrototype(_ decl: VarAssignDecl) -> VarBinding {
     if let binding = globalVarIRBindings[decl.name] { return binding }
     let type = resolveLLVMType(decl.type)
-    let global = builder.addGlobal(decl.name.name, type: type)
+    var global = builder.addGlobal(decl.name.name, type: type)
     global.alignment = 8
     let binding = VarBinding(ref: global,
                              storage: .value,
-                             read: { return LLVMBuildLoad(self.builder, global, "") },
-                             write: { val in LLVMBuildStore(self.builder, val, global) })
+                             read: {
+                              return self.builder.buildLoad(global)
+    },
+                             write: { val in self.builder.buildStore(val, to: global) })
     globalVarIRBindings[decl.name] = binding
     return binding
   }
   
   func storage(for type: DataType) -> Storage {
     if let decl = context.decl(for: context.canonicalType(type)),
-           decl.isIndirect {
+      decl.isIndirect {
       return .reference
     }
     return .value
@@ -30,38 +32,47 @@ extension IRGenerator {
   
   func visitGlobal(_ decl: VarAssignDecl) -> VarBinding {
     let binding = codegenGlobalPrototype(decl)
+    guard var global = binding.ref as? Global else {
+      fatalError("global binding is not a Global?")
+    }
     if decl.has(attribute: .foreign) && decl.rhs != nil {
-      LLVMSetExternallyInitialized(binding.ref, 1)
+      global.isExternallyInitialized = true
       return binding
     }
     let llvmType = resolveLLVMType(decl.type)
     guard let rhs = decl.rhs else {
-      LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
+      global.initializer = llvmType.null()
       return binding
     }
     if rhs is ConstantExpr {
-      LLVMSetInitializer(binding.ref, visit(rhs))
+      global.initializer = visit(rhs)!
       return binding
     } else {
-      LLVMSetInitializer(binding.ref, LLVMConstNull(llvmType))
-      let currentBlock = LLVMGetInsertBlock(builder)
+      global.initializer = llvmType.null()
+      let currentBlock = builder.insertBlock
       
-      let initFn = LLVMAddFunction(module, Mangler.mangle(global: decl, kind: .initializer),
-                                   LLVMFunctionType(LLVMVoidType(), nil, 0, 0))!
-      LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(initFn, "entry"))
-      LLVMBuildStore(builder, visit(rhs), binding.ref)
-      LLVMBuildRetVoid(builder)
+      let initFn = builder.addFunction(Mangler.mangle(global: decl,
+                                                      kind: .initializer),
+                                       type: FunctionType(argTypes: [],
+                                                          returnType: VoidType()))
+      builder.positionAtEnd(of: initFn.appendBasicBlock(named: "entry"))
+      builder.buildStore(visit(rhs)!, to: binding.ref)
+      builder.buildRetVoid()
       
-      let lazyInit = LLVMAddFunction(module, Mangler.mangle(global: decl, kind: .accessor),
-                                     LLVMFunctionType(llvmType, nil, 0, 0))!
-      LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(lazyInit, "entry"))
+      let lazyInit = builder.addFunction(Mangler.mangle(global: decl,
+                                                        kind: .accessor),
+                                         type: FunctionType(argTypes: [],
+                                                            returnType: llvmType))
+      builder.positionAtEnd(of: lazyInit.appendBasicBlock(named: "entry", in: llvmContext))
       codegenOnceCall(function: initFn)
-      LLVMBuildRet(builder, LLVMBuildLoad(builder, binding.ref, "global-res"))
+      builder.buildRet(builder.buildLoad(binding.ref, name: "global-res"))
       
-      LLVMPositionBuilderAtEnd(builder, currentBlock)
+      if let block = currentBlock {
+        builder.positionAtEnd(of: block)
+      }
       return VarBinding(ref: binding.ref, storage: binding.storage,
-                        read: { return LLVMBuildCall(self.builder, lazyInit, nil, 0, "") },
-                        write: { LLVMBuildStore(self.builder, $0, binding.ref) })
+                        read: { return self.builder.buildCall(lazyInit, args: []) },
+                        write: { self.builder.buildStore($0, to: binding.ref) })
     }
   }
   
@@ -73,7 +84,7 @@ extension IRGenerator {
     let function = currentFunction!.functionRef!
     let type = decl.type
     let irType = resolveLLVMType(type)
-    var value: LLVMValueRef
+    var value: LLVMValue
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
       if case .any = type {
@@ -82,62 +93,65 @@ extension IRGenerator {
         value = coerce(value, from: rhs.type!, to: type)!
       }
     } else {
-      value = LLVMConstNull(irType)
+      value = irType.null()
     }
-    var binding = varIRBindings[decl.name]
-    if binding == nil {
-      binding = createEntryBlockAlloca(function, type: irType,
-                                       name: decl.name.name,
-                                       storage: storage(for: type))
-    }
+    let binding = varIRBindings[decl.name] ??
+        createEntryBlockAlloca(function, type: irType,
+                               name: decl.name.name,
+                               storage: storage(for: type))
     varIRBindings[decl.name] = binding
-    LLVMBuildStore(builder, value, binding!.ref)
-    return binding!.ref
+    builder.buildStore(value, to: binding.ref)
+    return binding.ref
   }
   
   func visitIfStmt(_ stmt: IfStmt) -> Result {
-    let function = LLVMGetBasicBlockParent(LLVMGetInsertBlock(builder))
-    guard function != nil else {
+    guard let function = currentFunction?.functionRef else {
       fatalError("if outside function?")
     }
     let conditions = stmt.blocks.map { $0.0 }
     let bodies = stmt.blocks.map { $0.1 }
-    var bodyBlocks = [LLVMValueRef]()
-    let currentBlock = LLVMGetInsertBlock(builder)
-    let elsebb = LLVMAppendBasicBlockInContext(llvmContext, function, "else")
-    let mergebb = LLVMAppendBasicBlockInContext(llvmContext, function, "merge")
+    var bodyBlocks = [BasicBlock]()
+    let currentBlock = builder.insertBlock!
+    let elsebb = function.appendBasicBlock(named: "else", in: llvmContext)
+    let mergebb = function.appendBasicBlock(named: "merge", in: llvmContext)
     for body in bodies {
-      let bb = LLVMAppendBasicBlockInContext(llvmContext, function, "then")
-      bodyBlocks.append(bb!)
-      LLVMPositionBuilderAtEnd(builder, bb)
+      let bb = function.appendBasicBlock(named: "then", in: llvmContext)
+      bodyBlocks.append(bb)
+      builder.positionAtEnd(of: bb)
       withScope { visitCompoundStmt(body) }
-      let currBlock = LLVMGetInsertBlock(builder)!
+      let currBlock = builder.insertBlock!
       if !currBlock.endsWithTerminator {
-        LLVMBuildBr(builder, mergebb)
+        builder.buildBr(mergebb)
       }
     }
-    LLVMPositionBuilderAtEnd(builder, currentBlock)
+    builder.positionAtEnd(of: currentBlock)
     for (idx, condition) in conditions.enumerated() {
-      let cond = visit(condition)
-      let next = LLVMAppendBasicBlockInContext(llvmContext, function, "next")
-      LLVMBuildCondBr(builder, cond, bodyBlocks[idx], next)
-      LLVMPositionBuilderAtEnd(builder, next)
+      let cond = visit(condition)!
+      let next = function.appendBasicBlock(named: "next", in: llvmContext)
+      builder.buildCondBr(condition: cond,
+                          then: bodyBlocks[idx],
+                          else: next)
+      builder.positionAtEnd(of: next)
     }
     if let elseBody = stmt.elseBody {
-      LLVMBuildBr(builder, elsebb)
-      LLVMPositionBuilderAtEnd(builder, elsebb)
+      builder.buildBr(elsebb)
+      builder.positionAtEnd(of: elsebb)
       withScope {
         visitCompoundStmt(elseBody)
       }
-      let lastInst = LLVMGetLastInstruction(elsebb)
-      if LLVMIsABranchInst(lastInst) == nil {
-        LLVMBuildBr(builder, mergebb)
+      
+      if let lastInst = elsebb.lastInstruction {
+        if !lastInst.isATerminatorInst {
+          builder.buildBr(mergebb)
+        }
+      } else {
+        builder.buildBr(mergebb)
       }
     } else {
-      LLVMBuildBr(builder, mergebb)
-      LLVMDeleteBasicBlock(elsebb)
+      builder.buildBr(mergebb)
+      elsebb.delete()
     }
-    LLVMPositionBuilderAtEnd(builder, mergebb)
+    builder.positionAtEnd(of: mergebb)
     return nil
   }
   
@@ -145,24 +159,24 @@ extension IRGenerator {
     guard let function = currentFunction?.functionRef else {
       fatalError("while loop outside function?")
     }
-    let condbb = LLVMAppendBasicBlockInContext(llvmContext, function, "cond")
-    let bodybb = LLVMAppendBasicBlockInContext(llvmContext, function, "body")
-    let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "end")
-    LLVMBuildBr(builder, condbb)
-    LLVMPositionBuilderAtEnd(builder, condbb)
-    let cond = visit(stmt.condition)
-    LLVMBuildCondBr(builder, cond, bodybb, endbb)
-    LLVMPositionBuilderAtEnd(builder, bodybb)
+    let condbb = function.appendBasicBlock(named: "cond", in: llvmContext)
+    let bodybb = function.appendBasicBlock(named: "body", in: llvmContext)
+    let endbb = function.appendBasicBlock(named: "end", in: llvmContext)
+    builder.buildBr(condbb)
+    builder.positionAtEnd(of: condbb)
+    let cond = visit(stmt.condition)!
+    builder.buildCondBr(condition: cond, then: bodybb, else: endbb)
+    builder.positionAtEnd(of: bodybb)
     withScope {
-      currentBreakTarget = endbb!
-      currentContinueTarget = condbb!
+      currentBreakTarget = endbb
+      currentContinueTarget = condbb
       visit(stmt.body)
     }
-    let insertBlock = LLVMGetInsertBlock(builder)!
+    let insertBlock = builder.insertBlock!
     if !insertBlock.endsWithTerminator {
-      LLVMBuildBr(builder, condbb)
+      builder.buildBr(condbb)
     }
-    LLVMPositionBuilderAtEnd(builder, endbb)
+    builder.positionAtEnd(of: endbb)
     return nil
   }
   
@@ -174,34 +188,34 @@ extension IRGenerator {
       if let initializer = stmt.initializer {
         visit(initializer)
       }
-      let condbb = LLVMAppendBasicBlockInContext(llvmContext, function, "cond")
-      let bodybb = LLVMAppendBasicBlockInContext(llvmContext, function, "body")
-      let incrbb = LLVMAppendBasicBlockInContext(llvmContext, function, "incr")
-      let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "end")
-      LLVMBuildBr(builder, condbb)
-      LLVMPositionBuilderAtEnd(builder, condbb)
-      currentContinueTarget = incrbb!
-      currentBreakTarget = endbb!
-      let cond = visit(stmt.condition ?? BoolExpr(value: true))
-      LLVMBuildCondBr(builder, cond, bodybb, endbb)
-      LLVMPositionBuilderAtEnd(builder, bodybb)
-      currentBreakTarget = endbb!
+      let condbb = function.appendBasicBlock(named: "cond", in: llvmContext)
+      let bodybb = function.appendBasicBlock(named: "body", in: llvmContext)
+      let incrbb = function.appendBasicBlock(named: "incr", in: llvmContext)
+      let endbb = function.appendBasicBlock(named: "end", in: llvmContext)
+      builder.buildBr(condbb)
+      builder.positionAtEnd(of: condbb)
+      currentContinueTarget = incrbb
+      currentBreakTarget = endbb
+      let cond = visit(stmt.condition ?? BoolExpr(value: true))!
+      builder.buildCondBr(condition: cond, then: bodybb, else: endbb)
+      builder.positionAtEnd(of: bodybb)
+      currentBreakTarget = endbb
       visit(stmt.body)
-      let insertBlock = LLVMGetInsertBlock(builder)!
+      let insertBlock = builder.insertBlock!
       if !insertBlock.endsWithTerminator {
-        LLVMBuildBr(builder, incrbb)
+        builder.buildBr(incrbb)
       }
-      LLVMPositionBuilderAtEnd(builder, incrbb)
+      builder.positionAtEnd(of: incrbb)
       if let incrementer = stmt.incrementer {
         visit(incrementer)
       }
-      LLVMBuildBr(builder, condbb)
-      LLVMPositionBuilderAtEnd(builder, endbb)
+      builder.buildBr(condbb)
+      builder.positionAtEnd(of: endbb)
     }
     return nil
   }
   
-  func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> LLVMValueRef? {
+  func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> Result {
     return nil
   }
   
@@ -209,34 +223,36 @@ extension IRGenerator {
     guard let function = currentFunction?.functionRef else {
       fatalError("switch outside function")
     }
-    let currentBlock = LLVMGetInsertBlock(builder)
-    let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "switch-end")
-    let defaultBlock: LLVMBasicBlockRef
+    let currentBlock = builder.insertBlock!
+    let endbb = function.appendBasicBlock(named: "switch-end", in: llvmContext)
+    let defaultBlock: BasicBlock
     if let defaultBody = stmt.defaultBody {
-      defaultBlock = LLVMAppendBasicBlockInContext(llvmContext, function, "default")
-      LLVMPositionBuilderAtEnd(builder, defaultBlock)
+      defaultBlock = function.appendBasicBlock(named: "default", in: llvmContext)
+      builder.positionAtEnd(of: defaultBlock)
       visit(defaultBody)
-      LLVMPositionBuilderAtEnd(builder, defaultBlock)
+      builder.positionAtEnd(of: defaultBlock)
       if !defaultBlock.endsWithTerminator {
-        LLVMBuildBr(builder, endbb)
+        builder.buildBr(endbb)
       }
-      LLVMPositionBuilderAtEnd(builder, currentBlock)
+      builder.positionAtEnd(of: currentBlock)
     } else {
-      defaultBlock = endbb!
+      defaultBlock = endbb
     }
-    var constants = [LLVMValueRef]()
+    var constants = [LLVMValue]()
     for c in stmt.cases {
       constants.append(visit(c.constant)!)
     }
-    let switchRef = LLVMBuildSwitch(builder, visit(stmt.value), defaultBlock, UInt32(stmt.cases.count))
+    let switchRef = builder.buildSwitch(visit(stmt.value)!,
+                                        else: defaultBlock,
+                                        caseCount: stmt.cases.count)
     for (i, c) in stmt.cases.enumerated() {
-      let block = LLVMAppendBasicBlockInContext(llvmContext, function, "case-\(i)")
-      LLVMPositionBuilderAtEnd(builder, block)
+      let block = function.appendBasicBlock(named: "case-\(i)", in: llvmContext)
+      builder.positionAtEnd(of: block)
       visit(c.body)
-      LLVMBuildBr(builder, endbb)
-      LLVMAddCase(switchRef, constants[i], block)
+      builder.buildBr(endbb)
+      switchRef.addCase(constants[i], block)
     }
-    LLVMPositionBuilderAtEnd(builder, endbb)
+    builder.positionAtEnd(of: endbb)
     return nil
   }
   

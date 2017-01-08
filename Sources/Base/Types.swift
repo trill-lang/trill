@@ -70,8 +70,10 @@ enum DataType: CustomStringConvertible, Hashable {
   
   var description: String {
     switch self {
-    case .int(width: 64, let signed): return "\(signed ? "" : "U")Int"
-    case .int(let width, let signed): return "\(signed ? "" : "U")Int\(width)"
+    case .int(width: 64, let signed):
+      return "\(signed ? "" : "U")Int"
+    case .int(let width, let signed):
+      return "\(signed ? "" : "U")Int\(width)"
     case .bool: return "Bool"
     case .void: return "Void"
     case .array(let field, let length):

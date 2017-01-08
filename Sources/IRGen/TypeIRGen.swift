@@ -12,16 +12,14 @@ extension IRGenerator {
   /// - parameters:
   ///   - expr: The TypeDecl to declare.
   @discardableResult
-  func codegenTypePrototype(_ expr: TypeDecl) -> LLVMTypeRef {
-    let existing = LLVMGetTypeByName(module, expr.name.name)
-    if existing != nil { return existing! }
-    let structure = LLVMStructCreateNamed(llvmContext, expr.name.name)
-    typeIRBindings[expr.type] = structure
-    
-    var fieldTys: [LLVMTypeRef?] = expr.fields.map { resolveLLVMType($0.type) }
-    _ = fieldTys.withUnsafeMutableBufferPointer { buf in
-      LLVMStructSetBody(structure, buf.baseAddress, UInt32(buf.count), 0)
+  func codegenTypePrototype(_ expr: TypeDecl) -> LLVMType {
+    if let existing = module.type(named: expr.name.name) {
+      return existing
     }
+    let structure = builder.createStruct(name: expr.name.name)
+    typeIRBindings[expr.type] = structure
+    let fieldTypes = expr.fields.map { resolveLLVMType($0.type) }
+    structure.setBody(fieldTypes)
     
     for method in expr.methods + expr.staticMethods {
       codegenFunctionPrototype(method)
@@ -31,7 +29,7 @@ extension IRGenerator {
       codegenFunctionPrototype(deinitiailizer)
     }
     
-    return structure!
+    return structure
   }
   
   /// Generates type metadata for a given type and caches it.
@@ -58,7 +56,7 @@ extension IRGenerator {
   /// There is a unique metadata record for every type at compile time.
   /// This function should only be called when generating the intrinsic
   /// typeOf(_: Any) function, as it will only generate the metadata requested.
-  func codegenTypeMetadata(_ _type: DataType) -> LLVMValueRef? {
+  func codegenTypeMetadata(_ _type: DataType) -> Global {
     let type = context.canonicalType(_type)
     if let cached = typeMetadataMap[type] { return cached }
     var pointerLevel = 0
@@ -69,7 +67,9 @@ extension IRGenerator {
     case .pointer:
       pointerLevel = type.pointerLevel()
     case .custom:
-      guard let decl = context.decl(for: type) else { return nil }
+      guard let decl = context.decl(for: type) else {
+        fatalError("no decl?")
+      }
       fields = decl.fields.map { ($0.name.name, $0.type) }
     case .tuple(let types):
       fields = types.map { (nil, $0) }
@@ -77,81 +77,60 @@ extension IRGenerator {
       break
     }
     let llvmType = resolveLLVMType(type)
-    let voidPointerTy = LLVMPointerType(LLVMInt8Type(), 0)
-    var fieldMetaElts = [
-      voidPointerTy,         // name string
-      voidPointerTy,         // type
-      LLVMInt64Type()        // offset
-    ]
-    let fieldMetaTy = fieldMetaElts.withUnsafeMutableBufferPointer { buf in
-      LLVMStructType(buf.baseAddress, UInt32(buf.count), 0)
-    }
     
     let metaName = name + ".metadata"
     let nameValue = codegenGlobalStringPtr(fullName)
-    var elementPtrs = [
-      LLVMTypeOf(nameValue), // name string
-      voidPointerTy,         // field types
-      LLVMInt8Type(),        // isReferenceType
-      LLVMInt64Type(),       // size of type
-      LLVMInt64Type(),       // number of fields
-      LLVMInt64Type()        // pointer level
+    let elementPtrs: [LLVMType] = [
+      nameValue.type,        // name string
+      PointerType.toVoid,    // field types
+      IntType.int8,          // isReferenceType
+      IntType.int64,         // size of type
+      IntType.int64,         // number of fields
+      IntType.int64          // pointer level
     ]
-    let metaType = elementPtrs.withUnsafeMutableBufferPointer { buf in
-       LLVMStructType(buf.baseAddress, UInt32(buf.count), 0)
-    }
+    let metaType = StructType(elementTypes: elementPtrs)
     
-    let global = LLVMAddGlobal(module, metaType, metaName)!
+    var global = builder.addGlobal(metaName, type: metaType)
     typeMetadataMap[type] = global
     
-    var fieldVals = [LLVMValueRef?]()
+    let fieldMetaType = StructType(elementTypes: [
+      PointerType.toVoid,   // name string
+      PointerType.toVoid,   // field type metadata
+      IntType.int64         // field count
+    ])
+    
+    var fieldVals = [LLVMValue]()
     for (idx, (fieldName, type)) in fields.enumerated() {
-      guard let meta = codegenTypeMetadata(type) else {
-        LLVMDeleteGlobal(global)
-        typeMetadataMap[type] = nil
-        return nil
-      }
+      let meta = codegenTypeMetadata(type)
       
-      let name: LLVMValueRef
+      let name: LLVMValue
       if let fieldName = fieldName {
-        name = codegenGlobalStringPtr(fieldName)!
+        name = codegenGlobalStringPtr(fieldName)
       } else {
-        name = LLVMConstNull(voidPointerTy)
+        name = PointerType.toVoid.null()
       }
-      var values = [
-        LLVMBuildBitCast(builder, name, voidPointerTy, ""),
-        LLVMBuildBitCast(builder, meta, voidPointerTy, ""),
-        LLVMConstInt(LLVMInt64Type(),
-                     LLVMOffsetOfElement(layout, llvmType, UInt32(idx)), 0)
-      ]
-      fieldVals.append(values.withUnsafeMutableBufferPointer { buf in
-        LLVMConstStruct(buf.baseAddress, UInt32(buf.count), 0)
-      })
+      fieldVals.append(StructType.constant(values: [
+        builder.buildBitCast(name, type: PointerType.toVoid),
+        builder.buildBitCast(meta, type: PointerType.toVoid),
+        IntType.int64.constant(
+          layout.offsetOfElement(idx, type: llvmType as! StructType))
+      ]))
     }
+    let fieldVec = ArrayType.constant(fieldVals, type: fieldMetaType)
     
+    var globalFieldVec = builder.addGlobal("\(metaName).fields.metadata", type: fieldVec.type)
+    globalFieldVec.initializer = fieldVec
     
-    let fieldVec = fieldVals.withUnsafeMutableBufferPointer { buf in
-      LLVMConstArray(fieldMetaTy, buf.baseAddress, UInt32(buf.count))
-    }
+    let gep = builder.buildInBoundsGEP(globalFieldVec, indices: [IntType.int64.zero()])
     
-    let globalFieldVec = LLVMAddGlobal(module, LLVMTypeOf(fieldVec), "\(metaName).fields.metadata")
-    
-    LLVMSetInitializer(globalFieldVec, fieldVec)
-    
-    var index = LLVMConstNull(LLVMInt64Type())
-    let gep = LLVMBuildInBoundsGEP(builder, globalFieldVec, &index, 1, "")
-    
-    var vals = [
+    global.initializer = StructType.constant(values: [
       nameValue,
-      LLVMBuildBitCast(builder, gep, LLVMPointerType(LLVMInt8Type(), 0), ""),
-      LLVMConstInt(LLVMInt8Type(), storage(for: type) == .reference ? 1 : 0, 1),
-      LLVMConstInt(LLVMInt64Type(), LLVMSizeOfTypeInBits(layout, llvmType), 0),
-      LLVMConstInt(LLVMInt64Type(), UInt64(fields.count), 1),
-      LLVMConstInt(LLVMInt64Type(), UInt64(pointerLevel), 1)
-    ]
-    _ = vals.withUnsafeMutableBufferPointer { buf in
-      LLVMSetInitializer(global, LLVMConstStruct(buf.baseAddress, UInt32(buf.count), 0))
-    }
+      builder.buildBitCast(gep, type: PointerType.toVoid),
+      IntType.int8.constant(storage(for: type) == .reference ? 1 : 0, signExtend: true),
+      IntType.int64.constant(layout.sizeOfTypeInBits(llvmType), signExtend: true),
+      IntType.int64.constant(fields.count, signExtend: true),
+      IntType.int64.constant(pointerLevel, signExtend: true),
+    ])
     return global
   }
   
@@ -167,9 +146,9 @@ extension IRGenerator {
   
   @discardableResult
   func visitTypeDecl(_ expr: TypeDecl) -> Result {
-    let structure = codegenTypePrototype(expr)
+    codegenTypePrototype(expr)
     
-    if expr.has(attribute: .foreign) { return structure }
+    if expr.has(attribute: .foreign) { return nil }
     
     _ = expr.initializers.map(visitFuncDecl)
     _ = expr.methods.map(visitFuncDecl)
@@ -177,7 +156,7 @@ extension IRGenerator {
     _ = expr.subscripts.map(visitFuncDecl)
     _ = expr.staticMethods.map(visitFuncDecl)
     
-    return structure
+    return nil
   }
   
   @discardableResult
@@ -200,8 +179,8 @@ extension IRGenerator {
   /// Anything else: It will create a new stack object and return that pointer.
   ///                This allows you to call a method on an rvalue, even though
   ///                it doesn't necessarily have a stack variable.
-  func resolvePtr(_ expr: Expr) -> Result {
-    let createTmpPointer: (Expr) -> LLVMValueRef = { expr in
+  func resolvePtr(_ expr: Expr) -> LLVMValue {
+    let createTmpPointer: (Expr) -> LLVMValue = { expr in
       guard let type = expr.type else { fatalError("unknown type") }
       let value = self.visit(expr)!
       if case .any = self.context.canonicalType(type) {
@@ -211,7 +190,7 @@ extension IRGenerator {
       let alloca =  self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
                                                 type: llvmType, name: "ptrtmp",
                                                 storage: .value)
-      LLVMBuildStore(self.builder, value, alloca.ref)
+      self.builder.buildStore(value, to: alloca.ref)
       return alloca.ref
     }
     switch expr {
@@ -223,21 +202,21 @@ extension IRGenerator {
       }
       return binding.ref
     case let expr as PrefixOperatorExpr where expr.op == .star:
-      return LLVMBuildLoad(builder, resolvePtr(expr.rhs), "deref-load")
+      return builder.buildLoad(resolvePtr(expr.rhs), name: "deref-load")
     case let expr as TupleFieldLookupExpr:
       let lhs = resolvePtr(expr.lhs)
-      return LLVMBuildStructGEP(builder, lhs, UInt32(expr.field), "tuple-ptr")
+      return builder.buildStructGEP(lhs, index: expr.field, name: "tuple-ptr")
     case let expr as InfixOperatorExpr where expr.op == .as:
       if let type = expr.type, case .any = context.canonicalType(type) {
         return codegenAnyValuePtr(visit(expr)!, type: expr.rhs.type!)
       }
       return createTmpPointer(expr)
     case let expr as SubscriptExpr:
-      let lhs = visit(expr.lhs)
+      let lhs = visit(expr.lhs)!
       switch expr.lhs.type! {
       case .pointer, .array:
-        var indices = visit(expr.args[0].val)
-        return LLVMBuildGEP(builder, lhs, &indices, 1, "gep")
+        return builder.buildGEP(lhs, indices: [visit(expr.args[0].val)!],
+                                name: "gep")
       default:
         return createTmpPointer(expr)
       }
@@ -248,7 +227,7 @@ extension IRGenerator {
   
   /// Builds a getelementptr instruction for a FieldLookupExpr.
   /// This will perform the arithmetic necessary to get at a struct field.
-  func elementPtr(_ expr: FieldLookupExpr) -> Result {
+  func elementPtr(_ expr: FieldLookupExpr) -> LLVMValue {
     guard let decl = expr.typeDecl else { fatalError("unresolved type") }
     guard let idx = decl.indexOf(fieldName: expr.name) else {
       fatalError("invalid index in decl fields")
@@ -257,13 +236,12 @@ extension IRGenerator {
     let isImplicitSelf = (expr.lhs as? VarExpr)?.isSelf ?? false
     if case .reference = storage(for: expr.lhs.type!),
       !isImplicitSelf {
-      ptr = LLVMBuildLoad(builder, ptr, "\(expr.name)-load")
+      ptr = builder.buildLoad(ptr, name: "\(expr.name)-load")
     }
-    return LLVMBuildStructGEP(builder, ptr, UInt32(idx), "\(expr.name)-gep")
+    return builder.buildStructGEP(ptr, index: idx, name: "\(expr.name)-gep")
   }
   
   func visitFieldLookupExpr(_ expr: FieldLookupExpr) -> Result {
-    let gep = elementPtr(expr)
-    return LLVMBuildLoad(builder, gep, expr.name.name)
+    return builder.buildLoad(elementPtr(expr), name: expr.name.name)
   }
 }

@@ -17,15 +17,15 @@ enum Storage {
 
 /// Represents a variable binding and its corresponding binding type.
 struct VarBinding {
-    let ref: LLVMValueRef
+    let ref: LLVMValue
     let storage: Storage
     
-    let read: () -> LLVMValueRef
-    let write: (LLVMValueRef) -> Void
+    let read: () -> LLVMValue
+    let write: (LLVMValue) -> Void
 }
 
 enum GlobalBinding {
     case primitive(VarBinding)
-    case lazy(function: LLVMValueRef, global: VarBinding)
+    case lazy(function: LLVMValue, global: VarBinding)
 }
 
