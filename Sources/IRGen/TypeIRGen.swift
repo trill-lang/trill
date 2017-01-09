@@ -13,7 +13,7 @@ extension IRGenerator {
   /// - parameters:
   ///   - expr: The TypeDecl to declare.
   @discardableResult
-  func codegenTypePrototype(_ expr: TypeDecl) -> LLVMType {
+  func codegenTypePrototype(_ expr: TypeDecl) -> IRType {
     if let existing = module.type(named: expr.name.name) {
       return existing
     }
@@ -77,11 +77,11 @@ extension IRGenerator {
     default:
       break
     }
-    let llvmType = resolveLLVMType(type)
+    let irType = resolveLLVMType(type)
     
     let metaName = name + ".metadata"
     let nameValue = codegenGlobalStringPtr(fullName)
-    let elementPtrs: [LLVMType] = [
+    let elementPtrs: [IRType] = [
       nameValue.type,        // name string
       PointerType.toVoid,    // field types
       IntType.int8,          // isReferenceType
@@ -100,11 +100,11 @@ extension IRGenerator {
       IntType.int64         // field count
     ])
     
-    var fieldVals = [LLVMValue]()
+    var fieldVals = [IRValue]()
     for (idx, (fieldName, type)) in fields.enumerated() {
       let meta = codegenTypeMetadata(type)
       
-      let name: LLVMValue
+      let name: IRValue
       if let fieldName = fieldName {
         name = codegenGlobalStringPtr(fieldName)
       } else {
@@ -114,7 +114,7 @@ extension IRGenerator {
         builder.buildBitCast(name, type: PointerType.toVoid),
         builder.buildBitCast(meta, type: PointerType.toVoid),
         IntType.int64.constant(
-          layout.offsetOfElement(idx, type: llvmType as! StructType))
+          layout.offsetOfElement(idx, type: irType as! StructType))
       ]))
     }
     let fieldVec = ArrayType.constant(fieldVals, type: fieldMetaType)
@@ -128,7 +128,7 @@ extension IRGenerator {
       nameValue,
       builder.buildBitCast(gep, type: PointerType.toVoid),
       IntType.int8.constant(storage(for: type) == .reference ? 1 : 0, signExtend: true),
-      IntType.int64.constant(layout.sizeOfTypeInBits(llvmType), signExtend: true),
+      IntType.int64.constant(layout.sizeOfTypeInBits(irType), signExtend: true),
       IntType.int64.constant(fields.count, signExtend: true),
       IntType.int64.constant(pointerLevel, signExtend: true),
     ])
@@ -180,16 +180,16 @@ extension IRGenerator {
   /// Anything else: It will create a new stack object and return that pointer.
   ///                This allows you to call a method on an rvalue, even though
   ///                it doesn't necessarily have a stack variable.
-  func resolvePtr(_ expr: Expr) -> LLVMValue {
-    let createTmpPointer: (Expr) -> LLVMValue = { expr in
+  func resolvePtr(_ expr: Expr) -> IRValue {
+    let createTmpPointer: (Expr) -> IRValue = { expr in
       guard let type = expr.type else { fatalError("unknown type") }
       let value = self.visit(expr)!
       if case .any = self.context.canonicalType(type) {
         return self.codegenAnyValuePtr(value, type: .pointer(type: .int8))
       }
-      let llvmType = self.resolveLLVMType(type)
+      let irType = self.resolveLLVMType(type)
       let alloca =  self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
-                                                type: llvmType, name: "ptrtmp",
+                                                type: irType, name: "ptrtmp",
                                                 storage: .value)
       self.builder.buildStore(value, to: alloca.ref)
       return alloca.ref
@@ -228,7 +228,7 @@ extension IRGenerator {
   
   /// Builds a getelementptr instruction for a FieldLookupExpr.
   /// This will perform the arithmetic necessary to get at a struct field.
-  func elementPtr(_ expr: FieldLookupExpr) -> LLVMValue {
+  func elementPtr(_ expr: FieldLookupExpr) -> IRValue {
     guard let decl = expr.typeDecl else { fatalError("unresolved type") }
     guard let idx = decl.indexOf(fieldName: expr.name) else {
       fatalError("invalid index in decl fields")

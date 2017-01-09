@@ -7,7 +7,7 @@ import Foundation
 import LLVMSwift
 
 extension IRGenerator {
-  func codegenGlobalStringPtr(_ string: String) -> LLVMValue {
+  func codegenGlobalStringPtr(_ string: String) -> IRValue {
     if let global = globalStringMap[string] { return global }
     let length = string.utf8.count
     var globalArray = builder.addGlobal("str", type:
@@ -18,7 +18,7 @@ extension IRGenerator {
     return globalArray
   }
   
-  func codegenTupleType(_ type: DataType) -> LLVMType {
+  func codegenTupleType(_ type: DataType) -> IRType {
     guard case .tuple(let fields) = type else { fatalError("must be tuple type") }
     let name = Mangler.mangle(context.canonicalType(type))
     if let existing = module.type(named: name) { return existing }
@@ -59,12 +59,12 @@ extension IRGenerator {
     let irType = resolveLLVMType(expr.type!)
     var initial = irType.null()
     for (idx, value) in expr.values.enumerated() {
-      var llvmValue = visit(value)!
+      var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
       if case .any = context.canonicalType(fieldTy) {
-        llvmValue = codegenPromoteToAny(value: llvmValue, type: value.type!)
+        irValue = codegenPromoteToAny(value: irValue, type: value.type!)
       }
-      initial = builder.buildInsertElement(vector: initial, element: llvmValue, index: index)
+      initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
     return initial
   }
@@ -104,13 +104,13 @@ extension IRGenerator {
     return byteSize(of: expr.valueType!)
   }
   
-  func byteSize(of type: DataType) -> LLVMValue {
+  func byteSize(of type: DataType) -> IRValue {
     if case .array(let subtype, let length?) = type {
       let subSize = byteSize(of: subtype)
       return builder.buildMul(subSize, IntType.int64.constant(length))
     }
-    let llvmType = resolveLLVMType(type)
-    return builder.buildTruncOrBitCast(builder.buildSizeOf(llvmType),
+    let irType = resolveLLVMType(type)
+    return builder.buildTruncOrBitCast(builder.buildSizeOf(irType),
                                        type: IntType.int64)
   }
   
@@ -123,34 +123,34 @@ extension IRGenerator {
     return type.null()
   }
   
-  func coerce(_ value: LLVMValue, from fromType: DataType, to type: DataType) -> Result {
-    let llvmType = resolveLLVMType(type)
+  func coerce(_ value: IRValue, from fromType: DataType, to type: DataType) -> Result {
+    let irType = resolveLLVMType(type)
     switch (context.canonicalType(fromType), context.canonicalType(type)) {
     case (.int(let lhsWidth, _), .int(let rhsWidth, _)):
       if lhsWidth == rhsWidth { return value }
       if lhsWidth < rhsWidth {
-        return builder.buildSExt(value, type: llvmType, name: "sext-coerce")
+        return builder.buildSExt(value, type: irType, name: "sext-coerce")
       } else {
-        return builder.buildTrunc(value, type: llvmType, name: "trunc-coerce")
+        return builder.buildTrunc(value, type: irType, name: "trunc-coerce")
       }
     case (.int(_, let signed), .floating):
-      return builder.buildIntToFP(value, type: llvmType as! FloatType,
+      return builder.buildIntToFP(value, type: irType as! FloatType,
                                   signed: signed, name: "inttofp-coerce")
     case (.floating, .int(_, let signed)):
-      return builder.buildFPToInt(value, type: llvmType as! IntType,
+      return builder.buildFPToInt(value, type: irType as! IntType,
                                   signed: signed, name: "fptoint-coerce")
     case (.pointer, .int):
-      return builder.buildPtrToInt(value, type: llvmType as! IntType,
+      return builder.buildPtrToInt(value, type: irType as! IntType,
                                    name: "ptrtoint-coerce")
     case (.int, .pointer):
-      return builder.buildIntToPtr(value, type: llvmType as! PointerType,
+      return builder.buildIntToPtr(value, type: irType as! PointerType,
                                    name: "inttoptr-coerce")
     case (.pointer, .pointer):
-      return builder.buildBitCast(value, type: llvmType, name: "bitcast-coerce")
+      return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     case (.any, let other):
       return codegenCheckedCast(binding: value, type: other)
     default:
-      return builder.buildBitCast(value, type: llvmType, name: "bitcast-coerce")
+      return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     }
   }
   
@@ -170,7 +170,7 @@ extension IRGenerator {
     }
   }
   
-  func codegen(_ decl: OperatorDecl, lhs: LLVMValue, rhs: LLVMValue, type: DataType) -> Result {
+  func codegen(_ decl: OperatorDecl, lhs: IRValue, rhs: IRValue, type: DataType) -> Result {
     if !decl.has(attribute: .implicit) {
       let function = codegenFunctionPrototype(decl)
       return builder.buildCall(function, args: [lhs, rhs], name: "optmp")
@@ -295,7 +295,7 @@ extension IRGenerator {
     }
     
     if case .as = expr.op {
-      let lhs: LLVMValue
+      let lhs: IRValue
       
       // To support casting between indirect types and void pointers,
       // don't actually load the lhs here. Just get a pointer to it.
@@ -366,7 +366,7 @@ extension IRGenerator {
   func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     guard let function = currentFunction?.functionRef else { fatalError("no function") }
     guard let type = expr.type else { fatalError("no ternary type") }
-    let llvmType = resolveLLVMType(type)
+    let irType = resolveLLVMType(type)
     let cond = visit(expr.condition)!
     let truebb = function.appendBasicBlock(named: "true-case", in: llvmContext)
     let falsebb = function.appendBasicBlock(named: "false-case", in: llvmContext)
@@ -379,7 +379,7 @@ extension IRGenerator {
     let falseVal = visit(expr.falseCase)!
     builder.buildBr(endbb)
     builder.positionAtEnd(of: endbb)
-    let phi = builder.buildPhi(llvmType, name: "ternary-phi")
+    let phi = builder.buildPhi(irType, name: "ternary-phi")
     phi.addIncoming([
       (trueVal, truebb),
       (falseVal, falsebb)

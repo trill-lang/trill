@@ -16,7 +16,7 @@ extension IRGenerator {
   }
   
   @discardableResult
-  func codegenOnceCall(function: LLVMValue) -> (token: LLVMValue, call: LLVMValue) {
+  func codegenOnceCall(function: IRValue) -> (token: IRValue, call: IRValue) {
     var token = builder.addGlobal("once_token", type: IntType.int64)
     token.initializer = IntType.int64.zero()
     let call = builder.buildCall(codegenIntrinsic(named: "trill_once"),
@@ -24,7 +24,7 @@ extension IRGenerator {
     return (token: token, call: call)
   }
   
-  func codegenPromoteToAny(value: LLVMValue, type: DataType) -> LLVMValue {
+  func codegenPromoteToAny(value: IRValue, type: DataType) -> IRValue {
     if case .any = type {
       if storage(for: type) == .reference {
         // If we're promoting an existing Any value of a reference type, just
@@ -50,12 +50,12 @@ extension IRGenerator {
     return res
   }
   
-  func codegenCopyAny(value: LLVMValue) -> LLVMValue {
+  func codegenCopyAny(value: IRValue) -> IRValue {
     return builder.buildCall(codegenIntrinsic(named: "trill_copyAny"),
                              args: [value], name: "copy-any")
   }
   
-  func codegenAnyValuePtr(_ binding: LLVMValue, type: DataType) -> LLVMValue {
+  func codegenAnyValuePtr(_ binding: IRValue, type: DataType) -> IRValue {
     let irType = resolveLLVMType(type)
     let pointerType = PointerType(pointee: irType)
     let ptrValue = builder.buildCall(codegenIntrinsic(named: "trill_getAnyValuePtr"),
@@ -71,7 +71,7 @@ extension IRGenerator {
   ///   - type: The type to check
   /// - Returns: An i1 value telling if the Any value has the same underlying
   ///            type as the passed-in type
-  func codegenTypeCheck(_ binding: LLVMValue, type: DataType) -> LLVMValue {
+  func codegenTypeCheck(_ binding: IRValue, type: DataType) -> IRValue {
     let typeCheck = codegenIntrinsic(named: "trill_checkTypes")
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta, type: PointerType.toVoid, name: "meta-cast")
@@ -79,7 +79,7 @@ extension IRGenerator {
     return builder.buildICmp(result, IntType.int8.zero(), .ne, name: "type-check-result")
   }
   
-  func codegenCheckedCast(binding: LLVMValue, type: DataType) -> LLVMValue {
+  func codegenCheckedCast(binding: IRValue, type: DataType) -> IRValue {
     let checkedCast = codegenIntrinsic(named: "trill_checkedCast")
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta,

@@ -40,16 +40,16 @@ extension IRGenerator {
       global.isExternallyInitialized = true
       return binding
     }
-    let llvmType = resolveLLVMType(decl.type)
+    let irType = resolveLLVMType(decl.type)
     guard let rhs = decl.rhs else {
-      global.initializer = llvmType.null()
+      global.initializer = irType.null()
       return binding
     }
     if rhs is ConstantExpr {
       global.initializer = visit(rhs)!
       return binding
     } else {
-      global.initializer = llvmType.null()
+      global.initializer = irType.null()
       let currentBlock = builder.insertBlock
       
       let initFn = builder.addFunction(Mangler.mangle(global: decl,
@@ -63,7 +63,7 @@ extension IRGenerator {
       let lazyInit = builder.addFunction(Mangler.mangle(global: decl,
                                                         kind: .accessor),
                                          type: FunctionType(argTypes: [],
-                                                            returnType: llvmType))
+                                                            returnType: irType))
       builder.positionAtEnd(of: lazyInit.appendBasicBlock(named: "entry", in: llvmContext))
       codegenOnceCall(function: initFn)
       builder.buildRet(builder.buildLoad(binding.ref, name: "global-res"))
@@ -85,7 +85,7 @@ extension IRGenerator {
     let function = currentFunction!.functionRef!
     let type = decl.type
     let irType = resolveLLVMType(type)
-    var value: LLVMValue
+    var value: IRValue
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
       if case .any = type {
@@ -239,7 +239,7 @@ extension IRGenerator {
     } else {
       defaultBlock = endbb
     }
-    var constants = [LLVMValue]()
+    var constants = [IRValue]()
     for c in stmt.cases {
       constants.append(visit(c.constant)!)
     }

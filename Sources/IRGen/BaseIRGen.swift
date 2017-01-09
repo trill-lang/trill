@@ -69,7 +69,7 @@ extension OutputFormat {
   }
   
   /// The LLVMCodeGenFileType for this output format
-  var llvmType: CodegenFileType? {
+  var irType: CodegenFileType? {
     switch self {
     case .asm: return .assembly
     case .binary, .obj: return .object
@@ -87,20 +87,20 @@ struct FunctionState {
   /// The AST node of the current function being codegenned.
   let function: FuncDecl?
   
-  /// The LLVMValue of the current function being codegenned.
+  /// The IRValue of the current function being codegenned.
   let functionRef: Function?
   
   /// The beginning of the return section of a function.
   let returnBlock: BasicBlock?
   
   /// The return stack variable for the current function.
-  let resultAlloca: LLVMValue?
+  let resultAlloca: IRValue?
 }
 
 /// Generates and executes LLVM IR for a given AST.
 class IRGenerator: ASTVisitor, Pass {
   
-  typealias Result = LLVMValue?
+  typealias Result = IRValue?
   
   /// The LLVM module currently being generated
   let module: Module
@@ -130,14 +130,14 @@ class IRGenerator: ASTVisitor, Pass {
   /// Will be destroyed when scopes are exited.
   var varIRBindings = [Identifier: VarBinding]()
   
-  /// A map of types to their LLVMTypes
+  /// A map of types to their IRTypes
   var typeIRBindings = IRGenerator.builtinTypeBindings
   
   var typeMetadataMap = [DataType: Global]()
   
   /// A static set of mappings between all the builtin Trill types to their
   /// LLVM counterparts.
-  static let builtinTypeBindings: [DataType: LLVMType] = [
+  static let builtinTypeBindings: [DataType: IRType] = [
     .int8: IntType.int8,
     .int16: IntType.int16,
     .int32: IntType.int32,
@@ -157,7 +157,7 @@ class IRGenerator: ASTVisitor, Pass {
   
   /// A table that holds global string values, as strings are interned.
   /// String literals are held at global scope.
-  var globalStringMap = [String: LLVMValue]()
+  var globalStringMap = [String: IRValue]()
   
   /// The function currently being generated.
   var currentFunction: FunctionState?
@@ -169,7 +169,7 @@ class IRGenerator: ASTVisitor, Pass {
   var currentContinueTarget: BasicBlock? = nil
   
   /// The LLVM value for the `main` function.
-  var mainFunction: LLVMValue? = nil
+  var mainFunction: IRValue? = nil
   
   /// The function pass manager that performs optimizations.
   let passManager: FunctionPassManager
@@ -274,7 +274,7 @@ class IRGenerator: ASTVisitor, Pass {
     
     builder.buildCall(codegenIntrinsic(named: "trill_init"), args: [])
     
-    let val: LLVMValue
+    let val: IRValue
     if hasArgcArgv {
       val = builder.buildCall(mainFunction, args: [
         builder.buildSExt(function.parameter(at: 0)!, type: IntType.int64, name: "argc-ext"),
@@ -307,9 +307,9 @@ class IRGenerator: ASTVisitor, Pass {
     if case .llvm = type {
       try module.print(to: outputFilename)
     } else {
-      if let llvmType = type.llvmType {
+      if let irType = type.irType {
         try targetMachine.emitToFile(module: module,
-                                     type: llvmType,
+                                     type: irType,
                                      path: outputFilename)
       }
       if case .binary = type {
@@ -391,7 +391,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// Shortcut for resolving the LLVM type of a TypeRefExpr
   /// - parameters:
   ///   - type: A TypeRefExpr from an expression.
-  func resolveLLVMType(_ type: TypeRefExpr) -> LLVMType {
+  func resolveLLVMType(_ type: TypeRefExpr) -> IRType {
     return resolveLLVMType(type.type!)
   }
   
@@ -400,7 +400,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// Otherwise, this will walk through the type for all subtypes, constructing
   /// an appropriate LLVM type.
   /// - note: This always canonicalizes the type before resolution.
-  func resolveLLVMType(_ type: DataType) -> LLVMType {
+  func resolveLLVMType(_ type: DataType) -> IRType {
     let type = context.canonicalType(type)
     if let binding = typeIRBindings[type] {
       return storage(for: type) == .value ? binding : PointerType(pointee: binding)
@@ -417,8 +417,8 @@ class IRGenerator: ASTVisitor, Pass {
       }
       return PointerType(pointee: fieldTy)
     case .pointer(let subtype):
-      let llvmType = resolveLLVMType(subtype)
-      return PointerType(pointee: llvmType)
+      let irType = resolveLLVMType(subtype)
+      return PointerType(pointee: irType)
     case .function(let args, let ret):
       let argTypes = args.map(resolveLLVMType)
       let retTy = resolveLLVMType(ret)
@@ -497,7 +497,7 @@ class IRGenerator: ASTVisitor, Pass {
     return nil
   }
   
-  func codegenDebugPrintf(format: String, _ values: LLVMValue...) {
+  func codegenDebugPrintf(format: String, _ values: IRValue...) {
     var args = Array(values)
     args.insert(visitStringExpr(StringExpr(value: format))!, at: 0)
     let printfCall = codegenIntrinsic(named: "printf")

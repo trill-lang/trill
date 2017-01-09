@@ -9,10 +9,10 @@ import LLVMSwift
 extension IRGenerator {
   
   func createEntryBlockAlloca(_ function: Function,
-                              type: LLVMType,
+                              type: IRType,
                               name: String,
                               storage: Storage,
-                              initial: LLVMValue? = nil) -> VarBinding {
+                              initial: IRValue? = nil) -> VarBinding {
     let currentBlock = builder.insertBlock
     let entryBlock = function.entryBlock!
     if let firstInst = entryBlock.firstInstruction {
@@ -37,7 +37,7 @@ extension IRGenerator {
     if let existing = module.function(named: mangled) {
       return existing
     }
-    var argTys = [LLVMType]()
+    var argTys = [IRType]()
     for arg in expr.args {
       var type = resolveLLVMType(arg.type)
       if arg.isImplicitSelf && storage(for: arg.type) != .reference {
@@ -64,7 +64,7 @@ extension IRGenerator {
     return builder.buildBr(target)
   }
 
-  func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> LLVMValue {
+  func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> IRValue {
     guard decl.isInitializer,
         let body = decl.body,
         body.exprs.isEmpty,
@@ -140,7 +140,7 @@ extension IRGenerator {
         let type = arg.type
         let argType = resolveLLVMType(type)
         let storageKind = storage(for: type)
-        let read: () -> LLVMValue
+        let read: () -> IRValue
         if arg.isImplicitSelf && storageKind == .reference {
           read = { param }
         } else {
@@ -181,7 +181,7 @@ extension IRGenerator {
       } else if decl.returnType.type == .void {
         builder.buildRetVoid()
       } else {
-        let val: LLVMValue
+        let val: IRValue
         if isReferenceInitializer {
           val = res!.ref
         } else {
@@ -202,7 +202,7 @@ extension IRGenerator {
       return codegenTypeOfCall(expr)
     }
     
-    var function: LLVMValue? = nil
+    var function: IRValue? = nil
     var args = expr.args
     
     let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
@@ -240,7 +240,7 @@ extension IRGenerator {
       function = visit(expr.lhs)
     }
     
-    var argVals = [LLVMValue]()
+    var argVals = [IRValue]()
     for (idx, arg) in args.enumerated() {
       var val = visit(arg.val)!
       var type = arg.val.type!
@@ -275,7 +275,7 @@ extension IRGenerator {
           let currentDecl = currentFunction.function else {
       fatalError("return outside function?")
     }
-    var store: LLVMValue? = nil
+    var store: IRValue? = nil
     if !(expr.value is VoidExpr) {
       var val = visit(expr.value)!
       if let type = expr.value.type,
