@@ -121,6 +121,7 @@
 		DC1770681D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
 		DC1770691D6913EF00FEFB85 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17705F1D6913EF00FEFB85 /* ValueParser.swift */; };
 		DC217A071D4EAD3000729DF0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC217A061D4EAD3000729DF0 /* main.swift */; };
+		DC25D59B1E23540F00580769 /* ORCJIT.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC25D59A1E23540F00580769 /* ORCJIT.swift */; };
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
 		DC47F5D01E197AC900595DCD /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */; };
 		DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
@@ -150,7 +151,6 @@
 		DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC98BBC51D5EE92F00677C66 /* libtinygc.a */; };
 		DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCA5CC491DEE442D001B66A1 /* metadata_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA5CC481DEE442D001B66A1 /* metadata_private.h */; };
-		DCAD41CD1E22A95B005E8AE8 /* ORCJIT.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAD41CC1E22A95B005E8AE8 /* ORCJIT.swift */; };
 		DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */; };
 		DCAEBC541C90095500B84E25 /* libLLVMMC.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC531C90095500B84E25 /* libLLVMMC.a */; };
 		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
@@ -325,6 +325,7 @@
 		DC1BF29B1D7F179F0055157B /* SpecialTypes.def */ = {isa = PBXFileReference; lastKnownFileType = text; name = SpecialTypes.def; path = Sources/Runtime/SpecialTypes.def; sourceTree = SOURCE_ROOT; };
 		DC217A041D4EAD3000729DF0 /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC217A061D4EAD3000729DF0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		DC25D59A1E23540F00580769 /* ORCJIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ORCJIT.swift; sourceTree = "<group>"; };
 		DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtrillRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
 		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; tabWidth = 2; };
@@ -385,7 +386,6 @@
 		DC98BBE71D6012A800677C66 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCA5CC481DEE442D001B66A1 /* metadata_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata_private.h; path = Sources/Runtime/metadata_private.h; sourceTree = SOURCE_ROOT; };
 		DCAD41C31E22A533005E8AE8 /* LLVMSwift.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = LLVMSwift.xcodeproj; path = LLVMSwift/LLVMSwift.xcodeproj; sourceTree = "<group>"; };
-		DCAD41CC1E22A95B005E8AE8 /* ORCJIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ORCJIT.swift; path = ../../../../../../.Trash/ORCJIT.swift; sourceTree = "<group>"; };
 		DCAEBC371C9007E300B84E25 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = /usr/local/llvm/lib/libLLVMCodeGen.a; sourceTree = "<absolute>"; };
 		DCAEBC381C9007E300B84E25 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = /usr/local/llvm/lib/libLLVMCore.a; sourceTree = "<absolute>"; };
 		DCAEBC391C9007E300B84E25 /* libLLVMObject.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMObject.a; path = /usr/local/llvm/lib/libLLVMObject.a; sourceTree = "<absolute>"; };
@@ -566,7 +566,7 @@
 		DC176FE01D6911A200FEFB85 /* IRGen */ = {
 			isa = PBXGroup;
 			children = (
-				DCAD41CC1E22A95B005E8AE8 /* ORCJIT.swift */,
+				DC25D59A1E23540F00580769 /* ORCJIT.swift */,
 				DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */,
 				DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */,
 				DC176FE31D6911A200FEFB85 /* FunctionIRGen.swift */,
@@ -1110,7 +1110,7 @@
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
-				DCAD41CD1E22A95B005E8AE8 /* ORCJIT.swift in Sources */,
+				DC25D59B1E23540F00580769 /* ORCJIT.swift in Sources */,
 				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
 				DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */,
 				DC5EA0C41E15A10E00875545 /* VarBinding.swift in Sources */,
