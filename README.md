@@ -57,11 +57,22 @@ func main() {
 
 ## Building and Using
 
-Trill currently is only supported on macOS.
+Trill currently is only supported on macOS, with the following dependencies:
+
+- LLVM's libraries. Trill requires LLVM 3.9.x installed at `/usr/local/llvm/`.
+  You can download the official release here:
+  http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz
+
+- The TinyGC garbage collector, installed to `/usr/local/`.
+  You can find the latest version of it here:
+  https://sourceforge.net/projects/tinygc/files/tinygc/2.6/
+  - Note: Ensure `libtinygc.a` exists at `/usr/local/libtinygc.a` and that
+    `/usr/local/include/gc/gc.h` is correct.
 
 To build and create Trill programs, you need to open the Xcode project and
 build the `trill` scheme.
-Then, you'll need to symlink the trill runtime and headers:
+Then, you'll need to symlink the trill runtime and headers before you compile
+anything:
 
 ```bash
 ln -s /path/to/Trill_DerivedData/libtrillRuntime.a /usr/local/lib/libtrillRuntime.a
@@ -76,10 +87,10 @@ ln -s /path/to/Trill/Sources/Runtime/*.h /usr/local/include/trill/.
 - Closures are entirely unsupported in the LLVM backend. Closures are very much still in progress.
 - There are no generics. I’m still speccing out the generics system, but I’m thinking it’ll be fairly similar to C++’s [Concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)) proposal — everything verified before being explicitly instantiated.
 - There are no `enum` s, like in Swift. `enum`s from C are currently imported as global constants
-- There is no standard library that exists alongside libc. You pretty much just get whatever you get with C, which includes all the pitfalls of manual pointers
+- There is a very limited standard library that exists alongside libc. You pretty much just get whatever you get with C, which includes all the pitfalls of manual pointers.
   - Ideally I have a standard library that vends common types like `Array` , `String` , `Dictionary` , `Set` , etc.
 - The LLVM codegen is definitely not optimal, and certainly not correct.
-- Many more issues
+- Many more yet-unknown issues and corner-cases.
 
 
 ## Should I use Trill in production?
