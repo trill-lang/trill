@@ -1,5 +1,4 @@
-foreign var stdout: *FILE
-foreign func fopen(_: *Int8, _: *Int8) -> *FILE
+foreign func sleep(_: Int)
 
 func usage() {
   printf("usage: %s [file]", #file)
@@ -31,6 +30,7 @@ func main(argc: Int, argv: **Int8) -> Int {
       s = fgets(s, 100 as Int32, f)
       if s == nil { break }
       printf("%s", s)
+      sleep(500)
     }
     free(s as *Void)
     fclose(f)

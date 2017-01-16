@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import LLVMSwift
+import LLVM
 
 extension IRGenerator {
   
@@ -114,7 +114,7 @@ extension IRGenerator {
         builder.buildBitCast(name, type: PointerType.toVoid),
         builder.buildBitCast(meta, type: PointerType.toVoid),
         IntType.int64.constant(
-          layout.offsetOfElement(idx, type: irType as! StructType))
+          layout.offsetOfElement(at: idx, type: irType as! StructType))
       ]))
     }
     let fieldVec = ArrayType.constant(fieldVals, type: fieldMetaType)

@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import LLVMSwift
+import LLVM
 
 extension IRGenerator {
   func codegenGlobalStringPtr(_ string: String) -> IRValue {

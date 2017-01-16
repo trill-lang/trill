@@ -1,16 +1,18 @@
 import cllvm
 
 // HAAAAAAACK because this file
-@testable import LLVMSwift
+@testable import LLVM
 
 public class ORCJIT {
     internal let llvm: LLVMExecutionEngineRef
     
     public init?(module: Module, machine: TargetMachine) {
-        guard let jit = LLVMCreateOrcMCJITReplacement(module.llvm, machine.llvm) else {
+        guard let jit = LLVMCreateOrcMCJITReplacement(
+            unsafeBitCast(module.llvm, to: UnsafeMutableRawPointer.self),
+            unsafeBitCast(machine.llvm, to: UnsafeMutableRawPointer.self)) else {
             return nil
         }
-        self.llvm = jit
+        self.llvm = unsafeBitCast(jit, to: LLVMExecutionEngineRef.self)
     }
     
     public func runFunctionAsMain(_ function: Function, argv: [String]) -> Int {

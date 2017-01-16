@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import LLVMSwift
+import LLVM
 
 extension IRGenerator {
   @discardableResult
@@ -43,10 +43,12 @@ extension IRGenerator {
     let irType = resolveLLVMType(decl.type)
     guard let rhs = decl.rhs else {
       global.initializer = irType.null()
+      global.isGlobalConstant = !decl.mutable
       return binding
     }
-    if rhs is ConstantExpr {
+    if context.isGlobalConstant(rhs) {
       global.initializer = visit(rhs)!
+      global.isGlobalConstant = !decl.mutable
       return binding
     } else {
       global.initializer = irType.null()
