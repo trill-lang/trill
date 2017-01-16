@@ -27,8 +27,8 @@ class AttributedStringStream: ColoredStream {
           case .red: return palette.string.color
           case .magenta: return palette.keyword.color
           case .blue: return palette.externalName.color
-          case .green: return palette.internalName.color
-          case .cyan: return palette.externalName.color
+          case .green: return palette.comment.color
+          case .cyan: return palette.internalName.color
           case .white: return .white
           default: return nil
           }

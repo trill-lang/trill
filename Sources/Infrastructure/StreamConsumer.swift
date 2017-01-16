@@ -54,7 +54,7 @@ class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
         if let loc = diagnostic.loc,
             let line = file?.lines[loc.line - 1],
             loc.line > 0 {
-            stream.write(" --> ", with: [.bold])
+            stream.write(" --> ", with: [.bold, .cyan])
             let filename = file?.path.basename ?? "<unknown>"
             stream.write("\(filename)")
             if let sourceLoc = diagnostic.loc {
@@ -64,9 +64,10 @@ class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
             stream.write("\n")
             let lineStr = "\(loc.line)"
             let indentation = "\(indent(lineStr.characters.count))"
-            stream.write(" \(indentation)|\n")
-            stream.write(" \(lineStr)| \(line)\n")
-            stream.write(" \(indentation)| ")
+            stream.write(" \(indentation)|\n", with: [.cyan])
+            stream.write(" \(lineStr)| ", with: [.cyan])
+            stream.write("\(line)\n")
+            stream.write(" \(indentation)| ", with: [.cyan])
             stream.write(highlightString(forDiag: diagnostic),
                          with: [.bold, .green])
             stream.write("\n\n")

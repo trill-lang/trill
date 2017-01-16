@@ -38,14 +38,6 @@ struct Attribute {
   let name: String
   let value: Any
   let range: NSRange
-  
-  init(name: String, value: Any, range: NSRange) {
-    print("\(name): \(value) (loc: \(range.location), length: \(range.length))")
-    
-    self.name = name
-    self.value = value
-    self.range = range
-  }
 }
 
 class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
