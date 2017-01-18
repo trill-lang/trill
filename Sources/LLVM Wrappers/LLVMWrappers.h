@@ -14,6 +14,12 @@
 #define __STDC_FORMAT_MACROS
 #define __STDC_LIMIT_MACROS
 #undef DEBUG
+#include <llvm-c/Analysis.h>
+#include <llvm-c/BitWriter.h>
+#include <llvm-c/Core.h>
+#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/Transforms/Scalar.h>
+#include <llvm-c/Transforms/IPO.h>
 #include <clang-c/Platform.h>
 #include "trill.h"
 
@@ -64,9 +70,8 @@ typedef struct RawOptions {
   char *_Nullable *_Nonnull jitFlags;
   size_t jitFlagCount;
 } RawOptions;
-  
-
-void *_Nullable LLVMCreateOrcMCJITReplacement(void *_Nonnull module, void *_Nonnull targetRef);
+_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module,
+                                                               LLVMTargetMachineRef targetRef);
 void LLVMLinkInOrcMCJITReplacement(void);
 int clang_isNoReturn(CXCursor cursor);
 int clang_linkExecutableFromObject(const char *targetTriple,
@@ -75,7 +80,7 @@ int clang_linkExecutableFromObject(const char *targetTriple,
                                    size_t linkerFlagsCount,
                                    char *_Nullable *_Nonnull ccFlags,
                                    size_t ccFlagsCount);
-char *_Nullable LLVMAddArchive(void *ref, const char *filename);
+char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename);
 RawOptions ParseArguments(int argc, char *_Nullable *_Nullable argv);
 void DestroyRawOptions(RawOptions options);
 

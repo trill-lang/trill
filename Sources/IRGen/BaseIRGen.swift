@@ -4,9 +4,6 @@
 //
 
 import Foundation
-import cllvm
-import LLVM
-
 private var fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
 
 /// An error that represents a problem with LLVM IR generation or JITting.
@@ -237,7 +234,7 @@ class IRGenerator: ASTVisitor, Pass {
   ///   - path: The file path of the library to link.
   /// - throws: LLVMError.couldNotLink if the archive failed to link.
   func addArchive(at path: String, to jit: LLVMExecutionEngineRef) throws {
-    if let err = LLVMAddArchive(unsafeBitCast(jit, to: UnsafeMutableRawPointer.self), path) {
+    if let err = LLVMAddArchive(jit, path) {
       defer { free(err) }
       throw LLVMError.couldNotLink(path, String(cString: err))
     }
