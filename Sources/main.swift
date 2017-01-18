@@ -37,7 +37,8 @@ func populate(driver: Driver, options: Options,
     let irgen = try IRGenerator(context: context,
                                 options: options)
     driver.add("Clang Importer") { context in
-      return ClangImporter(context: context, target: irgen.targetTriple).run(in: context)
+      return ClangImporter(context: context,
+                           target: irgen.targetMachine.triple).run(in: context)
     }
     gen = irgen
   }

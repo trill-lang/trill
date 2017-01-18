@@ -6,96 +6,92 @@
 import Foundation
 
 extension IRGenerator {
-  func codegenGlobalStringPtr(_ string: String) -> Result {
+  func codegenGlobalStringPtr(_ string: String) -> IRValue {
     if let global = globalStringMap[string] { return global }
-    let length = UInt32(string.utf8.count)
-    let globalArray = LLVMAddGlobal(module,
-                                    LLVMArrayType(LLVMInt8Type(), length + 1),
-                                    "str")!
-    LLVMSetAlignment(globalArray, 1)
-    var utf8String = string.utf8CString
-    utf8String.withUnsafeMutableBufferPointer { buf in
-      let str = LLVMConstStringInContext(llvmContext, buf.baseAddress, length, 0)
-      LLVMSetInitializer(globalArray, str)
-    }
+    let length = string.utf8.count
+    var globalArray = builder.addGlobal("str", type:
+      ArrayType(elementType: IntType.int8, count: length + 1))
+    globalArray.alignment = 1
+    globalArray.initializer = string
     globalStringMap[string] = globalArray
     return globalArray
   }
   
-  func codegenTupleType(_ type: DataType) -> LLVMTypeRef {
+  func codegenTupleType(_ type: DataType) -> IRType {
     guard case .tuple(let fields) = type else { fatalError("must be tuple type") }
     let name = Mangler.mangle(context.canonicalType(type))
-    if let existing = LLVMGetTypeByName(module, name) { return existing }
-    var types: [LLVMValueRef?] = fields.map(resolveLLVMType)
-    let named = LLVMStructCreateNamed(llvmContext, name)!
-    _ = types.withUnsafeMutableBufferPointer { buf in
-      LLVMStructSetBody(named, buf.baseAddress, UInt32(buf.count), 1)
-    }
-    return named
+    if let existing = module.type(named: name) { return existing }
+    return builder.createStruct(name: name, types: fields.map(resolveLLVMType))
   }
   
   func visitNumExpr(_ expr: NumExpr) -> Result {
     let llvmTy = resolveLLVMType(expr.type!)
-    switch context.canonicalType(expr.type!) {
-    case .floating:
-      return LLVMConstReal(llvmTy, Double(expr.value))
-    case .int:
-      return LLVMConstInt(llvmTy, unsafeBitCast(expr.value, to: UInt64.self), 1)
+    switch llvmTy {
+    case let type as FloatType:
+      return type.constant(Double(expr.value))
+    case let type as IntType:
+      return type.constant(expr.value, signExtend: true)
     default:
       fatalError("non-number NumExpr")
     }
   }
   
   func visitCharExpr(_ expr: CharExpr) -> Result {
-    return LLVMConstInt(typeIRBindings[.int8]!, UInt64(expr.value), 1)
+    return IntType.int8.constant(expr.value, signExtend: true)
   }
   
   func visitFloatExpr(_ expr: FloatExpr) -> Result {
-    return LLVMConstReal(resolveLLVMType(expr.type!), expr.value)
+    guard let type = resolveLLVMType(expr.type!) as? FloatType else {
+      fatalError("non-float floatexpr?")
+    }
+    return type.constant(expr.value)
   }
   
   func visitBoolExpr(_ expr: BoolExpr) -> Result {
-    return LLVMConstInt(typeIRBindings[.bool]!, expr.value ? 1 : 0, 0)
+    return expr.value
   }
   
-  func visitArrayExpr(_ expr: ArrayExpr) -> Optional<LLVMValueRef> {
+  func visitArrayExpr(_ expr: ArrayExpr) -> Result {
     guard case .array(let fieldTy, _)? = expr.type else {
       fatalError("invalid array type")
     }
     let irType = resolveLLVMType(expr.type!)
-    var initial = LLVMConstNull(irType)
+    var initial = irType.null()
     for (idx, value) in expr.values.enumerated() {
-      var llvmValue = visit(value)!
-      let index = LLVMConstInt(LLVMInt64Type(), UInt64(idx), 0)
+      var irValue = visit(value)!
+      let index = IntType.int64.constant(idx)
       if case .any = context.canonicalType(fieldTy) {
-        llvmValue = codegenPromoteToAny(value: llvmValue, type: value.type!)
+        irValue = codegenPromoteToAny(value: irValue, type: value.type!)
       }
-      initial = LLVMBuildInsertElement(builder, initial, llvmValue, index, "")
+      initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
     return initial
   }
   
-  func visitTupleExpr(_ expr: TupleExpr) -> LLVMValueRef? {
+  func visitTupleExpr(_ expr: TupleExpr) -> Result {
     let type = resolveLLVMType(expr.type!)
     guard case .tuple(let tupleTypes)? = expr.type else {
       fatalError("invalid tuple type")
     }
-    var initial = LLVMConstNull(type)!
+    var initial = type.null()
     for (idx, field) in expr.values.enumerated() {
       var val = visit(field)!
       let canTupleTy = context.canonicalType(tupleTypes[idx])
       if case .any = canTupleTy {
         val = codegenPromoteToAny(value: val, type: field.type!)
       }
-      initial = LLVMBuildInsertValue(builder, initial, val, UInt32(idx), "tuple-insert")
+      initial = builder.buildInsertValue(aggregate: initial,
+                                         element: val,
+                                         index: idx,
+                                         name: "tuple-insert")
     }
     return initial
   }
   
-  func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> LLVMValueRef? {
+  func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
     let ptr = resolvePtr(expr.lhs)
-    let gep = LLVMBuildStructGEP(builder, ptr, UInt32(expr.field), "tuple-gep")
-    return LLVMBuildLoad(builder, gep, "tuple-load")
+    let gep = builder.buildStructGEP(ptr, index: expr.field, name: "tuple-gep")
+    return builder.buildLoad(gep, name: "tuple-load")
   }
   
   func visitVarExpr(_ expr: VarExpr) -> Result {
@@ -107,13 +103,14 @@ extension IRGenerator {
     return byteSize(of: expr.valueType!)
   }
   
-  func byteSize(of type: DataType) -> Result {
+  func byteSize(of type: DataType) -> IRValue {
     if case .array(let subtype, let length?) = type {
       let subSize = byteSize(of: subtype)
-      return LLVMBuildMul(builder, subSize, LLVMConstInt(LLVMInt64Type(), UInt64(length), 0), "")
+      return builder.buildMul(subSize, IntType.int64.constant(length))
     }
-    let llvmType = resolveLLVMType(type)
-    return LLVMBuildTruncOrBitCast(builder, LLVMSizeOf(llvmType), LLVMInt64Type(), "")
+    let irType = resolveLLVMType(type)
+    return builder.buildTruncOrBitCast(builder.buildSizeOf(irType),
+                                       type: IntType.int64)
   }
   
   func visitVoidExpr(_ expr: VoidExpr) -> Result {
@@ -122,155 +119,137 @@ extension IRGenerator {
   
   func visitNilExpr(_ expr: NilExpr) -> Result {
     let type = resolveLLVMType(expr.type!)
-    return LLVMConstNull(type)
+    return type.null()
   }
   
-  func coerce(_ value: LLVMValueRef, from fromType: DataType, to type: DataType) -> Result {
-    let llvmType = resolveLLVMType(type)
+  func coerce(_ value: IRValue, from fromType: DataType, to type: DataType) -> Result {
+    let irType = resolveLLVMType(type)
     switch (context.canonicalType(fromType), context.canonicalType(type)) {
     case (.int(let lhsWidth, _), .int(let rhsWidth, _)):
       if lhsWidth == rhsWidth { return value }
       if lhsWidth < rhsWidth {
-        
-        return LLVMBuildSExt(builder, value, llvmType, "sext-coerce")
+        return builder.buildSExt(value, type: irType, name: "sext-coerce")
       } else {
-        return LLVMBuildTrunc(builder, value, llvmType, "trunc-coerce")
+        return builder.buildTrunc(value, type: irType, name: "trunc-coerce")
       }
     case (.int(_, let signed), .floating):
-      return (signed ? LLVMBuildSIToFP : LLVMBuildUIToFP)(builder, value, llvmType, "inttofp-coerce")
+      return builder.buildIntToFP(value, type: irType as! FloatType,
+                                  signed: signed, name: "inttofp-coerce")
     case (.floating, .int(_, let signed)):
-      return (signed ? LLVMBuildFPToSI : LLVMBuildFPToUI)(builder, value, llvmType, "fptoint-coerce")
+      return builder.buildFPToInt(value, type: irType as! IntType,
+                                  signed: signed, name: "fptoint-coerce")
     case (.pointer, .int):
-      return LLVMBuildPtrToInt(builder, value, llvmType, "ptrtoint-coerce")
+      return builder.buildPtrToInt(value, type: irType as! IntType,
+                                   name: "ptrtoint-coerce")
     case (.int, .pointer):
-      return LLVMBuildIntToPtr(builder, value, llvmType, "inttoptr-coerce")
+      return builder.buildIntToPtr(value, type: irType as! PointerType,
+                                   name: "inttoptr-coerce")
     case (.pointer, .pointer):
-      return LLVMBuildBitCast(builder, value, llvmType, "bitcast-coerce")
+      return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     case (.any, let other):
       return codegenCheckedCast(binding: value, type: other)
     default:
-      return LLVMBuildBitCast(builder, value, llvmType, "bitcast-coerce")
+      return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     }
   }
   
   func visitStringExpr(_ expr: StringExpr) -> Result {
     let globalPtr = codegenGlobalStringPtr(expr.value)
-    let zero = LLVMConstNull(typeIRBindings[.int64]!)
-    var indices = [zero, zero]
-    return indices.withUnsafeMutableBufferPointer { buf in
-      return LLVMConstGEP(globalPtr, buf.baseAddress, UInt32(buf.count))
-    }
+    let zero = IntType.int64.zero()
+    let indices = [zero, zero]
+    return globalPtr.constGEP(indices: indices)
   }
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     if expr.decl == nil {
       let ptr = resolvePtr(expr)
-      return LLVMBuildLoad(builder, ptr, "subscript-load")
+      return builder.buildLoad(ptr, name: "subscript-load")
     } else {
       return visitFuncCallExpr(expr)
     }
   }
   
-  // 100 + x
-  
-  // %0 = i64 100
-  // %x = load i64* %x-alloca
-  // %addtmp = add i64 %0, i64 %x
-  
-  func codegen(_ decl: OperatorDecl, lhs: LLVMValueRef, rhs: LLVMValueRef, type: DataType) -> Result {
+  func codegen(_ decl: OperatorDecl, lhs: IRValue, rhs: IRValue, type: DataType) -> Result {
     if !decl.has(attribute: .implicit) {
       let function = codegenFunctionPrototype(decl)
-      var args: [LLVMValueRef?] = [lhs, rhs]
-      return args.withUnsafeMutableBufferPointer { buf in
-        return LLVMBuildCall(builder, function, buf.baseAddress, 2, "optmp")
-      }
+      return builder.buildCall(function, args: [lhs, rhs], name: "optmp")
+    }
+    let signed: Bool
+    let overflowBehavior: OverflowBehavior
+    if case .int(_, let _signed) = type {
+      signed = _signed
+      overflowBehavior =
+        signed ? .noSignedWrap : .noUnsignedWrap
+    } else {
+      signed = false
+      overflowBehavior = .default
     }
     switch decl.op {
     case .plus:
-      if case .floating = type {
-        return LLVMBuildFAdd(builder, lhs, rhs, "addtmp")
-      } else if case .int(_, let signed) = type {
-        return (signed ? LLVMBuildNSWAdd : LLVMBuildNUWAdd)(builder, lhs, rhs, "addtmp")
-      }
+      return builder.buildAdd(lhs, rhs, overflowBehavior: overflowBehavior)
     case .minus:
-      if case .floating = type {
-        return LLVMBuildFSub(builder, lhs, rhs, "subtmp")
-      } else if case .int(_, let signed) = type {
-        return (signed ? LLVMBuildNSWSub : LLVMBuildNUWSub)(builder, lhs, rhs, "subtmp")
-      }
+      return builder.buildSub(lhs, rhs, overflowBehavior: overflowBehavior)
     case .star:
-      if case .floating = type {
-        return LLVMBuildFMul(builder, lhs, rhs, "multmp")
-      } else if case .int(_, let signed) = type {
-        return (signed ? LLVMBuildNSWMul : LLVMBuildNUWMul)(builder, lhs, rhs, "multmp")
-      }
+      return builder.buildMul(lhs, rhs, overflowBehavior: overflowBehavior)
     case .divide:
-      if case .floating = type {
-        return LLVMBuildFDiv(builder, lhs, rhs, "divtmp")
-      } else if case .int(_, let signed) = type {
-        return (signed ? LLVMBuildSDiv : LLVMBuildUDiv)(builder, lhs, rhs, "divtmp")
-      }
+      return builder.buildDiv(lhs, rhs, signed: signed)
     case .mod:
-      if case .floating = type {
-        return LLVMBuildFRem(builder, lhs, rhs, "divtmp")
-      } else if case .int(_, let signed) = type {
-        return (signed ? LLVMBuildSRem : LLVMBuildURem)(builder, lhs, rhs, "divtmp")
-      }
+      return builder.buildRem(lhs, rhs, signed: signed)
     case .equalTo:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOEQ, lhs, rhs, "eqtmp")
+        return builder.buildFCmp(lhs, rhs, .oeq)
       } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntEQ, lhs, rhs, "eqtmp")
+        return builder.buildICmp(lhs, rhs, .eq)
       }
     case .notEqualTo:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealONE, lhs, rhs, "neqtmp")
+        return builder.buildFCmp(lhs, rhs, .one)
       } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntNE, lhs, rhs, "neqtmp")
+        return builder.buildICmp(lhs, rhs, .ne)
       }
     case .lessThan:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOLT, lhs, rhs, "lttmp")
-      } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntSLT, lhs, rhs, "lttmp")
+        return builder.buildFCmp(lhs, rhs, .olt)
+      } else if case .int(_, let signed) = type {
+        return builder.buildICmp(lhs, rhs, signed ? .slt : .ult)
       }
     case .lessThanOrEqual:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOLE, lhs, rhs, "ltetmp")
-      } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntSLE, lhs, rhs, "ltetmp")
+        return builder.buildFCmp(lhs, rhs, .ole)
+      } else if case .int(_, let signed) = type {
+        return builder.buildICmp(lhs, rhs, signed ? .sle : .ule)
       }
     case .greaterThan:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOGT, lhs, rhs, "gttmp")
-      } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntSGT, lhs, rhs, "gttmp")
+        return builder.buildFCmp(lhs, rhs, .ogt)
+      } else if case .int(_, let signed) = type {
+        return builder.buildICmp(lhs, rhs, signed ? .sgt : .ugt)
       }
     case .greaterThanOrEqual:
       if case .floating = type {
-        return LLVMBuildFCmp(builder, LLVMRealOGE, lhs, rhs, "gtetmp")
-      } else if case .int = type {
-        return LLVMBuildICmp(builder, LLVMIntSGE, lhs, rhs, "gtetmp")
+        return builder.buildFCmp(lhs, rhs, .oge)
+      } else if case .int(_, let signed) = type {
+        return builder.buildICmp(lhs, rhs, signed ? .sge : .uge)
       }
     case .xor:
       if decl.has(attribute: .implicit) {
-        return LLVMBuildXor(builder, lhs, rhs, "xortmp")
+        return builder.buildXor(lhs, rhs)
       }
     case .ampersand:
       if decl.has(attribute: .implicit) {
-        return LLVMBuildAnd(builder, lhs, rhs, "andtmp")
+        return builder.buildAnd(lhs, rhs)
       }
     case .bitwiseOr:
       if decl.has(attribute: .implicit) {
-        return LLVMBuildOr(builder, lhs, rhs, "ortmp")
+        return builder.buildOr(lhs, rhs)
       }
     case .leftShift:
       if decl.has(attribute: .implicit) {
-        return LLVMBuildShl(builder, lhs, rhs, "shltmp")
+        return builder.buildShl(lhs, rhs)
       }
     case .rightShift:
       if decl.has(attribute: .implicit) {
-        return LLVMBuildLShr(builder, lhs, rhs, "lshrtmp")
+        return builder.buildShr(lhs, rhs)
       }
     default:
       break
@@ -278,31 +257,30 @@ extension IRGenerator {
     fatalError("unknown decl \(decl)")
   }
   
-  func codegenShortCircuit(_ expr: InfixOperatorExpr) -> Result {
-    let block = LLVMGetInsertBlock(builder)
-    guard let function = LLVMGetBasicBlockParent(block) else {
+  func codegenShortCircuit(_ expr: InfixOperatorExpr) -> PhiNode {
+    guard let block = builder.insertBlock else {
+      fatalError("no insert block?")
+    }
+    guard let function = currentFunction?.functionRef else {
       fatalError("outside function")
     }
-    let secondCaseBB = LLVMAppendBasicBlockInContext(llvmContext, function, "secondcase")
-    let endBB = LLVMAppendBasicBlockInContext(llvmContext, function, "end")
-    let lhs = visit(expr.lhs)
+    let secondCaseBB = function.appendBasicBlock(named: "secondcase", in: llvmContext)
+    let endBB = function.appendBasicBlock(named: "end", in: llvmContext)
+    let lhs = visit(expr.lhs)!
     if expr.op == .and {
-      LLVMBuildCondBr(builder, lhs, secondCaseBB, endBB)
+      builder.buildCondBr(condition: lhs, then: secondCaseBB, else: endBB)
     } else {
-      LLVMBuildCondBr(builder, lhs, endBB, secondCaseBB)
+      builder.buildCondBr(condition: lhs, then: endBB, else: secondCaseBB)
     }
-    LLVMPositionBuilderAtEnd(builder, secondCaseBB)
-    let rhs = visit(expr.rhs)
-    LLVMBuildBr(builder, endBB)
-    LLVMPositionBuilderAtEnd(builder, endBB)
-    let phi = LLVMBuildPhi(builder, LLVMInt1Type(), "op-phi")
-    var values = [lhs, rhs]
-    var blocks = [block, secondCaseBB]
-    values.withUnsafeMutableBufferPointer { valueBuf in
-      _ = blocks.withUnsafeMutableBufferPointer { blockBuf in
-        LLVMAddIncoming(phi, valueBuf.baseAddress, blockBuf.baseAddress, UInt32(valueBuf.count))
-      }
-    }
+    builder.positionAtEnd(of: secondCaseBB)
+    let rhs = visit(expr.rhs)!
+    builder.buildBr(endBB)
+    builder.positionAtEnd(of: endBB)
+    let phi = builder.buildPhi(IntType.int1, name: "op-phi")
+    phi.addIncoming([
+      (lhs, block),
+      (rhs, secondCaseBB)
+    ])
     return phi
   }
   
@@ -316,12 +294,12 @@ extension IRGenerator {
     }
     
     if case .as = expr.op {
-      let lhs: LLVMValueRef
+      let lhs: IRValue
       
       // To support casting between indirect types and void pointers,
       // don't actually load the lhs here. Just get a pointer to it.
       if let decl = context.decl(for: expr.lhs.type!), decl.isIndirect {
-        lhs = resolvePtr(expr.lhs)!
+        lhs = resolvePtr(expr.lhs)
       } else {
         lhs = visit(expr.lhs)!
       }
@@ -340,19 +318,19 @@ extension IRGenerator {
         rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type!)
       }
       let ptr = resolvePtr(expr.lhs)
-      return LLVMBuildStore(builder, rhs, ptr)
+      return builder.buildStore(rhs, to: ptr)
     } else if context.canBeNil(expr.lhs.type!) && expr.rhs is NilExpr {
       let lhs = visit(expr.lhs)!
       if case .equalTo = expr.op {
-        return LLVMBuildIsNull(builder, lhs, "")
+        return builder.buildIsNull(lhs)
       } else if case .notEqualTo = expr.op {
-        return LLVMBuildIsNotNull(builder, lhs, "")
+        return builder.buildIsNotNull(lhs)
       }
     } else if expr.op.associatedOp != nil {
       let ptr = resolvePtr(expr.lhs)
-      let lhsVal = LLVMBuildLoad(builder, ptr, "cmpassignload")!
+      let lhsVal = builder.buildLoad(ptr, name: "cmpassignload")
       let performed = codegen(expr.decl!, lhs: lhsVal, rhs: rhs, type: expr.lhs.type!)!
-      return LLVMBuildStore(builder, performed, ptr)
+      return builder.buildStore(performed, to: ptr)
     }
     
     let lhs = visit(expr.lhs)!
@@ -366,21 +344,17 @@ extension IRGenerator {
   func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) -> Result {
     switch expr.op {
     case .minus:
-      let val = visit(expr.rhs)
-      if case .floating = expr.rhs.type! {
-        return LLVMBuildFNeg(builder, val, "neg")
-      } else {
-        return LLVMBuildNeg(builder, val, "neg")
-      }
+      let val = visit(expr.rhs)!
+      return builder.buildNeg(val)
     case .bitwiseNot:
-      let val = visit(expr.rhs)
-      return LLVMBuildNot(builder, val, "bit-not")
+      let val = visit(expr.rhs)!
+      return builder.buildNot(val)
     case .not:
-      let val = visit(expr.rhs)
-      return LLVMBuildNot(builder, val, "not")
+      let val = visit(expr.rhs)!
+      return builder.buildNot(val)
     case .star:
-      let val = visit(expr.rhs)
-      return LLVMBuildLoad(builder, val, "deref")
+      let val = visit(expr.rhs)!
+      return builder.buildLoad(val, name: "deref")
     case .ampersand:
       return resolvePtr(expr.rhs)
     default:
@@ -391,27 +365,24 @@ extension IRGenerator {
   func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     guard let function = currentFunction?.functionRef else { fatalError("no function") }
     guard let type = expr.type else { fatalError("no ternary type") }
-    let llvmType = resolveLLVMType(type)
-    let cond = visit(expr.condition)
-    let truebb = LLVMAppendBasicBlockInContext(llvmContext, function, "true-case")
-    let falsebb = LLVMAppendBasicBlockInContext(llvmContext, function, "false-case")
-    let endbb = LLVMAppendBasicBlockInContext(llvmContext, function, "ternary-end")
-    LLVMBuildCondBr(builder, cond, truebb, falsebb)
-    LLVMPositionBuilderAtEnd(builder, truebb)
-    let trueVal = visit(expr.trueCase)
-    LLVMBuildBr(builder, endbb)
-    LLVMPositionBuilderAtEnd(builder, falsebb)
-    let falseVal = visit(expr.falseCase)
-    LLVMBuildBr(builder, endbb)
-    LLVMPositionBuilderAtEnd(builder, endbb)
-    let phi = LLVMBuildPhi(builder, llvmType, "ternary-phi")
-    var values = [trueVal, falseVal]
-    var blocks = [truebb, falsebb]
-    values.withUnsafeMutableBufferPointer { valueBuf in
-      _ = blocks.withUnsafeMutableBufferPointer { blockBuf in
-        LLVMAddIncoming(phi, valueBuf.baseAddress, blockBuf.baseAddress, UInt32(valueBuf.count))
-      }
-    }
+    let irType = resolveLLVMType(type)
+    let cond = visit(expr.condition)!
+    let truebb = function.appendBasicBlock(named: "true-case", in: llvmContext)
+    let falsebb = function.appendBasicBlock(named: "false-case", in: llvmContext)
+    let endbb = function.appendBasicBlock(named: "ternary-end", in: llvmContext)
+    builder.buildCondBr(condition: cond, then: truebb, else: falsebb)
+    builder.positionAtEnd(of: truebb)
+    let trueVal = visit(expr.trueCase)!
+    builder.buildBr(endbb)
+    builder.positionAtEnd(of: falsebb)
+    let falseVal = visit(expr.falseCase)!
+    builder.buildBr(endbb)
+    builder.positionAtEnd(of: endbb)
+    let phi = builder.buildPhi(irType, name: "ternary-phi")
+    phi.addIncoming([
+      (trueVal, truebb),
+      (falseVal, falsebb)
+    ])
     return phi
   }
 }

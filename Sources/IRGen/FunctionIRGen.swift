@@ -7,61 +7,63 @@ import Foundation
 
 extension IRGenerator {
   
-  func createEntryBlockAlloca(_ function: LLVMValueRef,
-                              type: LLVMTypeRef,
+  func createEntryBlockAlloca(_ function: Function,
+                              type: IRType,
                               name: String,
                               storage: Storage,
-                              initial: LLVMValueRef? = nil) -> VarBinding {
-    let currentBlock = LLVMGetInsertBlock(builder)
-    let entryBlock = LLVMGetEntryBasicBlock(function)
-    LLVMPositionBuilder(builder, entryBlock, LLVMGetFirstInstruction(entryBlock))
-    let alloca = LLVMBuildAlloca(builder, type, name)!
-    LLVMPositionBuilderAtEnd(builder, currentBlock)
+                              initial: IRValue? = nil) -> VarBinding {
+    let currentBlock = builder.insertBlock
+    let entryBlock = function.entryBlock!
+    if let firstInst = entryBlock.firstInstruction {
+      builder.position(firstInst, block: entryBlock)
+    }
+    let alloca = builder.buildAlloca(type: type, name: name)
+    if let block = currentBlock {
+      builder.positionAtEnd(of: block)
+    }
     if let initial = initial {
-      LLVMBuildStore(builder, initial, alloca)
+      builder.buildStore(initial, to: alloca)
     }
     return VarBinding(ref: alloca,
                       storage: storage,
-                      read: { LLVMBuildLoad(self.builder, alloca, "") },
-                      write: { LLVMBuildStore(self.builder, $0, alloca) })
+                      read: { self.builder.buildLoad(alloca) },
+                      write: { self.builder.buildStore($0, to: alloca) })
   }
   
   @discardableResult
-  func codegenFunctionPrototype(_ expr: FuncDecl) -> Result {
+  func codegenFunctionPrototype(_ expr: FuncDecl) -> Function {
     let mangled = Mangler.mangle(expr)
-    let existing = LLVMGetNamedFunction(module, mangled)
-    if existing != nil { return existing }
-    var argTys = [LLVMTypeRef?]()
+    if let existing = module.function(named: mangled) {
+      return existing
+    }
+    var argTys = [IRType]()
     for arg in expr.args {
       var type = resolveLLVMType(arg.type)
       if arg.isImplicitSelf && storage(for: arg.type) != .reference {
-        type = LLVMPointerType(type, 0)
+        type = PointerType(pointee: type)
       }
       argTys.append(type)
     }
     let type = resolveLLVMType(expr.returnType)
-    let fType = argTys.withUnsafeMutableBufferPointer { buf in
-      LLVMFunctionType(type, buf.baseAddress, UInt32(buf.count),
-                                 expr.hasVarArgs ? 1 : 0)
-    }
-    return LLVMAddFunction(module, mangled, fType)
+    let fType = FunctionType(argTypes: argTys, returnType: type, isVarArg: expr.hasVarArgs)
+    return builder.addFunction(mangled, type: fType)
   }
   
   func visitBreakStmt(_ expr: BreakStmt) -> Result {
-    guard currentBreakTarget != nil else {
+    guard let target = currentBreakTarget else {
       fatalError("break outside loop")
     }
-    return LLVMBuildBr(builder, currentBreakTarget)
+    return builder.buildBr(target)
   }
   
   func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
-    guard currentContinueTarget != nil else {
+    guard let target = currentContinueTarget else {
       fatalError("continue outside loop")
     }
-    return LLVMBuildBr(builder, currentContinueTarget)
+    return builder.buildBr(target)
   }
 
-  func synthesizeIntializer(_ decl: FuncDecl, function: LLVMValueRef) -> LLVMValueRef {
+  func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> IRValue {
     guard decl.isInitializer,
         let body = decl.body,
         body.exprs.isEmpty,
@@ -69,34 +71,37 @@ extension IRGenerator {
         let typeDecl = context.decl(for: type) else {
       fatalError("must synthesize an empty initializer")
     }
-    let entryBB = LLVMAppendBasicBlock(function, "entry")
-    LLVMPositionBuilderAtEnd(builder, entryBB)
+    let entryBB = function.appendBasicBlock(named: "entry")
+    builder.positionAtEnd(of: entryBB)
     var retLLVMType = resolveLLVMType(type)
     if typeDecl.isIndirect {
-      retLLVMType = LLVMGetElementType(retLLVMType)
+      retLLVMType = (retLLVMType as! PointerType).pointee
     }
-    var initial = LLVMConstNull(retLLVMType)!
+    var initial = retLLVMType.null()
     for (idx, arg) in decl.args.enumerated() {
-      let param = LLVMGetParam(function, UInt32(idx))!
-      LLVMSetValueName(param, arg.name.name)
-      initial = LLVMBuildInsertValue(builder, initial, param, UInt32(idx), "init-insert")
+      var param = function.parameter(at: idx)!
+      param.name = arg.name.name
+      initial = builder.buildInsertValue(aggregate: initial,
+                                         element: param,
+                                         index: idx,
+                                         name: "init-insert")
     }
     if typeDecl.isIndirect {
       let result = codegenAlloc(type: type).ref
-      LLVMBuildStore(builder, initial, result)
-      LLVMBuildRet(builder, result)
+      builder.buildStore(initial, to: result)
+      builder.buildRet(result)
     } else {
-      LLVMBuildRet(builder, initial)
+      builder.buildRet(initial)
     }
     return function
   }
   
-  func visitOperatorDecl(_ decl: OperatorDecl) -> LLVMValueRef? {
+  func visitOperatorDecl(_ decl: OperatorDecl) -> Result {
     return visitFuncDecl(decl)
   }
   
   func visitFuncDecl(_ decl: FuncDecl) -> Result {
-    let function = codegenFunctionPrototype(decl)!
+    let function = codegenFunctionPrototype(decl)
     
     if decl === context.mainFunction {
       mainFunction = function
@@ -108,15 +113,15 @@ extension IRGenerator {
       return synthesizeIntializer(decl, function: function)
     }
     
-    let entrybb = LLVMAppendBasicBlock(function, "entry")!
-    let retbb = LLVMAppendBasicBlock(function, "return")!
+    let entrybb = function.appendBasicBlock(named: "entry", in: llvmContext)
+    let retbb = function.appendBasicBlock(named: "return", in: llvmContext)
     let returnType = decl.returnType.type!
     let type = resolveLLVMType(decl.returnType)
     var res: VarBinding? = nil
     let storageKind = storage(for: returnType)
     let isReferenceInitializer = decl.isInitializer && storage(for: returnType) == .reference
     withFunction {
-      LLVMPositionBuilderAtEnd(builder, entrybb)
+      builder.positionAtEnd(of: entrybb)
       if decl.returnType != .void {
         if isReferenceInitializer {
           res = codegenAlloc(type: returnType)
@@ -129,21 +134,21 @@ extension IRGenerator {
         }
       }
       for (idx, arg) in decl.args.enumerated() {
-        let param = LLVMGetParam(function, UInt32(idx))!
-        LLVMSetValueName(param, arg.name.name)
+        var param = function.parameter(at: idx)!
+        param.name = arg.name.name
         let type = arg.type
         let argType = resolveLLVMType(type)
         let storageKind = storage(for: type)
-        let read: () -> LLVMValueRef
+        let read: () -> IRValue
         if arg.isImplicitSelf && storageKind == .reference {
           read = { param }
         } else {
-          read = { LLVMBuildLoad(self.builder, param, "") }
+          read = { self.builder.buildLoad(param) }
         }
         var ptr = VarBinding(ref: param,
                              storage: storageKind,
                              read: read,
-                             write: { LLVMBuildStore(self.builder, $0, param) })
+                             write: { self.builder.buildStore($0, to: param) })
         if !arg.isImplicitSelf {
           ptr = createEntryBlockAlloca(function,
                                        type: argType,
@@ -160,32 +165,32 @@ extension IRGenerator {
         resultAlloca: res?.ref
       )
       _ = visit(decl.body!)
-      let insertBlock = LLVMGetInsertBlock(builder)!
+      let insertBlock = builder.insertBlock!
       
       // break to the return block
       if !insertBlock.endsWithTerminator {
-        LLVMBuildBr(builder, retbb)
+        builder.buildBr(retbb)
       }
       
       // build the ret in the return block.
-      LLVMMoveBasicBlockAfter(retbb, LLVMGetLastBasicBlock(function))
-      LLVMPositionBuilderAtEnd(builder, retbb)
+      retbb.moveAfter(function.lastBlock!)
+      builder.positionAtEnd(of: retbb)
       if decl.has(attribute: .noreturn) {
-        LLVMBuildUnreachable(builder)
+        builder.buildUnreachable()
       } else if decl.returnType.type == .void {
-        LLVMBuildRetVoid(builder)
+        builder.buildRetVoid()
       } else {
-        let val: LLVMValueRef!
+        let val: IRValue
         if isReferenceInitializer {
-          val = res?.ref
+          val = res!.ref
         } else {
-          val = LLVMBuildLoad(builder, res?.ref, "resval")
+          val = builder.buildLoad(res!.ref, name: "resval")
         }
-        LLVMBuildRet(builder, val)
+        builder.buildRet(val)
       }
       currentFunction = nil
     }
-    LLVMRunFunctionPassManager(passManager, function)
+    passManager.run(on: function)
     return function
   }
   
@@ -196,7 +201,7 @@ extension IRGenerator {
       return codegenTypeOfCall(expr)
     }
     
-    var function: LLVMValueRef? = nil
+    var function: IRValue? = nil
     var args = expr.args
     
     let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
@@ -234,21 +239,18 @@ extension IRGenerator {
       function = visit(expr.lhs)
     }
     
-    var argVals = [LLVMValueRef?]()
+    var argVals = [IRValue]()
     for (idx, arg) in args.enumerated() {
       var val = visit(arg.val)!
       var type = arg.val.type!
       if case .array(let field, _) = type {
         let alloca = createEntryBlockAlloca(currentFunction!.functionRef!,
-                                            type: LLVMTypeOf(val),
+                                            type: val.type,
                                             name: "",
                                             storage: .value,
                                             initial: val)
         type = .pointer(type: field)
-        val = LLVMBuildBitCast(builder,
-                               alloca.ref,
-                               LLVMPointerType(resolveLLVMType(field), 0),
-                               "")
+        val = builder.buildBitCast(alloca.ref, type: PointerType(pointee: resolveLLVMType(field)))
       }
       if let declArg = decl.args[safe: idx], declArg.type == .any {
         val = codegenPromoteToAny(value: val, type: type)
@@ -256,12 +258,9 @@ extension IRGenerator {
       argVals.append(val)
     }
     let name = expr.type == .void ? "" : "calltmp"
-    let call = argVals.withUnsafeMutableBufferPointer { buf in
-      LLVMBuildCall(builder, function, buf.baseAddress,
-                    UInt32(buf.count), name)
-    }
+    let call = builder.buildCall(function!, args: argVals, name: name)
     if decl.has(attribute: .noreturn) {
-      LLVMBuildUnreachable(builder)
+      builder.buildUnreachable()
     }
     return call
   }
@@ -275,7 +274,7 @@ extension IRGenerator {
           let currentDecl = currentFunction.function else {
       fatalError("return outside function?")
     }
-    var store: LLVMValueRef? = nil
+    var store: IRValue? = nil
     if !(expr.value is VoidExpr) {
       var val = visit(expr.value)!
       if let type = expr.value.type,
@@ -283,11 +282,11 @@ extension IRGenerator {
         val = codegenPromoteToAny(value: val, type: type)
       }
       if !currentDecl.isInitializer {
-        store = LLVMBuildStore(builder, val, currentFunction.resultAlloca)
+        store = builder.buildStore(val, to: currentFunction.resultAlloca!)
       }
     }
     defer {
-      LLVMBuildBr(builder, currentFunction.returnBlock)
+      builder.buildBr(currentFunction.returnBlock!)
     }
     return store
   }

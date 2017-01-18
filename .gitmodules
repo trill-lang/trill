@@ -1,0 +1,3 @@
+[submodule "LLVMSwift"]
+	path = LLVMSwift
+	url = git@github.com:trill-lang/LLVMSwift.git

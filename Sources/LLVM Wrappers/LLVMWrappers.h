@@ -70,10 +70,9 @@ typedef struct RawOptions {
   char *_Nullable *_Nonnull jitFlags;
   size_t jitFlagCount;
 } RawOptions;
-
-_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef);
+_Nullable LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module,
+                                                               LLVMTargetMachineRef targetRef);
 void LLVMLinkInOrcMCJITReplacement(void);
-const char *LLVMGetJITError();
 int clang_isNoReturn(CXCursor cursor);
 int clang_linkExecutableFromObject(const char *targetTriple,
                                    const char *filename,
