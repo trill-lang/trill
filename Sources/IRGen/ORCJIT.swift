@@ -5,7 +5,7 @@ public class ORCJIT {
         guard let jit = LLVMCreateOrcMCJITReplacement(module.llvm, machine.llvm) else {
             return nil
         }
-        self.llvm = unsafeBitCast(jit, to: LLVMExecutionEngineRef.self)
+        self.llvm = jit
     }
     
     public func runFunctionAsMain(_ function: Function, argv: [String]) -> Int {
