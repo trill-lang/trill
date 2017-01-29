@@ -5,18 +5,6 @@
 
 import Foundation
 
-enum FunctionKind {
-  case initializer(type: DataType)
-  case deinitializer(type: DataType)
-  case method(type: DataType)
-  case staticMethod(type: DataType)
-  case `operator`(op: BuiltinOperator)
-  case `subscript`(type: DataType)
-  case property(type: DataType)
-  case variable
-  case free
-}
-
 struct Argument {
   let label: Identifier?
   let val: Expr
@@ -51,45 +39,27 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
   let body: CompoundStmt?
   let returnType: TypeRefExpr
   let hasVarArgs: Bool
-  let kind: FunctionKind
+
+  /// Whether this decl is a 'placeholder' decl, that is, a decl that doesn't have
+  /// any substantial body behind it and should not be mangled as such.
+  let isPlaceholder: Bool
+
   init(name: Identifier, returnType: TypeRefExpr,
        args: [ParamDecl],
-       kind: FunctionKind = .free,
        body: CompoundStmt? = nil,
        modifiers: [DeclModifier] = [],
+       isPlaceholder: Bool = false,
        hasVarArgs: Bool = false,
        sourceRange: SourceRange? = nil) {
     self.args = args
     self.body = body
-    self.kind = kind
     self.name = name
     self.returnType = returnType
     self.hasVarArgs = hasVarArgs
+    self.isPlaceholder = isPlaceholder
     super.init(type: .function(args: args.map { $0.type }, returnType: returnType.type!),
                modifiers: modifiers,
                sourceRange: sourceRange)
-  }
-  var isInitializer: Bool {
-    if case .initializer = kind { return true }
-    return false
-  }
-  var isDeinitializer: Bool {
-    if case .deinitializer = kind { return true }
-    return false
-  }
-  var parentType: DataType? {
-    switch kind {
-    case .initializer(let type), .method(let type),
-         .deinitializer(let type), .subscript(let type),
-         .property(let type), .staticMethod(let type):
-      return type
-    case .operator, .free, .variable:
-      return nil
-    }
-  }
-  var hasImplicitSelf: Bool {
-    guard let first = self.args.first else { return false }
-    return first.isImplicitSelf
   }
   var formattedParameterList: String {
     var s = "("
@@ -116,11 +86,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     return s
   }
   var formattedName: String {
-    var s = ""
-    if let methodTy = parentType {
-      s += "\(methodTy)."
-    }
-    s += "\(name)"
+    var s = "\(name)"
     s += formattedParameterList
     if returnType != .void {
       s += " -> "
@@ -128,31 +94,100 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     }
     return s
   }
-
-  func addingImplicitSelf(_ type: DataType) -> FuncDecl {
-    var args = self.args
-    let typeName = Identifier(name: "\(type)")
-    let typeRef = TypeRefExpr(type: type, name: typeName)
-    let arg = ParamDecl(name: "self", type: typeRef)
-    arg.isImplicitSelf = true
-    arg.mutable = has(attribute: .mutating)
-    args.insert(arg, at: 0)
-    return FuncDecl(name: name,
-                    returnType: returnType,
-                    args: args,
-                    kind: kind,
-                    body: body,
-                    modifiers: Array(modifiers),
-                    hasVarArgs: hasVarArgs,
-                    sourceRange: sourceRange)
-  }
   
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["signature"] = formattedName
     superAttrs["name"] = name.name
-    superAttrs["kind"] = "\(kind)"
     return superAttrs
+  }
+}
+
+class MethodDecl: FuncDecl {
+  let parentType: DataType
+  var isStatic: Bool
+
+  init(name: Identifier,
+       parentType: DataType,
+       args: [ParamDecl],
+       returnType: TypeRefExpr,
+       body: CompoundStmt?,
+       modifiers: [DeclModifier],
+       isStatic: Bool = false,
+       hasVarArgs: Bool = false,
+       sourceRange: SourceRange? = nil) {
+    self.parentType = parentType
+    self.isStatic = isStatic
+    var fullArgs = args
+    if !isStatic {
+      let selfParam = ParamDecl(name: "self",
+                                type: parentType.ref(),
+                                externalName: nil, rhs: nil,
+                                sourceRange: nil)
+      selfParam.isImplicitSelf = true
+      selfParam.mutable = modifiers.contains(.mutating)
+      fullArgs.insert(selfParam, at: 0)
+    }
+    super.init(name: name,
+               returnType: returnType,
+               args: fullArgs,
+               body: body,
+               modifiers: modifiers,
+               hasVarArgs: hasVarArgs,
+               sourceRange: sourceRange)
+  }
+}
+
+class InitializerDecl: MethodDecl {
+  init(parentType: DataType,
+       args: [ParamDecl],
+       returnType: TypeRefExpr,
+       body: CompoundStmt?,
+       modifiers: [DeclModifier],
+       hasVarArgs: Bool = false,
+       sourceRange: SourceRange? = nil) {
+
+    super.init(name: "init",
+               parentType: parentType,
+               args: args,
+               returnType: returnType,
+               body: body,
+               modifiers: modifiers,
+               isStatic: true,
+               hasVarArgs: hasVarArgs,
+               sourceRange: sourceRange)
+  }
+}
+
+class DeinitializerDecl: MethodDecl {
+  init(parentType: DataType,
+       body: CompoundStmt?,
+       sourceRange: SourceRange? = nil) {
+    super.init(name: "deinit",
+               parentType: parentType,
+               args: [],
+               returnType: DataType.void.ref(),
+               body: body,
+               modifiers: [],
+               sourceRange: sourceRange)
+  }
+}
+
+class SubscriptDecl: MethodDecl {
+  init(returnType: TypeRefExpr,
+       args: [ParamDecl],
+       parentType: DataType,
+       body: CompoundStmt?,
+       modifiers: [DeclModifier],
+       sourceRange: SourceRange? = nil) {
+    super.init(name: Identifier(name: "subscript"),
+               parentType: parentType,
+               args: args,
+               returnType: returnType,
+               body: body,
+               modifiers: modifiers,
+               hasVarArgs: false,
+               sourceRange: sourceRange)
   }
 }
 
@@ -166,36 +201,6 @@ class ParamDecl: VarAssignDecl {
        sourceRange: SourceRange? = nil) {
     self.externalName = externalName
     super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)
-  }
-}
-
-class SubscriptDecl: FuncDecl {
-  init(returnType: TypeRefExpr, args: [ParamDecl], parentType: DataType, body: CompoundStmt?, modifiers: [DeclModifier], sourceRange: SourceRange?) {
-    super.init(name: Identifier(name: "subscript"),
-               returnType: returnType,
-               args: args,
-               kind: .subscript(type: parentType),
-               body: body,
-               modifiers: modifiers,
-               hasVarArgs: false,
-               sourceRange: sourceRange)
-  }
-  
-  // HACK
-  override func addingImplicitSelf(_ type: DataType) -> SubscriptDecl {
-    var args = self.args
-    let typeName = Identifier(name: "\(type)")
-    let typeRef = TypeRefExpr(type: type, name: typeName)
-    let arg = ParamDecl(name: "self", type: typeRef)
-    arg.isImplicitSelf = true
-    arg.mutable = has(attribute: .mutating)
-    args.insert(arg, at: 0)
-    return SubscriptDecl(returnType: returnType,
-                         args: args,
-                         parentType: type,
-                         body: body,
-                         modifiers: Array(modifiers),
-                         sourceRange: sourceRange)
   }
 }
 

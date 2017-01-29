@@ -220,7 +220,7 @@ class Sema: ASTTransformer, Pass {
   override func visitFuncDecl(_ expr: FuncDecl) {
     super.visitFuncDecl(expr)
     if expr.has(attribute: .foreign) {
-      if !expr.isInitializer && expr.body != nil {
+      if !(expr is InitializerDecl) && expr.body != nil {
         error(SemaError.foreignFunctionWithBody(name: expr.name),
               loc: expr.name.range?.start,
               highlights: [
@@ -256,7 +256,7 @@ class Sema: ASTTransformer, Pass {
         !body.hasReturn,
         returnType != .void,
         !expr.has(attribute: .implicit),
-        !expr.isInitializer {
+        !(expr is InitializerDecl) {
       error(SemaError.notAllPathsReturn(type: expr.returnType.type!),
             loc: expr.sourceRange?.start,
             highlights: [
@@ -265,8 +265,8 @@ class Sema: ASTTransformer, Pass {
         ])
       return
     }
-    if case .deinitializer(let type) = expr.kind,
-       let decl = context.decl(for: type, canonicalized: true),
+    if let destr = expr as? DeinitializerDecl,
+       let decl = context.decl(for: destr.parentType, canonicalized: true),
        !decl.isIndirect {
      error(SemaError.deinitOnStruct(name: decl.name))
     }
@@ -558,7 +558,7 @@ class Sema: ASTTransformer, Pass {
     super.visitVarExpr(expr)
     if
       let fn = currentFunction,
-      fn.isInitializer,
+      fn is InitializerDecl,
       expr.name == "self" {
       expr.decl = VarAssignDecl(name: "self", typeRef: fn.returnType, kind: .implicitSelf(fn, currentType!))
       expr.isSelf = true
@@ -651,30 +651,27 @@ class Sema: ASTTransformer, Pass {
       switch fieldKind {
       case .property:
         if case .function(var args, let ret)? = lhs.type {
-          candidates.append(context.implicitDecl(args: args,
-                                                 ret: ret,
-                                                 kind: .property(type: typeDecl.type))
-                                   .addingImplicitSelf(typeDecl.type))
+          candidates.append(context.implicitDecl(args: args, ret: ret))
           args.insert(typeDecl.type, at: 0)
           lhs.type = .function(args: args, returnType: ret)
         }
       case .staticMethod:
-        candidates += typeDecl.staticMethods(named: lhs.name.name)
+        candidates += typeDecl.staticMethods(named: lhs.name.name) as [FuncDecl]
       case .method:
-        candidates += typeDecl.methods(named: lhs.name.name)
+        candidates += typeDecl.methods(named: lhs.name.name) as [FuncDecl]
       }
       setLHSDecl = { lhs.decl = $0 }
     case let lhs as VarExpr:
       setLHSDecl = { lhs.decl = $0 }
       name = lhs.name
       if let typeDecl = context.decl(for: DataType(name: lhs.name.name)) {
-        candidates.append(contentsOf: typeDecl.initializers)
+        candidates += typeDecl.initializers as [FuncDecl]
       } else if let varDecl = varBindings[lhs.name.name] {
         setLHSDecl = { _ in } // override the decl if this is a function variable
         lhs.decl = varDecl
         let type = context.canonicalType(varDecl.type)
         if case .function(let args, let ret) = type {
-          candidates += [context.implicitDecl(args: args, ret: ret, kind: .variable)]
+          candidates.append(context.implicitDecl(args: args, ret: ret))
         } else {
           error(SemaError.callNonFunction(type: type),
                 loc: lhs.startLoc,
@@ -722,7 +719,7 @@ class Sema: ASTTransformer, Pass {
     
     if let lhs = expr.lhs as? FieldLookupExpr {
       if case .immutable(let culprit) = context.mutability(of: lhs),
-        decl.has(attribute: .mutating), decl.parentType != nil {
+        decl.has(attribute: .mutating), decl is MethodDecl {
         error(SemaError.assignToConstant(name: culprit),
               loc: name?.range?.start,
               highlights: [
@@ -852,7 +849,7 @@ class Sema: ASTTransformer, Pass {
         return
       }
       if case .immutable(let name) = context.mutability(of: expr.lhs) {
-        if currentFunction == nil || !currentFunction!.isInitializer {
+        if currentFunction == nil || !(currentFunction! is InitializerDecl) {
           error(SemaError.assignToConstant(name: name),
                 loc: name?.range?.start,
                 highlights: [

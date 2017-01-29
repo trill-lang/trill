@@ -178,16 +178,16 @@ class Decl: ASTNode {
 
 class TypeDecl: Decl {
   private(set) var fields: [VarAssignDecl]
-  private(set) var methods = [FuncDecl]()
-  private(set) var staticMethods = [FuncDecl]()
+  private(set) var methods = [MethodDecl]()
+  private(set) var staticMethods = [MethodDecl]()
   private(set) var subscripts = [SubscriptDecl]()
-  private(set) var initializers = [FuncDecl]()
+  private(set) var initializers = [InitializerDecl]()
   private var fieldDict = [String: DataType]()
-  private var methodDict = [String: [FuncDecl]]()
-  private var staticMethodDict = [String: [FuncDecl]]()
+  private var methodDict = [String: [MethodDecl]]()
+  private var staticMethodDict = [String: [MethodDecl]]()
   
   let name: Identifier
-  let deinitializer: FuncDecl?
+  let deinitializer: DeinitializerDecl?
   
   func indexOf(fieldName: Identifier) -> Int? {
     return fields.index { field in
@@ -195,19 +195,18 @@ class TypeDecl: Decl {
     }
   }
   
-  func addInitializer(_ expr: FuncDecl) {
-    self.initializers.append(expr)
+  func addInitializer(_ decl: InitializerDecl) {
+    self.initializers.append(decl)
   }
   
-  func addMethod(_ expr: FuncDecl, named name: String) {
-    let decl = expr.hasImplicitSelf ? expr : expr.addingImplicitSelf(self.type)
+  func addMethod(_ decl: MethodDecl, named name: String) {
     self.methods.append(decl)
     var methods = methodDict[name] ?? []
     methods.append(decl)
     methodDict[name] = methods
   }
   
-  func addStaticMethod(_ decl: FuncDecl, named name: String) {
+  func addStaticMethod(_ decl: MethodDecl, named name: String) {
     self.staticMethods.append(decl)
     var methods = staticMethodDict[name] ?? []
     methods.append(decl)
@@ -215,8 +214,7 @@ class TypeDecl: Decl {
   }
   
   func addSubscript(_ decl: SubscriptDecl) {
-    let subscriptDecl = decl.hasImplicitSelf ? decl : decl.addingImplicitSelf(self.type)
-    self.subscripts.append(subscriptDecl)
+    self.subscripts.append(decl)
   }
   
   func addField(_ field: VarAssignDecl) {
@@ -224,11 +222,11 @@ class TypeDecl: Decl {
     fieldDict[field.name.name] = field.type
   }
   
-  func methods(named name: String) -> [FuncDecl] {
+  func methods(named name: String) -> [MethodDecl] {
     return methodDict[name] ?? []
   }
   
-  func staticMethods(named name: String) -> [FuncDecl] {
+  func staticMethods(named name: String) -> [MethodDecl] {
     return staticMethodDict[name] ?? []
   }
   
@@ -245,37 +243,35 @@ class TypeDecl: Decl {
     return TypeRefExpr(type: self.type, name: self.name)
   }
   
-  static func synthesizeInitializer(fields: [VarAssignDecl], name: Identifier, modifiers: [DeclModifier]) -> FuncDecl {
-    let type = DataType(name: name.name)
-    let typeRef = TypeRefExpr(type: type, name: name)
+  static func synthesizeInitializer(fields: [VarAssignDecl],
+                                    type: DataType,
+                                    modifiers: [DeclModifier]) -> InitializerDecl {
     let initFields = fields.map { field in
       ParamDecl(name: field.name, type: field.typeRef, externalName: field.name)
     }
-    return FuncDecl(
-      name: name,
-      returnType: typeRef,
-      args: initFields,
-      kind: .initializer(type: type),
-      body: CompoundStmt(stmts: []),
-      modifiers: modifiers)
+    return InitializerDecl(parentType: type,
+                           args: initFields,
+                           returnType: type.ref(),
+                           body: CompoundStmt(stmts: []),
+                           modifiers: modifiers)
   }
   
   init(name: Identifier,
        fields: [VarAssignDecl],
-       methods: [FuncDecl] = [],
-       staticMethods: [FuncDecl] = [],
-       initializers: [FuncDecl] = [],
+       methods: [MethodDecl] = [],
+       staticMethods: [MethodDecl] = [],
+       initializers: [InitializerDecl] = [],
        subscripts: [SubscriptDecl] = [],
        modifiers: [DeclModifier] = [],
-       deinit: FuncDecl? = nil,
+       deinit: DeinitializerDecl? = nil,
        sourceRange: SourceRange? = nil) {
     self.fields = fields
     self.initializers = initializers
     let type = DataType(name: name.name)
-    self.deinitializer = `deinit`?.addingImplicitSelf(type)
+    self.deinitializer = `deinit`
     let synthInit = TypeDecl.synthesizeInitializer(fields: fields,
-                                                       name: name,
-                                                       modifiers: modifiers + [.implicit])
+                                                   type: type,
+                                                   modifiers: modifiers + [.implicit])
     self.initializers.append(synthInit)
     self.name = name
     super.init(type: type, modifiers: modifiers, sourceRange: sourceRange)

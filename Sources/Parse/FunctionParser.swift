@@ -5,13 +5,25 @@
 
 import Foundation
 
+/// Distinguishes the
+enum FunctionKind {
+  case initializer
+  case deinitializer
+  case method
+  case staticMethod
+  case `operator`(op: BuiltinOperator)
+  case `subscript`
+  case property
+  case variable
+  case free
+}
+
 extension Parser {
   /// Function Declaration
   ///
   /// func-decl ::= fun <name>([<name> [internal-name]: <typename>,]*): <typename> <braced-expr-block>
   func parseFuncDecl(_ modifiers: [DeclModifier],
-                     forType type: DataType? = nil,
-                     isDeinit: Bool = false) throws -> FuncDecl {
+                     forType type: DataType? = nil) throws -> FuncDecl {
     var modifiers = modifiers
     let startLoc = sourceLoc
     var args = [ParamDecl]()
@@ -19,24 +31,24 @@ extension Parser {
     var hasVarArgs = false
     var kind: FunctionKind = .free
     var nameRange: SourceRange? = nil
-    if case .Init = peek(), let type = type {
+    if case .Init = peek() {
       modifiers.append(.mutating)
-      kind = .initializer(type: type)
+      kind = .initializer
       nameRange = consumeToken().range
-    } else if isDeinit, case .deinit = peek(), let type = type{
-      kind = .deinitializer(type: type)
+    } else if case .deinit = peek() {
+      kind = .deinitializer
       nameRange = consumeToken().range
-    } else if case .subscript = peek(), let type = type {
+    } else if case .subscript = peek() {
       let tok = consumeToken()
       nameRange = tok.range
-      kind = .subscript(type: type)
+      kind = .subscript
     } else {
       try consume(.func)
-      if let type = type {
+      if type != nil {
         if modifiers.contains(.static) {
-          kind = .staticMethod(type: type)
+          kind = .staticMethod
         } else {
-          kind = .method(type: type)
+          kind = .method
         }
       } else if case .operator(let op) = peek() {
         let tok = consumeToken()
@@ -51,16 +63,9 @@ extension Parser {
     }
     var name: Identifier = ""
     switch kind {
-    case .deinitializer:
-      name = Identifier(name: "deinit", range: nameRange)
-    case .initializer:
-      name = Identifier(name: "\(type!)", range: nameRange)
-    case .operator(let op):
-      name = Identifier(name: "operator\(op)", range: nameRange)
-    case .subscript:
-        name = Identifier(name: "subscript", range: nameRange)
-    default:
+    case .free, .method, .staticMethod:
       name = try parseIdentifier()
+    default: break
     }
     if case .deinitializer = kind {
     } else {
@@ -69,11 +74,12 @@ extension Parser {
     var body: CompoundStmt? = nil
     if case .leftBrace = peek() {
       body = try parseCompoundExpr()
-      if case .initializer(let type) = kind {
-        returnType = type.ref()
+      if case .initializer = kind {
+        returnType = type!.ref()
       }
     }
-    if case .operator(let op) = kind {
+    switch kind {
+    case .operator(let op):
       return OperatorDecl(op: op,
                           args: args,
                           returnType: returnType,
@@ -81,23 +87,52 @@ extension Parser {
                           modifiers: modifiers,
                           opRange: nameRange,
                           sourceRange: range(start: startLoc))
-    }
-    if case .subscript(let type) = kind {
+    case .subscript:
       return SubscriptDecl(returnType: returnType,
                            args: args,
-                           parentType: type,
+                           parentType: type!,
                            body: body,
                            modifiers: modifiers,
                            sourceRange: range(start: startLoc))
+    case .initializer:
+      return InitializerDecl(parentType: type!,
+                             args: args,
+                             returnType: returnType,
+                             body: body,
+                             modifiers: modifiers,
+                             sourceRange: range(start: startLoc))
+    case .deinitializer:
+      return DeinitializerDecl(parentType: type!,
+                               body: body,
+                               sourceRange: range(start: startLoc))
+    case .method:
+      return MethodDecl(name: name,
+                        parentType: type!,
+                        args: args,
+                        returnType: returnType,
+                        body: body,
+                        modifiers: modifiers,
+                        hasVarArgs: hasVarArgs,
+                        sourceRange: range(start: startLoc))
+    case .staticMethod:
+      return MethodDecl(name: name,
+                        parentType: type!,
+                        args: args,
+                        returnType: returnType,
+                        body: body,
+                        modifiers: modifiers,
+                        isStatic: true,
+                        hasVarArgs: hasVarArgs,
+                        sourceRange: range(start: startLoc))
+    default:
+      return FuncDecl(name: name,
+                      returnType: returnType,
+                      args: args,
+                      body: body,
+                      modifiers: modifiers,
+                      hasVarArgs: hasVarArgs,
+                      sourceRange: range(start: startLoc))
     }
-    return FuncDecl(name: name,
-                    returnType: returnType,
-                    args: args,
-                    kind: kind,
-                    body: body,
-                    modifiers: modifiers,
-                    hasVarArgs: hasVarArgs,
-                    sourceRange: range(start: startLoc))
   }
   
   func parseFuncSignature() throws -> (args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {

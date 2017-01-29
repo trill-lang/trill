@@ -248,8 +248,8 @@ class Parser {
       throw unexpectedToken()
     }
     consumeToken()
-    var methods = [FuncDecl]()
-    var staticMethods = [FuncDecl]()
+    var methods = [MethodDecl]()
+    var staticMethods = [MethodDecl]()
     var subscripts = [SubscriptDecl]()
     while true {
       if case .rightBrace = peek() {
@@ -259,7 +259,7 @@ class Parser {
       let attrs = try parseAttributes()
       switch peek() {
       case .func:
-        let decl = try parseFuncDecl(attrs, forType: type.type)
+        let decl = try parseFuncDecl(attrs, forType: type.type) as! MethodDecl
         if attrs.contains(.static) {
           staticMethods.append(decl)
         } else {
@@ -298,11 +298,11 @@ class Parser {
     }
     try consume(.leftBrace)
     var fields = [VarAssignDecl]()
-    var methods = [FuncDecl]()
-    var staticMethods = [FuncDecl]()
+    var methods = [MethodDecl]()
+    var staticMethods = [MethodDecl]()
     var subscripts = [SubscriptDecl]()
-    var initializers = [FuncDecl]()
-    var deinitializer: FuncDecl?
+    var initializers = [InitializerDecl]()
+    var deinitializer: DeinitializerDecl?
     let type = DataType(name: name.name)
     loop: while true {
       if case .rightBrace = peek() {
@@ -314,14 +314,14 @@ class Parser {
       case .poundError, .poundWarning:
         context.add(try parsePoundDiagnosticExpr())
       case .func:
-        let decl = try parseFuncDecl(attrs, forType: type)
+        let decl = try parseFuncDecl(attrs, forType: type) as! MethodDecl
         if decl.has(attribute: .static) {
           staticMethods.append(decl)
         } else {
           methods.append(decl)
         }
       case .Init:
-        initializers.append(try parseFuncDecl(attrs, forType: type))
+        initializers.append(try parseFuncDecl(attrs, forType: type) as! InitializerDecl)
       case .subscript:
         subscripts.append(try parseFuncDecl(attrs, forType: type) as! SubscriptDecl)
       case .var, .let:
@@ -330,7 +330,7 @@ class Parser {
         if deinitializer != nil {
           throw Diagnostic.error(ParseError.duplicateDeinit, loc: sourceLoc)
         }
-        deinitializer = try parseFuncDecl(modifiers, forType:type, isDeinit: true)
+        deinitializer = try parseFuncDecl(modifiers, forType: type) as? DeinitializerDecl
       default:
         throw unexpectedToken()
       }

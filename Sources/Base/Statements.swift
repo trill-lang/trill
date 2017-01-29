@@ -152,18 +152,18 @@ class BreakStmt: Stmt {}
 class ContinueStmt: Stmt {}
 
 class ExtensionDecl: Decl {
-  let methods: [FuncDecl]
-  let staticMethods: [FuncDecl]
+  let methods: [MethodDecl]
+  let staticMethods: [MethodDecl]
   let subscripts: [SubscriptDecl]
   let typeRef: TypeRefExpr
   var typeDecl: TypeDecl?
   init(type: TypeRefExpr,
-       methods: [FuncDecl],
-       staticMethods: [FuncDecl],
+       methods: [MethodDecl],
+       staticMethods: [MethodDecl],
        subscripts: [SubscriptDecl],
        sourceRange: SourceRange? = nil) {
-    self.methods = methods.map { $0.addingImplicitSelf(type.type!) }
-    self.subscripts = subscripts.map { $0.addingImplicitSelf(type.type!) }
+    self.methods = methods
+    self.subscripts = subscripts
     self.staticMethods = staticMethods
     self.typeRef = type
     super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)

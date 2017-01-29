@@ -199,7 +199,6 @@ class OperatorDecl: FuncDecl {
     super.init(name: Identifier(name: "\(op)"),
                returnType: returnType,
                args: args,
-               kind: .operator(op: op),
                body: body,
                modifiers: modifiers,
                sourceRange: sourceRange)
@@ -209,6 +208,7 @@ class OperatorDecl: FuncDecl {
     var superAttrs = super.attributes()
     superAttrs["operator"] = "\(op)"
     superAttrs["name"] = nil
+    superAttrs["kind"] = nil
     return superAttrs
   }
 }

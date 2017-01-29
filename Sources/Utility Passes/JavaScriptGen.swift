@@ -101,7 +101,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     if expr.has(attribute: .foreign) { return }
     let names = expr.args.map { $0.name.name }
     write("function \(Mangler.mangle(expr))(\(names.joined(separator: ", "))) ")
-    if expr.isInitializer {
+    if expr is InitializerDecl {
       stream.write("{\n")
       if expr.has(attribute: .implicit) {
         withIndent {
@@ -310,12 +310,12 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   
   override func visitFuncCallExpr(_ expr: FuncCallExpr) {
     guard let decl = expr.decl else { fatalError("no decl?") }
-    if decl.isInitializer {
+    if decl is InitializerDecl {
       stream.write("new ")
     }
-    let isMethod = decl.parentType != nil
+    let isMethod = decl is MethodDecl
     let isForeign = decl.has(attribute: .foreign)
-    if (isMethod && isForeign) || (decl.isInitializer && isForeign) {
+    if (isMethod && isForeign) || (decl is InitializerDecl && isForeign) {
       if expr.lhs is ClosureExpr {
         withParens {
           visit(expr.lhs)

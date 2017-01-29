@@ -672,7 +672,7 @@ public class ASTContext {
     return type.canCoerceTo(other)
   }
   
-  func implicitDecl(args: [DataType], ret: DataType, kind: FunctionKind = .free) -> FuncDecl {
+  func implicitDecl(args: [DataType], ret: DataType) -> FuncDecl {
     let assigns: [ParamDecl] = args.map {
       let name = Identifier(name: "__implicit__")
       return ParamDecl(name: "", type: TypeRefExpr(type: $0, name: name))
@@ -682,9 +682,9 @@ public class ASTContext {
     return FuncDecl(name: "",
                     returnType: typeRef,
                     args: assigns,
-                    kind: kind,
                     body: nil,
-                    modifiers: [.implicit])
+                    modifiers: [.implicit],
+                    isPlaceholder: true)
   }
 }
 

@@ -37,20 +37,18 @@ enum Mangler {
       return d.name.name
     }
     var s = root ? "_WF" : ""
-    switch d.kind {
-    case .deinitializer(let type):
-      s += "D" + mangle(type, root: false)
-    case .initializer(let type):
-      s += "I" + mangle(type, root: false)
-    case .method(let type):
-      s += "M" + mangle(type, root: false)
+    switch d {
+    case let d as DeinitializerDecl:
+      s += "D" + mangle(d.parentType, root: false)
+    case let d as InitializerDecl:
+      s += "I" + mangle(d.parentType, root: false)
+    case let d as MethodDecl:
+      let sigil = d.isStatic ? "m" : "M"
+      s += sigil + mangle(d.parentType, root: false)
       s += d.name.name.withCount
-    case .staticMethod(let type):
-      s += "m" + mangle(type, root: false)
-      s += d.name.name.withCount
-    case .operator(let op):
+    case let d as OperatorDecl:
       s += "O"
-      switch op {
+      switch d.op {
       case .plus: s += "p"
       case .minus: s += "m"
       case .star: s += "t"
@@ -71,10 +69,10 @@ enum Mangler {
       case .bitwiseNot: s += "B"
       case .leftShift: s += "s"
       case .rightShift: s += "S"
-      default: s += "\(op)" // this will get caught by Sema
+      default: s += "\(d.op)" // this will get caught by Sema
       }
-    case .subscript(let type):
-      s += "S" + mangle(type, root: false)
+    case let d as SubscriptDecl:
+      s += "S" + mangle(d.parentType, root: false)
     default:
       s += d.name.name.withCount
     }
@@ -91,7 +89,7 @@ enum Mangler {
       s += mangle(arg.type, root: false)
     }
     let returnType = d.returnType.type ?? .void
-    if returnType != .void && !d.isInitializer {
+    if returnType != .void && !(d is InitializerDecl) {
       s += "R" + mangle(returnType, root: false)
     }
     return s

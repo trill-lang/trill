@@ -64,7 +64,7 @@ extension IRGenerator {
   }
 
   func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> IRValue {
-    guard decl.isInitializer,
+    guard decl is InitializerDecl,
         let body = decl.body,
         body.stmts.isEmpty,
       let type = decl.returnType.type,
@@ -109,7 +109,7 @@ extension IRGenerator {
     
     if decl.has(attribute: .foreign) { return function }
     
-    if decl.isInitializer, let body = decl.body, body.stmts.isEmpty {
+    if decl is InitializerDecl, let body = decl.body, body.stmts.isEmpty {
       return synthesizeIntializer(decl, function: function)
     }
     
@@ -119,7 +119,7 @@ extension IRGenerator {
     let type = resolveLLVMType(decl.returnType)
     var res: VarBinding? = nil
     let storageKind = storage(for: returnType)
-    let isReferenceInitializer = decl.isInitializer && storage(for: returnType) == .reference
+    let isReferenceInitializer = decl is InitializerDecl && storage(for: returnType) == .reference
     withFunction {
       builder.positionAtEnd(of: entrybb)
       if decl.returnType != .void {
@@ -129,7 +129,7 @@ extension IRGenerator {
           res = createEntryBlockAlloca(function, type: type,
                                        name: "res", storage: storageKind)
         }
-        if decl.isInitializer {
+        if decl is InitializerDecl {
           varIRBindings["self"] = res!
         }
       }
@@ -205,12 +205,11 @@ extension IRGenerator {
     var args = expr.args
     
     let findImplicitSelf: (FuncCallExpr) -> Expr? = { expr in
-      guard let kind = expr.decl?.kind else { return nil }
-      switch kind {
-      case .subscript:
+      guard let decl = expr.decl as? MethodDecl else { return nil }
+      if decl.isStatic { return nil }
+      switch decl {
+      case _ as SubscriptDecl:
         return expr.lhs
-      case .staticMethod, .property:
-        return nil
       default:
         if let field = expr.lhs as? FieldLookupExpr {
           return field.lhs
@@ -218,23 +217,23 @@ extension IRGenerator {
         return nil
       }
     }
-    
+
     if
-      let type = decl.parentType,
+      let method = decl as? MethodDecl,
       var implicitSelf = findImplicitSelf(expr) {
-      if storage(for: type) == .value {
+      if storage(for: method.parentType) == .value {
         implicitSelf = PrefixOperatorExpr(op: .ampersand, rhs: implicitSelf)
-        implicitSelf.type = .pointer(type: type)
+        implicitSelf.type = .pointer(type: method.parentType)
       }
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }
-    if case .property = decl.kind {
-      function = visit(expr.lhs)
-    } else if case .variable = decl.kind {
+
+    if decl.isPlaceholder {
       function = visit(expr.lhs)
     } else {
       function = codegenFunctionPrototype(decl)
     }
+
     if function == nil {
       function = visit(expr.lhs)
     }
@@ -281,7 +280,7 @@ extension IRGenerator {
          case .any = context.canonicalType(currentDecl.returnType.type!) {
         val = codegenPromoteToAny(value: val, type: type)
       }
-      if !currentDecl.isInitializer {
+      if !(currentDecl is InitializerDecl) {
         store = builder.buildStore(val, to: currentFunction.resultAlloca!)
       }
     }

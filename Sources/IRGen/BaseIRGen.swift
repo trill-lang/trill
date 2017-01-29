@@ -536,3 +536,17 @@ extension OptimizationLevel {
     }
   }
 }
+
+extension ASTNode {
+  @available(macOS, deprecated: 10.0, message: "only for use in the debugger")
+  func dump() {
+    let fakeContext = ASTContext(diagnosticEngine: DiagnosticEngine())
+    var stream = ColoredANSIStream(&stderr, colored: false)
+    let dumper = ASTDumper(stream: &stream,
+                           context: fakeContext,
+                           files: [],
+                           showImports: true)
+    dumper.visit(self)
+  }
+
+}
