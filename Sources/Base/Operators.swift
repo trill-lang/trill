@@ -177,6 +177,9 @@ class InfixOperatorExpr: Expr {
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["operator"] = "\(op)"
+    if let decl = decl {
+      superAttrs["decl"] = decl.formattedName
+    }
     return superAttrs
   }
 }
