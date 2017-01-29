@@ -100,7 +100,7 @@ class ASTTransformer: ASTVisitor {
     _ = decl.rhs.map(visit)
   }
   
-  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
+  func visitParamDecl(_ decl: ParamDecl) {
     _ = decl.rhs.map(visit)
   }
   
@@ -109,7 +109,7 @@ class ASTTransformer: ASTVisitor {
   func visitClosureExpr(_ expr: ClosureExpr) {
     withClosure(expr) {
       withScope(expr.body) {
-        expr.args.forEach(visitFuncArgumentAssignDecl)
+        expr.args.forEach(visitParamDecl)
         visitCompoundStmt(expr.body)
       }
     }
@@ -122,7 +122,7 @@ class ASTTransformer: ASTVisitor {
   func visitFuncDecl(_ expr: FuncDecl) {
     let visitor: () -> Void = {
       for arg in expr.args {
-        self.visitFuncArgumentAssignDecl(arg)
+        self.visitParamDecl(arg)
       }
       _ = expr.body.map(self.visitCompoundStmt)
     }
@@ -141,7 +141,7 @@ class ASTTransformer: ASTVisitor {
   func visitContinueStmt(_ stmt: ContinueStmt) {}
   func visitCompoundStmt(_ stmt: CompoundStmt) {
     withScope(stmt) {
-      stmt.exprs.forEach(visit)
+      stmt.stmts.forEach(visit)
     }
   }
   
@@ -249,6 +249,14 @@ class ASTTransformer: ASTVisitor {
   func visitCaseStmt(_ stmt: CaseStmt) {
     visit(stmt.constant)
     visit(stmt.body)
+  }
+
+  func visitDeclStmt(_ stmt: DeclStmt) -> () {
+    visit(stmt.decl)
+  }
+
+  func visitExprStmt(_ stmt: ExprStmt) -> () {
+    visit(stmt.expr)
   }
   
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {

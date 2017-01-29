@@ -116,9 +116,9 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
       super.visitVarAssignDecl(decl)
     }
   }
-  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+  override func visitParamDecl(_ decl: ParamDecl) -> Result {
     printNode(decl) {
-      super.visitFuncArgumentAssignDecl(decl)
+      super.visitParamDecl(decl)
     }
   }
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
@@ -204,6 +204,16 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
       super.visitIfStmt(stmt)
     }
   }
+  override func visitDeclStmt(_ stmt: DeclStmt) -> () {
+    printNode(stmt) {
+      super.visitDeclStmt(stmt)
+    }
+  }
+  override func visitExprStmt(_ stmt: ExprStmt) {
+    printNode(stmt) {
+      super.visitExprStmt(stmt)
+    }
+  }
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     printNode(expr) {
       super.visitTernaryExpr(expr)
@@ -232,6 +242,31 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
   override func visitFieldLookupExpr(_ expr: FieldLookupExpr) -> Result {
     printNode(expr) {
       super.visitFieldLookupExpr(expr)
+    }
+  }
+  override func visitNilExpr(_ expr: NilExpr) {
+    printNode(expr) {
+      super.visitNilExpr(expr)
+    }
+  }
+  override func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) {
+    printNode(expr) {
+      super.visitPoundFunctionExpr(expr)
+    }
+  }
+  override func visitArrayExpr(_ expr: ArrayExpr) {
+    printNode(expr) {
+      super.visitArrayExpr(expr)
+    }
+  }
+  override func visitSizeofExpr(_ expr: SizeofExpr) {
+    printNode(expr) {
+      super.visitSizeofExpr(expr)
+    }
+  }
+  override func visitOperatorDecl(_ decl: OperatorDecl) {
+    printNode(decl) {
+      super.visitOperatorDecl(decl)
     }
   }
   override func visitTupleExpr(_ expr: TupleExpr) {

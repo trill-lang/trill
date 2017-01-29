@@ -216,6 +216,14 @@ extension IRGenerator {
     }
     return nil
   }
+
+  func visitDeclStmt(_ stmt: DeclStmt) -> Result {
+    return visit(stmt.decl)
+  }
+
+  func visitExprStmt(_ stmt: ExprStmt) -> Result {
+    return visit(stmt.expr)
+  }
   
   func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> Result {
     return nil

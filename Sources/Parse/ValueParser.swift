@@ -126,11 +126,11 @@ extension Parser {
       consumeToken()
       let (args, ret, _) = try parseFuncSignature()
       try consume(.in)
-      let exprs = try parseStatementExprs(terminators: [.rightBrace])
+      let exprs = try parseStatements(terminators: [.rightBrace])
       consumeToken()
       valExpr = ClosureExpr(args: args,
                             returnType: ret,
-                            body: CompoundStmt(exprs: exprs),
+                            body: CompoundStmt(stmts: exprs),
                             sourceRange: range(start: startLoc))
     default:
       throw Diagnostic.error(ParseError.unexpectedExpression(expected: "value"),

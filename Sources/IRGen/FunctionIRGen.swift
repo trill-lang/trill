@@ -66,7 +66,7 @@ extension IRGenerator {
   func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> IRValue {
     guard decl.isInitializer,
         let body = decl.body,
-        body.exprs.isEmpty,
+        body.stmts.isEmpty,
       let type = decl.returnType.type,
         let typeDecl = context.decl(for: type) else {
       fatalError("must synthesize an empty initializer")
@@ -109,7 +109,7 @@ extension IRGenerator {
     
     if decl.has(attribute: .foreign) { return function }
     
-    if decl.isInitializer, let body = decl.body, body.exprs.isEmpty {
+    if decl.isInitializer, let body = decl.body, body.stmts.isEmpty {
       return synthesizeIntializer(decl, function: function)
     }
     
@@ -265,7 +265,7 @@ extension IRGenerator {
     return call
   }
   
-  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+  func visitParamDecl(_ decl: ParamDecl) -> Result {
     fatalError("handled while generating function")
   }
   

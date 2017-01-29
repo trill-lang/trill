@@ -138,10 +138,6 @@ class PrefixOperatorExpr: Expr {
     self.opRange = opRange
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? PrefixOperatorExpr else { return false }
-    return op == node.op && rhs == node.rhs
-  }
   
   func type(forArgType argType: DataType) -> DataType? {
     switch (self.op, argType) {
@@ -178,11 +174,6 @@ class InfixOperatorExpr: Expr {
     super.init(sourceRange: sourceRange)
   }
   
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? InfixOperatorExpr else { return false }
-    return op == node.op && rhs == node.rhs && lhs == node.lhs
-  }
-  
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["operator"] = "\(op)"
@@ -194,7 +185,7 @@ class OperatorDecl: FuncDecl {
   let op: BuiltinOperator
   let opRange: SourceRange?
   init(op: BuiltinOperator,
-       args: [FuncArgumentAssignDecl],
+       args: [ParamDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
@@ -202,7 +193,7 @@ class OperatorDecl: FuncDecl {
        sourceRange: SourceRange? = nil) {
     self.op = op
     self.opRange = opRange
-    super.init(name: Identifier(name: "operator\(op)"),
+    super.init(name: Identifier(name: "\(op)"),
                returnType: returnType,
                args: args,
                kind: .operator(op: op),
@@ -211,16 +202,10 @@ class OperatorDecl: FuncDecl {
                sourceRange: sourceRange)
   }
   
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? OperatorDecl else {
-      return false
-    }
-    return op == node.op && super.equals(node)
-  }
-  
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["operator"] = "\(op)"
+    superAttrs["name"] = nil
     return superAttrs
   }
 }

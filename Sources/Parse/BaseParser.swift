@@ -352,28 +352,28 @@ class Parser {
   func parseCompoundExpr() throws -> CompoundStmt {
     let startLoc = sourceLoc
     try consume(.leftBrace)
-    let exprs = try parseStatementExprs(terminators: [.rightBrace])
+    let stmts = try parseStatements(terminators: [.rightBrace])
     consumeToken()
-    return CompoundStmt(exprs: exprs, sourceRange: range(start: startLoc))
+    return CompoundStmt(stmts: stmts, sourceRange: range(start: startLoc))
   }
   
-  func parseStatementExprs(terminators: [TokenKind]) throws -> [ASTNode] {
-    var exprs = [ASTNode]()
+  func parseStatements(terminators: [TokenKind]) throws -> [Stmt] {
+    var stmts = [Stmt]()
     while !terminators.contains(peek()) {
-      let expr = try parseStatementExpr()
+      let stmt = try parseStatement()
       if !terminators.contains(peek()) {
         try consumeAtLeastOneLineSeparator()
       }
-      if let diag = expr as? PoundDiagnosticStmt {
+      if let diag = stmt as? PoundDiagnosticStmt {
         context.add(diag)
       } else {
-        exprs.append(expr)
+        stmts.append(stmt)
       }
     }
-    return exprs
+    return stmts
   }
   
-  func parseStatementExpr() throws -> ASTNode {
+  func parseStatement() throws -> Stmt {
     let tok = peek()
     switch tok {
     case .if:
@@ -385,7 +385,7 @@ class Parser {
     case .switch:
       return try parseSwitchExpr()
     case .var, .let:
-      return try parseVarAssignDecl()
+      return DeclStmt(decl: try parseVarAssignDecl())
     case .break:
       return try parseBreakStmt()
     case .continue:
@@ -395,7 +395,7 @@ class Parser {
     case .poundError, .poundWarning:
       return try parsePoundDiagnosticExpr()
     default:
-      return try parseValExpr()
+      return ExprStmt(expr: try parseValExpr())
     }
   }
 }

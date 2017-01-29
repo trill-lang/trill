@@ -354,8 +354,8 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
-  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
-    super.visitFuncArgumentAssignDecl(decl)
+  override func visitParamDecl(_ decl: ParamDecl) -> Result {
+    super.visitParamDecl(decl)
     guard context.isValidType(decl.type) else {
       error(SemaError.unknownType(type: decl.type),
             loc: decl.typeRef?.startLoc,
@@ -569,7 +569,7 @@ class Sema: ASTTransformer, Pass {
     if let decl = varBindings[expr.name.name] ?? context.global(named: expr.name) {
       expr.decl = decl
       expr.type = decl.type
-      if let d = decl as? FuncArgumentAssignDecl, d.isImplicitSelf {
+      if let d = decl as? ParamDecl, d.isImplicitSelf {
         expr.isSelf = true
       }
     } else if !candidates.isEmpty {
@@ -734,14 +734,14 @@ class Sema: ASTTransformer, Pass {
   }
   
   override func visitCompoundStmt(_ stmt: CompoundStmt) {
-    for (idx, e) in stmt.exprs.enumerated() {
+    for (idx, e) in stmt.stmts.enumerated() {
       visit(e)
-      let isLast = idx == (stmt.exprs.endIndex - 1)
+      let isLast = idx == (stmt.stmts.endIndex - 1)
       let isReturn = e is ReturnStmt
       let isBreak = e is BreakStmt
       let isContinue = e is ContinueStmt
       let isNoReturnFuncCall: Bool = {
-        if let c = e as? FuncCallExpr {
+        if let exprStmt = e as? ExprStmt, let c = exprStmt.expr as? FuncCallExpr {
           return c.decl?.has(attribute: .noreturn) == true
         }
         return false

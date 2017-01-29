@@ -21,11 +21,11 @@ extension Parser {
   func parseForLoopExpr() throws -> ForStmt {
     let startLoc = sourceLoc
     try consume(.for)
-    var initializer: ASTNode? = nil
+    var initializer: Stmt? = nil
     if case .semicolon = peek() {
       consumeToken()
     } else  {
-      initializer = try parseStatementExpr()
+      initializer = try parseStatement()
       try consumeAtLeastOneLineSeparator()
     }
     var condition: Expr? = nil
@@ -35,18 +35,18 @@ extension Parser {
       condition = try parseValExpr()
       try consumeAtLeastOneLineSeparator()
     }
-    var incrementer: ASTNode? = nil
+    var incrementer: Stmt? = nil
     if case .leftBrace = peek() {
     } else  {
-      incrementer = try parseStatementExpr()
+      incrementer = try parseStatement()
       if [.newline, .semicolon].contains(peek()) { consumeToken() }
     }
     let body = try parseCompoundExpr()
     return ForStmt(initializer: initializer,
-                       condition: condition,
-                       incrementer: incrementer,
-                       body: body,
-                       sourceRange: range(start: startLoc))
+                   condition: condition,
+                   incrementer: incrementer,
+                   body: body,
+                   sourceRange: range(start: startLoc))
   }
   
   func parseSwitchExpr() throws -> SwitchStmt {
@@ -63,9 +63,9 @@ extension Parser {
         let expr = try parseValExpr()
         let caseRange = range(start: tok.range.start)
         try consume(.colon)
-        let bodyExprs = try parseStatementExprs(terminators: terminators)
+        let bodyStmts = try parseStatements(terminators: terminators)
         let sourceRange = range(start: startLoc)
-        let body = CompoundStmt(exprs: bodyExprs, sourceRange: sourceRange)
+        let body = CompoundStmt(stmts: bodyStmts, sourceRange: sourceRange)
         cases.append(CaseStmt(constant: expr, body: body, sourceRange: caseRange))
       } else if case .default = peek() {
         consumeToken()
@@ -75,7 +75,7 @@ extension Parser {
             .highlighting(currentToken().range)
         }
         try consume(.colon)
-        defaultBody = CompoundStmt(exprs: try parseStatementExprs(terminators: terminators))
+        defaultBody = CompoundStmt(stmts: try parseStatements(terminators: terminators))
       } else {
         throw unexpectedToken()
       }

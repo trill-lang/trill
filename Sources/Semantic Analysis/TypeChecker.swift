@@ -187,7 +187,7 @@ class TypeChecker: ASTTransformer, Pass {
     super.visitIfStmt(stmt)
   }
   
-  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result {
+  override func visitParamDecl(_ decl: ParamDecl) -> Result {
     if let rhsType = decl.rhs?.type, matchRank(decl.type, rhsType) == nil {
       error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
             loc: decl.startLoc,
@@ -195,7 +195,7 @@ class TypeChecker: ASTTransformer, Pass {
               decl.sourceRange
         ])
     }
-    super.visitFuncArgumentAssignDecl(decl)
+    super.visitParamDecl(decl)
   }
   
   override func visitReturnStmt(_ expr: ReturnStmt) -> Result {

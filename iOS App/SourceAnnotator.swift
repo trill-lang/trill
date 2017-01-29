@@ -116,9 +116,9 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     super.visitFieldLookupExpr(expr)
   }
   
-  override func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) {
+  override func visitParamDecl(_ decl: ParamDecl) {
     add(attributes(for: decl.typeRef!))
-    super.visitFuncArgumentAssignDecl(decl)
+    super.visitParamDecl(decl)
   }
   
   override func visitFuncDecl(_ decl: FuncDecl) {

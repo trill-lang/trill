@@ -249,14 +249,14 @@ class TypeDecl: Decl {
     let type = DataType(name: name.name)
     let typeRef = TypeRefExpr(type: type, name: name)
     let initFields = fields.map { field in
-      FuncArgumentAssignDecl(name: field.name, type: field.typeRef, externalName: field.name)
+      ParamDecl(name: field.name, type: field.typeRef, externalName: field.name)
     }
     return FuncDecl(
       name: name,
       returnType: typeRef,
       args: initFields,
       kind: .initializer(type: type),
-      body: CompoundStmt(exprs: []),
+      body: CompoundStmt(stmts: []),
       modifiers: modifiers)
   }
   
@@ -296,14 +296,6 @@ class TypeDecl: Decl {
   var isIndirect: Bool {
     return has(attribute: .indirect)
   }
-  
-  override func equals(_ rhs: ASTNode) -> Bool {
-    guard let rhs = rhs as? TypeDecl else { return false }
-    guard type == rhs.type else { return false }
-    guard fields == rhs.fields else { return false }
-    guard methods == rhs.methods else { return false }
-    return true
-  }
 }
 
 class DeclRefExpr<DeclType: Decl>: Expr {
@@ -322,11 +314,6 @@ class TypeAliasDecl: Decl {
     self.bound = bound
     super.init(type: bound.type!, modifiers: modifiers, sourceRange: sourceRange)
   }
-  override func equals(_ rhs: ASTNode) -> Bool {
-    guard let rhs = rhs as? TypeAliasDecl else { return false }
-    return name == rhs.name && bound == rhs.bound
-  }
-  
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["name"] = name.name

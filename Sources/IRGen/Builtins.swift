@@ -12,7 +12,7 @@ enum IntrinsicFunctions {
   static let typeOf = FuncDecl(name: "typeOf",
                                returnType: DataType.pointer(type: .void).ref(),
                                args: [
-                                FuncArgumentAssignDecl(name: "", type: DataType.any.ref())
+                                ParamDecl(name: "", type: DataType.any.ref())
                                ])
   static let allIntrinsics = [typeOf]
 }

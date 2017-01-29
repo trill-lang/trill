@@ -13,10 +13,6 @@ class ReturnStmt: Stmt { // return <expr>;
     self.value = value
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? ReturnStmt else { return false }
-    return value == node.value
-  }
 }
 
 enum VarKind: Equatable {
@@ -63,34 +59,30 @@ class VarAssignDecl: Decl {
                modifiers: modifiers,
                sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? VarAssignDecl else { return false }
-    guard name == node.name else { return false }
-    guard type == node.type else { return false }
-    guard rhs == node.rhs else { return false }
-    return true
-  }
   
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["type"] = typeRef?.type?.description
     superAttrs["name"] = name.name
-    superAttrs["kind"] = kind
+    superAttrs["kind"] = {
+      switch kind {
+      case .local: return "local"
+      case .global: return "global"
+      case .implicitSelf: return "implicit_self"
+      case .property: return "property"
+      }
+    }()
     superAttrs["mutable"] = mutable
     return superAttrs
   }
 }
 
 class CompoundStmt: Stmt {
-  let exprs: [ASTNode]
+  let stmts: [Stmt]
   var hasReturn = false
-  init(exprs: [ASTNode], sourceRange: SourceRange? = nil) {
-    self.exprs = exprs
+  init(stmts: [Stmt], sourceRange: SourceRange? = nil) {
+    self.stmts = stmts
     super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? CompoundStmt else { return false }
-    return exprs == node.exprs
   }
 }
 
@@ -102,10 +94,6 @@ class BranchStmt: Stmt {
     self.body = body
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? BranchStmt else { return false }
-    return condition == node.condition && body == node.body
-  }
 }
 
 class IfStmt: Stmt {
@@ -116,26 +104,20 @@ class IfStmt: Stmt {
     self.elseBody = elseBody
     super.init(sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? IfStmt else { return false }
-    guard blocks.count == node.blocks.count else { return false }
-    guard elseBody == node.elseBody else { return false }
-    for (block, otherBlock) in zip(blocks, node.blocks) {
-      if block.0 != otherBlock.0 { return false }
-      if block.1 != otherBlock.1 { return false }
-    }
-    return true
-  }
 }
 
 class WhileStmt: BranchStmt {}
 
 class ForStmt: Stmt {
-  let initializer: ASTNode?
+  let initializer: Stmt?
   let condition: Expr?
-  let incrementer: ASTNode?
+  let incrementer: Stmt?
   let body: CompoundStmt
-  init(initializer: ASTNode?, condition: Expr?, incrementer: ASTNode?, body: CompoundStmt, sourceRange: SourceRange? = nil) {
+  init(initializer: Stmt?,
+       condition: Expr?,
+       incrementer: Stmt?,
+       body: CompoundStmt,
+       sourceRange: SourceRange? = nil) {
     self.initializer = initializer
     self.condition = condition
     self.incrementer = incrementer
@@ -166,17 +148,8 @@ class CaseStmt: Stmt {
   }
 }
 
-class BreakStmt: Stmt {
-  override func equals(_ node: ASTNode) -> Bool {
-    return node is BreakStmt
-  }
-}
-
-class ContinueStmt: Stmt {
-  override func equals(_ node: ASTNode) -> Bool {
-    return node is ContinueStmt
-  }
-}
+class BreakStmt: Stmt {}
+class ContinueStmt: Stmt {}
 
 class ExtensionDecl: Decl {
   let methods: [FuncDecl]
@@ -195,12 +168,23 @@ class ExtensionDecl: Decl {
     self.typeRef = type
     super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? ExtensionDecl else { return false }
-    return   methods == node.methods
-          && subscripts == node.subscripts
-          && staticMethods == node.staticMethods
-          && typeRef == node.typeRef
+}
+
+class ExprStmt: Stmt {
+  let expr: Expr
+
+  init(expr: Expr) {
+    self.expr = expr
+    super.init(sourceRange: expr.sourceRange)
+  }
+}
+
+class DeclStmt: Stmt {
+  let decl: Decl
+
+  init(decl: Decl) {
+    self.decl = decl
+    super.init(sourceRange: decl.sourceRange)
   }
 }
 

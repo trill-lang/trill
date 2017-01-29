@@ -35,7 +35,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     return FuncDecl(name: "main",
                         returnType: DataType.void.ref(),
                         args: [],
-                        body: CompoundStmt(exprs: []))
+                        body: CompoundStmt(stmts: []))
   }
   
   override func run(in context: ASTContext) {
@@ -71,7 +71,7 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   func writeCompoundBody(_ stmt: CompoundStmt) {
     withIndent {
       withScope(stmt) {
-        for e in stmt.exprs {
+        for e in stmt.stmts {
           write("")
           visit(e)
           if (!(e is IfStmt || e is ForStmt || e is WhileStmt || e is SwitchStmt)) {
@@ -246,9 +246,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("\n")
     if let def = expr.defaultBody {
       write("default: ")
-      var newExprs = def.exprs
+      var newExprs = def.stmts
       newExprs.append(BreakStmt())
-      visitCompoundStmt(CompoundStmt(exprs: newExprs))
+      visitCompoundStmt(CompoundStmt(stmts: newExprs))
       stream.write("\n")
     }
     stream.write("}")
@@ -264,9 +264,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       fatalError("invalid case expr?")
     }
     write("case \(text): ")
-    var newExprs = expr.body.exprs
+    var newExprs = expr.body.stmts
     newExprs.append(BreakStmt())
-    visitCompoundStmt(CompoundStmt(exprs: newExprs))
+    visitCompoundStmt(CompoundStmt(stmts: newExprs))
   }
   
   override func visitIfStmt(_ expr: IfStmt) {

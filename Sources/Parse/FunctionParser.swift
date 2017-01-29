@@ -14,7 +14,7 @@ extension Parser {
                      isDeinit: Bool = false) throws -> FuncDecl {
     var modifiers = modifiers
     let startLoc = sourceLoc
-    var args = [FuncArgumentAssignDecl]()
+    var args = [ParamDecl]()
     var returnType = TypeRefExpr(type: .void, name: "Void")
     var hasVarArgs = false
     var kind: FunctionKind = .free
@@ -79,7 +79,8 @@ extension Parser {
                           returnType: returnType,
                           body: body,
                           modifiers: modifiers,
-                          opRange: nameRange)
+                          opRange: nameRange,
+                          sourceRange: range(start: startLoc))
     }
     if case .subscript(let type) = kind {
       return SubscriptDecl(returnType: returnType,
@@ -99,10 +100,10 @@ extension Parser {
                     sourceRange: range(start: startLoc))
   }
   
-  func parseFuncSignature() throws -> (args: [FuncArgumentAssignDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
+  func parseFuncSignature() throws -> (args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
     try consume(.leftParen)
     var hasVarArgs = false
-    var args = [FuncArgumentAssignDecl]()
+    var args = [ParamDecl]()
     while true {
       if case .rightParen = peek() {
         consumeToken()
@@ -136,7 +137,7 @@ extension Parser {
         break
       }
       let type = try parseType()
-      let arg = FuncArgumentAssignDecl(name: internalName,
+      let arg = ParamDecl(name: internalName,
                                        type: type,
                                        externalName: externalName,
                                        sourceRange: range(start: startLoc))

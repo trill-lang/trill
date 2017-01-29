@@ -116,26 +116,23 @@ func ==(lhs: Identifier, rhs: Identifier) -> Bool {
   return lhs.name == rhs.name
 }
 
-class ASTNode: Equatable, Hashable {
+class ASTNode: Hashable {
   let sourceRange: SourceRange?
   init(sourceRange: SourceRange? = nil) {
     self.sourceRange = sourceRange
   }
   var startLoc: SourceLocation? { return sourceRange?.start }
   var endLoc: SourceLocation? { return sourceRange?.end }
-  func equals(_ rhs: ASTNode) -> Bool {
-    return false
-  }
   
   var hashValue: Int {
     return ObjectIdentifier(self).hashValue ^ 0x2a0294ba
+  }
+
+  static func ==(lhs: ASTNode, rhs: ASTNode) -> Bool {
+    return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
   }
     
   func attributes() -> [String: Any] {
     return [:]
   }
-}
-
-func ==(lhs: ASTNode, rhs: ASTNode) -> Bool {
-  return lhs.equals(rhs)
 }

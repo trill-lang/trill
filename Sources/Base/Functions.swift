@@ -17,17 +17,13 @@ enum FunctionKind {
   case free
 }
 
-struct Argument: Equatable {
+struct Argument {
   let label: Identifier?
   let val: Expr
   init(val: Expr, label: Identifier? = nil) {
     self.val = val
     self.label = label
   }
-}
-
-func ==(lhs: Argument, rhs: Argument) -> Bool {
-  return lhs.label == rhs.label && lhs.val.equals(rhs.val)
 }
 
 class FuncCallExpr: Expr {
@@ -38,10 +34,6 @@ class FuncCallExpr: Expr {
     self.lhs = lhs
     self.args = args
     super.init(sourceRange: sourceRange)
-  }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? FuncCallExpr else { return false }
-    return lhs == node.lhs && args == node.args
   }
   
   override func attributes() -> [String : Any] {
@@ -54,14 +46,14 @@ class FuncCallExpr: Expr {
 }
 
 class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
-  let args: [FuncArgumentAssignDecl]
+  let args: [ParamDecl]
   let name: Identifier
   let body: CompoundStmt?
   let returnType: TypeRefExpr
   let hasVarArgs: Bool
   let kind: FunctionKind
   init(name: Identifier, returnType: TypeRefExpr,
-       args: [FuncArgumentAssignDecl],
+       args: [ParamDecl],
        kind: FunctionKind = .free,
        body: CompoundStmt? = nil,
        modifiers: [DeclModifier] = [],
@@ -136,17 +128,12 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     }
     return s
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? FuncDecl else { return false }
-    return name == node.name && returnType == node.returnType
-        && args == node.args && body == node.body
-  }
-  
+
   func addingImplicitSelf(_ type: DataType) -> FuncDecl {
     var args = self.args
     let typeName = Identifier(name: "\(type)")
     let typeRef = TypeRefExpr(type: type, name: typeName)
-    let arg = FuncArgumentAssignDecl(name: "self", type: typeRef)
+    let arg = ParamDecl(name: "self", type: typeRef)
     arg.isImplicitSelf = true
     arg.mutable = has(attribute: .mutating)
     args.insert(arg, at: 0)
@@ -169,7 +156,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
   }
 }
 
-class FuncArgumentAssignDecl: VarAssignDecl {
+class ParamDecl: VarAssignDecl {
   var isImplicitSelf = false
   let externalName: Identifier?
   init(name: Identifier,
@@ -180,14 +167,10 @@ class FuncArgumentAssignDecl: VarAssignDecl {
     self.externalName = externalName
     super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)
   }
-  override func equals(_ node: ASTNode) -> Bool {
-    guard let node = node as? FuncArgumentAssignDecl else { return false }
-    return name == node.name && externalName == node.externalName && rhs == node.rhs
-  }
 }
 
 class SubscriptDecl: FuncDecl {
-  init(returnType: TypeRefExpr, args: [FuncArgumentAssignDecl], parentType: DataType, body: CompoundStmt?, modifiers: [DeclModifier], sourceRange: SourceRange?) {
+  init(returnType: TypeRefExpr, args: [ParamDecl], parentType: DataType, body: CompoundStmt?, modifiers: [DeclModifier], sourceRange: SourceRange?) {
     super.init(name: Identifier(name: "subscript"),
                returnType: returnType,
                args: args,
@@ -203,7 +186,7 @@ class SubscriptDecl: FuncDecl {
     var args = self.args
     let typeName = Identifier(name: "\(type)")
     let typeRef = TypeRefExpr(type: type, name: typeName)
-    let arg = FuncArgumentAssignDecl(name: "self", type: typeRef)
+    let arg = ParamDecl(name: "self", type: typeRef)
     arg.isImplicitSelf = true
     arg.mutable = has(attribute: .mutating)
     args.insert(arg, at: 0)
@@ -217,13 +200,13 @@ class SubscriptDecl: FuncDecl {
 }
 
 class ClosureExpr: Expr {
-  let args: [FuncArgumentAssignDecl]
+  let args: [ParamDecl]
   let returnType: TypeRefExpr
   let body: CompoundStmt
   
   private(set) var captures = Set<ASTNode>()
   
-  init(args: [FuncArgumentAssignDecl], returnType: TypeRefExpr,
+  init(args: [ParamDecl], returnType: TypeRefExpr,
        body: CompoundStmt, sourceRange: SourceRange? = nil) {
     self.args = args
     self.returnType = returnType

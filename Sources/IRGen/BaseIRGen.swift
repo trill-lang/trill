@@ -366,18 +366,18 @@ class IRGenerator: ASTVisitor, Pass {
 
   @discardableResult
   func visitCompoundStmt(_ stmt: CompoundStmt)  -> Result {
-    for (idx, subExpr) in stmt.exprs.enumerated() {
+    for (idx, subExpr) in stmt.stmts.enumerated() {
       visit(subExpr)
       let isBreak = subExpr is BreakStmt
       let isReturn = subExpr is ReturnStmt
       let isNoReturnFuncCall: Bool = {
-        if let c = subExpr as? FuncCallExpr {
+        if let exprStmt = subExpr as? ExprStmt, let c = exprStmt.expr as? FuncCallExpr {
           return c.decl?.has(attribute: .noreturn) == true
         }
         return false
       }()
       if (isBreak || isReturn || isNoReturnFuncCall) &&
-          idx != (stmt.exprs.endIndex - 1) {
+          idx != (stmt.stmts.endIndex - 1) {
         break
       }
     }

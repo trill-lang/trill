@@ -204,7 +204,7 @@ class ClangImporter: Pass {
                           } else {
                             ref = type.ref()
                           }
-                          return FuncArgumentAssignDecl(name: "", type: ref)
+                          return ParamDecl(name: "", type: ref)
                         },
                         modifiers: modifiers,
                         hasVarArgs: hasVarArgs,

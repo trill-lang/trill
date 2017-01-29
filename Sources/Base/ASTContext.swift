@@ -194,8 +194,8 @@ public class ASTContext {
     if rhs is NilExpr && canBeNil(canLhs) && [.equalTo, .notEqualTo].contains(op) {
       return OperatorDecl(op: op,
                           args: [
-                            FuncArgumentAssignDecl(name: "", type: lhs.type!.ref()),
-                            FuncArgumentAssignDecl(name: "", type: lhs.type!.ref())
+                            ParamDecl(name: "", type: lhs.type!.ref()),
+                            ParamDecl(name: "", type: lhs.type!.ref())
                           ],
                           returnType: DataType.bool.ref(),
                           body: nil,
@@ -537,20 +537,20 @@ public class ASTContext {
     return globalDeclMap[name]
   }
   
-  func mutability(of node: ASTNode) -> Mutability {
-    switch node {
-    case let node as VarExpr:
-      return mutability(of: node)
-    case let node as FieldLookupExpr:
-      return mutability(of: node)
-    case let node as SubscriptExpr:
-      return mutability(of: node.lhs)
-    case let node as ParenExpr:
-      return mutability(of: node.value)
-    case let node as PrefixOperatorExpr:
-      return mutability(of: node.rhs)
-    case let node as TupleFieldLookupExpr:
-      return mutability(of: node.lhs)
+  func mutability(of expr: Expr) -> Mutability {
+    switch expr {
+    case let expr as VarExpr:
+      return mutability(of: expr)
+    case let expr as FieldLookupExpr:
+      return mutability(of: expr)
+    case let expr as SubscriptExpr:
+      return mutability(of: expr.lhs)
+    case let expr as ParenExpr:
+      return mutability(of: expr.value)
+    case let expr as PrefixOperatorExpr:
+      return mutability(of: expr.rhs)
+    case let expr as TupleFieldLookupExpr:
+      return mutability(of: expr.lhs)
     default:
       return .immutable(culprit: nil)
     }
@@ -673,9 +673,9 @@ public class ASTContext {
   }
   
   func implicitDecl(args: [DataType], ret: DataType, kind: FunctionKind = .free) -> FuncDecl {
-    let assigns: [FuncArgumentAssignDecl] = args.map {
+    let assigns: [ParamDecl] = args.map {
       let name = Identifier(name: "__implicit__")
-      return FuncArgumentAssignDecl(name: "", type: TypeRefExpr(type: $0, name: name))
+      return ParamDecl(name: "", type: TypeRefExpr(type: $0, name: name))
     }
     let retName = Identifier(name: "\(ret)")
     let typeRef = TypeRefExpr(type: ret, name: retName)
@@ -702,8 +702,8 @@ extension OperatorDecl {
                      _ returnType: DataType,
                      modifiers: [DeclModifier] = [.implicit]) {
         self.init(op: op, args: [
-            FuncArgumentAssignDecl(name: "lhs", type: lhsType.ref()),
-            FuncArgumentAssignDecl(name: "rhs", type: rhsType.ref()),
+            ParamDecl(name: "lhs", type: lhsType.ref()),
+            ParamDecl(name: "rhs", type: rhsType.ref()),
             ], returnType: returnType.ref(),
                body: nil,
                modifiers: modifiers)

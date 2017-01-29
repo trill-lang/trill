@@ -51,7 +51,7 @@ protocol ASTVisitor {
   @discardableResult
   func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result
   @discardableResult
-  func visitFuncArgumentAssignDecl(_ decl: FuncArgumentAssignDecl) -> Result
+  func visitParamDecl(_ decl: ParamDecl) -> Result
   @discardableResult
   func visitFuncDecl(_ decl: FuncDecl) -> Result
   @discardableResult
@@ -85,6 +85,10 @@ protocol ASTVisitor {
   @discardableResult
   func visitCaseStmt(_ expr: CaseStmt) -> Result
   @discardableResult
+  func visitExprStmt(_ expr: ExprStmt) -> Result
+  @discardableResult
+  func visitDeclStmt(_ expr: DeclStmt) -> Result
+  @discardableResult
   func visitClosureExpr(_ expr: ClosureExpr) -> Result
   @discardableResult
   func visitSwitchStmt(_ expr: SwitchStmt) -> Result
@@ -115,8 +119,8 @@ extension ASTVisitor {
   @discardableResult
   func visit(_ decl: Decl) -> Result {
     switch decl {
-    case let decl as FuncArgumentAssignDecl:
-      return visitFuncArgumentAssignDecl(decl)
+    case let decl as ParamDecl:
+      return visitParamDecl(decl)
     case let decl as VarAssignDecl:
       return visitVarAssignDecl(decl)
     case let decl as OperatorDecl:
@@ -154,6 +158,10 @@ extension ASTVisitor {
       return visitSwitchStmt(stmt)
     case let stmt as CaseStmt:
       return visitCaseStmt(stmt)
+    case let stmt as ExprStmt:
+      return visitExprStmt(stmt)
+    case let stmt as DeclStmt:
+      return visitDeclStmt(stmt)
     case let stmt as PoundDiagnosticStmt:
       return visitPoundDiagnosticStmt(stmt)
     default:
