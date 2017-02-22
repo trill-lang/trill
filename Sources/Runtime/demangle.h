@@ -6,8 +6,8 @@
 #ifndef demangle_hpp
 #define demangle_hpp
 
-#include <stdio.h>
 #include "defines.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 #include <string>

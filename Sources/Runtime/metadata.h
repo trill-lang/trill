@@ -9,9 +9,9 @@
 #ifndef metadata_h
 #define metadata_h
 
-#include <stdio.h>
-#include <stdint.h>
 #include "defines.h"
+#include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 namespace trill {

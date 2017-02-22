@@ -8,8 +8,8 @@
 
 #include "metadata_private.h"
 #include "runtime.h"
-#include <string>
 #include <iostream>
+#include <string>
 
 #define TYPE_PUN(ptr, ty) *((ty *)(ptr))
 

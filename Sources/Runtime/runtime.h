@@ -6,9 +6,9 @@
 #ifndef runtime_h
 #define runtime_h
 
-#include <stdio.h>
-#include <stdint.h>
 #include "defines.h"
+#include <stdint.h>
+#include <stdio.h>
 
 // TRILL_ASSUME_NONNULL_BEGIN
 
