@@ -4,13 +4,19 @@
 
   },
   "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD" : 9223372036854775807,
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : 9223372036854775807,
     "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : 9223372036854775807,
-    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : 9223372036854775807
+    "B847C27441AF772503515589E7F8418584131191" : 9223372036854775807,
+    "570B85A32C2D76E1C5687666C3BA62B8DF7CADDE" : 9223372036854775807
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "EE0E44EB-A09D-42BA-B49A-CFA68EF1EAD1",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
-    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : "trill\/LLVMSwift\/",
-    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : "trill\/"
+    "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD" : "trill\/TinyGC\/",
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : "trill\/",
+    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : "trill\/.build\/checkouts\/LLVMSwift.git-4771311259758870997\/",
+    "B847C27441AF772503515589E7F8418584131191" : "trill\/.build\/checkouts\/cllvm.git-2027423941697803239\/",
+    "570B85A32C2D76E1C5687666C3BA62B8DF7CADDE" : "trill\/ClangSwift\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "Trill",
   "DVTSourceControlWorkspaceBlueprintVersion" : 204,
@@ -22,9 +28,24 @@
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "32E9A4F24A891D682A50DDAB6DE720492519A2F6"
     },
     {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:trill-lang\/ClangSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "570B85A32C2D76E1C5687666C3BA62B8DF7CADDE"
+    },
+    {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:harlanhaskins\/trill.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "\/Users\/harlan\/Documents\/Code\/Swift\/trill\/.build\/repositories\/cllvm.git-2027423941697803239",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "B847C27441AF772503515589E7F8418584131191"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ivmai\/tinygc.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD"
     }
   ]
 }

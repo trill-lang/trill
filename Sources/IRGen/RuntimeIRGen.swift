@@ -75,7 +75,7 @@ extension IRGenerator {
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta, type: PointerType.toVoid, name: "meta-cast")
     let result = builder.buildCall(typeCheck, args: [binding, castMeta])
-    return builder.buildICmp(result, IntType.int8.zero(), .ne, name: "type-check-result")
+    return builder.buildICmp(result, IntType.int8.zero(), .notEqual, name: "type-check-result")
   }
   
   func codegenCheckedCast(binding: IRValue, type: DataType) -> IRValue {

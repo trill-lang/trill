@@ -197,39 +197,39 @@ extension IRGenerator {
       return builder.buildRem(lhs, rhs, signed: signed)
     case .equalTo:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .oeq)
+        return builder.buildFCmp(lhs, rhs, .orderedEqual)
       } else if case .int = type {
-        return builder.buildICmp(lhs, rhs, .eq)
+        return builder.buildICmp(lhs, rhs, .equal)
       }
     case .notEqualTo:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .one)
+        return builder.buildFCmp(lhs, rhs, .orderedNotEqual)
       } else if case .int = type {
-        return builder.buildICmp(lhs, rhs, .ne)
+        return builder.buildICmp(lhs, rhs, .notEqual)
       }
     case .lessThan:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .olt)
+        return builder.buildFCmp(lhs, rhs, .orderedLessThan)
       } else if case .int(_, let signed) = type {
-        return builder.buildICmp(lhs, rhs, signed ? .slt : .ult)
+        return builder.buildICmp(lhs, rhs, signed ? .signedLessThan : .unsignedLessThan)
       }
     case .lessThanOrEqual:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .ole)
+        return builder.buildFCmp(lhs, rhs, .orderedLessThanOrEqual)
       } else if case .int(_, let signed) = type {
-        return builder.buildICmp(lhs, rhs, signed ? .sle : .ule)
+        return builder.buildICmp(lhs, rhs, signed ? .signedLessThanOrEqual : .unsignedLessThanOrEqual)
       }
     case .greaterThan:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .ogt)
+        return builder.buildFCmp(lhs, rhs, .orderedGreaterThan)
       } else if case .int(_, let signed) = type {
-        return builder.buildICmp(lhs, rhs, signed ? .sgt : .ugt)
+        return builder.buildICmp(lhs, rhs, signed ? .signedGreaterThan : .unsignedGreaterThan)
       }
     case .greaterThanOrEqual:
       if case .floating = type {
-        return builder.buildFCmp(lhs, rhs, .oge)
+        return builder.buildFCmp(lhs, rhs, .orderedGreaterThanOrEqual)
       } else if case .int(_, let signed) = type {
-        return builder.buildICmp(lhs, rhs, signed ? .sge : .uge)
+        return builder.buildICmp(lhs, rhs, signed ? .signedGreaterThanOrEqual : .unsignedGreaterThanOrEqual)
       }
     case .xor:
       if decl.has(attribute: .implicit) {
