@@ -312,6 +312,7 @@ class IRGenerator: ASTVisitor, Pass {
       }
       if case .binary = type {
         _ = clang_linkExecutableFromObject(targetMachine.triple, outputFilename,
+                                           URL(fileURLWithPath: CommandLine.arguments.first!).deletingLastPathComponent().path,
                                            options.raw.linkerFlags,
                                            options.raw.linkerFlagCount,
                                            options.raw.ccFlags,

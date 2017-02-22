@@ -165,6 +165,7 @@ void DestroyRawOptions(RawOptions options) {
 
 int clang_linkExecutableFromObject(const char *targetTriple,
                                    const char *filename,
+                                   const char *runtimeFrameworkPath,
                                    char **linkerFlags,
                                    size_t linkerFlagsCount,
                                    char **ccFlags,
@@ -179,9 +180,9 @@ int clang_linkExecutableFromObject(const char *targetTriple,
     clangPath->c_str(),
     inputPath.c_str(),
     "-l", "c++",
-    "-l", "gc",
-    "-l", "trillRuntime",
-    "-L", "/usr/local/lib",
+    "-framework", "trillRuntime",
+    "-F", runtimeFrameworkPath,
+    "-rpath", runtimeFrameworkPath,
     "-o", outputPath.c_str(),
   };
   for (auto flag : ArrayRef<char *>(ccFlags, ccFlagsCount)) {

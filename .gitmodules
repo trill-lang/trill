@@ -1,3 +1,6 @@
 [submodule "LLVMSwift"]
 	path = LLVMSwift
 	url = git@github.com:trill-lang/LLVMSwift.git
+[submodule "TinyGC"]
+	path = TinyGC
+	url = https://github.com/ivmai/tinygc.git
