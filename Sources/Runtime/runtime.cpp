@@ -16,7 +16,7 @@
 #include <signal.h>
 
 #define GC_PRINT_MSGS
-#include <gc/gc.h>
+#include "gc.h"
 #undef GC_PRINT_MSGS
 
 namespace trill {

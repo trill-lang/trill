@@ -41,7 +41,7 @@ typedef enum RawOutputFormat {
 } RawOutputFormat;
 
 typedef enum RawMode {
-  Emit, JIT,
+  Emit, RunJIT,
   OnlyDiagnostics
 } RawMode;
 
@@ -76,6 +76,7 @@ void LLVMLinkInOrcMCJITReplacement(void);
 int clang_isNoReturn(CXCursor cursor);
 int clang_linkExecutableFromObject(const char *targetTriple,
                                    const char *filename,
+                                   const char *runtimeFrameworkPath,
                                    char *_Nullable *_Nonnull linkerFlags,
                                    size_t linkerFlagsCount,
                                    char *_Nullable *_Nonnull ccFlags,

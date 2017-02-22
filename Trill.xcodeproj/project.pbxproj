@@ -7,6 +7,61 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C02F307B1E5D5E6000BC3890 /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = C02F30791E5D5E6000BC3890 /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F307F1E5D5E8200BC3890 /* gc.h in Headers */ = {isa = PBXBuildFile; fileRef = C02F30641E5D5CFA00BC3890 /* gc.h */; };
+		C02F30801E5D5E8200BC3890 /* gc_gcj.h in Headers */ = {isa = PBXBuildFile; fileRef = C02F30651E5D5CFA00BC3890 /* gc_gcj.h */; };
+		C02F30811E5D5E8200BC3890 /* gc_mark.h in Headers */ = {isa = PBXBuildFile; fileRef = C02F30661E5D5CFA00BC3890 /* gc_mark.h */; };
+		C02F30821E5D5E8200BC3890 /* javaxfc.h in Headers */ = {isa = PBXBuildFile; fileRef = C02F30691E5D5CFA00BC3890 /* javaxfc.h */; };
+		C02F30831E5D5E8200BC3890 /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = C02F306C1E5D5CFA00BC3890 /* tinygc.c */; };
+		C02F30841E5D5E9700BC3890 /* demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770141D69128500FEFB85 /* demangle.cpp */; };
+		C02F30851E5D5E9700BC3890 /* MangledOperators.def in Resources */ = {isa = PBXBuildFile; fileRef = DC1BF29A1D7F166C0055157B /* MangledOperators.def */; };
+		C02F30861E5D5E9700BC3890 /* SpecialTypes.def in Resources */ = {isa = PBXBuildFile; fileRef = DC1BF29B1D7F179F0055157B /* SpecialTypes.def */; };
+		C02F30871E5D5E9700BC3890 /* demangle.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770151D69128500FEFB85 /* demangle.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F30881E5D5E9700BC3890 /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770161D69128500FEFB85 /* runtime.cpp */; };
+		C02F30891E5D5E9700BC3890 /* runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770171D69128500FEFB85 /* runtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F308A1E5D5E9700BC3890 /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
+		C02F308B1E5D5E9700BC3890 /* metadata.h in Headers */ = {isa = PBXBuildFile; fileRef = DC4CF0C71D7A76750090216B /* metadata.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F308C1E5D5E9700BC3890 /* metadata_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA5CC481DEE442D001B66A1 /* metadata_private.h */; };
+		C02F308D1E5D5E9700BC3890 /* defines.h in Headers */ = {isa = PBXBuildFile; fileRef = DC78DA411D7920930015035A /* defines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F308E1E5D5E9700BC3890 /* trill.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770181D69128500FEFB85 /* trill.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C02F30911E5D5ED400BC3890 /* trillRuntime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C02F30771E5D5E6000BC3890 /* trillRuntime.framework */; };
+		C02F30B71E5D680600BC3890 /* Alias.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30921E5D680600BC3890 /* Alias.swift */; };
+		C02F30B81E5D680600BC3890 /* ArrayType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30931E5D680600BC3890 /* ArrayType.swift */; };
+		C02F30B91E5D680600BC3890 /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30941E5D680600BC3890 /* BasicBlock.swift */; };
+		C02F30BA1E5D680600BC3890 /* Clause.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30951E5D680600BC3890 /* Clause.swift */; };
+		C02F30BB1E5D680600BC3890 /* Constant.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30961E5D680600BC3890 /* Constant.swift */; };
+		C02F30BC1E5D680600BC3890 /* FloatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30971E5D680600BC3890 /* FloatType.swift */; };
+		C02F30BD1E5D680600BC3890 /* Function.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30981E5D680600BC3890 /* Function.swift */; };
+		C02F30BE1E5D680600BC3890 /* FunctionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30991E5D680600BC3890 /* FunctionType.swift */; };
+		C02F30BF1E5D680600BC3890 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309A1E5D680600BC3890 /* Global.swift */; };
+		C02F30C01E5D680600BC3890 /* Initialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309B1E5D680600BC3890 /* Initialization.swift */; };
+		C02F30C11E5D680600BC3890 /* Instruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309C1E5D680600BC3890 /* Instruction.swift */; };
+		C02F30C21E5D680600BC3890 /* IntType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309D1E5D680600BC3890 /* IntType.swift */; };
+		C02F30C31E5D680600BC3890 /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309E1E5D680600BC3890 /* IRBuilder.swift */; };
+		C02F30C41E5D680600BC3890 /* IRGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F309F1E5D680600BC3890 /* IRGlobal.swift */; };
+		C02F30C51E5D680600BC3890 /* IRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A01E5D680600BC3890 /* IRType.swift */; };
+		C02F30C61E5D680600BC3890 /* IRValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A11E5D680600BC3890 /* IRValue.swift */; };
+		C02F30C71E5D680600BC3890 /* IRValue+Kinds.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A21E5D680600BC3890 /* IRValue+Kinds.swift */; };
+		C02F30C81E5D680600BC3890 /* JIT.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A31E5D680600BC3890 /* JIT.swift */; };
+		C02F30C91E5D680600BC3890 /* LabelType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A41E5D680600BC3890 /* LabelType.swift */; };
+		C02F30CA1E5D680600BC3890 /* Linkage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A51E5D680600BC3890 /* Linkage.swift */; };
+		C02F30CB1E5D680600BC3890 /* MemoryBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A61E5D680600BC3890 /* MemoryBuffer.swift */; };
+		C02F30CC1E5D680600BC3890 /* MetadataType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A71E5D680600BC3890 /* MetadataType.swift */; };
+		C02F30CD1E5D680600BC3890 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A81E5D680600BC3890 /* Module.swift */; };
+		C02F30CE1E5D680600BC3890 /* OpCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30A91E5D680600BC3890 /* OpCode.swift */; };
+		C02F30CF1E5D680600BC3890 /* PassManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AA1E5D680600BC3890 /* PassManager.swift */; };
+		C02F30D01E5D680600BC3890 /* PhiNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AB1E5D680600BC3890 /* PhiNode.swift */; };
+		C02F30D11E5D680600BC3890 /* PointerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AC1E5D680600BC3890 /* PointerType.swift */; };
+		C02F30D21E5D680600BC3890 /* Predicates+Deprecations.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AD1E5D680600BC3890 /* Predicates+Deprecations.swift */; };
+		C02F30D31E5D680600BC3890 /* StructType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AE1E5D680600BC3890 /* StructType.swift */; };
+		C02F30D41E5D680600BC3890 /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30AF1E5D680600BC3890 /* Switch.swift */; };
+		C02F30D51E5D680600BC3890 /* TargetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B01E5D680600BC3890 /* TargetData.swift */; };
+		C02F30D61E5D680600BC3890 /* TargetMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B11E5D680600BC3890 /* TargetMachine.swift */; };
+		C02F30D71E5D680600BC3890 /* TokenType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B21E5D680600BC3890 /* TokenType.swift */; };
+		C02F30D81E5D680600BC3890 /* Use.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B31E5D680600BC3890 /* Use.swift */; };
+		C02F30D91E5D680600BC3890 /* VectorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B41E5D680600BC3890 /* VectorType.swift */; };
+		C02F30DA1E5D680600BC3890 /* VoidType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B51E5D680600BC3890 /* VoidType.swift */; };
+		C02F30DB1E5D680600BC3890 /* X86MMXType.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02F30B61E5D680600BC3890 /* X86MMXType.swift */; };
 		DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
 		DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B90A1D79F98A00C980D3 /* BuiltinIRGen.swift */; };
 		DC07FA1A1D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC07FA191D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift */; };
@@ -34,11 +89,6 @@
 		DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF11D6911A200FEFB85 /* Mangler.swift */; };
 		DC1770121D6911A200FEFB85 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF21D6911A200FEFB85 /* Sema.swift */; };
 		DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC176FF31D6911A200FEFB85 /* TypeChecker.swift */; };
-		DC1770191D69128500FEFB85 /* demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770141D69128500FEFB85 /* demangle.cpp */; };
-		DC17701A1D69128500FEFB85 /* demangle.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770151D69128500FEFB85 /* demangle.h */; };
-		DC17701B1D69128500FEFB85 /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC1770161D69128500FEFB85 /* runtime.cpp */; };
-		DC17701C1D69128500FEFB85 /* runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770171D69128500FEFB85 /* runtime.h */; };
-		DC17701D1D69128500FEFB85 /* trill.h in Headers */ = {isa = PBXBuildFile; fileRef = DC1770181D69128500FEFB85 /* trill.h */; };
 		DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC17701E1D6912E300FEFB85 /* Utilities.swift */; };
 		DC1770301D69130700FEFB85 /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770211D69130700FEFB85 /* AnnotatedTextStorage.swift */; };
 		DC1770311D69130700FEFB85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1770221D69130700FEFB85 /* AppDelegate.swift */; };
@@ -88,41 +138,7 @@
 		DC31C10E1C82681E00F85807 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC31C10A1C82681E00F85807 /* main.swift */; };
 		DC47F5D01E197AC900595DCD /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */; };
 		DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
-		DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC4CF0C61D7A76750090216B /* metadata.cpp */; };
 		DC4CF0CA1D7A88D20090216B /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC03B9081D79F84500C980D3 /* Builtins.swift */; };
-		DC4F08191E2F110B00CE19E6 /* Alias.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07F71E2F110B00CE19E6 /* Alias.swift */; };
-		DC4F081A1E2F110B00CE19E6 /* ArrayType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07F81E2F110B00CE19E6 /* ArrayType.swift */; };
-		DC4F081B1E2F110B00CE19E6 /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07F91E2F110B00CE19E6 /* BasicBlock.swift */; };
-		DC4F081C1E2F110B00CE19E6 /* FloatType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FA1E2F110B00CE19E6 /* FloatType.swift */; };
-		DC4F081D1E2F110B00CE19E6 /* Function.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FB1E2F110B00CE19E6 /* Function.swift */; };
-		DC4F081E1E2F110B00CE19E6 /* FunctionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FC1E2F110B00CE19E6 /* FunctionType.swift */; };
-		DC4F081F1E2F110B00CE19E6 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FD1E2F110B00CE19E6 /* Global.swift */; };
-		DC4F08201E2F110B00CE19E6 /* Initialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FE1E2F110B00CE19E6 /* Initialization.swift */; };
-		DC4F08211E2F110B00CE19E6 /* Instruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F07FF1E2F110B00CE19E6 /* Instruction.swift */; };
-		DC4F08221E2F110B00CE19E6 /* IntType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08001E2F110B00CE19E6 /* IntType.swift */; };
-		DC4F08231E2F110B00CE19E6 /* IRBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08011E2F110B00CE19E6 /* IRBuilder.swift */; };
-		DC4F08241E2F110B00CE19E6 /* IRGlobal.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08021E2F110B00CE19E6 /* IRGlobal.swift */; };
-		DC4F08251E2F110B00CE19E6 /* IRType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08031E2F110B00CE19E6 /* IRType.swift */; };
-		DC4F08261E2F110B00CE19E6 /* IRValue+Kinds.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08041E2F110B00CE19E6 /* IRValue+Kinds.swift */; };
-		DC4F08271E2F110B00CE19E6 /* IRValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08051E2F110B00CE19E6 /* IRValue.swift */; };
-		DC4F08291E2F110B00CE19E6 /* LabelType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08071E2F110B00CE19E6 /* LabelType.swift */; };
-		DC4F082A1E2F110B00CE19E6 /* Linkage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08081E2F110B00CE19E6 /* Linkage.swift */; };
-		DC4F082B1E2F110B00CE19E6 /* MemoryBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08091E2F110B00CE19E6 /* MemoryBuffer.swift */; };
-		DC4F082C1E2F110B00CE19E6 /* MetadataType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080A1E2F110B00CE19E6 /* MetadataType.swift */; };
-		DC4F082D1E2F110B00CE19E6 /* Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080B1E2F110B00CE19E6 /* Module.swift */; };
-		DC4F082E1E2F110B00CE19E6 /* OpCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080C1E2F110B00CE19E6 /* OpCode.swift */; };
-		DC4F082F1E2F110B00CE19E6 /* PassManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080D1E2F110B00CE19E6 /* PassManager.swift */; };
-		DC4F08301E2F110B00CE19E6 /* PhiNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080E1E2F110B00CE19E6 /* PhiNode.swift */; };
-		DC4F08311E2F110B00CE19E6 /* PointerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F080F1E2F110B00CE19E6 /* PointerType.swift */; };
-		DC4F08321E2F110B00CE19E6 /* StructType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08101E2F110B00CE19E6 /* StructType.swift */; };
-		DC4F08331E2F110B00CE19E6 /* Switch.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08111E2F110B00CE19E6 /* Switch.swift */; };
-		DC4F08341E2F110B00CE19E6 /* TargetData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08121E2F110B00CE19E6 /* TargetData.swift */; };
-		DC4F08351E2F110B00CE19E6 /* TargetMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08131E2F110B00CE19E6 /* TargetMachine.swift */; };
-		DC4F08361E2F110B00CE19E6 /* TokenType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08141E2F110B00CE19E6 /* TokenType.swift */; };
-		DC4F08371E2F110B00CE19E6 /* Use.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08151E2F110B00CE19E6 /* Use.swift */; };
-		DC4F08381E2F110B00CE19E6 /* VectorType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08161E2F110B00CE19E6 /* VectorType.swift */; };
-		DC4F08391E2F110B00CE19E6 /* VoidType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08171E2F110B00CE19E6 /* VoidType.swift */; };
-		DC4F083A1E2F110B00CE19E6 /* X86MMXType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4F08181E2F110B00CE19E6 /* X86MMXType.swift */; };
 		DC4F087E1E2F113600CE19E6 /* libLLVMAMDGPUAsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC4F083B1E2F113600CE19E6 /* libLLVMAMDGPUAsmParser.a */; };
 		DC4F087F1E2F113600CE19E6 /* libLLVMAMDGPUAsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC4F083C1E2F113600CE19E6 /* libLLVMAMDGPUAsmPrinter.a */; };
 		DC4F08801E2F113600CE19E6 /* libLLVMAMDGPUCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC4F083D1E2F113600CE19E6 /* libLLVMAMDGPUCodeGen.a */; };
@@ -194,7 +210,6 @@
 		DC5EA0C61E16ED1200875545 /* ColoredStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5EA0C51E16ED1200875545 /* ColoredStream.swift */; };
 		DC5EA0C81E185C8300875545 /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5EA0C71E185C8300875545 /* StreamConsumer.swift */; };
 		DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38DE1D1FBC98003A8DED /* libclang.dylib */; };
-		DC78DA421D7920930015035A /* defines.h in Headers */ = {isa = PBXBuildFile; fileRef = DC78DA411D7920930015035A /* defines.h */; };
 		DC7968321D76219B00FF7A02 /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7968311D76219B00FF7A02 /* Options.swift */; };
 		DC7968341D765A1000FF7A02 /* libclangFrontend.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968331D765A1000FF7A02 /* libclangFrontend.a */; };
 		DC7968361D765A1E00FF7A02 /* libclangEdit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC7968351D765A1E00FF7A02 /* libclangEdit.a */; };
@@ -209,13 +224,9 @@
 		DC98BBC11D59A32E00677C66 /* libclangASTMatchers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E11D1FBF52003A8DED /* libclangASTMatchers.a */; };
 		DC98BBC21D59A32F00677C66 /* libclangIndex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38E31D1FBF52003A8DED /* libclangIndex.a */; };
 		DC98BBC31D59A33200677C66 /* libclangLex.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC5F38F61D1FBF69003A8DED /* libclangLex.a */; };
-		DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC98BBC51D5EE92F00677C66 /* libtinygc.a */; };
-		DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
-		DCA5CC491DEE442D001B66A1 /* metadata_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DCA5CC481DEE442D001B66A1 /* metadata_private.h */; };
 		DCAEBC4E1C90092B00B84E25 /* libcurses.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC4D1C90092B00B84E25 /* libcurses.dylib */; };
 		DCAEBC641C9009B000B84E25 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DCAEBC631C9009B000B84E25 /* libz.dylib */; };
 		DCC28A511E1ADF21009769A2 /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC5EA0C71E185C8300875545 /* StreamConsumer.swift */; };
-		DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */; };
 		DCDBBF211DCE8769008E18D9 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCEF07FF1DCD6BA90075FE15 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF07FE1DCD6BA90075FE15 /* ANSIColor.swift */; };
 		DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF80B5F1D7487DB00463CBB /* SourceFile.swift */; };
@@ -223,18 +234,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		DC2BC1751D3B030E00A6C7CC /* PBXContainerItemProxy */ = {
+		C02F308F1E5D5ECA00BC3890 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC3D7D171C78338C0076EED6 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = DC2BC16B1D3B02CA00A6C7CC;
-			remoteInfo = TrillRuntime;
-		};
-		DC98BBE51D60129300677C66 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DC3D7D171C78338C0076EED6 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DC2BC16B1D3B02CA00A6C7CC;
+			remoteGlobalIDString = C02F30761E5D5E6000BC3890;
 			remoteInfo = trillRuntime;
 		};
 /* End PBXContainerItemProxy section */
@@ -271,6 +275,51 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C02F30641E5D5CFA00BC3890 /* gc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc.h; sourceTree = "<group>"; };
+		C02F30651E5D5CFA00BC3890 /* gc_gcj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc_gcj.h; sourceTree = "<group>"; };
+		C02F30661E5D5CFA00BC3890 /* gc_mark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc_mark.h; sourceTree = "<group>"; };
+		C02F30691E5D5CFA00BC3890 /* javaxfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = javaxfc.h; sourceTree = "<group>"; };
+		C02F306C1E5D5CFA00BC3890 /* tinygc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinygc.c; sourceTree = "<group>"; };
+		C02F30771E5D5E6000BC3890 /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C02F30791E5D5E6000BC3890 /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = trillRuntime.h; sourceTree = "<group>"; };
+		C02F307A1E5D5E6000BC3890 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C02F30921E5D680600BC3890 /* Alias.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Alias.swift; sourceTree = "<group>"; };
+		C02F30931E5D680600BC3890 /* ArrayType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayType.swift; sourceTree = "<group>"; };
+		C02F30941E5D680600BC3890 /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicBlock.swift; sourceTree = "<group>"; };
+		C02F30951E5D680600BC3890 /* Clause.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Clause.swift; sourceTree = "<group>"; };
+		C02F30961E5D680600BC3890 /* Constant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constant.swift; sourceTree = "<group>"; };
+		C02F30971E5D680600BC3890 /* FloatType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatType.swift; sourceTree = "<group>"; };
+		C02F30981E5D680600BC3890 /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Function.swift; sourceTree = "<group>"; };
+		C02F30991E5D680600BC3890 /* FunctionType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionType.swift; sourceTree = "<group>"; };
+		C02F309A1E5D680600BC3890 /* Global.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		C02F309B1E5D680600BC3890 /* Initialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Initialization.swift; sourceTree = "<group>"; };
+		C02F309C1E5D680600BC3890 /* Instruction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Instruction.swift; sourceTree = "<group>"; };
+		C02F309D1E5D680600BC3890 /* IntType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntType.swift; sourceTree = "<group>"; };
+		C02F309E1E5D680600BC3890 /* IRBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; };
+		C02F309F1E5D680600BC3890 /* IRGlobal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRGlobal.swift; sourceTree = "<group>"; };
+		C02F30A01E5D680600BC3890 /* IRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRType.swift; sourceTree = "<group>"; };
+		C02F30A11E5D680600BC3890 /* IRValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRValue.swift; sourceTree = "<group>"; };
+		C02F30A21E5D680600BC3890 /* IRValue+Kinds.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IRValue+Kinds.swift"; sourceTree = "<group>"; };
+		C02F30A31E5D680600BC3890 /* JIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JIT.swift; sourceTree = "<group>"; };
+		C02F30A41E5D680600BC3890 /* LabelType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabelType.swift; sourceTree = "<group>"; };
+		C02F30A51E5D680600BC3890 /* Linkage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Linkage.swift; sourceTree = "<group>"; };
+		C02F30A61E5D680600BC3890 /* MemoryBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryBuffer.swift; sourceTree = "<group>"; };
+		C02F30A71E5D680600BC3890 /* MetadataType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetadataType.swift; sourceTree = "<group>"; };
+		C02F30A81E5D680600BC3890 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
+		C02F30A91E5D680600BC3890 /* OpCode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpCode.swift; sourceTree = "<group>"; };
+		C02F30AA1E5D680600BC3890 /* PassManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassManager.swift; sourceTree = "<group>"; };
+		C02F30AB1E5D680600BC3890 /* PhiNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhiNode.swift; sourceTree = "<group>"; };
+		C02F30AC1E5D680600BC3890 /* PointerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointerType.swift; sourceTree = "<group>"; };
+		C02F30AD1E5D680600BC3890 /* Predicates+Deprecations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Predicates+Deprecations.swift"; sourceTree = "<group>"; };
+		C02F30AE1E5D680600BC3890 /* StructType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StructType.swift; sourceTree = "<group>"; };
+		C02F30AF1E5D680600BC3890 /* Switch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
+		C02F30B01E5D680600BC3890 /* TargetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetData.swift; sourceTree = "<group>"; };
+		C02F30B11E5D680600BC3890 /* TargetMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetMachine.swift; sourceTree = "<group>"; };
+		C02F30B21E5D680600BC3890 /* TokenType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenType.swift; sourceTree = "<group>"; };
+		C02F30B31E5D680600BC3890 /* Use.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Use.swift; sourceTree = "<group>"; };
+		C02F30B41E5D680600BC3890 /* VectorType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VectorType.swift; sourceTree = "<group>"; };
+		C02F30B51E5D680600BC3890 /* VoidType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoidType.swift; sourceTree = "<group>"; };
+		C02F30B61E5D680600BC3890 /* X86MMXType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = X86MMXType.swift; sourceTree = "<group>"; };
 		DC02C5CB1D56C06E00FE8374 /* libgc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgc.a; path = "../../../../usr/local/Cellar/bdw-gc/7.4.2/lib/libgc.a"; sourceTree = "<group>"; };
 		DC02C5D11D5836E200FE8374 /* libLLVMCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCodeGen.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMCodeGen.a"; sourceTree = "<group>"; };
 		DC02C5D21D5836E200FE8374 /* libLLVMCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMCore.a; path = "../../Documents/Code/Swift/swift/build/Ninja-DebugAssert/llvm-macosx-x86_64/lib/libLLVMCore.a"; sourceTree = "<group>"; };
@@ -370,46 +419,12 @@
 		DC217A041D4EAD3000729DF0 /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC217A061D4EAD3000729DF0 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DC25D59A1E23540F00580769 /* ORCJIT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ORCJIT.swift; sourceTree = "<group>"; };
-		DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtrillRuntime.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC31C1071C82681E00F85807 /* BridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BridgingHeader.h; path = Sources/BridgingHeader.h; sourceTree = SOURCE_ROOT; };
 		DC31C10A1C82681E00F85807 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; name = main.swift; path = Sources/main.swift; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC3D7D1F1C78338C0076EED6 /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC47F5CF1E197AC900595DCD /* AttributedStringStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = AttributedStringStream.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC4CF0C61D7A76750090216B /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = SOURCE_ROOT; tabWidth = 2; };
 		DC4CF0C71D7A76750090216B /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = SOURCE_ROOT; };
-		DC4F07F71E2F110B00CE19E6 /* Alias.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Alias.swift; sourceTree = "<group>"; };
-		DC4F07F81E2F110B00CE19E6 /* ArrayType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayType.swift; sourceTree = "<group>"; };
-		DC4F07F91E2F110B00CE19E6 /* BasicBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicBlock.swift; sourceTree = "<group>"; };
-		DC4F07FA1E2F110B00CE19E6 /* FloatType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloatType.swift; sourceTree = "<group>"; };
-		DC4F07FB1E2F110B00CE19E6 /* Function.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Function.swift; sourceTree = "<group>"; };
-		DC4F07FC1E2F110B00CE19E6 /* FunctionType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FunctionType.swift; sourceTree = "<group>"; };
-		DC4F07FD1E2F110B00CE19E6 /* Global.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
-		DC4F07FE1E2F110B00CE19E6 /* Initialization.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Initialization.swift; sourceTree = "<group>"; };
-		DC4F07FF1E2F110B00CE19E6 /* Instruction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Instruction.swift; sourceTree = "<group>"; };
-		DC4F08001E2F110B00CE19E6 /* IntType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntType.swift; sourceTree = "<group>"; };
-		DC4F08011E2F110B00CE19E6 /* IRBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRBuilder.swift; sourceTree = "<group>"; };
-		DC4F08021E2F110B00CE19E6 /* IRGlobal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRGlobal.swift; sourceTree = "<group>"; };
-		DC4F08031E2F110B00CE19E6 /* IRType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRType.swift; sourceTree = "<group>"; };
-		DC4F08041E2F110B00CE19E6 /* IRValue+Kinds.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "IRValue+Kinds.swift"; sourceTree = "<group>"; };
-		DC4F08051E2F110B00CE19E6 /* IRValue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IRValue.swift; sourceTree = "<group>"; };
-		DC4F08071E2F110B00CE19E6 /* LabelType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LabelType.swift; sourceTree = "<group>"; };
-		DC4F08081E2F110B00CE19E6 /* Linkage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Linkage.swift; sourceTree = "<group>"; };
-		DC4F08091E2F110B00CE19E6 /* MemoryBuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryBuffer.swift; sourceTree = "<group>"; };
-		DC4F080A1E2F110B00CE19E6 /* MetadataType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetadataType.swift; sourceTree = "<group>"; };
-		DC4F080B1E2F110B00CE19E6 /* Module.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Module.swift; sourceTree = "<group>"; };
-		DC4F080C1E2F110B00CE19E6 /* OpCode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpCode.swift; sourceTree = "<group>"; };
-		DC4F080D1E2F110B00CE19E6 /* PassManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassManager.swift; sourceTree = "<group>"; };
-		DC4F080E1E2F110B00CE19E6 /* PhiNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhiNode.swift; sourceTree = "<group>"; };
-		DC4F080F1E2F110B00CE19E6 /* PointerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointerType.swift; sourceTree = "<group>"; };
-		DC4F08101E2F110B00CE19E6 /* StructType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StructType.swift; sourceTree = "<group>"; };
-		DC4F08111E2F110B00CE19E6 /* Switch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Switch.swift; sourceTree = "<group>"; };
-		DC4F08121E2F110B00CE19E6 /* TargetData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetData.swift; sourceTree = "<group>"; };
-		DC4F08131E2F110B00CE19E6 /* TargetMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TargetMachine.swift; sourceTree = "<group>"; };
-		DC4F08141E2F110B00CE19E6 /* TokenType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenType.swift; sourceTree = "<group>"; };
-		DC4F08151E2F110B00CE19E6 /* Use.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Use.swift; sourceTree = "<group>"; };
-		DC4F08161E2F110B00CE19E6 /* VectorType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VectorType.swift; sourceTree = "<group>"; };
-		DC4F08171E2F110B00CE19E6 /* VoidType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoidType.swift; sourceTree = "<group>"; };
-		DC4F08181E2F110B00CE19E6 /* X86MMXType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = X86MMXType.swift; sourceTree = "<group>"; };
 		DC4F083B1E2F113600CE19E6 /* libLLVMAMDGPUAsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAMDGPUAsmParser.a; path = ../../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAMDGPUAsmParser.a; sourceTree = "<group>"; };
 		DC4F083C1E2F113600CE19E6 /* libLLVMAMDGPUAsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAMDGPUAsmPrinter.a; path = ../../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAMDGPUAsmPrinter.a; sourceTree = "<group>"; };
 		DC4F083D1E2F113600CE19E6 /* libLLVMAMDGPUCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAMDGPUCodeGen.a; path = ../../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAMDGPUCodeGen.a; sourceTree = "<group>"; };
@@ -570,6 +585,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		C02F30731E5D5E6000BC3890 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC0FE92F1CE3061A00224874 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -581,15 +603,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC98BBE81D6013EA00677C66 /* libtrillRuntime.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DC2BC1691D3B02CA00A6C7CC /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC98BBC61D5EE92F00677C66 /* libtinygc.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -597,6 +610,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C02F30911E5D5ED400BC3890 /* trillRuntime.framework in Frameworks */,
 				DC4F087E1E2F113600CE19E6 /* libLLVMAMDGPUAsmParser.a in Frameworks */,
 				DC4F087F1E2F113600CE19E6 /* libLLVMAMDGPUAsmPrinter.a in Frameworks */,
 				DC4F08801E2F113600CE19E6 /* libLLVMAMDGPUCodeGen.a in Frameworks */,
@@ -665,7 +679,6 @@
 				DC4F08BF1E2F113600CE19E6 /* libLLVMX86Info.a in Frameworks */,
 				DC4F08C01E2F113600CE19E6 /* libLLVMX86Utils.a in Frameworks */,
 				DC7968341D765A1000FF7A02 /* libclangFrontend.a in Frameworks */,
-				DCC4EF491D690E8D00E1CF5B /* libtrillRuntime.a in Frameworks */,
 				DC7968361D765A1E00FF7A02 /* libclangEdit.a in Frameworks */,
 				DC7968381D765A2000FF7A02 /* libclangFrontendTool.a in Frameworks */,
 				DC5F39511D1FC107003A8DED /* libclang.dylib in Frameworks */,
@@ -686,6 +699,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C02F305F1E5D5CFA00BC3890 /* TinyGC */ = {
+			isa = PBXGroup;
+			children = (
+				C02F30641E5D5CFA00BC3890 /* gc.h */,
+				C02F30651E5D5CFA00BC3890 /* gc_gcj.h */,
+				C02F30661E5D5CFA00BC3890 /* gc_mark.h */,
+				C02F30691E5D5CFA00BC3890 /* javaxfc.h */,
+				C02F306C1E5D5CFA00BC3890 /* tinygc.c */,
+			);
+			path = TinyGC;
+			sourceTree = "<group>";
+		};
+		C02F30781E5D5E6000BC3890 /* trillRuntime */ = {
+			isa = PBXGroup;
+			children = (
+				C02F30791E5D5E6000BC3890 /* trillRuntime.h */,
+				C02F307A1E5D5E6000BC3890 /* Info.plist */,
+			);
+			path = trillRuntime;
+			sourceTree = "<group>";
+		};
 		DC176FCC1D6911A200FEFB85 /* Base */ = {
 			isa = PBXGroup;
 			children = (
@@ -846,22 +880,26 @@
 			isa = PBXGroup;
 			children = (
 				DCAEBC7D1C900A2000B84E25 /* libLLVM */,
+				C02F305F1E5D5CFA00BC3890 /* TinyGC */,
 				DC3D7D211C78338C0076EED6 /* Trill */,
 				DC1770201D69130700FEFB85 /* iOS App */,
 				DC2BC1701D3B02E400A6C7CC /* Runtime */,
 				DC217A051D4EAD3000729DF0 /* trill-demangle */,
+				C02F30781E5D5E6000BC3890 /* trillRuntime */,
 				DC3D7D201C78338C0076EED6 /* Products */,
 				DC5F38DD1D1FBC98003A8DED /* Frameworks */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		DC3D7D201C78338C0076EED6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				DC3D7D1F1C78338C0076EED6 /* trill */,
 				DC0FE9321CE3061A00224874 /* Trill iOS.app */,
-				DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */,
 				DC217A041D4EAD3000729DF0 /* trill-demangle */,
+				C02F30771E5D5E6000BC3890 /* trillRuntime.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -887,39 +925,43 @@
 		DC4F07F61E2F110B00CE19E6 /* LLVM */ = {
 			isa = PBXGroup;
 			children = (
-				DC4F07F71E2F110B00CE19E6 /* Alias.swift */,
-				DC4F07F81E2F110B00CE19E6 /* ArrayType.swift */,
-				DC4F07F91E2F110B00CE19E6 /* BasicBlock.swift */,
-				DC4F07FA1E2F110B00CE19E6 /* FloatType.swift */,
-				DC4F07FB1E2F110B00CE19E6 /* Function.swift */,
-				DC4F07FC1E2F110B00CE19E6 /* FunctionType.swift */,
-				DC4F07FD1E2F110B00CE19E6 /* Global.swift */,
-				DC4F07FE1E2F110B00CE19E6 /* Initialization.swift */,
-				DC4F07FF1E2F110B00CE19E6 /* Instruction.swift */,
-				DC4F08001E2F110B00CE19E6 /* IntType.swift */,
-				DC4F08011E2F110B00CE19E6 /* IRBuilder.swift */,
-				DC4F08021E2F110B00CE19E6 /* IRGlobal.swift */,
-				DC4F08031E2F110B00CE19E6 /* IRType.swift */,
-				DC4F08041E2F110B00CE19E6 /* IRValue+Kinds.swift */,
-				DC4F08051E2F110B00CE19E6 /* IRValue.swift */,
-				DC4F08071E2F110B00CE19E6 /* LabelType.swift */,
-				DC4F08081E2F110B00CE19E6 /* Linkage.swift */,
-				DC4F08091E2F110B00CE19E6 /* MemoryBuffer.swift */,
-				DC4F080A1E2F110B00CE19E6 /* MetadataType.swift */,
-				DC4F080B1E2F110B00CE19E6 /* Module.swift */,
-				DC4F080C1E2F110B00CE19E6 /* OpCode.swift */,
-				DC4F080D1E2F110B00CE19E6 /* PassManager.swift */,
-				DC4F080E1E2F110B00CE19E6 /* PhiNode.swift */,
-				DC4F080F1E2F110B00CE19E6 /* PointerType.swift */,
-				DC4F08101E2F110B00CE19E6 /* StructType.swift */,
-				DC4F08111E2F110B00CE19E6 /* Switch.swift */,
-				DC4F08121E2F110B00CE19E6 /* TargetData.swift */,
-				DC4F08131E2F110B00CE19E6 /* TargetMachine.swift */,
-				DC4F08141E2F110B00CE19E6 /* TokenType.swift */,
-				DC4F08151E2F110B00CE19E6 /* Use.swift */,
-				DC4F08161E2F110B00CE19E6 /* VectorType.swift */,
-				DC4F08171E2F110B00CE19E6 /* VoidType.swift */,
-				DC4F08181E2F110B00CE19E6 /* X86MMXType.swift */,
+				C02F30921E5D680600BC3890 /* Alias.swift */,
+				C02F30931E5D680600BC3890 /* ArrayType.swift */,
+				C02F30941E5D680600BC3890 /* BasicBlock.swift */,
+				C02F30951E5D680600BC3890 /* Clause.swift */,
+				C02F30961E5D680600BC3890 /* Constant.swift */,
+				C02F30971E5D680600BC3890 /* FloatType.swift */,
+				C02F30981E5D680600BC3890 /* Function.swift */,
+				C02F30991E5D680600BC3890 /* FunctionType.swift */,
+				C02F309A1E5D680600BC3890 /* Global.swift */,
+				C02F309B1E5D680600BC3890 /* Initialization.swift */,
+				C02F309C1E5D680600BC3890 /* Instruction.swift */,
+				C02F309D1E5D680600BC3890 /* IntType.swift */,
+				C02F309E1E5D680600BC3890 /* IRBuilder.swift */,
+				C02F309F1E5D680600BC3890 /* IRGlobal.swift */,
+				C02F30A01E5D680600BC3890 /* IRType.swift */,
+				C02F30A11E5D680600BC3890 /* IRValue.swift */,
+				C02F30A21E5D680600BC3890 /* IRValue+Kinds.swift */,
+				C02F30A31E5D680600BC3890 /* JIT.swift */,
+				C02F30A41E5D680600BC3890 /* LabelType.swift */,
+				C02F30A51E5D680600BC3890 /* Linkage.swift */,
+				C02F30A61E5D680600BC3890 /* MemoryBuffer.swift */,
+				C02F30A71E5D680600BC3890 /* MetadataType.swift */,
+				C02F30A81E5D680600BC3890 /* Module.swift */,
+				C02F30A91E5D680600BC3890 /* OpCode.swift */,
+				C02F30AA1E5D680600BC3890 /* PassManager.swift */,
+				C02F30AB1E5D680600BC3890 /* PhiNode.swift */,
+				C02F30AC1E5D680600BC3890 /* PointerType.swift */,
+				C02F30AD1E5D680600BC3890 /* Predicates+Deprecations.swift */,
+				C02F30AE1E5D680600BC3890 /* StructType.swift */,
+				C02F30AF1E5D680600BC3890 /* Switch.swift */,
+				C02F30B01E5D680600BC3890 /* TargetData.swift */,
+				C02F30B11E5D680600BC3890 /* TargetMachine.swift */,
+				C02F30B21E5D680600BC3890 /* TokenType.swift */,
+				C02F30B31E5D680600BC3890 /* Use.swift */,
+				C02F30B41E5D680600BC3890 /* VectorType.swift */,
+				C02F30B51E5D680600BC3890 /* VoidType.swift */,
+				C02F30B61E5D680600BC3890 /* X86MMXType.swift */,
 			);
 			name = LLVM;
 			path = LLVMSwift/Sources/LLVM;
@@ -1129,21 +1171,45 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		DC2BC16A1D3B02CA00A6C7CC /* Headers */ = {
+		C02F30741E5D5E6000BC3890 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC17701D1D69128500FEFB85 /* trill.h in Headers */,
-				DCA5CC491DEE442D001B66A1 /* metadata_private.h in Headers */,
-				DC78DA421D7920930015035A /* defines.h in Headers */,
-				DC17701A1D69128500FEFB85 /* demangle.h in Headers */,
-				DC17701C1D69128500FEFB85 /* runtime.h in Headers */,
+				C02F30821E5D5E8200BC3890 /* javaxfc.h in Headers */,
+				C02F308E1E5D5E9700BC3890 /* trill.h in Headers */,
+				C02F30891E5D5E9700BC3890 /* runtime.h in Headers */,
+				C02F308D1E5D5E9700BC3890 /* defines.h in Headers */,
+				C02F30871E5D5E9700BC3890 /* demangle.h in Headers */,
+				C02F308B1E5D5E9700BC3890 /* metadata.h in Headers */,
+				C02F307F1E5D5E8200BC3890 /* gc.h in Headers */,
+				C02F307B1E5D5E6000BC3890 /* trillRuntime.h in Headers */,
+				C02F308C1E5D5E9700BC3890 /* metadata_private.h in Headers */,
+				C02F30801E5D5E8200BC3890 /* gc_gcj.h in Headers */,
+				C02F30811E5D5E8200BC3890 /* gc_mark.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		C02F30761E5D5E6000BC3890 /* trillRuntime */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C02F307C1E5D5E6000BC3890 /* Build configuration list for PBXNativeTarget "trillRuntime" */;
+			buildPhases = (
+				C02F30721E5D5E6000BC3890 /* Sources */,
+				C02F30731E5D5E6000BC3890 /* Frameworks */,
+				C02F30741E5D5E6000BC3890 /* Headers */,
+				C02F30751E5D5E6000BC3890 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = trillRuntime;
+			productName = trillRuntime;
+			productReference = C02F30771E5D5E6000BC3890 /* trillRuntime.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		DC0FE9311CE3061A00224874 /* Trill iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DC0FE95D1CE3061B00224874 /* Build configuration list for PBXNativeTarget "Trill iOS" */;
@@ -1173,29 +1239,11 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC98BBE61D60129300677C66 /* PBXTargetDependency */,
 			);
 			name = "trill-demangle";
 			productName = "trill-demangle";
 			productReference = DC217A041D4EAD3000729DF0 /* trill-demangle */;
 			productType = "com.apple.product-type.tool";
-		};
-		DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DC2BC16D1D3B02CA00A6C7CC /* Build configuration list for PBXNativeTarget "trillRuntime" */;
-			buildPhases = (
-				DC2BC1681D3B02CA00A6C7CC /* Sources */,
-				DC2BC1691D3B02CA00A6C7CC /* Frameworks */,
-				DC2BC16A1D3B02CA00A6C7CC /* Headers */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = trillRuntime;
-			productName = TrillRuntime;
-			productReference = DC2BC16C1D3B02CA00A6C7CC /* libtrillRuntime.a */;
-			productType = "com.apple.product-type.library.static";
 		};
 		DC3D7D1E1C78338C0076EED6 /* trill */ = {
 			isa = PBXNativeTarget;
@@ -1208,7 +1256,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				DC2BC1761D3B030E00A6C7CC /* PBXTargetDependency */,
+				C02F30901E5D5ECA00BC3890 /* PBXTargetDependency */,
 			);
 			name = trill;
 			productName = Trill;
@@ -1225,18 +1273,16 @@
 				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = Harlan;
 				TargetAttributes = {
+					C02F30761E5D5E6000BC3890 = {
+						CreatedOnToolsVersion = 8.2;
+						ProvisioningStyle = Automatic;
+					};
 					DC0FE9311CE3061A00224874 = {
 						CreatedOnToolsVersion = 7.3.1;
 						DevelopmentTeam = W7GJMYD5A4;
 						LastSwiftMigration = 0800;
 					};
 					DC217A031D4EAD3000729DF0 = {
-						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = W7GJMYD5A4;
-						DevelopmentTeamName = "Harlan Haskins";
-						ProvisioningStyle = Automatic;
-					};
-					DC2BC16B1D3B02CA00A6C7CC = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = W7GJMYD5A4;
 						DevelopmentTeamName = "Harlan Haskins";
@@ -1263,13 +1309,22 @@
 			targets = (
 				DC3D7D1E1C78338C0076EED6 /* trill */,
 				DC0FE9311CE3061A00224874 /* Trill iOS */,
-				DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */,
 				DC217A031D4EAD3000729DF0 /* trill-demangle */,
+				C02F30761E5D5E6000BC3890 /* trillRuntime */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		C02F30751E5D5E6000BC3890 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C02F30851E5D5E9700BC3890 /* MangledOperators.def in Resources */,
+				C02F30861E5D5E9700BC3890 /* SpecialTypes.def in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC0FE9301CE3061A00224874 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1282,6 +1337,17 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		C02F30721E5D5E6000BC3890 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C02F30841E5D5E9700BC3890 /* demangle.cpp in Sources */,
+				C02F30831E5D5E8200BC3890 /* tinygc.c in Sources */,
+				C02F308A1E5D5E9700BC3890 /* metadata.cpp in Sources */,
+				C02F30881E5D5E9700BC3890 /* runtime.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC0FE92E1CE3061A00224874 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1337,112 +1403,101 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DC2BC1681D3B02CA00A6C7CC /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC17701B1D69128500FEFB85 /* runtime.cpp in Sources */,
-				DC1770191D69128500FEFB85 /* demangle.cpp in Sources */,
-				DC4CF0C91D7A78040090216B /* metadata.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DC3D7D1B1C78338C0076EED6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C02F30C61E5D680600BC3890 /* IRValue.swift in Sources */,
 				DC1770101D6911A200FEFB85 /* LLVMWrappers.cpp in Sources */,
-				DC4F08361E2F110B00CE19E6 /* TokenType.swift in Sources */,
-				DC4F081B1E2F110B00CE19E6 /* BasicBlock.swift in Sources */,
-				DC4F081D1E2F110B00CE19E6 /* Function.swift in Sources */,
+				C02F30D71E5D680600BC3890 /* TokenType.swift in Sources */,
+				C02F30D61E5D680600BC3890 /* TargetMachine.swift in Sources */,
+				C02F30B91E5D680600BC3890 /* BasicBlock.swift in Sources */,
 				DC1770051D6911A200FEFB85 /* BaseIRGen.swift in Sources */,
-				DC4F08321E2F110B00CE19E6 /* StructType.swift in Sources */,
 				DC5EA0C61E16ED1200875545 /* ColoredStream.swift in Sources */,
+				C02F30BA1E5D680600BC3890 /* Clause.swift in Sources */,
+				C02F30D91E5D680600BC3890 /* VectorType.swift in Sources */,
 				DC17700D1D6911A200FEFB85 /* TypeIRGen.swift in Sources */,
 				DC17700E1D6911A200FEFB85 /* ValueIRGen.swift in Sources */,
+				C02F30D21E5D680600BC3890 /* Predicates+Deprecations.swift in Sources */,
 				DC7968321D76219B00FF7A02 /* Options.swift in Sources */,
 				DC03B90B1D79F98A00C980D3 /* BuiltinIRGen.swift in Sources */,
 				DC176FFF1D6911A200FEFB85 /* ClangImporter.swift in Sources */,
+				C02F30D01E5D680600BC3890 /* PhiNode.swift in Sources */,
 				DC176FF91D6911A200FEFB85 /* ASTBase.swift in Sources */,
 				DC1770641D6913EF00FEFB85 /* Lexer.swift in Sources */,
+				C02F30CF1E5D680600BC3890 /* PassManager.swift in Sources */,
+				C02F30BF1E5D680600BC3890 /* Global.swift in Sources */,
+				C02F30D81E5D680600BC3890 /* Use.swift in Sources */,
 				DC25D59B1E23540F00580769 /* ORCJIT.swift in Sources */,
 				DC17701F1D6912E300FEFB85 /* Utilities.swift in Sources */,
 				DCF80B601D7487DB00463CBB /* SourceFile.swift in Sources */,
-				DC4F08201E2F110B00CE19E6 /* Initialization.swift in Sources */,
-				DC4F081E1E2F110B00CE19E6 /* FunctionType.swift in Sources */,
 				DC5EA0C41E15A10E00875545 /* VarBinding.swift in Sources */,
 				DC1770021D6911A200FEFB85 /* Driver.swift in Sources */,
-				DC4F082E1E2F110B00CE19E6 /* OpCode.swift in Sources */,
+				C02F30BE1E5D680600BC3890 /* FunctionType.swift in Sources */,
 				DC176FF41D6911A200FEFB85 /* ASTContext.swift in Sources */,
 				DC1770121D6911A200FEFB85 /* Sema.swift in Sources */,
-				DC4F08381E2F110B00CE19E6 /* VectorType.swift in Sources */,
+				C02F30DA1E5D680600BC3890 /* VoidType.swift in Sources */,
+				C02F30C21E5D680600BC3890 /* IntType.swift in Sources */,
 				DC1770131D6911A200FEFB85 /* TypeChecker.swift in Sources */,
-				DC4F08271E2F110B00CE19E6 /* IRValue.swift in Sources */,
 				DC1770681D6913EF00FEFB85 /* ValueParser.swift in Sources */,
-				DC4F081A1E2F110B00CE19E6 /* ArrayType.swift in Sources */,
-				DC4F08391E2F110B00CE19E6 /* VoidType.swift in Sources */,
-				DC4F08251E2F110B00CE19E6 /* IRType.swift in Sources */,
+				C02F30B81E5D680600BC3890 /* ArrayType.swift in Sources */,
 				DC1770111D6911A200FEFB85 /* Mangler.swift in Sources */,
 				DC176FF71D6911A200FEFB85 /* ASTTransformer.swift in Sources */,
 				DC31C10E1C82681E00F85807 /* main.swift in Sources */,
-				DC4F08351E2F110B00CE19E6 /* TargetMachine.swift in Sources */,
+				C02F30C51E5D680600BC3890 /* IRType.swift in Sources */,
 				DC1770011D6911A200FEFB85 /* DiagnosticEngine.swift in Sources */,
-				DC4F08371E2F110B00CE19E6 /* Use.swift in Sources */,
+				C02F30C81E5D680600BC3890 /* JIT.swift in Sources */,
+				C02F30D41E5D680600BC3890 /* Switch.swift in Sources */,
 				DC4CF0C81D7A76750090216B /* metadata.cpp in Sources */,
 				DC1770071D6911A200FEFB85 /* FunctionIRGen.swift in Sources */,
+				C02F30CC1E5D680600BC3890 /* MetadataType.swift in Sources */,
+				C02F30BB1E5D680600BC3890 /* Constant.swift in Sources */,
+				C02F30CA1E5D680600BC3890 /* Linkage.swift in Sources */,
+				C02F30D51E5D680600BC3890 /* TargetData.swift in Sources */,
 				DC1770041D6911A200FEFB85 /* TableFormatter.swift in Sources */,
 				DC03B9091D79F84500C980D3 /* Builtins.swift in Sources */,
-				DC4F08331E2F110B00CE19E6 /* Switch.swift in Sources */,
+				C02F30D11E5D680600BC3890 /* PointerType.swift in Sources */,
+				C02F30C01E5D680600BC3890 /* Initialization.swift in Sources */,
 				DC17704F1D69139900FEFB85 /* JavaScriptGen.swift in Sources */,
 				DC1770621D6913EF00FEFB85 /* FunctionParser.swift in Sources */,
+				C02F30C71E5D680600BC3890 /* IRValue+Kinds.swift in Sources */,
 				DC07FA1A1D7B7AD3002AAC4D /* JSONDiagnosticConsumer.swift in Sources */,
 				DC1770601D6913EF00FEFB85 /* BaseParser.swift in Sources */,
+				C02F30DB1E5D680600BC3890 /* X86MMXType.swift in Sources */,
 				DC1770661D6913EF00FEFB85 /* StatementParser.swift in Sources */,
-				DC4F08241E2F110B00CE19E6 /* IRGlobal.swift in Sources */,
-				DC4F081C1E2F110B00CE19E6 /* FloatType.swift in Sources */,
 				DC176FFB1D6911A200FEFB85 /* Operators.swift in Sources */,
-				DC4F082D1E2F110B00CE19E6 /* Module.swift in Sources */,
-				DC4F082B1E2F110B00CE19E6 /* MemoryBuffer.swift in Sources */,
+				C02F30C31E5D680600BC3890 /* IRBuilder.swift in Sources */,
+				C02F30CB1E5D680600BC3890 /* MemoryBuffer.swift in Sources */,
+				C02F30CE1E5D680600BC3890 /* OpCode.swift in Sources */,
+				C02F30CD1E5D680600BC3890 /* Module.swift in Sources */,
 				DC17700B1D6911A200FEFB85 /* StatementIRGen.swift in Sources */,
-				DC4F08191E2F110B00CE19E6 /* Alias.swift in Sources */,
-				DC4F08211E2F110B00CE19E6 /* Instruction.swift in Sources */,
-				DC4F08291E2F110B00CE19E6 /* LabelType.swift in Sources */,
-				DC4F082C1E2F110B00CE19E6 /* MetadataType.swift in Sources */,
+				C02F30B71E5D680600BC3890 /* Alias.swift in Sources */,
 				DC176FFE1D6911A200FEFB85 /* Values.swift in Sources */,
-				DC4F083A1E2F110B00CE19E6 /* X86MMXType.swift in Sources */,
-				DC4F08311E2F110B00CE19E6 /* PointerType.swift in Sources */,
+				C02F30C41E5D680600BC3890 /* IRGlobal.swift in Sources */,
 				DCEF07FF1DCD6BA90075FE15 /* ANSIColor.swift in Sources */,
-				DC4F08261E2F110B00CE19E6 /* IRValue+Kinds.swift in Sources */,
 				DC1770001D6911A200FEFB85 /* DiagnosticConsumer.swift in Sources */,
-				DC4F08231E2F110B00CE19E6 /* IRBuilder.swift in Sources */,
 				DC176FFC1D6911A200FEFB85 /* Statements.swift in Sources */,
+				C02F30D31E5D680600BC3890 /* StructType.swift in Sources */,
 				DC176FFD1D6911A200FEFB85 /* Types.swift in Sources */,
 				DC176FFA1D6911A200FEFB85 /* Functions.swift in Sources */,
+				C02F30C11E5D680600BC3890 /* Instruction.swift in Sources */,
+				C02F30BD1E5D680600BC3890 /* Function.swift in Sources */,
+				C02F30C91E5D680600BC3890 /* LabelType.swift in Sources */,
 				DC176FF81D6911A200FEFB85 /* ASTVisitor.swift in Sources */,
 				DC17700A1D6911A200FEFB85 /* RuntimeIRGen.swift in Sources */,
-				DC4F082A1E2F110B00CE19E6 /* Linkage.swift in Sources */,
 				DC17704D1D69139900FEFB85 /* ASTDumper.swift in Sources */,
-				DC4F08301E2F110B00CE19E6 /* PhiNode.swift in Sources */,
+				C02F30BC1E5D680600BC3890 /* FloatType.swift in Sources */,
 				DC5EA0C81E185C8300875545 /* StreamConsumer.swift in Sources */,
-				DC4F08341E2F110B00CE19E6 /* TargetData.swift in Sources */,
-				DC4F082F1E2F110B00CE19E6 /* PassManager.swift in Sources */,
-				DC4F081F1E2F110B00CE19E6 /* Global.swift in Sources */,
-				DC4F08221E2F110B00CE19E6 /* IntType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		DC2BC1761D3B030E00A6C7CC /* PBXTargetDependency */ = {
+		C02F30901E5D5ECA00BC3890 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */;
-			targetProxy = DC2BC1751D3B030E00A6C7CC /* PBXContainerItemProxy */;
-		};
-		DC98BBE61D60129300677C66 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DC2BC16B1D3B02CA00A6C7CC /* trillRuntime */;
-			targetProxy = DC98BBE51D60129300677C66 /* PBXContainerItemProxy */;
+			target = C02F30761E5D5E6000BC3890 /* trillRuntime */;
+			targetProxy = C02F308F1E5D5ECA00BC3890 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1458,6 +1513,56 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		C02F307D1E5D5E6000BC3890 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = trillRuntime/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trill-lang.trillRuntime";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		C02F307E1E5D5E6000BC3890 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_VERSION = A;
+				INFOPLIST_FILE = trillRuntime/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trill-lang.trillRuntime";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		DC0FE9571CE3061B00224874 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1525,53 +1630,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "trill-demangle/DemangleBridgingHeader.h";
 				SWIFT_VERSION = 3.0;
-			};
-			name = Release;
-		};
-		DC2BC16E1D3B02CA00A6C7CC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_STATIC_ANALYZER_MODE = shallow;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				EXECUTABLE_PREFIX = lib;
-				GCC_ENABLE_CPP_EXCEPTIONS = NO;
-				GCC_ENABLE_CPP_RTTI = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/lib/,
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = /usr/local/include;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = /usr/local/include;
-			};
-			name = Debug;
-		};
-		DC2BC16F1D3B02CA00A6C7CC /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = YES;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_STATIC_ANALYZER_MODE = shallow;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				EXECUTABLE_PREFIX = lib;
-				GCC_ENABLE_CPP_EXCEPTIONS = NO;
-				GCC_ENABLE_CPP_RTTI = NO;
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/lib/,
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				OTHER_LDFLAGS = "";
-				PRIVATE_HEADERS_FOLDER_PATH = /usr/local/include;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = /usr/local/include;
 			};
 			name = Release;
 		};
@@ -1664,7 +1722,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
@@ -1684,7 +1741,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
@@ -1704,6 +1760,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		C02F307C1E5D5E6000BC3890 /* Build configuration list for PBXNativeTarget "trillRuntime" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C02F307D1E5D5E6000BC3890 /* Debug */,
+				C02F307E1E5D5E6000BC3890 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		DC0FE95D1CE3061B00224874 /* Build configuration list for PBXNativeTarget "Trill iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1718,15 +1783,6 @@
 			buildConfigurations = (
 				DC217A081D4EAD3000729DF0 /* Debug */,
 				DC217A091D4EAD3000729DF0 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DC2BC16D1D3B02CA00A6C7CC /* Build configuration list for PBXNativeTarget "trillRuntime" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DC2BC16E1D3B02CA00A6C7CC /* Debug */,
-				DC2BC16F1D3B02CA00A6C7CC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

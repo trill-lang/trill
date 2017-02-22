@@ -32,7 +32,7 @@ enum Mode {
   init(_ raw: RawMode, outputFormat: RawOutputFormat) {
     switch raw {
     case Emit: self = .emit(OutputFormat(outputFormat))
-    case JIT: self = .jit
+    case RunJIT: self = .jit
     case OnlyDiagnostics: self = .onlyDiagnostics
     default: fatalError("invalid mode \(raw)")
     }

@@ -479,7 +479,17 @@ class ClangImporter: Pass {
     }
     clang_disposeTranslationUnit(tu)
   }
-  
+
+  static let runtimeHeaderPath: String = {
+    let fileManager = FileManager.default
+    if let executableURL = CommandLine.arguments.first.map({ URL(fileURLWithPath: $0) }) {
+      let frameworkURL = executableURL.deletingLastPathComponent().appendingPathComponent("trillRuntime.framework/Headers")
+      if fileManager.fileExists(atPath: frameworkURL.path) { return frameworkURL.path }
+    }
+    
+    return "/usr/lib/include/trill"
+  }()
+
   func run(in context: ASTContext) {
     context.add(makeAlias(name: "__builtin_va_list",
                           type: .pointer(type: .void)))
@@ -514,7 +524,8 @@ class ClangImporter: Pass {
                            hasVarArgs: false,
                            modifiers: [.foreign],
                            range: nil))
-    importDeclarations(for: "/usr/local/include/trill/trill.h",
+
+    importDeclarations(for: URL(fileURLWithPath: ClangImporter.runtimeHeaderPath).appendingPathComponent("trill.h").path,
                        in: context)
     if let path = ClangImporter.includeDir {
       for header in ClangImporter.headerFiles {
