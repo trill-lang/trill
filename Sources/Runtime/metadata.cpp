@@ -135,7 +135,7 @@ void trill_updateAny(void *any_, uint64_t fieldNum, void *newAny_) {
   memcpy(fieldPtr, newPtr, newType->sizeInBits);
 }
 
-inline void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
+void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
   return (void *)((intptr_t)anyValue + sizeof(AnyHeader));
 }
   

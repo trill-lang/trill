@@ -148,6 +148,8 @@ extension IRGenerator {
       return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     case (.any, let other):
       return codegenCheckedCast(binding: value, type: other)
+    case (_, .any):
+      return codegenPromoteToAny(value: value, type: fromType)
     default:
       return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     }
