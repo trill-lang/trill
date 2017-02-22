@@ -6,8 +6,8 @@
 #ifndef trill_h
 #define trill_h
 
-#include "runtime.h"
 #include "demangle.h"
 #include "metadata.h"
+#include "runtime.h"
 
 #endif /* trill_h */
