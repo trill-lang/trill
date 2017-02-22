@@ -49,7 +49,7 @@ foreign type Date {
     return self.unixTimestamp() / 1_000
   }
 }
-    
+
 func main() {
   println(Date().getTime())
 }
@@ -59,26 +59,13 @@ func main() {
 
 Trill currently is only supported on macOS, with the following dependencies:
 
-- LLVM's libraries. Trill requires LLVM 3.9.x installed at `/usr/local/llvm/`.
-  You can download the official release here:
-  http://releases.llvm.org/3.9.0/clang+llvm-3.9.0-x86_64-apple-darwin.tar.xz
+- LLVMSwift and TinyGC, which are vendored as git submodules. Run `git
+  submodule update -- init` to clone them.
 
-- The TinyGC garbage collector, installed to `/usr/local/`.
-  You can find the latest version of it here:
-  https://sourceforge.net/projects/tinygc/files/tinygc/2.6/
-  - Note: Ensure `libtinygc.a` exists at `/usr/local/libtinygc.a` and that
-    `/usr/local/include/gc/gc.h` is correct.
+- LLVM's libraries. Install them with `brew install llvm`.
 
 To build and create Trill programs, you need to open the Xcode project and
 build the `trill` scheme.
-Then, you'll need to symlink the trill runtime and headers before you compile
-anything:
-
-```bash
-ln -s /path/to/Trill_DerivedData/libtrillRuntime.a /usr/local/lib/libtrillRuntime.a
-mkdir /usr/local/include/trill
-ln -s /path/to/Trill/Sources/Runtime/*.h /usr/local/include/trill/.
-```
 
 ## Outstanding issues
 
@@ -105,4 +92,3 @@ Harlan Haskins ([@harlanhaskins](https://github.com/harlanhaskins))
 # License
 
 Trill is released under the terms of the MIT license, a copy of which is included in this repository.
-
