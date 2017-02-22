@@ -237,9 +237,11 @@ class FieldLookupExpr: Expr, LValue {
   var decl: Decl? = nil
   var typeDecl: TypeDecl? = nil
   let name: Identifier
-  init(lhs: Expr, name: Identifier, sourceRange: SourceRange? = nil) {
+  let dotLoc: SourceLocation?
+  init(lhs: Expr, name: Identifier, sourceRange: SourceRange? = nil, dotLoc: SourceLocation? = nil) {
     self.lhs = lhs
     self.name = name
+    self.dotLoc = dotLoc
     super.init(sourceRange: sourceRange)
   }
   

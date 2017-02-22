@@ -148,13 +148,14 @@ extension Parser {
         expr = FuncCallExpr(lhs: expr, args: args,
                             sourceRange: range(start: startLoc))
       case .dot:
-        consumeToken()
+        let dotToken = consumeToken()
         let loc = sourceLoc
         if case .identifier = peek() {
           let field = try parseIdentifier()
           expr = FieldLookupExpr(lhs: expr,
                                  name: field,
-                                 sourceRange: range(start: loc))
+                                 sourceRange: range(start: loc),
+                                 dotLoc: dotToken.range.start)
         } else if case .number(let n, _) = peek() {
           let tok = consumeToken()
             expr = TupleFieldLookupExpr(lhs: expr, field: Int(n),
