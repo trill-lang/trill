@@ -108,7 +108,7 @@ RawOptions ParseArguments(int argc, char **argv) {
   if (onlyDiagnostics) {
     mode = OnlyDiagnostics;
   } else if (jit) {
-    mode = JIT;
+    mode = RunJIT;
   } else {
     mode = Emit;
   }

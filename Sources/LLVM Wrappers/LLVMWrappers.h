@@ -41,7 +41,7 @@ typedef enum RawOutputFormat {
 } RawOutputFormat;
 
 typedef enum RawMode {
-  Emit, JIT,
+  Emit, RunJIT,
   OnlyDiagnostics
 } RawMode;
 
