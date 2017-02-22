@@ -44,6 +44,7 @@ enum SemaError: Error, CustomStringConvertible {
   case operatorsMustHaveTwoArgs(op: BuiltinOperator)
   case cannotOverloadOperator(op: BuiltinOperator, type: String)
   case isCheckAlways(fails: Bool)
+  case pointerFieldAccess(lhs: DataType, field: Identifier)
   
   var description: String {
     switch self {
@@ -145,6 +146,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "cannot overload \(type) operator '\(op)'"
     case .isCheckAlways(let fails):
       return "`is` check always \(fails ? "fails" : "succeeds")"
+    case .pointerFieldAccess(let lhs, let field):
+      return "cannot access field \(field) of pointer type \(lhs)"
     }
   }
 }
@@ -383,6 +386,14 @@ class Sema: ASTTransformer, Pass {
     super.visitFieldLookupExpr(expr)
     guard let type = expr.lhs.type else {
       // An error will already have been thrown from here
+      return .property
+    }
+    if let type = expr.lhs.type, case .pointer(_) = context.canonicalType(type) {
+      error(SemaError.pointerFieldAccess(lhs: type, field: expr.name),
+            loc: expr.dotLoc,
+            highlights: [
+              expr.name.range
+        ])
       return .property
     }
     if case .function = type {
