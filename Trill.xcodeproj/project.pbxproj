@@ -1734,7 +1734,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/llvm/lib @executable_path";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/llvm/lib,
@@ -1753,7 +1753,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/llvm/lib @executable_path";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/llvm/lib,
