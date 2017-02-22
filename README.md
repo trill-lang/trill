@@ -60,7 +60,7 @@ func main() {
 Trill currently is only supported on macOS, with the following dependencies:
 
 - LLVMSwift and TinyGC, which are vendored as git submodules. Run `git
-  submodule update -- init` to clone them.
+  submodule update --init` to clone them.
 
 - LLVM's libraries. Install them with `brew install llvm`.
 
