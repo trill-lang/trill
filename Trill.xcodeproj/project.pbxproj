@@ -1526,6 +1526,10 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"GC_FASTCALL=",
+					"$(inherited)",
+				);
 				GCC_WARN_INHIBIT_ALL_WARNINGS = NO;
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -1552,6 +1556,10 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"GC_FASTCALL=",
+					"$(inherited)",
+				);
 				GCC_WARN_INHIBIT_ALL_WARNINGS = NO;
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -1726,7 +1734,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/llvm/lib @executable_path";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/llvm/lib,
@@ -1745,7 +1753,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				GCC_ENABLE_CPP_RTTI = NO;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = /usr/local/llvm/lib;
+				LD_RUNPATH_SEARCH_PATHS = "/usr/local/llvm/lib @executable_path";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/opt/llvm/lib,
