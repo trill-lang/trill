@@ -270,7 +270,7 @@ class IRGenerator: ASTVisitor, Pass {
     let entry = function.appendBasicBlock(named: "entry", in: llvmContext)
     builder.positionAtEnd(of: entry)
     
-    builder.buildCall(codegenIntrinsic(named: "trill_init"), args: [])
+    _ = builder.buildCall(codegenIntrinsic(named: "trill_init"), args: [])
     
     let val: IRValue
     if hasArgcArgv {
@@ -500,7 +500,7 @@ class IRGenerator: ASTVisitor, Pass {
     var args = Array(values)
     args.insert(visitStringExpr(StringExpr(value: format))!, at: 0)
     let printfCall = codegenIntrinsic(named: "printf")
-    builder.buildCall(printfCall, args: args)
+    _ = builder.buildCall(printfCall, args: args)
   }
 }
 
