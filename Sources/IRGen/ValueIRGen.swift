@@ -8,13 +8,9 @@ import Foundation
 extension IRGenerator {
   func codegenGlobalStringPtr(_ string: String) -> IRValue {
     if let global = globalStringMap[string] { return global }
-    let length = string.utf8.count
-    var globalArray = builder.addGlobal("str", type:
-      ArrayType(elementType: IntType.int8, count: length + 1))
-    globalArray.alignment = 1
-    globalArray.initializer = string
-    globalStringMap[string] = globalArray
-    return globalArray
+    let globalStringPtr = builder.buildGlobalStringPtr(string)
+    globalStringMap[string] = globalStringPtr
+    return globalStringPtr
   }
   
   func codegenTupleType(_ type: DataType) -> IRType {
@@ -156,10 +152,7 @@ extension IRGenerator {
   }
   
   func visitStringExpr(_ expr: StringExpr) -> Result {
-    let globalPtr = codegenGlobalStringPtr(expr.value)
-    let zero = IntType.int64.zero()
-    let indices = [zero, zero]
-    return globalPtr.constGEP(indices: indices)
+    return codegenGlobalStringPtr(expr.value)
   }
   
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {

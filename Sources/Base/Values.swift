@@ -10,7 +10,7 @@ class Expr: ASTNode {
   override func attributes() -> [String : Any] {
     var attrs = super.attributes()
     if let type = type {
-      attrs["type"] = "\(type)"
+      attrs["type"] = type.description
     }
     return attrs
   }

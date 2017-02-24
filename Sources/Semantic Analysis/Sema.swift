@@ -94,7 +94,7 @@ enum SemaError: Error, CustomStringConvertible {
           d += "\(label): "
         }
         if let t = $0.val.type {
-          d += "\(t)"
+          d += t.description
         } else {
           d += "<<error type>>"
         }

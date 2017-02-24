@@ -1740,7 +1740,7 @@
 					/usr/local/opt/llvm/lib,
 				);
 				OTHER_CFLAGS = "";
-				OTHER_SWIFT_FLAGS = "-DNO_SWIFTPM";
+				OTHER_SWIFT_FLAGS = "-DNO_SWIFTPM $(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/Sources/BridgingHeader.h;
 				SWIFT_VERSION = 3.0;
@@ -1759,7 +1759,7 @@
 					/usr/local/opt/llvm/lib,
 				);
 				OTHER_CFLAGS = "";
-				OTHER_SWIFT_FLAGS = "-DNO_SWIFTPM";
+				OTHER_SWIFT_FLAGS = "-DNO_SWIFTPM $(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = $SRCROOT/Sources/BridgingHeader.h;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";

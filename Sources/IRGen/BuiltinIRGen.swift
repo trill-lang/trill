@@ -17,7 +17,7 @@ extension IRGenerator {
     }
     if case .any = type {
         let getMetadata = codegenIntrinsic(named: "trill_getAnyTypeMetadata")
-        return builder.buildCall(getMetadata, args: [visit(expr.args[0].val)!], name: "any-binding")
+        return builder.buildCall(getMetadata, args: [visit(arg.val)!], name: "any-binding")
     }
     let meta = codegenTypeMetadata(context.canonicalType(type))
     return builder.buildBitCast(meta, type: PointerType(pointee: IntType.int8))

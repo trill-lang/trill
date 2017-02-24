@@ -8,7 +8,12 @@ import Foundation
 extension IRGenerator {
   
   func codegenIntrinsic(named name: String) -> Function {
-    guard let decl = context.functions(named: Identifier(name: name)).first else {
+    let identifier = Identifier(name: name)
+    let matchingDecls = context.functions(named: identifier)
+    let intrinsicDecl = matchingDecls.first { decl in
+      decl.has(attribute: .implicit)
+    }
+    guard let decl = intrinsicDecl else {
       fatalError("No intrinsic \(name)")
     }
     return codegenFunctionPrototype(decl)
