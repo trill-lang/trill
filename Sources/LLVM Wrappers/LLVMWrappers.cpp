@@ -4,6 +4,10 @@
 //
 
 #include "LLVMWrappers.h"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+
 #include "clang/AST/Attr.h"
 #include "clang/AST/Decl.h"
 #include "clang/Driver/Driver.h"
@@ -25,6 +29,7 @@
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Target/TargetMachine.h"
 
+#pragma clang diagnostic pop
 
 std::pair<char **, size_t> toCStrings(std::vector<std::string> strings) {
   char **cStrings = (char **)malloc(strings.size() * sizeof(char *));

@@ -115,7 +115,7 @@ extension IRGenerator {
       let deinitializerCast = builder.buildBitCast(deinitializer,
                                                    type: PointerType(pointee: deinitializerTy),
                                                    name: "deinitializer-cast")
-      builder.buildCall(register, args: [ptr, deinitializerCast])
+      _ = builder.buildCall(register, args: [ptr, deinitializerCast])
     }
     return VarBinding(ref: res,
                       storage: .reference,
