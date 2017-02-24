@@ -141,7 +141,7 @@ class ViewController: UIViewController, UITextViewDelegate {
     let sourceFile = try! SourceFile(path: .input(url: document.fileURL,
                                                   contents: document.sourceText),
                                      context: context)
-    context.sourceFiles.append(sourceFile)
+    context.add(sourceFile)
     driver = Driver(context: context)
     let text = storage.string
     driver.add("Lexer and Parser") { context in

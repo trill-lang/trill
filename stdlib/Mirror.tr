@@ -60,7 +60,7 @@ type Mirror {
       }
       printf("%s\n", field.typeMetadata().name());
 
-      println(self.child(i))
+      // println(self.child(i))
     }
   }
 

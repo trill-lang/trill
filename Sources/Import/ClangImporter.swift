@@ -110,7 +110,7 @@ class ClangImporter: Pass {
     "pthread.h",
     "sys/time.h",
     "sys/resource.h",
-    "sched.h"
+    "sched.h",
   ]
   #if os(macOS)
   static func loadSDKPath() -> String? {
@@ -198,13 +198,9 @@ class ClangImporter: Pass {
     return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
                         args: args.enumerated().map { (idx, type) in
-                          let ref: TypeRefExpr
-                          if argRanges.count > idx {
-                            ref = type.ref(range: argRanges[idx])
-                          } else {
-                            ref = type.ref()
-                          }
-                          return ParamDecl(name: "", type: ref)
+                          let range = argRanges[safe: idx]
+                          let ref = type.ref(range: range)
+                          return ParamDecl(name: "", type: ref, sourceRange: range)
                         },
                         modifiers: modifiers,
                         hasVarArgs: hasVarArgs,
@@ -227,9 +223,21 @@ class ClangImporter: Pass {
     } else {
       trillType = convertToTrillType(type)
     }
-    guard let t = trillType, name != "\(t)" else {
+    guard let t = trillType else {
       return nil
     }
+
+    // If we see a struct declared as:
+    //
+    // typedef struct struct_name {
+    // } struct_name;
+    //
+    // Where the typedef renames the type without the `struct` keyword, then
+    // skip creating a TypeAliasDecl for that type, as it would be circular.
+    if t.description == name, context.decl(for: t) != nil {
+      return nil
+    }
+
     let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
     let alias = TypeAliasDecl(name: Identifier(name: name),
                               bound: t.ref(range: range),
@@ -299,10 +307,7 @@ class ClangImporter: Pass {
     let returnTy = clang_getResultType(funcType)
     
     guard let trillRetTy = convertToTrillType(returnTy) else { return }
-    
-    if name == "memmove" {
-      
-    }
+
     var args = [DataType]()
     var argRanges = [SourceRange]()
     for i in 0..<numArgs {
@@ -393,45 +398,62 @@ class ClangImporter: Pass {
   
   // FIXME: Actually use Clang's lexer instead of re-implementing parts of
   //        it, poorly.
-  func simpleParseIntegerLiteralToken(_ token: String) throws -> TokenKind? {
-    var lexer = Lexer(filename: "", input: token)
-    let numStr = lexer.collectWhile { $0.isNumeric }
-    guard let num = IntMax(numStr) else { throw ImportError.pastIntMax }
-    let suffix = lexer.collectWhile { $0.isIdentifier }
-    for char in suffix.lowercased().characters {
-      if char != "u" && char != "l" { return nil }
+  func simpleParseIntegerLiteralToken(_ rawToken: String) throws -> NumExpr? {
+    var token = rawToken.lowercased()
+    // HACK: harcoded UIntMax.max
+    if token == "18446744073709551615ul" || token == "18446744073709551615ull" {
+      let expr = NumExpr(value: IntMax(bitPattern: UIntMax.max), raw: rawToken)
+      expr.type = .uint64
+      return expr
     }
-    return .number(value: num, raw: numStr)
+    let suffixTypeMap: [(String, DataType)] = [
+      ("ull", .uint64), ("ul", .uint64), ("ll", .int64),
+      ("u", .uint32), ("l", .int64)
+    ]
+
+    var type = DataType.int64
+
+    for (suffix, suffixType) in suffixTypeMap {
+      if token.hasSuffix(suffix) {
+        type = suffixType
+        let suffixStartIndex = token.characters.index(token.endIndex,
+                                                      offsetBy: -suffix.characters.count)
+        token.removeSubrange(suffixStartIndex..<token.endIndex)
+        break
+      }
+    }
+
+    guard let num = token.asNumber() else { return nil }
+
+    let expr = NumExpr(value: num, raw: rawToken)
+    expr.type = type
+    return expr
   }
   
-  func simpleParseCToken(_ token: String) throws -> TokenKind? {
+    func simpleParseCToken(_ token: String, range: SourceRange) throws -> Expr? {
     var lexer = Lexer(filename: "", input: token)
     let toks = try lexer.lex()
     guard let first = toks.first?.kind else { return nil }
-    if case .identifier(let name) = first {
-      return try simpleParseIntegerLiteralToken(name) ?? first
+    switch first {
+    case .char(let value):
+        return CharExpr(value: value, sourceRange: range)
+    case .stringLiteral(let value):
+        return StringExpr(value: value, sourceRange: range)
+    case .number(let value, let raw):
+        return NumExpr(value: value, raw: raw, sourceRange: range)
+    case .identifier(let name):
+        return try simpleParseIntegerLiteralToken(name) ?? VarExpr(name: Identifier(name: name, range: range), sourceRange: range)
+    default:
+        return nil
     }
-    return first
   }
-  
+
   func parse(tu: CXTranslationUnit, token: CXToken, name: String) -> VarAssignDecl? {
     do {
       let tok = clang_getTokenSpelling(tu, token).asSwift()
       let range = SourceRange(clangRange: clang_getTokenExtent(tu, token))
-      guard let token = try simpleParseCToken(tok) else { return nil }
-      var expr: Expr! = nil
-      switch token {
-      case .char(let value):
-        expr = CharExpr(value: value, sourceRange: range)
-      case .stringLiteral(let value):
-        expr = StringExpr(value: value, sourceRange: range)
-      case .number(let value, let raw):
-        expr = NumExpr(value: value, raw: raw, sourceRange: range)
-      case .identifier(let name):
-        expr = VarExpr(name: Identifier(name: name, range: range), sourceRange: range)
-      default:
-        return nil
-      }
+      guard let expr = try simpleParseCToken(tok, range: range) else { return nil }
+
       return VarAssignDecl(name: Identifier(name: name),
                            typeRef: expr.type?.ref(),
                            rhs: expr,
@@ -449,6 +471,12 @@ class ClangImporter: Pass {
   }
   
   func importDeclarations(for path: String, in context: ASTContext) {
+    do {
+      let file = try SourceFile(path: .file(URL(fileURLWithPath: path)), context: context)
+      context.add(file)
+    } catch {
+      // do nothing
+    }
     let tu: CXTranslationUnit
     do {
       tu = try translationUnit(for: path)
@@ -606,12 +634,12 @@ class ClangImporter: Pass {
       if let replacement = ClangImporter.builtinTypeReplacements[typeName] {
         return replacement
       }
-      return .custom(name: typeName)
+      return DataType(name: typeName)
     case CXType_Record:
       guard let name = clang_getTypeSpelling(type).asSwift().lastWord else {
           return nil
       }
-      return .custom(name: name)
+      return DataType(name: name)
     case CXType_ConstantArray:
       let element = clang_getArrayElementType(type)
       let size = clang_getNumArgTypes(type)

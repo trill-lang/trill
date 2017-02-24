@@ -103,14 +103,14 @@ func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile
     let context = ASTContext(diagnosticEngine: diag)
     let file = try SourceFile(path: .stdin,
                               context: context)
-    context.sourceFiles.append(file)
+    context.add(file)
     return [file]
   } else {
     return try options.filenames.map { path in
       let context = ASTContext(diagnosticEngine: diag)
       let url = URL(fileURLWithPath: path)
       let file = try SourceFile(path: .file(url), context: context)
-      context.sourceFiles.append(file)
+      context.add(file)
       return file
     }
   }
@@ -123,14 +123,13 @@ func main() -> Int32 {
   let context = ASTContext(diagnosticEngine: diag)
   let driver = Driver(context: context)
   var files = [SourceFile]()
-  let isATTY = isatty(STDERR_FILENO) != 0
   do {
     files = try sourceFiles(options: options, diag: diag)
     
     try populate(driver: driver,
                  options: options,
                  sourceFiles: files,
-                 isATTY: isATTY,
+                 isATTY: ansiEscapeSupportedOnStdErr,
                  context: context)
     driver.run(in: context)
   } catch {
@@ -140,8 +139,8 @@ func main() -> Int32 {
     let consumer = JSONDiagnosticConsumer(stream: &stderr)
     diag.register(consumer)
   } else {
-    var stream = ColoredANSIStream(&stderr, colored: isATTY)
-    let consumer = StreamConsumer(files: files, stream: &stream)
+    var stream = ColoredANSIStream(&stderr, colored: ansiEscapeSupportedOnStdErr)
+    let consumer = StreamConsumer(context: context, stream: &stream)
     diag.register(consumer)
   }
   diag.consumeDiagnostics()

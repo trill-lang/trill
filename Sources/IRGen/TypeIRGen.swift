@@ -164,6 +164,9 @@ extension IRGenerator {
     for method in expr.methods + expr.staticMethods {
       _ = visit(method)
     }
+    for subscriptDecl in expr.subscripts {
+      _ = visit(subscriptDecl)
+    }
     return nil
   }
   

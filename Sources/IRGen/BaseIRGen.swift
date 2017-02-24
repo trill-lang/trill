@@ -191,7 +191,7 @@ class IRGenerator: ASTVisitor, Pass {
     
     var stream = ColoredANSIStream(&stderr,
                                    colored: true)
-    fatalErrorConsumer = StreamConsumer(files: [],
+    fatalErrorConsumer = StreamConsumer(context: context,
                                         stream: &stream)
     LLVMEnablePrettyStackTrace()
     LLVMInstallFatalErrorHandler {
@@ -520,6 +520,7 @@ extension FunctionPassManager {
     if level == O1 { return }
     
     add(.gvn, .cfgSimplification, .promoteMemoryToRegister)
+
     if level == O2 { return }
     
     add(.loopUnroll, .tailCallElimination)

@@ -5,7 +5,7 @@
 
 import Foundation
 
-public struct Diagnostic: Error, CustomStringConvertible {
+public struct Diagnostic: Error, CustomStringConvertible, Hashable {
   enum DiagnosticType: CustomStringConvertible {
     case error, warning, note
     var description: String {
@@ -36,6 +36,9 @@ public struct Diagnostic: Error, CustomStringConvertible {
   public var description: String {
     var description = ""
     if let sourceLoc = loc {
+      if let file = sourceLoc.file {
+        description += "\(file):"
+      }
       description += "\(sourceLoc.line):\(sourceLoc.column): "
     }
     return description + "\(diagnosticType): \(message)"
@@ -50,6 +53,14 @@ public struct Diagnostic: Error, CustomStringConvertible {
   }
   static func note(_ note: Error, loc: SourceLocation? = nil, highlights: [SourceRange] = []) -> Diagnostic {
     return Diagnostic(message: "\(note)", diagnosticType: .note, loc: loc, highlights: highlights)
+  }
+
+  public var hashValue: Int {
+    return description.hashValue ^ 7
+  }
+
+  public static func ==(lhs: Diagnostic, rhs: Diagnostic) -> Bool {
+    return lhs.description == rhs.description
   }
 }
 
@@ -77,7 +88,7 @@ public class DiagnosticEngine {
   }
   
   func consumeDiagnostics() {
-    for diag in diagnostics {
+    for diag in diagnostics.unique() {
       for consumer in consumers {
         consumer.consume(diag)
       }

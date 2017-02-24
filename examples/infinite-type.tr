@@ -1,3 +1,8 @@
-indirect type Foo {
-    let foo: Foo
+type Foo {
+  let foo: Foo
+}
+
+func main() {
+  let f = Foo(foo: nil)
+  f.foo = f
 }

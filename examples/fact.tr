@@ -23,5 +23,5 @@ func factRec(_ n: Int) -> Int {
 }
 
 func main() {
-  println(fact(10))
+  println(fact(5[2]))
 }

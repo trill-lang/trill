@@ -135,6 +135,7 @@ public class ASTContext {
   ]
   private var globalDeclMap = [String: VarAssignDecl]()
   private var typeAliasMap = [String: TypeAliasDecl]()
+  private var sourceFileMap = [String: SourceFile]()
   
   private(set) var mainFunction: FuncDecl? = nil
   private(set) var mainFlags: MainFuncFlags? = nil
@@ -187,6 +188,13 @@ public class ASTContext {
     var existing = operatorMap[operatorDecl.op] ?? []
     existing.append(operatorDecl)
     operatorMap[operatorDecl.op] = existing
+  }
+
+  func add(_ sourceFile: SourceFile) {
+    var sourceFile = sourceFile
+    sourceFile.context = self
+    sourceFiles.append(sourceFile)
+    sourceFileMap[sourceFile.path.filename] = sourceFile
   }
   
   func infixOperatorCandidate(_ op: BuiltinOperator, lhs: Expr, rhs: Expr) -> OperatorDecl? {
@@ -423,9 +431,7 @@ public class ASTContext {
       add(alias)
     }
     for file in context.sourceFiles {
-      var f = file
-      f.context = self
-      sourceFiles.append(f)
+      add(file)
     }
   }
   
@@ -535,6 +541,10 @@ public class ASTContext {
   
   func global(named name: String) -> VarAssignDecl? {
     return globalDeclMap[name]
+  }
+
+  func sourceFile(named name: String) -> SourceFile? {
+    return sourceFileMap[name]
   }
   
   func mutability(of expr: Expr) -> Mutability {

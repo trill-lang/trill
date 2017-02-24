@@ -6,12 +6,12 @@
 import Foundation
 
 class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
-    let files: [SourceFile]
     var stream: StreamType
+    let context: ASTContext
     
-    init(files: [SourceFile], stream: inout StreamType) {
-        self.files = files
+    init(context: ASTContext, stream: inout StreamType) {
         self.stream = stream
+        self.context = context
     }
     
     func highlightString(forDiag diag: Diagnostic) -> String {
@@ -40,10 +40,13 @@ class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
     
     func sourceFile(for diag: Diagnostic) -> SourceFile? {
         guard let diagFile = diag.loc?.file else { return nil }
-        for file in files where file.path.filename == diagFile {
+        if let file = context.sourceFile(named: diagFile) {
             return file
         }
-        return nil
+        let file = try! SourceFile(path: .file(URL(fileURLWithPath: diagFile)),
+                                   context: context)
+        context.add(file)
+        return file
     }
     
     func consume(_ diagnostic: Diagnostic) {
@@ -51,6 +54,7 @@ class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
         stream.write("\(diagnostic.diagnosticType): ",
             with: [.bold, diagnostic.diagnosticType.color])
         stream.write("\(diagnostic.message)\n", with: [.bold])
+
         if let loc = diagnostic.loc,
             let line = file?.lines[loc.line - 1],
             loc.line > 0 {

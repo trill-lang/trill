@@ -19,6 +19,7 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case subscriptWithNoArgs
   case nonBoolCondition(got: DataType?)
   case overflow(raw: String, type: DataType)
+  case underflow(raw: String, type: DataType)
   case shiftPastBitWidth(type: DataType, shiftWidth: IntMax)
   
   var description: String {
@@ -46,6 +47,8 @@ enum TypeCheckError: Error, CustomStringConvertible {
       return "if condition must be a Bool (got '\(typeName)')"
     case .overflow(let raw, let type):
       return "value '\(raw)' overflows when stored into '\(type)'"
+    case .underflow(let raw, let type):
+      return "value '\(raw)' underflows when stored into '\(type)'"
     case .shiftPastBitWidth(let type, let shiftWidth):
       return "shift amount \(shiftWidth) is greater than or equal to \(type)'s size in bits"
     case .cannotDowncastFromAny(let type):
@@ -119,26 +122,27 @@ class TypeChecker: ASTTransformer, Pass {
   override func visitNumExpr(_ expr: NumExpr) {
     guard let type = expr.type else { return }
     let canTy = context.canonicalType(type)
+    let reportUnderflow = {
+      self.error(TypeCheckError.underflow(raw: expr.raw, type: expr.type!),
+                 loc: expr.startLoc, highlights: [expr.sourceRange])
+    }
     if case .int(let width, let signed) = canTy {
-      var overflows = false
-      switch width {
-      case 8:
-        if expr.value > IntMax(Int8.max) { overflows = true }
-      case 16:
-        if expr.value > IntMax(Int16.max) { overflows = true }
-      case 32:
-        if expr.value > IntMax(Int32.max) { overflows = true }
-      case 64:
-        if expr.value > IntMax(Int64.max) { overflows = true }
-      default: break
+      if expr.value == IntMax(bitPattern: UIntMax.max) { return }
+      if !signed && expr.value < 0 {
+        reportUnderflow()
+        return
       }
-      if overflows {
+      let maximum = UIntMax(bitPattern: Int64(1 << (width - (signed ? 1 : 0))))
+      let minimum = IntMax(-(1 << (width / 2)))
+
+      if expr.value >= 0 && UIntMax(expr.value) > maximum {
         error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
               loc: expr.startLoc, highlights: [expr.sourceRange])
         return
       }
-      if !signed && expr.value < 0 {
-        fatalError("ASDFASDF")
+      if expr.value < 0 && expr.value < minimum {
+        reportUnderflow()
+        return
       }
     }
   }

@@ -371,9 +371,9 @@
 		DC176FD51D6911A200FEFB85 /* Statements.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Statements.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FD61D6911A200FEFB85 /* Types.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FD71D6911A200FEFB85 /* Values.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = Values.swift; sourceTree = "<group>"; tabWidth = 2; };
-		DC176FD91D6911A200FEFB85 /* ClangImporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClangImporter.swift; sourceTree = "<group>"; };
+		DC176FD91D6911A200FEFB85 /* ClangImporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = ClangImporter.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FDB1D6911A200FEFB85 /* DiagnosticConsumer.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = DiagnosticConsumer.swift; sourceTree = "<group>"; tabWidth = 2; };
-		DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; };
+		DC176FDC1D6911A200FEFB85 /* DiagnosticEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = DiagnosticEngine.swift; sourceTree = "<group>"; tabWidth = 2; };
 		DC176FDD1D6911A200FEFB85 /* Driver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Driver.swift; sourceTree = "<group>"; };
 		DC176FDF1D6911A200FEFB85 /* TableFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableFormatter.swift; sourceTree = "<group>"; };
 		DC176FE11D6911A200FEFB85 /* BaseIRGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = BaseIRGen.swift; sourceTree = "<group>"; tabWidth = 2; };

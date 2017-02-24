@@ -49,3 +49,26 @@ extension String {
         return splitCapitals().map { $0.lowercased() }.joined(separator: "_")
     }
 }
+
+extension Array where Element: Hashable {
+    func unique() -> Array<Element> {
+        var uniqued = Array<Element>()
+        var set = Set<Element>()
+        for item in self {
+            if set.insert(item).inserted { uniqued.append(item) }
+        }
+        return uniqued
+    }
+}
+
+let ansiEscapeSupportedOnStdErr: Bool = {
+    guard isatty(STDERR_FILENO) != 0 else {
+        return false
+    }
+
+    if let xpcServiceName = ProcessInfo.processInfo.environment["XPC_SERVICE_NAME"] {
+        return !xpcServiceName.hasPrefix("com.apple.dt.Xcode")
+    }
+    
+    return true
+}()
