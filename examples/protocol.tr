@@ -1,0 +1,10 @@
+protocol Debuggable {
+  func debugDescription() -> String
+}
+
+type Bar: Debuggable {
+  func foo() {
+    printf("eyyy")
+  }
+}
+

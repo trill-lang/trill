@@ -107,13 +107,13 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     super.visitStringExpr(expr)
   }
   
-  override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
+  override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
     guard let decl = expr.decl else { return }
     if let range =  expr.name.range?.nsRange {
       let style = context.isIntrinsic(decl: decl) ? attributes.externalName : attributes.internalName
       add(style: style, range: range)
     }
-    super.visitFieldLookupExpr(expr)
+    super.visitPropertyRefExpr(expr)
   }
   
   override func visitParamDecl(_ decl: ParamDecl) {

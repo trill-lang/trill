@@ -121,13 +121,14 @@ class DocumentViewController: UITableViewController {
   }
   
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    switch segue.identifier {
-    case "Show Document"?:
+    guard let id = segue.identifier else { return }
+    switch id {
+    case "Show Document":
       let dest = segue.destination as! ViewController
       dest.document = sender as! SourceDocument
       dest.title = dest.document.filename
     default:
-      fatalError("unknown segue identifier \(segue.identifier)")
+      fatalError("unknown segue identifier \(id)")
     }
   }
   

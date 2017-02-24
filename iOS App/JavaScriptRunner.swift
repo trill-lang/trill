@@ -28,6 +28,7 @@ class JavaScriptRunner: TextOutputStream {
   
   func run() {
     jsContext?.exceptionHandler = { ctx, exception in
+      guard let exception = exception else { return }
       self.context.diag.error("JavaScript Error: \(exception)")
     }
     let printlnFn: @convention(block) (AnyObject) -> Void = { v in

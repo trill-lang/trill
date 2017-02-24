@@ -4,6 +4,7 @@
 //
 
 import Foundation
+
 private var fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
 
 /// An error that represents a problem with LLVM IR generation or JITting.
@@ -99,6 +100,12 @@ struct FunctionState {
 class IRGenerator: ASTVisitor, Pass {
   
   typealias Result = IRValue?
+
+  @discardableResult
+  internal func visitProtocolDecl(_ decl: ProtocolDecl) -> Result {
+    fatalError("protocols unsupported")
+  }
+  
   
   /// The LLVM module currently being generated
   let module: Module
@@ -188,7 +195,7 @@ class IRGenerator: ASTVisitor, Pass {
     builder = IRBuilder(module: module)
     passManager = FunctionPassManager(module: module)
     passManager.addPasses(for: options.optimizationLevel)
-    
+
     var stream = ColoredANSIStream(&stderr,
                                    colored: true)
     fatalErrorConsumer = StreamConsumer(context: context,
@@ -331,7 +338,6 @@ class IRGenerator: ASTVisitor, Pass {
   /// 2. Visit all types, extensions, and functions, and declare their members.
   /// - note: Global variables are declared lazily as they're accessed, so
   ///         they should not be emitted here.
-  @discardableResult
   func run(in context: ASTContext) {
     for type in context.types {
       codegenTypePrototype(type)
@@ -488,6 +494,16 @@ class IRGenerator: ASTVisitor, Pass {
     currentContinueTarget = oldContinueTarget
     varIRBindings = oldVarIRBindings
   }
+
+  func visitPropertyDecl(_ decl: PropertyDecl) -> IRValue? {
+    if let getter = decl.getter {
+      _ = visitFuncDecl(getter)
+    }
+    if let setter = decl.setter {
+      _ = visitFuncDecl(setter)
+    }
+    return nil
+  }
   
   /// Will emit a diagnostic
   func visitClosureExpr(_ expr: ClosureExpr) -> Result {
@@ -515,15 +531,15 @@ extension FunctionPassManager {
   func addPasses(for level: OptimizationLevel) {
     if level == O0 { return }
     
-    add(.instructionCombining, .reassociate)
-    
+    add(.basicAliasAnalysis, .instructionCombining, .reassociate)
+
     if level == O1 { return }
     
     add(.gvn, .cfgSimplification, .promoteMemoryToRegister)
 
     if level == O2 { return }
     
-    add(.loopUnroll, .tailCallElimination)
+    add(.tailCallElimination, .loopUnroll)
   }
 }
 

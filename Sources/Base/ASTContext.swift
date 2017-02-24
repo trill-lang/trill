@@ -9,6 +9,7 @@ enum ASTError: Error, CustomStringConvertible {
   case duplicateVar(name: Identifier)
   case duplicateType(name: Identifier)
   case duplicateFunction(name: Identifier)
+  case duplicateProtocol(name: Identifier)
   case duplicateOperatorOverload(decl: OperatorDecl)
   case circularAlias(name: Identifier)
   case invalidMain(got: DataType)
@@ -21,6 +22,8 @@ enum ASTError: Error, CustomStringConvertible {
       return "invalid redeclaration of variable '\(name)'"
     case .duplicateFunction(let name):
       return "invalid redeclaration of function '\(name)'"
+    case .duplicateProtocol(let name):
+      return "invalid redeclaration of protocol '\(name)'"
     case .duplicateOperatorOverload(let decl):
       return "invalid redeclaration of overload for '\(decl.op)' with arguments '\(decl.formattedParameterList)'"
     case .circularAlias(let name):
@@ -87,25 +90,27 @@ public class ASTContext {
   var operators = [OperatorDecl]()
   var types = [TypeDecl]()
   var extensions = [ExtensionDecl]()
+  var protocols = [ProtocolDecl]()
   var diagnostics = [PoundDiagnosticStmt]()
   var globals = [VarAssignDecl]()
   var typeAliases = [TypeAliasDecl]()
   
   private var funcDeclMap = [String: [FuncDecl]]()
+  private var protocolDeclMap = [String: ProtocolDecl]()
   private var typeDeclMap: [DataType: TypeDecl] = [
-    .int8: TypeDecl(name: "Int8",  fields: []),
-    .int16: TypeDecl(name: "Int16",  fields: []),
-    .int32: TypeDecl(name: "Int32",  fields: []),
-    .int64: TypeDecl(name: "Int",  fields: []),
-    .uint8: TypeDecl(name: "UInt8",  fields: []),
-    .uint16: TypeDecl(name: "UInt16",  fields: []),
-    .uint32: TypeDecl(name: "UInt32",  fields: []),
-    .uint64: TypeDecl(name: "UInt",  fields: []),
-    .double: TypeDecl(name: "Double",  fields: []),
-    .float: TypeDecl(name: "Float",  fields: []),
-    .float80: TypeDecl(name: "Float80",  fields: []),
-    .bool: TypeDecl(name: "Bool", fields: []),
-    .void: TypeDecl(name: "Void", fields: [])
+    .int8: TypeDecl(name: "Int8",  properties: []),
+    .int16: TypeDecl(name: "Int16",  properties: []),
+    .int32: TypeDecl(name: "Int32",  properties: []),
+    .int64: TypeDecl(name: "Int",  properties: []),
+    .uint8: TypeDecl(name: "UInt8",  properties: []),
+    .uint16: TypeDecl(name: "UInt16",  properties: []),
+    .uint32: TypeDecl(name: "UInt32",  properties: []),
+    .uint64: TypeDecl(name: "UInt",  properties: []),
+    .double: TypeDecl(name: "Double",  properties: []),
+    .float: TypeDecl(name: "Float",  properties: []),
+    .float80: TypeDecl(name: "Float80",  properties: []),
+    .bool: TypeDecl(name: "Bool", properties: []),
+    .void: TypeDecl(name: "Void", properties: [])
   ]
   
   private static let numericTypes: [DataType] = [.int8, .int16, .int32, .int64,
@@ -205,6 +210,7 @@ public class ASTContext {
                             ParamDecl(name: "", type: lhs.type!.ref()),
                             ParamDecl(name: "", type: lhs.type!.ref())
                           ],
+                          genericParams: [],
                           returnType: DataType.bool.ref(),
                           body: nil,
                           modifiers: [.implicit])
@@ -354,6 +360,20 @@ public class ASTContext {
     funcDeclMap[funcDecl.name.name] = existing
   }
   
+  func add(_ protocolDecl: ProtocolDecl) {
+    protocols.append(protocolDecl)
+    
+    guard protocolDeclMap[protocolDecl.name.name] == nil else {
+      error(ASTError.duplicateProtocol(name: protocolDecl.name),
+            loc: protocolDecl.name.range?.start,
+            highlights: [
+              protocolDecl.name.range
+            ])
+      return
+    }
+    protocolDeclMap[protocolDecl.name.name] = protocolDecl
+  }
+  
   @discardableResult
   func add(_ typeDecl: TypeDecl) -> Bool {
     guard decl(for: typeDecl.type) == nil else {
@@ -433,8 +453,15 @@ public class ASTContext {
     for file in context.sourceFiles {
       add(file)
     }
+    for proto in context.protocols {
+      add(proto)
+    }
   }
   
+  func protocolDecl(for type: DataType) -> ProtocolDecl? {
+    return protocolDeclMap["\(type)"]
+  }
+    
   func decl(for type: DataType, canonicalized: Bool = true) -> TypeDecl? {
     let root = canonicalized ? canonicalType(type) : type
     return typeDeclMap[root]
@@ -477,9 +504,9 @@ public class ASTContext {
   
   func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
     if !base && matchRank(typeDecl.type, type) != nil { return true }
-    for field in typeDecl.fields {
-      if case .pointer = field.type { continue }
-      if let decl = decl(for: field.type),
+    for property in typeDecl.properties {
+      if case .pointer = property.type { continue }
+      if let decl = decl(for: property.type),
         !decl.isIndirect,
         containsInLayout(type: type, typeDecl: decl) {
         return true
@@ -519,7 +546,12 @@ public class ASTContext {
       return nil
     }
   }
-  
+
+
+  /// Returns all overloaded functions with the given name at top-level scope.
+  ///
+  /// - Parameter name: The function's base name.
+  /// - Returns: An array of functions with that base name.
   func functions(named name: Identifier) -> [FuncDecl] {
     var results = [FuncDecl]()
     if let decls = funcDeclMap[name.name] {
@@ -530,11 +562,21 @@ public class ASTContext {
     }
     return results
   }
-  
+
+
+  /// Finds all overloaded operator declarations for a given operator.
+  ///
+  /// - Parameter op: The operator you're looking for.
+  /// - Returns: All OperatorDecls overloading that operator.
   func operators(for op: BuiltinOperator) -> [OperatorDecl] {
     return operatorMap[op] ?? []
   }
-  
+
+
+  /// Finds the global variable with a given name
+  ///
+  /// - Parameter name: The global's name
+  /// - Returns: A VarAssignDecl for that global, if it exists.
   func global(named name: Identifier) -> VarAssignDecl? {
     return globalDeclMap[name.name]
   }
@@ -547,11 +589,45 @@ public class ASTContext {
     return sourceFileMap[name]
   }
   
+  func `protocol`(named name: Identifier) -> ProtocolDecl? {
+    return protocolDeclMap[name.name]
+  }
+
+  /// Traverses the protocol hierarchy and adds all methods required to satisfy
+  /// this protocol and all its parent requirements.
+  ///
+  /// - Parameters:
+  ///   - protocolDecl: The protocol you're inspecting
+  ///   - visited: A set of mangled names we've seen so far.
+  /// - Returns: An array of MethodDecls that are required for a type to
+  ///            conform to a protocol.
+  func requiredMethods(for protocolDecl: ProtocolDecl, visited: Set<String> = Set()) -> [MethodDecl]? {
+    var currentVisited = visited
+    var methods = [MethodDecl]()
+    for method in protocolDecl.methods {
+      let mangled = Mangler.mangle(method)
+      if currentVisited.contains(mangled) { continue }
+      currentVisited.insert(mangled)
+      methods.append(method)
+    }
+    for conformance in protocolDecl.conformances {
+      guard let proto = self.protocol(named: conformance.name) else {
+        // We will already have popped a diagnostic for this.
+        return nil
+      }
+      guard let required = requiredMethods(for: proto, visited: currentVisited) else {
+        return nil
+      }
+      methods.append(contentsOf: required)
+    }
+    return methods
+  }
+
   func mutability(of expr: Expr) -> Mutability {
     switch expr {
     case let expr as VarExpr:
       return mutability(of: expr)
-    case let expr as FieldLookupExpr:
+    case let expr as PropertyRefExpr:
       return mutability(of: expr)
     case let expr as SubscriptExpr:
       return mutability(of: expr.lhs)
@@ -587,7 +663,7 @@ public class ASTContext {
     }
   }
   
-  func mutability(of expr: FieldLookupExpr) -> Mutability {
+  func mutability(of expr: PropertyRefExpr) -> Mutability {
     guard let decl = expr.decl else { fatalError("no decl in mutability check") }
     let lhsMutability = mutability(of: expr.lhs)
     guard case .mutable = lhsMutability else {
@@ -654,6 +730,9 @@ public class ASTContext {
       if decl(for: can) != nil {
         return true
       }
+      if protocolDecl(for: can) != nil {
+        return true
+      }
       return alias ? isValidType(can) : false
     case .function(let args, let returnType):
       for arg in args where !isValidType(arg) {
@@ -711,12 +790,15 @@ extension OperatorDecl {
                      _ rhsType: DataType,
                      _ returnType: DataType,
                      modifiers: [DeclModifier] = [.implicit]) {
-        self.init(op: op, args: [
-            ParamDecl(name: "lhs", type: lhsType.ref()),
-            ParamDecl(name: "rhs", type: rhsType.ref()),
-            ], returnType: returnType.ref(),
-               body: nil,
-               modifiers: modifiers)
+        self.init(op: op,
+                  args: [
+                    ParamDecl(name: "lhs", type: lhsType.ref()),
+                    ParamDecl(name: "rhs", type: rhsType.ref()),
+                  ],
+                  genericParams: [],
+                  returnType: returnType.ref(),
+                  body: nil,
+                  modifiers: modifiers)
     }
 }
   

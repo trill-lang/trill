@@ -15,6 +15,10 @@ extension ByteArray {
 
 func main() {
     var string = ByteArray("hello, world")
+<<<<<<< 1d1e5aea53822765f47c63e37c7b687d26a19518
     string.append("ahem")
+=======
+    string.append("words words words")
+>>>>>>> Added some conformance checking
     NSLog(str("%@"), string.asNSData())
 }

@@ -18,9 +18,9 @@ extension SourceRange {
   }
 }
 
-private let commentRegex = try! NSRegularExpression(pattern: "\\/\\/.*$", options: NSRegularExpression.Options.anchorsMatchLines)
-private let multilineCommentRegex = try! NSRegularExpression(pattern: "\\/\\*.*\\*\\/", options: NSRegularExpression.Options.dotMatchesLineSeparators)
-private let inProgressMultilineCommentRegex = try! NSRegularExpression(pattern: "\\/\\*([^\\*\\/]|\\*)*", options: NSRegularExpression.Options.dotMatchesLineSeparators)
+private let commentRegex = try! NSRegularExpression(pattern: "\\/\\/.*$", options: .anchorsMatchLines)
+private let multilineCommentRegex = try! NSRegularExpression(pattern: "\\/\\*.*\\*\\/", options: .dotMatchesLineSeparators)
+private let inProgressMultilineCommentRegex = try! NSRegularExpression(pattern: "\\/\\*([^\\*\\/]|\\*)*", options: .dotMatchesLineSeparators)
 
 class LexerTextStorage: NSTextStorage {
   let attributes: TextAttributes

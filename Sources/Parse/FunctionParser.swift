@@ -5,12 +5,12 @@
 
 import Foundation
 
-/// Distinguishes the
+/// Distinguishes the different kinds of functions in the language.
 enum FunctionKind {
   case initializer
   case deinitializer
+  case protocolMethod
   case method
-  case staticMethod
   case `operator`(op: BuiltinOperator)
   case `subscript`
   case property
@@ -23,65 +23,72 @@ extension Parser {
   ///
   /// func-decl ::= fun <name>([<name> [internal-name]: <typename>,]*): <typename> <braced-expr-block>
   func parseFuncDecl(_ modifiers: [DeclModifier],
-                     forType type: DataType? = nil) throws -> FuncDecl {
+                     forType type: DataType? = nil,
+                     isProtocol: Bool = false) throws -> FuncDecl {
     var modifiers = modifiers
     let startLoc = sourceLoc
     var args = [ParamDecl]()
+    var genericArgs = [GenericParamDecl]()
     var returnType = TypeRefExpr(type: .void, name: "Void")
     var hasVarArgs = false
-    var kind: FunctionKind = .free
     var nameRange: SourceRange? = nil
-    if case .Init = peek() {
+    var name: Identifier = ""
+    let kind: FunctionKind
+
+    // Parse the discriminating token (init, func, deinit, subscript, etc)
+    // and optionally the name if it's a 'func'.
+    switch peek() {
+    case .Init:
       modifiers.append(.mutating)
       kind = .initializer
       nameRange = consumeToken().range
-    } else if case .deinit = peek() {
+    case .deinit:
       kind = .deinitializer
       nameRange = consumeToken().range
-    } else if case .subscript = peek() {
-      let tok = consumeToken()
-      nameRange = tok.range
+    case .subscript:
       kind = .subscript
-    } else {
-      try consume(.func)
-      if type != nil {
-        if modifiers.contains(.static) {
-          kind = .staticMethod
-        } else {
-          kind = .method
-        }
-      } else if case .operator(let op) = peek() {
+      nameRange = consumeToken().range
+    case .func:
+      consumeToken()
+      if case .operator(let op) = peek() {
         let tok = consumeToken()
         nameRange = tok.range
         kind = .operator(op: op)
-      } else if case .subscript = peek() {
-        throw Diagnostic.error(ParseError.globalSubscript,
-                               loc: currentToken().range.start)
-      } else {
-        kind = .free
+        break
       }
-    }
-    var name: Identifier = ""
-    switch kind {
-    case .free, .method, .staticMethod:
       name = try parseIdentifier()
-    default: break
+      nameRange = name.range
+      if type == nil {
+        kind = .free
+      } else {
+        kind = isProtocol ? .protocolMethod : .method
+      }
+    default:
+      throw unexpectedToken()
     }
+
+    // Deinitializers don't have arguments or return types.
     if case .deinitializer = kind {
     } else {
-      (args, returnType, hasVarArgs) = try parseFuncSignature()
+      (genericArgs, args, returnType, hasVarArgs) = try parseFuncSignature()
     }
+
+    // Try to parse a body.
     var body: CompoundStmt? = nil
     if case .leftBrace = peek() {
-      body = try parseCompoundExpr()
+      body = try parseCompoundStmt()
       if case .initializer = kind {
         returnType = type!.ref()
       }
     }
+
+    // Create a function based on what we parsed.
+
     switch kind {
     case .operator(let op):
       return OperatorDecl(op: op,
                           args: args,
+                          genericParams: genericArgs,
                           returnType: returnType,
                           body: body,
                           modifiers: modifiers,
@@ -90,6 +97,7 @@ extension Parser {
     case .subscript:
       return SubscriptDecl(returnType: returnType,
                            args: args,
+                           genericParams: genericArgs,
                            parentType: type!,
                            body: body,
                            modifiers: modifiers,
@@ -97,6 +105,7 @@ extension Parser {
     case .initializer:
       return InitializerDecl(parentType: type!,
                              args: args,
+                             genericParams: genericArgs,
                              returnType: returnType,
                              body: body,
                              modifiers: modifiers,
@@ -109,25 +118,27 @@ extension Parser {
       return MethodDecl(name: name,
                         parentType: type!,
                         args: args,
+                        genericParams: genericArgs,
                         returnType: returnType,
                         body: body,
                         modifiers: modifiers,
                         hasVarArgs: hasVarArgs,
                         sourceRange: range(start: startLoc))
-    case .staticMethod:
-      return MethodDecl(name: name,
-                        parentType: type!,
-                        args: args,
-                        returnType: returnType,
-                        body: body,
-                        modifiers: modifiers,
-                        isStatic: true,
-                        hasVarArgs: hasVarArgs,
-                        sourceRange: range(start: startLoc))
+    case .protocolMethod:
+      return ProtocolMethodDecl(name: name,
+                                parentType: type!,
+                                args: args,
+                                genericParams: genericArgs,
+                                returnType: returnType,
+                                body: body,
+                                modifiers: modifiers,
+                                hasVarArgs: hasVarArgs,
+                                sourceRange: range(start: startLoc))
     default:
       return FuncDecl(name: name,
                       returnType: returnType,
                       args: args,
+                      genericParams: genericArgs,
                       body: body,
                       modifiers: modifiers,
                       hasVarArgs: hasVarArgs,
@@ -135,7 +146,13 @@ extension Parser {
     }
   }
   
-  func parseFuncSignature() throws -> (args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
+  func parseFuncSignature() throws -> (genericArgs: [GenericParamDecl], args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
+    var genericArgs = [GenericParamDecl]()
+
+    if case .operator(.lessThan) = peek() {
+      genericArgs = try parseGenericParamDecls()
+    }
+
     try consume(.leftParen)
     var hasVarArgs = false
     var args = [ParamDecl]()
@@ -190,71 +207,52 @@ extension Parser {
     } else {
       returnType = TypeRefExpr(type: .void, name: "Void")
     }
-    return (args: args, ret: returnType, hasVarArgs: hasVarArgs)
+    return (genericArgs: genericArgs, args: args, ret: returnType, hasVarArgs: hasVarArgs)
   }
-  
-  func parseType() throws -> TypeRefExpr {
-    let startLoc = sourceLoc
-    while true {
-      switch peek() {
-      // HACK
-      case .unknown(let char):
-        var pointerLevel = 0
-        for c in char.characters {
-          if c != "*" {
-            throw unexpectedToken()
-          }
-          pointerLevel += 1
-        }
+
+  func parseGenericParamDecls() throws -> [GenericParamDecl] {
+    try consume(.leftAngle)
+    var names = [Identifier]()
+    var constraints = [String: [TypeRefExpr]]()
+
+    var hasWhere = false
+    loop: while true {
+      names.append(try parseIdentifier())
+      let tok = currentToken()
+      switch tok.kind {
+      case .where:
         consumeToken()
-        return PointerTypeRefExpr(pointedTo: try parseType(),
-                                  level: pointerLevel,
-                                  sourceRange: range(start: startLoc))
-      case .leftParen:
+        hasWhere = true
+        break loop
+      case .operator(.greaterThan):
+        break loop
+      case .comma:
         consumeToken()
-        var args = [TypeRefExpr]()
-        while peek() != .rightParen {
-          let t = try parseType()
-          args.append(t)
-          if peek() != .rightParen {
-            try consume(.comma)
-          }
-        }
-        try consume(.rightParen)
-        if case .arrow = peek() {
-          consumeToken()
-          let ret = try parseType()
-          return FuncTypeRefExpr(argNames: args,
-                                 retName: ret,
-                                 sourceRange: range(start: startLoc))
-        } else {
-          return TupleTypeRefExpr(fieldNames: args,
-                                  sourceRange: range(start: startLoc))
-        }
-      case .leftBracket:
-        consumeToken()
-        let innerType = try parseType()
-        try consume(.rightBracket)
-        return ArrayTypeRefExpr(element: innerType,
-                                length: nil,
-                                sourceRange: range(start: startLoc))
-      case .operator(op: .star):
-        consumeToken()
-        return PointerTypeRefExpr(pointedTo: try parseType(),
-                                  level: 1,
-                                  sourceRange: range(start: startLoc))
-      case .identifier:
-        var id = try parseIdentifier()
-        let r = range(start: startLoc)
-        id = Identifier(name: id.name, range: r)
-        return TypeRefExpr(type: DataType(name: id.name),
-                           name: id, sourceRange: r)
+        continue
       default:
         throw unexpectedToken()
       }
     }
+
+    if hasWhere {
+      let values = try parseSeparated(by: .comma, until: .rightAngle) {
+        () -> (Identifier, TypeRefExpr) in
+        let name = try parseIdentifier()
+        try consume(.colon)
+        let type = try parseType()
+        return (name, type)
+      }
+      for (name, type) in values {
+        var newVals = constraints[name.name] ?? []
+        newVals.append(type)
+        constraints[name.name] = newVals
+      }
+    }
+    try consume(.rightAngle)
+
+    return names.map { GenericParamDecl(name: $0, constraints: constraints[$0.name] ?? []) }
   }
-  
+ 
   /// Function Call Args
   ///
   /// func-call-args ::= ([<label>:] <val-expr>,*)

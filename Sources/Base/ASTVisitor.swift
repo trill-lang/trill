@@ -57,6 +57,8 @@ protocol ASTVisitor {
   @discardableResult
   func visitOperatorDecl(_ decl: OperatorDecl) -> Result
   @discardableResult
+  func visitProtocolDecl(_ decl: ProtocolDecl) -> Result
+  @discardableResult
   func visitReturnStmt(_ stmt: ReturnStmt) -> Result
   @discardableResult
   func visitBreakStmt(_ stmt: BreakStmt) -> Result
@@ -70,6 +72,8 @@ protocol ASTVisitor {
   func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result
   @discardableResult
   func visitTypeDecl(_ expr: TypeDecl) -> Result
+  @discardableResult
+  func visitPropertyDecl(_ decl: PropertyDecl) -> Result
   @discardableResult
   func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result
   @discardableResult
@@ -97,7 +101,7 @@ protocol ASTVisitor {
   @discardableResult
   func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) -> Result
   @discardableResult
-  func visitFieldLookupExpr(_ expr: FieldLookupExpr) -> Result
+  func visitPropertyRefExpr(_ expr: PropertyRefExpr) -> Result
   @discardableResult
   func visitPoundDiagnosticStmt(_ expr: PoundDiagnosticStmt) -> Result
 }
@@ -121,12 +125,16 @@ extension ASTVisitor {
     switch decl {
     case let decl as ParamDecl:
       return visitParamDecl(decl)
+    case let decl as PropertyDecl:
+      return visitPropertyDecl(decl)
     case let decl as VarAssignDecl:
       return visitVarAssignDecl(decl)
     case let decl as OperatorDecl:
       return visitOperatorDecl(decl)
     case let decl as FuncDecl:
       return visitFuncDecl(decl)
+    case let decl as ProtocolDecl:
+      return visitProtocolDecl(decl)
     case let decl as TypeDecl:
       return visitTypeDecl(decl)
     case let decl as ExtensionDecl:
@@ -211,8 +219,8 @@ extension ASTVisitor {
       return visitInfixOperatorExpr(expr)
     case let expr as PrefixOperatorExpr:
       return visitPrefixOperatorExpr(expr)
-    case let expr as FieldLookupExpr:
-      return visitFieldLookupExpr(expr)
+    case let expr as PropertyRefExpr:
+      return visitPropertyRefExpr(expr)
     case let expr as VoidExpr:
       return visitVoidExpr(expr)
     default:

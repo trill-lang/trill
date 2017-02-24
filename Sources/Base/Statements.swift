@@ -42,14 +42,14 @@ class VarAssignDecl: Decl {
   var typeRef: TypeRefExpr?
   var kind: VarKind
   var mutable: Bool
-  init(name: Identifier,
+  init?(name: Identifier,
        typeRef: TypeRefExpr?,
        kind: VarKind = .global,
        rhs: Expr? = nil,
        modifiers: [DeclModifier] = [],
        mutable: Bool = true,
        sourceRange: SourceRange? = nil) {
-    precondition(rhs != nil || typeRef != nil)
+    guard rhs != nil || typeRef != nil else { return nil }
     self.rhs = rhs
     self.typeRef = typeRef
     self.mutable = mutable

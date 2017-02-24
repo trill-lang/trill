@@ -159,6 +159,16 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       self.stream.write(" \(expr.op.rawValue) ")
       self.visit(expr.rhs)
     }
+
+    if case .assign = expr.op,
+      let propRef = expr.lhs as? PropertyRefExpr,
+      let decl = propRef.decl as? PropertyDecl,
+      let setter = decl.setter {
+      let call = FuncCallExpr(lhs: expr.lhs, args: [Argument(val: expr.rhs)])
+      call.decl = setter
+      visitFuncCallExpr(call)
+      return
+    }
     
     if expr.op.isAssign {
       emit()
@@ -310,18 +320,19 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
   
   override func visitFuncCallExpr(_ expr: FuncCallExpr) {
     guard let decl = expr.decl else { fatalError("no decl?") }
-    if decl is InitializerDecl {
-      stream.write("new ")
-    }
+    let isInitializer = decl is InitializerDecl
     let isMethod = decl is MethodDecl
     let isForeign = decl.has(attribute: .foreign)
-    if (isMethod && isForeign) || (decl is InitializerDecl && isForeign) {
-      if expr.lhs is ClosureExpr {
-        withParens {
-          visit(expr.lhs)
-        }
-      } else {
-        visit(expr.lhs)
+    if isInitializer {
+      stream.write("new ")
+    }
+    if let initDecl = decl as? InitializerDecl, isForeign {
+      stream.write("\(initDecl.parentType)")
+    } else if isMethod && isForeign && !isInitializer {
+      visit(expr.lhs)
+    } else if let lhs = expr.lhs as? ClosureExpr {
+      withParens {
+        visit(lhs)
       }
     } else if let lhs = expr.lhs as? VarExpr,
            case .local? = (lhs.decl as? VarAssignDecl)?.kind {
@@ -331,8 +342,8 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       stream.write("\(mangled)")
     }
     stream.write("(")
-    if let field = expr.lhs as? FieldLookupExpr, !isForeign {
-      visit(field.lhs)
+    if let property = expr.lhs as? PropertyRefExpr, !isForeign {
+      visit(property.lhs)
       if expr.args.count > 0 {
         stream.write(", ")
       }
@@ -350,13 +361,19 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     }
   }
   
-  override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
-    if !(expr.lhs is VarExpr) {
+  override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
+    if let prop = expr.decl as? PropertyDecl,
+       let getter = prop.getter {
+      let call = FuncCallExpr(lhs: expr, args: [])
+      call.decl = getter
+      return visitFuncCallExpr(call)
+    }
+    if expr.lhs is VarExpr {
+      visit(expr.lhs)
+    } else {
       withParens {
         visit(expr.lhs)
       }
-    } else {
-      visit(expr.lhs)
     }
     stream.write(".\(expr.name)")
   }

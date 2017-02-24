@@ -21,6 +21,11 @@ func populate(driver: Driver, options: Options,
               context: ASTContext) throws {
   var gen: IRGenerator? = nil
   driver.add("Lexing and Parsing") { context in
+    if sourceFiles.count == 1 {
+      sourceFiles[0].parse()
+      context.merge(context: sourceFiles[0].context)
+      return
+    }
     let group = DispatchGroup()
     for file in sourceFiles {
       DispatchQueue.global().async(group: group) {

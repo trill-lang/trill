@@ -23,7 +23,12 @@ class FuncCallExpr: Expr {
     self.args = args
     super.init(sourceRange: sourceRange)
   }
-  
+
+  var genericParams: [GenericParam] {
+    guard let expr = lhs as? GenericContainingExpr else { return [] }
+    return expr.genericParams
+  }
+
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     if let decl = decl {
@@ -44,8 +49,10 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
   /// any substantial body behind it and should not be mangled as such.
   let isPlaceholder: Bool
 
+  let genericParams: [GenericParamDecl]
   init(name: Identifier, returnType: TypeRefExpr,
        args: [ParamDecl],
+       genericParams: [GenericParamDecl] = [],
        body: CompoundStmt? = nil,
        modifiers: [DeclModifier] = [],
        isPlaceholder: Bool = false,
@@ -54,6 +61,7 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
     self.args = args
     self.body = body
     self.name = name
+    self.genericParams = genericParams
     self.returnType = returnType
     self.hasVarArgs = hasVarArgs
     self.isPlaceholder = isPlaceholder
@@ -105,21 +113,25 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
 
 class MethodDecl: FuncDecl {
   let parentType: DataType
-  var isStatic: Bool
+
+  /// The protocols for which this method implementation satisfies a requirement
+  var satisfiedProtocols = Set<ProtocolDecl>()
+
+  /// Whether or not this method satisfies a requirement from any protocols
+  var satisfiesProtocol: Bool { return satisfiedProtocols.isEmpty }
 
   init(name: Identifier,
        parentType: DataType,
        args: [ParamDecl],
+       genericParams: [GenericParamDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
-       isStatic: Bool = false,
        hasVarArgs: Bool = false,
        sourceRange: SourceRange? = nil) {
     self.parentType = parentType
-    self.isStatic = isStatic
     var fullArgs = args
-    if !isStatic {
+    if !modifiers.contains(.static) {
       let selfParam = ParamDecl(name: "self",
                                 type: parentType.ref(),
                                 externalName: nil, rhs: nil,
@@ -131,6 +143,7 @@ class MethodDecl: FuncDecl {
     super.init(name: name,
                returnType: returnType,
                args: fullArgs,
+               genericParams: genericParams,
                body: body,
                modifiers: modifiers,
                hasVarArgs: hasVarArgs,
@@ -138,22 +151,27 @@ class MethodDecl: FuncDecl {
   }
 }
 
+class ProtocolMethodDecl: MethodDecl {}
+
 class InitializerDecl: MethodDecl {
   init(parentType: DataType,
        args: [ParamDecl],
+       genericParams: [GenericParamDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
        hasVarArgs: Bool = false,
        sourceRange: SourceRange? = nil) {
 
+    var newModifiers = Set(modifiers)
+    newModifiers.insert(.static)
     super.init(name: "init",
                parentType: parentType,
                args: args,
+               genericParams: genericParams,
                returnType: returnType,
                body: body,
-               modifiers: modifiers,
-               isStatic: true,
+               modifiers: Array(newModifiers),
                hasVarArgs: hasVarArgs,
                sourceRange: sourceRange)
   }
@@ -166,6 +184,7 @@ class DeinitializerDecl: MethodDecl {
     super.init(name: "deinit",
                parentType: parentType,
                args: [],
+               genericParams: [],
                returnType: DataType.void.ref(),
                body: body,
                modifiers: [],
@@ -176,6 +195,7 @@ class DeinitializerDecl: MethodDecl {
 class SubscriptDecl: MethodDecl {
   init(returnType: TypeRefExpr,
        args: [ParamDecl],
+       genericParams: [GenericParamDecl],
        parentType: DataType,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
@@ -183,6 +203,7 @@ class SubscriptDecl: MethodDecl {
     super.init(name: Identifier(name: "subscript"),
                parentType: parentType,
                args: args,
+               genericParams: genericParams,
                returnType: returnType,
                body: body,
                modifiers: modifiers,
@@ -195,24 +216,29 @@ class ParamDecl: VarAssignDecl {
   var isImplicitSelf = false
   let externalName: Identifier?
   init(name: Identifier,
-       type: TypeRefExpr?,
+       type: TypeRefExpr,
        externalName: Identifier? = nil,
        rhs: Expr? = nil,
        sourceRange: SourceRange? = nil) {
     self.externalName = externalName
-    super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)
+    super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)!
   }
 }
 
 class ClosureExpr: Expr {
   let args: [ParamDecl]
+  let genericParams: [GenericParamDecl]
   let returnType: TypeRefExpr
   let body: CompoundStmt
   
   private(set) var captures = Set<ASTNode>()
-  
-  init(args: [ParamDecl], returnType: TypeRefExpr,
-       body: CompoundStmt, sourceRange: SourceRange? = nil) {
+
+  init(args: [ParamDecl],
+       genericParams: [GenericParamDecl],
+       returnType: TypeRefExpr,
+       body: CompoundStmt,
+       sourceRange: SourceRange? = nil) {
+    self.genericParams = genericParams
     self.args = args
     self.returnType = returnType
     self.body = body

@@ -26,9 +26,19 @@ typedef struct TypeMetadata {
     uint64_t pointerLevel;
 } TypeMetadata;
 
+typedef struct ProtocolMetadata {
+    const char *name;
+    const char **methodNames;
+    size_t methodCount;
+} ProtocolMetadata;
 
-typedef struct AnyHeader {
+typedef struct AnyBox {
     void *typeMetadata;
-} AnyHeader;
+} AnyBox;
+
+typedef struct GenericBox {
+    void *typeMetadata;
+    void *witnessTable;
+} GenericBox;
 
 #endif /* metadata_private_h */

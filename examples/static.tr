@@ -1,0 +1,12 @@
+type Foo {
+  func bar() -> Int {
+    return Foo.bar()
+  }
+  static func bar() -> Int {
+    return 100
+  }
+}
+
+func main() {
+  printf("%d\n", Foo().bar())
+}

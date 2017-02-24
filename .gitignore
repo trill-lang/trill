@@ -3,6 +3,7 @@
 
 # Xcode
 build/
+
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -19,8 +20,9 @@ DerivedData
 *.ipa
 *.xcuserstate
 
-# SPM
+# SwiftPM
 .build/
+Packages/
 
 # trill build
 examples/build/

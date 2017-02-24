@@ -147,6 +147,24 @@ bool demangleFunction(std::string &symbol, std::string &out) {
       if (!readType(symbol, out)) { return false; }
       out += '.';
       if (!readName(symbol, out)) { return false; }
+    } else if (symbol.front() == 'g') {
+      symbol.erase(0, 1);
+      out += "getter for ";
+      if (!readType(symbol, out)) { return false; }
+      out += '.';
+      if (!readName(symbol, out)) { return false; }
+      out += ": ";
+      if (!readType(symbol, out)) { return false; }
+      return true;
+    } else if (symbol.front() == 's') {
+      symbol.erase(0, 1);
+      out += "setter for ";
+      if (!readType(symbol, out)) { return false; }
+      out += '.';
+      if (!readName(symbol, out)) { return false; }
+      out += ": ";
+      if (!readType(symbol, out)) { return false; }
+      return true;
     } else if (symbol.front() == 'I') {
       symbol.erase(0, 1);
       if (!readType(symbol, out)) { return false; }
@@ -210,9 +228,25 @@ bool demangleGlobal(std::string &symbol, std::string &out, const char *kind) {
   return true;
 }
 
+bool demangleWitnessTable(std::string &symbol, std::string &out) {
+  symbol.erase(0, 1);
+  out += "witness table for ";
+  if (!readName(symbol, out)) { return false; }
+  out += " to ";
+  if (!readName(symbol, out)) { return false; }
+  return true;
+}
+
 bool demangleClosure(std::string &symbol, std::string &out) {
   assert(false && "closure demangling is unimplemented");
   return false;
+}
+
+bool demangleProtocol(std::string &symbol, std::string &out) {
+  symbol.erase(0, 1);
+  out += "protocol ";
+  if (!readName(symbol, out)) { return false; }
+  return true;
 }
 
 bool demangle(std::string &symbol, std::string &out) {
@@ -234,6 +268,10 @@ bool demangle(std::string &symbol, std::string &out) {
     return demangleGlobal(symbol, out, "accessor");
   case 'G':
     return demangleGlobal(symbol, out, "initializer");
+  case 'W':
+    return demangleWitnessTable(symbol, out);
+  case 'P':
+    return demangleProtocol(symbol, out);
   }
   return false;
 }

@@ -13,7 +13,7 @@ extension Parser {
     try consume(.while)
     let startLoc = sourceLoc
     let condition = try parseValExpr()
-    let body = try parseCompoundExpr()
+    let body = try parseCompoundStmt()
     return WhileStmt(condition: condition, body: body,
                      sourceRange: range(start: startLoc))
   }
@@ -41,7 +41,7 @@ extension Parser {
       incrementer = try parseStatement()
       if [.newline, .semicolon].contains(peek()) { consumeToken() }
     }
-    let body = try parseCompoundExpr()
+    let body = try parseCompoundStmt()
     return ForStmt(initializer: initializer,
                    condition: condition,
                    incrementer: incrementer,
@@ -119,7 +119,7 @@ extension Parser {
   func parseIfExpr() throws -> IfStmt {
     let startLoc = sourceLoc
     try consume(.if)
-    var blocks = [(try parseValExpr(), try parseCompoundExpr())]
+    var blocks = [(try parseValExpr(), try parseCompoundStmt())]
     let elseBody: CompoundStmt?
     if case .else = peek() {
       consumeToken()
@@ -128,7 +128,7 @@ extension Parser {
         blocks += ifExpr.blocks
         elseBody = ifExpr.elseBody
       } else {
-        elseBody = try parseCompoundExpr()
+        elseBody = try parseCompoundStmt()
       }
     } else {
       elseBody = nil
@@ -186,7 +186,7 @@ extension Parser {
   ///
   /// <var-assign-expr> ::= var <identifier> = <val-expr>
   ///                     | let <identifier> = <val-expr>
-  func parseVarAssignDecl(_ attrs: [DeclModifier] = []) throws -> VarAssignDecl {
+  func parseVarAssignDecl(modifiers: [DeclModifier] = []) throws -> VarAssignDecl {
     let startLoc = sourceLoc
     let mutable: Bool
     if case .var = peek() {
@@ -214,8 +214,8 @@ extension Parser {
     return VarAssignDecl(name: id,
                          typeRef: type,
                          rhs: rhs,
-                         modifiers: attrs,
+                         modifiers: modifiers,
                          mutable: mutable,
-                         sourceRange: range(start: startLoc))
+                         sourceRange: range(start: startLoc))!
   }
 }

@@ -5,12 +5,20 @@
 
 import Foundation
 
+enum Promotion {
+  case any, generic
+}
+
 class Expr: ASTNode {
   var type: DataType? = nil
+  var promotion: Promotion? = nil
   override func attributes() -> [String : Any] {
     var attrs = super.attributes()
     if let type = type {
       attrs["type"] = type.description
+    }
+    if let promotion = promotion {
+      attrs["promotion"] = "\(promotion)"
     }
     return attrs
   }
@@ -201,14 +209,23 @@ class CharExpr: ConstantExpr {
 
 protocol LValue {}
 
-class VarExpr: Expr, LValue {
+class GenericContainingExpr: Expr {
+  var genericParams: [GenericParam]
+
+  init(genericParams: [GenericParam], sourceRange: SourceRange? = nil) {
+    self.genericParams = genericParams
+    super.init(sourceRange: sourceRange)
+  }
+}
+
+class VarExpr: GenericContainingExpr, LValue {
   let name: Identifier
   var isTypeVar = false
   var isSelf = false
   var decl: Decl? = nil
-  init(name: Identifier, sourceRange: SourceRange? = nil) {
+  init(name: Identifier, genericParams: [GenericParam] = [], sourceRange: SourceRange? = nil) {
     self.name = name
-    super.init(sourceRange: sourceRange)
+    super.init(genericParams: genericParams, sourceRange: sourceRange)
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
@@ -232,17 +249,19 @@ class SizeofExpr: Expr {
 
 class SubscriptExpr: FuncCallExpr, LValue {}
 
-class FieldLookupExpr: Expr, LValue {
+class PropertyRefExpr: GenericContainingExpr, LValue {
   let lhs: Expr
   var decl: Decl? = nil
   var typeDecl: TypeDecl? = nil
   let name: Identifier
   let dotLoc: SourceLocation?
-  init(lhs: Expr, name: Identifier, sourceRange: SourceRange? = nil, dotLoc: SourceLocation? = nil) {
+  init(lhs: Expr, name: Identifier, genericParams: [GenericParam] = [],
+       dotLoc: SourceLocation? = nil,
+       sourceRange: SourceRange? = nil) {
     self.lhs = lhs
     self.name = name
     self.dotLoc = dotLoc
-    super.init(sourceRange: sourceRange)
+    super.init(genericParams: genericParams, sourceRange: sourceRange)
   }
   
   override func attributes() -> [String : Any] {

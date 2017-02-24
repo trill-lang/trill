@@ -9,6 +9,12 @@
 #ifndef defines_h
 #define defines_h
 
+#if __has_feature(nullability)
+#define NONNULL _Nonnull
+#else
+#define NONNULL
+#endif
+
 #define TRILL_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
 #define TRILL_ASSUME_NONNULL_END _Pragma("clang assume_nonnull end")
 

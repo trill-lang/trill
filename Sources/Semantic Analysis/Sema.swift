@@ -5,153 +5,6 @@
 
 import Foundation
 
-enum SemaError: Error, CustomStringConvertible {
-  case unknownFunction(name: Identifier)
-  case unknownType(type: DataType)
-  case callNonFunction(type: DataType?)
-  case unknownField(typeDecl: TypeDecl, expr: FieldLookupExpr)
-  case unknownVariableName(name: Identifier)
-  case invalidOperands(op: BuiltinOperator, invalid: DataType)
-  case cannotSubscript(type: DataType)
-  case cannotCoerce(type: DataType, toType: DataType)
-  case varArgsInNonForeignDecl
-  case foreignFunctionWithBody(name: Identifier)
-  case nonForeignFunctionWithoutBody(name: Identifier)
-  case foreignVarWithRHS(name: Identifier)
-  case dereferenceNonPointer(type: DataType)
-  case cannotSwitch(type: DataType)
-  case nonPointerNil(type: DataType)
-  case notAllPathsReturn(type: DataType)
-  case caseMustBeConstant
-  case noViableOverload(name: Identifier, args: [Argument])
-  case candidates([FuncDecl])
-  case ambiguousReference(name: Identifier)
-  case addressOfRValue
-  case breakNotAllowed
-  case continueNotAllowed
-  case fieldOfFunctionType(type: DataType)
-  case duplicateMethod(name: Identifier, type: DataType)
-  case duplicateField(name: Identifier, type: DataType)
-  case referenceSelfInProp(name: Identifier)
-  case poundFunctionOutsideFunction
-  case assignToConstant(name: Identifier?)
-  case deinitOnStruct(name: Identifier?)
-  case incompleteTypeAccess(type: DataType, operation: String)
-  case indexIntoNonTuple
-  case outOfBoundsTupleField(field: Int, max: Int)
-  case nonMatchingArrayType(DataType, DataType)
-  case ambiguousType
-  case operatorsMustHaveTwoArgs(op: BuiltinOperator)
-  case cannotOverloadOperator(op: BuiltinOperator, type: String)
-  case isCheckAlways(fails: Bool)
-  case pointerFieldAccess(lhs: DataType, field: Identifier)
-  
-  var description: String {
-    switch self {
-    case .unknownFunction(let name):
-      return "unknown function '\(name)'"
-    case .unknownType(let type):
-      return "unknown type '\(type)'"
-    case .unknownVariableName(let name):
-      return "unknown variable '\(name)'"
-    case .unknownField(let typeDecl, let expr):
-      return "unknown field name '\(expr.name)' in type '\(typeDecl.type)'"
-    case .invalidOperands(let op, let invalid):
-      return "invalid argument for operator '\(op)' (got '\(invalid)')"
-    case .cannotSubscript(let type):
-      return "cannot subscript value of type '\(type)'"
-    case .cannotCoerce(let type, let toType):
-      return "cannot coerce '\(type)' to '\(toType)'"
-    case .cannotSwitch(let type):
-      return "cannot switch over values of type '\(type)'"
-    case .foreignFunctionWithBody(let name):
-      return "foreign function '\(name)' cannot have a body"
-    case .nonForeignFunctionWithoutBody(let name):
-      return "function '\(name)' must have a body"
-    case .foreignVarWithRHS(let name):
-      return "foreign var '\(name)' cannot have a value"
-    case .varArgsInNonForeignDecl:
-      return "varargs in non-foreign declarations are not yet supported"
-    case .nonPointerNil(let type):
-      return "cannot set non-pointer type '\(type)' to nil"
-    case .caseMustBeConstant:
-      return "case statement expressions must be constants"
-    case .dereferenceNonPointer(let type):
-      return "cannot dereference a value of non-pointer type '\(type)'"
-    case .addressOfRValue:
-      return "cannot get address of an r-value"
-    case .breakNotAllowed:
-      return "'break' not allowed outside loop"
-    case .continueNotAllowed:
-      return "'continue' not allowed outside loop"
-    case .notAllPathsReturn(let type):
-      return "missing return in a function expected to return \(type)"
-    case .noViableOverload(let name, let args):
-      var s = "could not find a viable overload for \(name) with arguments of type ("
-      s += args.map {
-        var d = ""
-        if let label = $0.label {
-          d += "\(label): "
-        }
-        if let t = $0.val.type {
-          d += t.description
-        } else {
-          d += "<<error type>>"
-        }
-        return d
-        }.joined(separator: ", ")
-      s += ")"
-      return s
-    case .candidates(let functions):
-      var s = "found candidates with these arguments: "
-      s += functions.map { $0.formattedParameterList }.joined(separator: ", ")
-      return s
-    case .ambiguousReference(let name):
-      return "ambiguous reference to '\(name)'"
-    case .callNonFunction(let type):
-      return "cannot call non-function type '" + (type.map { String(describing: $0) } ?? "<<error type>>") + "'"
-    case .fieldOfFunctionType(let type):
-      return "cannot find field on function of type \(type)"
-    case .duplicateMethod(let name, let type):
-      return "invalid redeclaration of method '\(name)' on type '\(type)'"
-    case .duplicateField(let name, let type):
-      return "invalid redeclaration of field '\(name)' on type '\(type)'"
-    case .referenceSelfInProp(let name):
-      return "type '\(name)' cannot have a property that references itself"
-    case .poundFunctionOutsideFunction:
-      return "'#function' is only valid inside function scope"
-    case .deinitOnStruct(let name):
-      return "cannot have a deinitializer in non-indirect type '\(name)'"
-    case .assignToConstant(let name):
-      let val: String
-      if let n = name {
-        val = "'\(n)'"
-      } else {
-        val = "expression"
-      }
-      return "cannot mutate \(val); expression is a 'let' constant"
-    case .indexIntoNonTuple:
-      return "cannot index into non-tuple expression"
-    case .outOfBoundsTupleField(let field, let max):
-      return "cannot access field \(field) in tuple with \(max) fields"
-    case .incompleteTypeAccess(let type, let operation):
-      return "cannot \(operation) incomplete type '\(type)'"
-    case .nonMatchingArrayType(let arrayType, let elementType):
-      return "element type '\(elementType)' does not match array type '\(arrayType)'"
-    case .ambiguousType:
-      return "type is ambiguous without more context"
-    case .operatorsMustHaveTwoArgs(let op):
-      return "definition for operator '\(op)' must have two arguments"
-    case .cannotOverloadOperator(let op, let type):
-      return "cannot overload \(type) operator '\(op)'"
-    case .isCheckAlways(let fails):
-      return "`is` check always \(fails ? "fails" : "succeeds")"
-    case .pointerFieldAccess(let lhs, let field):
-      return "cannot access field \(field) of pointer type \(lhs)"
-    }
-  }
-}
-
 enum FieldKind {
   case method, staticMethod, property
 }
@@ -186,17 +39,17 @@ class Sema: ASTTransformer, Pass {
     for expr in context.types {
       let oldBindings = varBindings
       defer { varBindings = oldBindings }
-      var fieldNames = Set<String>()
-      for field in expr.fields {
-        field.kind = .property(expr)
-        if fieldNames.contains(field.name.name) {
-          error(SemaError.duplicateField(name: field.name,
+      var propertyNames = Set<String>()
+      for property in expr.properties {
+        property.kind = .property(expr)
+        if propertyNames.contains(property.name.name) {
+          error(SemaError.duplicateField(name: property.name,
                                          type: expr.type),
-                loc: field.startLoc,
+                loc: property.startLoc,
                 highlights: [ expr.name.range ])
           continue
         }
-        fieldNames.insert(field.name.name)
+        propertyNames.insert(property.name.name)
       }
       var methodNames = Set<String>()
       for method in expr.methods + expr.staticMethods {
@@ -219,59 +72,63 @@ class Sema: ASTTransformer, Pass {
       }
     }
   }
-  
-  override func visitFuncDecl(_ expr: FuncDecl) {
-    super.visitFuncDecl(expr)
-    if expr.has(attribute: .foreign) {
-      if !(expr is InitializerDecl) && expr.body != nil {
-        error(SemaError.foreignFunctionWithBody(name: expr.name),
-              loc: expr.name.range?.start,
+
+  override func visitFuncDecl(_ decl: FuncDecl) {
+    super.visitFuncDecl(decl)
+    if decl.has(attribute: .foreign) {
+      if !(decl is InitializerDecl) && decl.body != nil {
+        error(SemaError.foreignFunctionWithBody(name: decl.name),
+              loc: decl.name.range?.start,
               highlights: [
-                expr.name.range
+                decl.name.range
           ])
         return
       }
     } else {
-      if !expr.has(attribute: .implicit) && expr.body == nil {
-        error(SemaError.nonForeignFunctionWithoutBody(name: expr.name),
-              loc: expr.name.range?.start,
-              highlights: [
-                expr.name.range
-          ])
-        return
+      if !decl.has(attribute: .implicit) && decl.body == nil {
+        if decl is ProtocolMethodDecl {
+          /* don't diagnose functions without bodies for protocol methods */
+        } else {
+          error(SemaError.nonForeignFunctionWithoutBody(name: decl.name),
+                loc: decl.name.range?.start,
+                highlights: [
+                  decl.name.range
+                ])
+          return
+        }
       }
-      if expr.hasVarArgs {
+      if decl.hasVarArgs {
         error(SemaError.varArgsInNonForeignDecl,
-              loc: expr.startLoc)
+              loc: decl.startLoc)
         return
       }
     }
-    let returnType = expr.returnType.type!
+    let returnType = decl.returnType.type!
     if !context.isValidType(returnType) {
       error(SemaError.unknownType(type: returnType),
-            loc: expr.returnType.startLoc,
+            loc: decl.returnType.startLoc,
             highlights: [
-              expr.returnType.sourceRange
+              decl.returnType.sourceRange
         ])
       return
     }
-    if let body = expr.body,
+    if let body = decl.body,
         !body.hasReturn,
         returnType != .void,
-        !expr.has(attribute: .implicit),
-        !(expr is InitializerDecl) {
-      error(SemaError.notAllPathsReturn(type: expr.returnType.type!),
-            loc: expr.sourceRange?.start,
+        !decl.has(attribute: .implicit),
+        !(decl is InitializerDecl) {
+      error(SemaError.notAllPathsReturn(type: decl.returnType.type!),
+            loc: decl.sourceRange?.start,
             highlights: [
-              expr.name.range,
-              expr.returnType.sourceRange
+              decl.name.range,
+              decl.returnType.sourceRange
         ])
       return
     }
-    if let destr = expr as? DeinitializerDecl,
-       let decl = context.decl(for: destr.parentType, canonicalized: true),
-       !decl.isIndirect {
-     error(SemaError.deinitOnStruct(name: decl.name))
+    if let destr = decl as? DeinitializerDecl,
+       let typeDecl = context.decl(for: destr.parentType, canonicalized: true),
+       !typeDecl.isIndirect {
+     error(SemaError.deinitOnStruct(name: typeDecl.name))
     }
   }
   
@@ -369,21 +226,59 @@ class Sema: ASTTransformer, Pass {
     }
     decl.kind = .local(currentFunction!)
     let canTy = context.canonicalType(decl.type)
-    if case .custom = canTy,
-      context.decl(for: canTy)!.isIndirect {
+    if
+      case .custom = canTy,
+      let typeDecl = context.decl(for: canTy),
+      typeDecl.isIndirect {
       decl.mutable = true
     }
     varBindings[decl.name.name] = decl
   }
   
-  override func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
-    _ = visitFieldLookupExpr(expr, callArgs: nil)
+  func haveEqualSignatures(_ decl: FuncDecl, _ other: FuncDecl) -> Bool {
+    guard decl.args.count == other.args.count else { return false }
+    guard decl.hasVarArgs == other.hasVarArgs else { return false }
+    for (declArg, otherArg) in zip(decl.args, other.args) {
+      if declArg.isImplicitSelf && otherArg.isImplicitSelf { continue }
+      guard declArg.externalName == otherArg.externalName else { return false }
+      guard matches(declArg.type, otherArg.type) else { return false }
+    }
+    return true
+  }
+  
+  func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
+    search: for candidate in candidates {
+      var candArgs = candidate.args
+      if let first = candArgs.first, first.isImplicitSelf {
+        candArgs.remove(at: 0)
+      }
+      if !candidate.hasVarArgs && candArgs.count != args.count { continue }
+      for (candArg, exprArg) in zip(candArgs, args) {
+        if let externalName = candArg.externalName,
+           exprArg.label != externalName { continue search }
+        guard var valType = exprArg.val.type else { continue search }
+        let type = context.canonicalType(candArg.type)
+        // automatically coerce number literals.
+        if context.propagateContextualType(type, to: exprArg.val) {
+          valType = type
+        }
+        if !matches(type, .any) && !matches(type, valType) {
+          continue search
+        }
+      }
+      return candidate
+    }
+    return nil
+  }
+  
+  override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
+    _ = visitPropertyRefExpr(expr, callArgs: nil)
   }
   
   /// - returns: true if the resulting decl is a field of function type,
   ///            instead of a method
-  func visitFieldLookupExpr(_ expr: FieldLookupExpr, callArgs: [Argument]?) -> FieldKind {
-    super.visitFieldLookupExpr(expr)
+  func visitPropertyRefExpr(_ expr: PropertyRefExpr, callArgs: [Argument]?) -> FieldKind {
+    super.visitPropertyRefExpr(expr)
     guard let type = expr.lhs.type else {
       // An error will already have been thrown from here
       return .property
@@ -420,18 +315,18 @@ class Sema: ASTTransformer, Pass {
     }
     let candidateMethods = typeDecl.methods(named: expr.name.name)
     if let callArgs = callArgs,
-       let index = typeDecl.indexOf(fieldName: expr.name) {
-      let field = typeDecl.fields[index]
-      if case .function(let args, _) = field.type {
+       let index = typeDecl.indexOfProperty(named: expr.name) {
+      let property = typeDecl.properties[index]
+      if case .function(let args, _) = property.type {
         let types = callArgs.flatMap { $0.val.type }
         if types.count == callArgs.count && args == types {
-          expr.decl = field
-          expr.type = field.type
+          expr.decl = property
+          expr.type = property.type
           return .property
         }
       }
     }
-    if let decl = typeDecl.field(named: expr.name.name) {
+    if let decl = typeDecl.property(named: expr.name.name) {
       expr.decl = decl
       expr.type = decl.type
       return .property
@@ -451,7 +346,7 @@ class Sema: ASTTransformer, Pass {
         return .property
       }
     } else {
-      error(SemaError.unknownField(typeDecl: typeDecl, expr: expr),
+      error(SemaError.unknownProperty(typeDecl: typeDecl, expr: expr),
             loc: expr.startLoc,
             highlights: [ expr.name.range ])
       return .property
@@ -627,6 +522,78 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
+  func foreignDecl(args: [DataType], ret: DataType) -> FuncDecl {
+    let assigns: [ParamDecl] = args.map {
+      let name = Identifier(name: "__implicit__")
+      return ParamDecl(name: "", type: TypeRefExpr(type: $0, name: name))
+    }
+    let retName = Identifier(name: "\(ret)")
+    let typeRef = TypeRefExpr(type: ret, name: retName)
+    return FuncDecl(name: "",
+                    returnType: typeRef,
+                    args: assigns,
+                    body: nil,
+                    modifiers: [.foreign, .implicit])
+  }
+  
+  override func visitTypeDecl(_ decl: TypeDecl) {
+    super.visitTypeDecl(decl)
+    diagnoseConformances(decl)
+  }
+  
+  override func visitProtocolDecl(_ decl: ProtocolDecl) {
+    super.visitProtocolDecl(decl)
+    for conformance in decl.conformances {
+      diagnoseConformanceIfMissing(conformance)
+    }
+  }
+  
+  @discardableResult
+  func diagnoseConformanceIfMissing(_ conformance: TypeRefExpr) -> ProtocolDecl? {
+    guard let proto = context.protocol(named: conformance.name) else {
+      error(SemaError.unknownProtocol(name: conformance.name),
+            loc: conformance.startLoc,
+            highlights: [
+              conformance.sourceRange
+            ])
+      return nil
+    }
+    return proto
+  }
+  
+  func diagnoseConformances(_ decl: TypeDecl) {
+    for conformance in decl.conformances {
+      guard let proto = diagnoseConformanceIfMissing(conformance) else { continue }
+      guard let methods = context.requiredMethods(for: proto) else { continue }
+      var missing = [FuncDecl]()
+      for method in methods {
+        var impl: MethodDecl?
+        for candidate in decl.methods(named: method.name.name) {
+          if haveEqualSignatures(method, candidate) {
+            impl = candidate
+            break
+          }
+        }
+        if let impl = impl {
+          impl.satisfiedProtocols.insert(proto)
+        } else {
+          missing.append(method)
+        }
+      }
+      if !missing.isEmpty {
+        error(SemaError.typeDoesNotConform(decl.type, protocol: proto.type),
+              loc: decl.startLoc,
+              highlights: [
+                conformance.name.range
+              ])
+      }
+      for decl in missing {
+        note(SemaError.missingImplementation(decl),
+             loc: decl.startLoc)
+      }
+    }
+  }
+  
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) -> Result {
     guard let bound = decl.bound.type else { return }
     guard context.isValidType(bound) else {
@@ -653,13 +620,13 @@ class Sema: ASTTransformer, Pass {
     var setLHSDecl: (Decl) -> Void = {_ in }
     
     switch expr.lhs {
-    case let lhs as FieldLookupExpr:
+    case let lhs as PropertyRefExpr:
       name = lhs.name
-      let fieldKind = visitFieldLookupExpr(lhs, callArgs: expr.args)
+      let propertyKind = visitPropertyRefExpr(lhs, callArgs: expr.args)
       guard let typeDecl = lhs.typeDecl else {
         return
       }
-      switch fieldKind {
+      switch propertyKind {
       case .property:
         if case .function(var args, let ret)? = lhs.type {
           candidates.append(context.implicitDecl(args: args, ret: ret))
@@ -728,7 +695,7 @@ class Sema: ASTTransformer, Pass {
     expr.decl = decl
     expr.type = decl.returnType.type
     
-    if let lhs = expr.lhs as? FieldLookupExpr {
+    if let lhs = expr.lhs as? PropertyRefExpr {
       if case .immutable(let culprit) = context.mutability(of: lhs),
         decl.has(attribute: .mutating), decl is MethodDecl {
         error(SemaError.assignToConstant(name: culprit),

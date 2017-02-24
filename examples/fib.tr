@@ -1,0 +1,25 @@
+func fib(_ n: Int) -> Int {
+    var prev = 0
+    var curr = 1
+    for var i = 2; i <= n; i += 1 {
+        let tmp = prev
+        prev = curr
+        curr += tmp
+    }
+    return curr
+}
+func fibRec(_ n: Int) -> Int {
+    if n < 2 { return n }
+    return fibRec(n - 1) + fibRec(n - 2)
+}
+
+func main(argc: Int, argv: **Int8) -> Int {
+  if argc < 2 {
+    println("usage: fib <n>")
+    return 1
+  }
+  let n = atoi(argv[1]) as Int
+  println(fib(n))
+  println(fibRec(n))
+  return 0
+}

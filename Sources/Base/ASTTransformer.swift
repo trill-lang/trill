@@ -64,12 +64,13 @@ class ASTTransformer: ASTVisitor {
   
   func run(in context: ASTContext) {
     context.diagnostics.forEach(visitPoundDiagnosticStmt)
-    context.globals.forEach(visit)
-    context.types.forEach(visit)
-    context.typeAliases.forEach(visit)
-    context.functions.forEach(visit)
-    context.operators.forEach(visit)
-    context.extensions.forEach(visit)
+    context.globals.forEach(visitVarAssignDecl)
+    context.protocols.forEach(visitProtocolDecl)
+    context.types.forEach(visitTypeDecl)
+    context.typeAliases.forEach(visitTypeAliasDecl)
+    context.functions.forEach(visitFuncDecl)
+    context.operators.forEach(visitOperatorDecl)
+    context.extensions.forEach(visitExtensionDecl)
   }
   
   func matchRank(_ t1: DataType?, _ t2: DataType?) -> TypeRank? {
@@ -184,8 +185,8 @@ class ASTTransformer: ASTVisitor {
       for method in decl.staticMethods {
         visitFuncDecl(method)
       }
-      for field in decl.fields {
-        visitVarAssignDecl(field)
+      for property in decl.properties {
+        visitPropertyDecl(property)
       }
       for subscriptDecl in decl.subscripts {
         visitFuncDecl(subscriptDecl)
@@ -195,6 +196,16 @@ class ASTTransformer: ASTVisitor {
       }
     }
   }
+
+  func visitPropertyDecl(_ decl: PropertyDecl) {
+    if let getter = decl.getter {
+      visitFuncDecl(getter)
+    }
+    if let setter = decl.setter {
+      visitFuncDecl(setter)
+    }
+  }
+
   func visitExtensionDecl(_ decl: ExtensionDecl) {
     decl.methods.forEach(visitFuncDecl)
     decl.subscripts.forEach(visitFuncDecl)
@@ -238,6 +249,15 @@ class ASTTransformer: ASTVisitor {
     visit(expr.falseCase)
   }
   
+  func visitProtocolDecl(_ decl: ProtocolDecl) {
+    for method in decl.methods {
+      visitFuncDecl(method)
+    }
+    for conformance in decl.conformances {
+      visitTypeRefExpr(conformance)
+    }
+  }
+  
   func visitSwitchStmt(_ stmt: SwitchStmt) {
     visit(stmt.value)
     for `case` in stmt.cases {
@@ -268,7 +288,7 @@ class ASTTransformer: ASTVisitor {
     visit(expr.rhs)
   }
   
-  func visitFieldLookupExpr(_ expr: FieldLookupExpr) {
+  func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
     visit(expr.lhs)
   }
   

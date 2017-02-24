@@ -1,0 +1,37 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD" : 9223372036854775807,
+    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : 9223372036854775807,
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D0961F10-71A0-419F-8C42-3396BE5A12C1",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD" : "trill\/TinyGC\/",
+    "32E9A4F24A891D682A50DDAB6DE720492519A2F6" : "trill\/LLVMSwift\/",
+    "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6" : "trill\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "trill",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "trill.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/trill-lang\/LLVMSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "32E9A4F24A891D682A50DDAB6DE720492519A2F6"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:trill-lang\/trill.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AEC09DBC080A0591BD9DA174AD0FBD8FCCD37CA6"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ivmai\/tinygc.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C1B3CEC66847B924F737CEF45B60B75CF8F94BAD"
+    }
+  ]
+}

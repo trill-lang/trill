@@ -52,7 +52,8 @@ extension Collection where Iterator.Element == String, IndexDistance == Int {
         ptr[idx] = strdup(cStr)
       }
     }
-    return try f(unsafeBitCast(ptr, to: UnsafeMutablePointer<UnsafePointer<Int8>?>.self))
+    return try ptr.withMemoryRebound(to: UnsafePointer<Int8>?.self,
+                                     capacity: self.count, f)
   }
 }
 
@@ -256,7 +257,7 @@ class ClangImporter: Pass {
     
     if let e = importedTypes[name] { return e }
     
-    var values = [VarAssignDecl]()
+    var values = [PropertyDecl]()
     
     var childIdx = 0
     let res = clang_visitChildrenWithBlock(cursor) { child, parent in
@@ -272,11 +273,14 @@ class ClangImporter: Pass {
         return CXChildVisit_Break
       }
       let range = SourceRange(clangRange: clang_getCursorExtent(child))
-      let expr = VarAssignDecl(name: fieldId,
-                               typeRef: trillTy.ref(),
-                               modifiers: [.foreign, .implicit],
-                               mutable: true,
-                               sourceRange: range)
+      let expr = PropertyDecl(name: fieldId,
+                              type: trillTy.ref(),
+                              mutable: true,
+                              rhs: nil,
+                              modifiers: [.foreign, .implicit],
+                              getter: nil,
+                              setter: nil,
+                              sourceRange: range)
       values.append(expr)
       return CXChildVisit_Continue
     }
@@ -285,7 +289,7 @@ class ClangImporter: Pass {
     }
     
     let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
-    let expr = TypeDecl(name: name, fields: values, modifiers: [.foreign, .implicit],
+    let expr = TypeDecl(name: name, properties: values, modifiers: [.foreign, .implicit],
                         sourceRange: range)
     importedTypes[name] = expr
     context.add(expr)
@@ -341,7 +345,7 @@ class ClangImporter: Pass {
                                   typeRef: DataType.int32.ref(),
                                   modifiers: [.foreign, .implicit],
                                   mutable: false,
-                                  sourceRange: range)
+                                  sourceRange: range)!
       context.add(varExpr)
       return CXChildVisit_Continue
     }
@@ -390,7 +394,7 @@ class ClangImporter: Pass {
     clang_annotateTokens(tu, tokens, tokenCount, nil)
     
     let name = clang_getTokenSpelling(tu, tokens[0]).asSwift()
-    guard context.global(named: name) == nil else { return }
+    guard context.global(named: Identifier(name: name)) == nil else { return }
     guard clang_getTokenKind(tokens[1]) == CXToken_Literal else { return }
     guard let assign = parse(tu: tu, token: tokens[1], name: name) else { return }
     context.add(assign)

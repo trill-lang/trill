@@ -12,25 +12,29 @@
 
 // TRILL_ASSUME_NONNULL_BEGIN
 
-
 #ifdef __cplusplus
 namespace trill {
 extern "C" {
 #endif
     
-#define trill_assert(x) if (!(x)) trill_fatalError(": assertion failed: "#x)
+#define trill_assert(x)                               \
+    ({                                                \
+      if (!(x)) {                                     \
+          trill_fatalError(": assertion failed: "#x); \
+      }                                               \
+    })
 
 void trill_init();
 
-void trill_once(uint64_t *_Nonnull predicate, void (*_Nonnull initializer)());
+void trill_once(uint64_t *NONNULL predicate, void (*NONNULL initializer)());
     
 void trill_printStackTrace();
   
-void *_Nonnull trill_alloc(size_t size);
+void *NONNULL trill_alloc(size_t size);
 
-void trill_fatalError(const char *_Nonnull message) TRILL_NORETURN;
+void trill_fatalError(const char *NONNULL message) TRILL_NORETURN;
   
-void trill_registerDeinitializer(void *_Nonnull object, void (*_Nonnull deinitializer)(void *_Nonnull));
+void trill_registerDeinitializer(void *NONNULL object, void (*NONNULL deinitializer)(void *NONNULL));
 
 #ifdef __cplusplus
 }

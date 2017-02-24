@@ -31,6 +31,13 @@ enum Mangler {
     s += decl.name.name.withCount
     return s
   }
+
+  static func mangle(_ t: WitnessTable) -> String {
+    var s = "_WW"
+    s += t.implementingType.name.name.withCount
+    s += t.proto.name.name.withCount
+    return s
+  }
   
   static func mangle(_ d: FuncDecl, root: Bool = true) -> String {
     if d.has(attribute: .foreign) && !(d is OperatorDecl) {
@@ -42,8 +49,18 @@ enum Mangler {
       s += "D" + mangle(d.parentType, root: false)
     case let d as InitializerDecl:
       s += "I" + mangle(d.parentType, root: false)
+    case let d as PropertyGetterDecl:
+      s += "g" + mangle(d.parentType, root: false)
+      s += d.propertyName.name.withCount
+      s += mangle(d.returnType.type!, root: false)
+      return s
+    case let d as PropertySetterDecl:
+      s += "s" + mangle(d.parentType, root: false)
+      s += d.propertyName.name.withCount
+      s += mangle(d.args[1].type, root: false)
+      return s
     case let d as MethodDecl:
-      let sigil = d.isStatic ? "m" : "M"
+      let sigil = d.has(attribute: .static) ? "m" : "M"
       s += sigil + mangle(d.parentType, root: false)
       s += d.name.name.withCount
     case let d as OperatorDecl:
@@ -94,6 +111,11 @@ enum Mangler {
     }
     return s
   }
+
+  static func mangle(_ proto: ProtocolDecl) -> String {
+    return "_WP\(proto.name.name.withCount)"
+  }
+
   static func mangle(_ t: DataType, root: Bool = true) -> String {
     var s = root ? "_WT" : ""
     switch t {

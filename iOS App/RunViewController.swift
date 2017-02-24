@@ -25,7 +25,7 @@ class RunViewController: UIViewController {
       self.driver.run(in: self.driver.context)
       var stream = AttributedStringStream(palette: colorScheme)
       self.driver.context.diag.register(
-        StreamConsumer(files: self.driver.context.sourceFiles,
+        StreamConsumer(context: self.driver.context,
                        stream: &stream))
       self.driver.context.diag.consumeDiagnostics()
       if self.driver.context.diag.hasErrors {

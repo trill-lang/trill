@@ -8,11 +8,11 @@ import Foundation
 enum TokenKind: Equatable {
   case number(value: IntMax, raw: String)
   case float(left: IntMax, right: IntMax, raw: String)
-  case identifier(value: String)
-  case unknown(char: String)
-  case char(value: UInt8)
-  case `operator`(op: BuiltinOperator)
-  case stringLiteral(value: String)
+  case identifier(String)
+  case unknown(String)
+  case char(UInt8)
+  case `operator`(BuiltinOperator)
+  case stringLiteral(String)
   case semicolon
   case newline
   case leftParen
@@ -32,8 +32,10 @@ enum TokenKind: Equatable {
   case `deinit`
   case `extension`
   case `subscript`
+  case `protocol`
   case sizeOf
   case type
+  case `where`
   case `while`
   case `for`
   case `nil`
@@ -57,6 +59,9 @@ enum TokenKind: Equatable {
   case poundError
   case eof
   case underscore
+
+  static let leftAngle: TokenKind = .operator(.lessThan)
+  static let rightAngle: TokenKind = .operator(.greaterThan)
   
   init(op: String) {
     switch op {
@@ -75,7 +80,7 @@ enum TokenKind: Equatable {
     case "[": self = .leftBracket
     case "]": self = .rightBracket
     case "": self = .eof
-    default: self = .unknown(char: op)
+    default: self = .unknown(op)
     }
   }
   
@@ -87,7 +92,9 @@ enum TokenKind: Equatable {
     case "type": self = .type
     case "extension": self = .extension
     case "subscript": self = .subscript
+    case "protocol": self = .protocol
     case "sizeof": self = .sizeOf
+    case "where": self = .where
     case "while": self = .while
     case "if": self = .if
     case "in": self = .in
@@ -104,15 +111,15 @@ enum TokenKind: Equatable {
     case "default": self = .default
     case "for": self = .for
     case "nil": self = .nil
-    case "as": self = .operator(op: .as)
-    case "is": self = .operator(op: .is)
+    case "as": self = .operator(.as)
+    case "is": self = .operator(.is)
     case "#function": self = .poundFunction
     case "#file": self = .poundFile
     case "#line": self = .poundLine
     case "#warning": self = .poundWarning
     case "#error": self = .poundError
     case "_": self = .underscore
-    default: self = .identifier(value: identifier)
+    default: self = .identifier(identifier)
     }
   }
   
@@ -138,8 +145,10 @@ enum TokenKind: Equatable {
     case .func: return "func"
     case .extension: return "extension"
     case .subscript: return "subscript"
+    case .protocol: return "protocol"
     case .type: return "type"
     case .while: return "while"
+    case .where: return "where"
     case .for: return "for"
     case .nil: return "nil"
     case .if: return "if"
@@ -175,8 +184,8 @@ enum TokenKind: Equatable {
   var isKeyword: Bool {
     switch self {
     case .func, .while, .if, .in, .else, .for, .nil, .break, .case, .switch,
-         .default, .continue, .return, .underscore, .extension, .sizeOf,
-         .subscript, .var, .let, .type, .true, .false, .Init, .deinit,
+         .default, .continue, .return, .underscore, .extension, .sizeOf, .where,
+         .protocol, .subscript, .var, .let, .type, .true, .false, .Init, .deinit,
          .poundFunction, .poundFile, .poundLine, .poundWarning, .poundError:
          return true
     case .identifier(let value):
@@ -248,10 +257,11 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   case (.deinit, .deinit): return true
   case (.extension, .extension): return true
   case (.subscript, .subscript): return true
-  case (.operator, .operator): return true
+  case (.protocol, .protocol): return true
   case (.sizeOf, .sizeOf): return true
   case (.type, .type): return true
   case (.while, .while): return true
+  case (.where, .where): return true
   case (.for, .for): return true
   case (.nil, .nil): return true
   case (.if, .if): return true
@@ -502,7 +512,7 @@ struct Lexer {
         throw LexError.invalidCharacterLiteral(literal: "\(value)")
       }
       advance()
-      return Token(kind: .char(value: value), range: range(start: startLoc))
+      return Token(kind: .char(value), range: range(start: startLoc))
     }
     if c == "\"" {
       advance()
@@ -511,7 +521,7 @@ struct Lexer {
         str.append(String(try readCharacter()))
       }
       advance()
-      return Token(kind: .stringLiteral(value: str), range: range(start: startLoc))
+      return Token(kind: .stringLiteral(str), range: range(start: startLoc))
     }
     if c.isIdentifier {
       let id = collectWhile { $0.isIdentifier }
@@ -550,7 +560,7 @@ struct Lexer {
     if c.isOperator {
       let opStr = collectWhile { $0.isOperator }
       if let op = BuiltinOperator(rawValue: opStr) {
-        return Token(kind: .operator(op: op), range: range(start: startLoc))
+        return Token(kind: .operator(op), range: range(start: startLoc))
       } else {
         return Token(kind: TokenKind(op: opStr), range: range(start: startLoc))
       }

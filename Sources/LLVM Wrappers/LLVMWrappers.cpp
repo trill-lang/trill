@@ -118,7 +118,7 @@ RawOptions ParseArguments(int argc, char **argv) {
     mode = Emit;
   }
   
-  RawOutputFormat outputFormat;
+  RawOutputFormat outputFormat = Binary;
   if (emit.hasArgStr()) {
     outputFormat = emit;
   } else if (mode == Emit) {

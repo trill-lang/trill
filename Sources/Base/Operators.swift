@@ -189,6 +189,7 @@ class OperatorDecl: FuncDecl {
   let opRange: SourceRange?
   init(op: BuiltinOperator,
        args: [ParamDecl],
+       genericParams: [GenericParamDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt?,
        modifiers: [DeclModifier],
@@ -199,6 +200,7 @@ class OperatorDecl: FuncDecl {
     super.init(name: Identifier(name: "\(op)"),
                returnType: returnType,
                args: args,
+               genericParams: genericParams,
                body: body,
                modifiers: modifiers,
                sourceRange: sourceRange)

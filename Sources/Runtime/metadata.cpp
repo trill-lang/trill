@@ -68,22 +68,22 @@ size_t trill_getFieldOffset(const void *_Nullable fieldMeta) {
 void *_Nonnull trill_allocateAny(void *typeMetadata_) {
   trill_assert(typeMetadata_ != nullptr);
   TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
-  size_t fullSize = sizeof(AnyHeader) + typeMetadata->sizeInBits;
-  AnyHeader *ptr = (AnyHeader *)trill_alloc(fullSize);
+  size_t fullSize = sizeof(AnyBox) + typeMetadata->sizeInBits;
+  AnyBox *ptr = (AnyBox *)trill_alloc(fullSize);
   ptr->typeMetadata = typeMetadata;
   return ptr;
 }
 
 void *_Nonnull trill_copyAny(void *any) {
   trill_assert(any != nullptr);
-  AnyHeader *ptr = (AnyHeader *)any;
+  AnyBox *ptr = (AnyBox *)any;
   uint64_t size = ((TypeMetadata *)ptr->typeMetadata)->sizeInBits;
-  AnyHeader *header = (AnyHeader *)trill_alloc(sizeof(AnyHeader) + size);
-  memcpy(header, any, sizeof(AnyHeader) + size);
+  AnyBox *header = (AnyBox *)trill_alloc(sizeof(AnyBox) + size);
+  memcpy(header, any, sizeof(AnyBox) + size);
   return header;
 }
   
-static FieldMetadata *trill_getAnyFieldMetadata(AnyHeader *any, uint64_t fieldNum) {
+static FieldMetadata *trill_getAnyFieldMetadata(AnyBox *any, uint64_t fieldNum) {
   auto meta = (TypeMetadata *)any->typeMetadata;
   trill_assert(meta != nullptr);
   trill_assert(fieldNum < meta->fieldCount);
@@ -102,7 +102,7 @@ void trill_reportCastError(TypeMetadata *anyMetadata, TypeMetadata *typeMetadata
 
 void *_Nonnull trill_getAnyFieldValuePtr(void *any_, uint64_t fieldNum) {
   trill_assert(any_ != nullptr);
-  auto any = (AnyHeader *)any_;
+  auto any = (AnyBox *)any_;
   auto origPtr = trill_getAnyValuePtr(any);
   auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
   return (void *)((intptr_t)origPtr + fieldMeta->offset);
@@ -110,18 +110,18 @@ void *_Nonnull trill_getAnyFieldValuePtr(void *any_, uint64_t fieldNum) {
   
 void *_Nonnull trill_extractAnyField(void *any_, uint64_t fieldNum) {
   trill_assert(any_ != nullptr);
-  auto any = (AnyHeader *)any_;
+  auto any = (AnyBox *)any_;
   auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
   auto fieldTypeMeta = (TypeMetadata *)fieldMeta->type;
-  auto newAny = (AnyHeader *)trill_allocateAny(fieldTypeMeta);
+  auto newAny = (AnyBox *)trill_allocateAny(fieldTypeMeta);
   auto fieldPtr = trill_getAnyValuePtr(newAny);
   memcpy(fieldPtr, trill_getAnyFieldValuePtr(any, fieldNum), fieldTypeMeta->sizeInBits);
   return newAny;
 }
   
 void trill_updateAny(void *any_, uint64_t fieldNum, void *newAny_) {
-  auto any = (AnyHeader *)any_;
-  auto newAny = (AnyHeader *)newAny_;
+  auto any = (AnyBox *)any_;
+  auto newAny = (AnyBox *)newAny_;
   trill_assert(any != nullptr);
   trill_assert(newAny != nullptr);
   auto newType = (TypeMetadata *)newAny->typeMetadata;
@@ -136,12 +136,12 @@ void trill_updateAny(void *any_, uint64_t fieldNum, void *newAny_) {
 }
 
 void *_Nonnull trill_getAnyValuePtr(void *_Nullable anyValue) {
-  return (void *)((intptr_t)anyValue + sizeof(AnyHeader));
+  return (void *)((intptr_t)anyValue + sizeof(AnyBox));
 }
-  
+
 void *_Nonnull trill_getAnyTypeMetadata(void *_Nonnull anyValue) {
   trill_assert(anyValue != nullptr);
-  return ((AnyHeader *)anyValue)->typeMetadata;
+  return ((AnyBox *)anyValue)->typeMetadata;
 }
   
 void trill_debugPrintFields(const void *fields, uint64_t count, std::string indent = "") {
@@ -175,8 +175,8 @@ void trill_debugPrintAny(void *ptr_) {
     std::cout << "<null>" << std::endl;
     return;
   }
-  AnyHeader *ptr = (AnyHeader *)ptr_;
-  std::cout << "AnyHeader {" << std::endl;
+  AnyBox *ptr = (AnyBox *)ptr_;
+  std::cout << "AnyBox {" << std::endl;
   std::cout << "  void *typeMetadata = ";
   trill_debugPrintTypeMetadata(ptr->typeMetadata, "  ");
   if (ptr->typeMetadata) {
@@ -191,9 +191,18 @@ void trill_debugPrintAny(void *ptr_) {
   }
   std::cout << "}" << std::endl;
 }
+
+void trill_dumpProtocol(ProtocolMetadata *proto) {
+    trill_assert(proto != nullptr);
+    std::cout << proto->name << " {" << std::endl;
+    for (size_t i = 0; i < proto->methodCount; ++i) {
+        std::cout << "  " << proto->methodNames[i] << std::endl;
+    }
+    std::cout << "}" << std::endl;
+}
   
 uint8_t trill_checkTypes(void *anyValue_, void *typeMetadata_) {
-  AnyHeader *anyValue = (AnyHeader *)anyValue_;
+  AnyBox *anyValue = (AnyBox *)anyValue_;
   TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
   trill_assert(anyValue != nullptr);
   TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
@@ -201,7 +210,7 @@ uint8_t trill_checkTypes(void *anyValue_, void *typeMetadata_) {
 }
   
 void *trill_checkedCast(void *anyValue_, void *typeMetadata_) {
-  AnyHeader *anyValue = (AnyHeader *)anyValue_;
+  AnyBox *anyValue = (AnyBox *)anyValue_;
   TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
   trill_assert(anyValue != nullptr);
   TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;

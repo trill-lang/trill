@@ -13,6 +13,10 @@ enum ParseError: Error, CustomStringConvertible {
   case unexpectedExpression(expected: String)
   case duplicateDeinit
   case invalidAttribute(DeclModifier, DeclKind)
+  case duplicateSetter
+  case duplicateGetter
+  case computedPropertyRequiresType
+  case computedPropertyMustBeMutable
   case globalSubscript
   
   var description: String {
@@ -33,6 +37,14 @@ enum ParseError: Error, CustomStringConvertible {
       return "'\(attr)' is not valid on \(kind)s"
     case .globalSubscript:
       return "subscript is only valid inside a type"
+    case .duplicateSetter:
+      return "only one setter is allowed per property"
+    case .duplicateGetter:
+      return "only one getter is allowed per property"
+    case .computedPropertyRequiresType:
+      return "computed properties require an explicit type"
+    case .computedPropertyMustBeMutable:
+      return "computed property must be declared with 'var'"
     }
   }
 }
@@ -155,7 +167,7 @@ class Parser {
   }
   
   func backtrack(_ n: Int = 1) {
-    tokenIndex -= n
+    tokenIndex -= 1
   }
   
   func parseTopLevel(into context: ASTContext) throws {
@@ -164,19 +176,19 @@ class Parser {
         break
       }
       consumeLineSeparators()
-      let attrs = try parseAttributes()
+      let modifiers = try parseModifiers()
       switch peek() {
       case .poundWarning, .poundError:
         context.add(try parsePoundDiagnosticExpr())
       case .func:
-        let decl = try parseFuncDecl(attrs)
+        let decl = try parseFuncDecl(modifiers)
         if let op = decl as? OperatorDecl {
           context.add(op)
         } else {
           context.add(decl)
         }
       case .type:
-        let expr = try parseTypeDecl(attrs)
+        let expr = try parseTypeDecl(modifiers)
         if let typeDecl = expr as? TypeDecl {
           context.add(typeDecl)
         } else if let alias = expr as? TypeAliasDecl {
@@ -186,8 +198,10 @@ class Parser {
         }
       case .extension:
         context.add(try parseExtensionDecl())
+      case .protocol:
+        context.add(try parseProtocolDecl(modifiers: modifiers))
       case .var, .let:
-        context.add(try parseVarAssignDecl(attrs))
+        context.add(try parseVarAssignDecl(modifiers: modifiers))
       default:
         throw Diagnostic.error(
           ParseError.unexpectedExpression(expected: "function, type, or extension"),
@@ -205,7 +219,7 @@ class Parser {
     return Identifier(name: name, range: consumeToken().range)
   }
   
-  func parseAttributes() throws -> [DeclModifier] {
+  func parseModifiers() throws -> [DeclModifier] {
     var attrs = [DeclModifier]()
     while case .identifier(let attrId) = peek() {
       if let attr = DeclModifier(rawValue: attrId) {
@@ -226,6 +240,8 @@ class Parser {
       nextKind = .type
     case .extension:
       nextKind = .extension
+    case .protocol:
+      nextKind = .protocol
     case .poundWarning, .poundError:
       nextKind = .diagnostic
     default:
@@ -239,7 +255,7 @@ class Parser {
     }
     return attrs
   }
-  
+
   func parseExtensionDecl() throws -> ExtensionDecl {
     let startLoc = sourceLoc
     try consume(.extension)
@@ -256,7 +272,7 @@ class Parser {
         consumeToken()
         break
       }
-      let attrs = try parseAttributes()
+      let attrs = try parseModifiers()
       switch peek() {
       case .func:
         let decl = try parseFuncDecl(attrs, forType: type.type) as! MethodDecl
@@ -279,79 +295,18 @@ class Parser {
                          sourceRange: range(start: startLoc))
   }
   
-  /// Type Declaration
+  /// Compound Statement
   ///
-  /// type-decl ::= type <typename> {
-  ///   [<field-decl> | <func-decl>]*
-  /// }
-  func parseTypeDecl(_ modifiers: [DeclModifier]) throws -> ASTNode {
-    try consume(.type)
+  /// { [<stmt>]* }
+  func parseCompoundStmt(leftBraceOptional: Bool = false) throws -> CompoundStmt {
     let startLoc = sourceLoc
-    let name = try parseIdentifier()
-    
-    if case .operator(op: .assign) = peek() {
-      consumeToken()
-      let bound = try parseType()
-      return TypeAliasDecl(name: name,
-                           bound: bound,
-                           sourceRange: range(start: startLoc))
-    }
-    try consume(.leftBrace)
-    var fields = [VarAssignDecl]()
-    var methods = [MethodDecl]()
-    var staticMethods = [MethodDecl]()
-    var subscripts = [SubscriptDecl]()
-    var initializers = [InitializerDecl]()
-    var deinitializer: DeinitializerDecl?
-    let type = DataType(name: name.name)
-    loop: while true {
-      if case .rightBrace = peek() {
+    if leftBraceOptional {
+      if case .leftBrace = peek() {
         consumeToken()
-        break
       }
-      let attrs = try parseAttributes()
-      switch peek() {
-      case .poundError, .poundWarning:
-        context.add(try parsePoundDiagnosticExpr())
-      case .func:
-        let decl = try parseFuncDecl(attrs, forType: type) as! MethodDecl
-        if decl.has(attribute: .static) {
-          staticMethods.append(decl)
-        } else {
-          methods.append(decl)
-        }
-      case .Init:
-        initializers.append(try parseFuncDecl(attrs, forType: type) as! InitializerDecl)
-      case .subscript:
-        subscripts.append(try parseFuncDecl(attrs, forType: type) as! SubscriptDecl)
-      case .var, .let:
-        fields.append(try parseVarAssignDecl(attrs))
-      case .deinit:
-        if deinitializer != nil {
-          throw Diagnostic.error(ParseError.duplicateDeinit, loc: sourceLoc)
-        }
-        deinitializer = try parseFuncDecl(modifiers, forType: type) as? DeinitializerDecl
-      default:
-        throw unexpectedToken()
-      }
-      try consumeAtLeastOneLineSeparator()
+    } else {
+      try consume(.leftBrace)
     }
-    return TypeDecl(name: name, fields: fields,
-                    methods: methods,
-                    staticMethods: staticMethods,
-                    initializers: initializers,
-                    subscripts: subscripts,
-                    modifiers: modifiers,
-                    deinit: deinitializer,
-                    sourceRange: range(start: startLoc))
-  }
-  
-  /// Braced Expression Block
-  ///
-  /// { [<if-expr> | <while-expr> | <var-assign-expr> | <return-expr> | <val-expr>];* }
-  func parseCompoundExpr() throws -> CompoundStmt {
-    let startLoc = sourceLoc
-    try consume(.leftBrace)
     let stmts = try parseStatements(terminators: [.rightBrace])
     consumeToken()
     return CompoundStmt(stmts: stmts, sourceRange: range(start: startLoc))

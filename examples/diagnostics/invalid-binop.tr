@@ -1,3 +1,17 @@
+func +(lhs: Int, rhs: *Int8) -> Int {
+  return lhs + rhs[0] as Int
+}
+
+type Foo {
+  let bar: Int
+  func printBar() {
+    printf("%d\n", self.bar)
+  }
+}
+
 func main(argc: Int, argv: **Int8) -> Int {
+  let val = 10 + "a"
+  printf("%d\n", val)
+  Foo(bar: 20).printBar()
   return 0
 }
