@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import trillRuntime
 
 func demangle(_ symbol: String) -> String? {
   return symbol.withCString { cStr -> String? in

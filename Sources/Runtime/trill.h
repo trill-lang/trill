@@ -9,5 +9,6 @@
 #include "demangle.h"
 #include "metadata.h"
 #include "runtime.h"
+#include "generics.h"
 
 #endif /* trill_h */

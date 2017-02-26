@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA71E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA81E5FCF6E00AE577C /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
@@ -285,10 +286,18 @@
 		DC8EBCB61E5FD42A00AE577C /* README in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCAA1E5FD42A00AE577C /* README */; };
 		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
 		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
+		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		DC8EBC9B1E5FD3D900AE577C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DC8EBA521E5FCEF800AE577C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DC8EBA681E5FCF0100AE577C;
+			remoteInfo = trillRuntime;
+		};
+		DCAE21EE1E63974B00645143 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = DC8EBA521E5FCEF800AE577C /* Project object */;
 			proxyType = 1;
@@ -319,6 +328,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA751E5FCF0D00AE577C /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -369,19 +379,19 @@
 		DC8EBB0B1E5FCFC500AE577C /* StatementParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatementParser.swift; sourceTree = "<group>"; };
 		DC8EBB0C1E5FCFC500AE577C /* TypeParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TypeParser.swift; sourceTree = "<group>"; };
 		DC8EBB0D1E5FCFC500AE577C /* ValueParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ValueParser.swift; sourceTree = "<group>"; };
-		DC8EBB1B1E5FCFCC00AE577C /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
-		DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demangle.cpp; sourceTree = "<group>"; };
-		DC8EBB1D1E5FCFCC00AE577C /* demangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = demangle.h; sourceTree = "<group>"; };
-		DC8EBB1E1E5FCFCC00AE577C /* generics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = generics.cpp; sourceTree = "<group>"; };
-		DC8EBB1F1E5FCFCC00AE577C /* generics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = generics.h; sourceTree = "<group>"; };
-		DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = MangledOperators.def; sourceTree = "<group>"; };
-		DC8EBB211E5FCFCC00AE577C /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = metadata.cpp; sourceTree = "<group>"; };
-		DC8EBB221E5FCFCC00AE577C /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metadata.h; sourceTree = "<group>"; };
-		DC8EBB231E5FCFCC00AE577C /* metadata_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = metadata_private.h; sourceTree = "<group>"; };
-		DC8EBB241E5FCFCC00AE577C /* runtime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = runtime.cpp; sourceTree = "<group>"; };
-		DC8EBB251E5FCFCC00AE577C /* runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = runtime.h; sourceTree = "<group>"; };
-		DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = SpecialTypes.def; sourceTree = "<group>"; };
-		DC8EBB271E5FCFCC00AE577C /* trill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = trill.h; sourceTree = "<group>"; };
+		DC8EBB1B1E5FCFCC00AE577C /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = defines.h; path = Sources/Runtime/defines.h; sourceTree = "<group>"; };
+		DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = demangle.cpp; path = Sources/Runtime/demangle.cpp; sourceTree = "<group>"; };
+		DC8EBB1D1E5FCFCC00AE577C /* demangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = demangle.h; path = Sources/Runtime/demangle.h; sourceTree = "<group>"; };
+		DC8EBB1E1E5FCFCC00AE577C /* generics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = generics.cpp; path = Sources/Runtime/generics.cpp; sourceTree = "<group>"; };
+		DC8EBB1F1E5FCFCC00AE577C /* generics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = generics.h; path = Sources/Runtime/generics.h; sourceTree = "<group>"; };
+		DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = MangledOperators.def; path = Sources/Runtime/MangledOperators.def; sourceTree = "<group>"; };
+		DC8EBB211E5FCFCC00AE577C /* metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata.cpp; path = Sources/Runtime/metadata.cpp; sourceTree = "<group>"; };
+		DC8EBB221E5FCFCC00AE577C /* metadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata.h; path = Sources/Runtime/metadata.h; sourceTree = "<group>"; };
+		DC8EBB231E5FCFCC00AE577C /* metadata_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = metadata_private.h; path = Sources/Runtime/metadata_private.h; sourceTree = "<group>"; };
+		DC8EBB241E5FCFCC00AE577C /* runtime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = runtime.cpp; path = Sources/Runtime/runtime.cpp; sourceTree = "<group>"; };
+		DC8EBB251E5FCFCC00AE577C /* runtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = runtime.h; path = Sources/Runtime/runtime.h; sourceTree = "<group>"; };
+		DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = SpecialTypes.def; path = Sources/Runtime/SpecialTypes.def; sourceTree = "<group>"; };
+		DC8EBB271E5FCFCC00AE577C /* trill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = trill.h; path = Sources/Runtime/trill.h; sourceTree = "<group>"; };
 		DC8EBB361E5FCFD500AE577C /* Mangler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Mangler.swift; sourceTree = "<group>"; };
 		DC8EBB371E5FCFD500AE577C /* Sema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sema.swift; sourceTree = "<group>"; };
 		DC8EBB381E5FCFD500AE577C /* SemaError.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = SemaError.swift; sourceTree = "<group>"; tabWidth = 2; };
@@ -565,6 +575,8 @@
 		DC8EBCA91E5FD42A00AE577C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		DC8EBCAA1E5FD42A00AE577C /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		DC8EBCAB1E5FD42A00AE577C /* tinygc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinygc.c; sourceTree = "<group>"; };
+		DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
+		DCAE21EC1E63970A00645143 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -711,9 +723,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
+			isa = PBXGroup;
+			children = (
+				DC8EBC9E1E5FD42A00AE577C /* TinyGC */,
+				DC8EBB1B1E5FCFCC00AE577C /* defines.h */,
+				DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */,
+				DC8EBB1D1E5FCFCC00AE577C /* demangle.h */,
+				DC8EBB1E1E5FCFCC00AE577C /* generics.cpp */,
+				DC8EBB1F1E5FCFCC00AE577C /* generics.h */,
+				DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */,
+				DC8EBB211E5FCFCC00AE577C /* metadata.cpp */,
+				DC8EBB221E5FCFCC00AE577C /* metadata.h */,
+				DC8EBB231E5FCFCC00AE577C /* metadata_private.h */,
+				DC8EBB241E5FCFCC00AE577C /* runtime.cpp */,
+				DC8EBB251E5FCFCC00AE577C /* runtime.h */,
+				DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */,
+				DC8EBB271E5FCFCC00AE577C /* trill.h */,
+				DC6BE9841E63968300E9964E /* trillRuntime.h */,
+			);
+			name = trillRuntime;
+			sourceTree = "<group>";
+		};
 		DC8EBA511E5FCEF800AE577C = {
 			isa = PBXGroup;
 			children = (
+				DCAE21EA1E63970A00645143 /* trill-demangle */,
+				DC6BE9861E63968A00E9964E /* trillRuntime */,
 				DC8EBB501E5FD03300AE577C /* Trill iOS */,
 				DC8EBA921E5FCF5F00AE577C /* trill */,
 				DC8EBA5B1E5FCEF800AE577C /* Products */,
@@ -738,7 +774,6 @@
 				DC8EBB461E5FCFE400AE577C /* Utility Passes */,
 				DC8EBB421E5FCFDD00AE577C /* trill */,
 				DC8EBB351E5FCFD500AE577C /* Semantic Analysis */,
-				DC8EBB1A1E5FCFCC00AE577C /* Runtime */,
 				DC8EBB071E5FCFC500AE577C /* Parse */,
 				DC8EBB031E5FCFBC00AE577C /* LLVM Wrappers */,
 				DC8EBAEC1E5FCFB200AE577C /* IRGen */,
@@ -842,28 +877,6 @@
 			);
 			name = Parse;
 			path = Sources/Parse;
-			sourceTree = "<group>";
-		};
-		DC8EBB1A1E5FCFCC00AE577C /* Runtime */ = {
-			isa = PBXGroup;
-			children = (
-				DC8EBC9E1E5FD42A00AE577C /* TinyGC */,
-				DC8EBB1B1E5FCFCC00AE577C /* defines.h */,
-				DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */,
-				DC8EBB1D1E5FCFCC00AE577C /* demangle.h */,
-				DC8EBB1E1E5FCFCC00AE577C /* generics.cpp */,
-				DC8EBB1F1E5FCFCC00AE577C /* generics.h */,
-				DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */,
-				DC8EBB211E5FCFCC00AE577C /* metadata.cpp */,
-				DC8EBB221E5FCFCC00AE577C /* metadata.h */,
-				DC8EBB231E5FCFCC00AE577C /* metadata_private.h */,
-				DC8EBB241E5FCFCC00AE577C /* runtime.cpp */,
-				DC8EBB251E5FCFCC00AE577C /* runtime.h */,
-				DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */,
-				DC8EBB271E5FCFCC00AE577C /* trill.h */,
-			);
-			name = Runtime;
-			path = Sources/Runtime;
 			sourceTree = "<group>";
 		};
 		DC8EBB351E5FCFD500AE577C /* Semantic Analysis */ = {
@@ -1119,6 +1132,15 @@
 			path = htdocs;
 			sourceTree = "<group>";
 		};
+		DCAE21EA1E63970A00645143 /* trill-demangle */ = {
+			isa = PBXGroup;
+			children = (
+				DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */,
+				DCAE21EC1E63970A00645143 /* main.swift */,
+			);
+			path = "trill-demangle";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1129,6 +1151,7 @@
 				DC8EBB281E5FCFCC00AE577C /* defines.h in Headers */,
 				DC8EBB2A1E5FCFCC00AE577C /* demangle.h in Headers */,
 				DC8EBB2F1E5FCFCC00AE577C /* metadata.h in Headers */,
+				DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */,
 				DC8EBB341E5FCFCC00AE577C /* trill.h in Headers */,
 				DC8EBB321E5FCFCC00AE577C /* runtime.h in Headers */,
 				DC8EBB2C1E5FCFCC00AE577C /* generics.h in Headers */,
@@ -1207,6 +1230,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DCAE21EF1E63974B00645143 /* PBXTargetDependency */,
 			);
 			name = "trill-demangle";
 			productName = "trill-demangle";
@@ -1464,6 +1488,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DCAE21ED1E63970A00645143 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1474,6 +1499,11 @@
 			isa = PBXTargetDependency;
 			target = DC8EBA681E5FCF0100AE577C /* trillRuntime */;
 			targetProxy = DC8EBC9B1E5FD3D900AE577C /* PBXContainerItemProxy */;
+		};
+		DCAE21EF1E63974B00645143 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DC8EBA681E5FCF0100AE577C /* trillRuntime */;
+			targetProxy = DCAE21EE1E63974B00645143 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
