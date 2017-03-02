@@ -40,7 +40,6 @@ extension IRGenerator {
         return codegenCopyAny(value: value)
       }
     }
-    let irType = resolveLLVMType(type)
     let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta,
@@ -49,8 +48,7 @@ extension IRGenerator {
     let res = builder.buildCall(allocateAny, args: [castMeta],
                                 name: "allocate-any")
     let valPtr = codegenAnyValuePtr(res, type: type)
-    let ptr = builder.buildBitCast(valPtr, type: PointerType(pointee: irType))
-    builder.buildStore(value, to: ptr)
+    builder.buildStore(value, to: valPtr)
     return res
   }
   

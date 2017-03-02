@@ -95,9 +95,9 @@ extension IRGenerator {
     let type = context.canonicalType(_type)
     if let cached = typeMetadataMap[type] { return cached }
     var pointerLevel = 0
-    let fullName = "\(type.rootType)"
+    let fullName = type.description
     let name = Mangler.mangle(type)
-    var properties = [(String?, DataType)]()
+    var properties = [(String, DataType)]()
     switch type {
     case .pointer:
       pointerLevel = type.pointerLevel()
@@ -110,11 +110,17 @@ extension IRGenerator {
                        .filter { !$0.isComputed }
                        .map { ($0.name.name, $0.type) }
     case .tuple(let types):
-      properties = types.map { (nil, $0) }
+      properties = types.enumerated().map { (".\($0.offset)", $0.element) }
     default:
       break
     }
-    let irType = resolveLLVMType(type)
+    var irType = resolveLLVMType(type)
+    var isIndirect = storage(for: type) == .reference
+    
+    if case .custom = type, let pointerType = irType as? PointerType {
+      isIndirect = true
+      irType = pointerType.pointee
+    }
     
     let metaName = name + ".metadata"
     let nameValue = codegenGlobalStringPtr(fullName)
@@ -141,12 +147,8 @@ extension IRGenerator {
     for (idx, (propName, type)) in properties.enumerated() {
       let meta = codegenTypeMetadata(type)
       
-      let name: IRValue
-      if let propName = propName {
-        name = codegenGlobalStringPtr(propName)
-      } else {
-        name = PointerType.toVoid.null()
-      }
+      let name = codegenGlobalStringPtr(propName)
+
       propertyVals.append(StructType.constant(values: [
         builder.buildBitCast(name, type: PointerType.toVoid),
         builder.buildBitCast(meta, type: PointerType.toVoid),
@@ -164,7 +166,7 @@ extension IRGenerator {
     global.initializer = StructType.constant(values: [
       nameValue,
       builder.buildBitCast(gep, type: PointerType.toVoid),
-      IntType.int8.constant(storage(for: type) == .reference ? 1 : 0, signExtend: true),
+      IntType.int8.constant(isIndirect ? 1 : 0, signExtend: true),
       IntType.int64.constant(layout.sizeOfTypeInBits(irType), signExtend: true),
       IntType.int64.constant(properties.count, signExtend: true),
       IntType.int64.constant(pointerLevel, signExtend: true),

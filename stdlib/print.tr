@@ -5,8 +5,12 @@ func print(_ value: Any) {
     print(value as Int)
   } else if value is Bool {
     print(value as Bool)
+  } else if value is *Void {
+    printf("%p", value as *Void)
+  } else if value is String {
+    print(value as String)
   } else {
-    printf("<%s 0x%p>", Mirror(reflecting: value).name(), value)
+    Mirror(reflecting: value).print(to: stdout)
   }
 }
 

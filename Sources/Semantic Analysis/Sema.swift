@@ -284,7 +284,7 @@ class Sema: ASTTransformer, Pass {
       return .property
     }
     if let type = expr.lhs.type, case .pointer(_) = context.canonicalType(type) {
-      error(SemaError.pointerFieldAccess(lhs: type, field: expr.name),
+      error(SemaError.pointerPropertyAccess(lhs: type, property: expr.name),
             loc: expr.dotLoc,
             highlights: [
               expr.name.range
@@ -293,9 +293,17 @@ class Sema: ASTTransformer, Pass {
     }
     if case .function = type {
       error(SemaError.fieldOfFunctionType(type: type),
-            loc: expr.startLoc,
+            loc: expr.dotLoc,
             highlights: [
               expr.sourceRange
+        ])
+      return .property
+    }
+    if case .tuple = type {
+      error(SemaError.tuplePropertyAccess(lhs: type, property: expr.name),
+            loc: expr.dotLoc,
+            highlights: [
+              expr.name.range
         ])
       return .property
     }

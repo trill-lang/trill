@@ -103,6 +103,7 @@ class ClangImporter: Pass {
   static let headerFiles = [
     "stdlib.h",
     "stdio.h",
+    "fcntl.h",
     "stdint.h",
     "stddef.h",
     "math.h",
@@ -385,7 +386,7 @@ class ClangImporter: Pass {
     var _tokens: UnsafeMutablePointer<CXToken>?
     clang_tokenize(tu, range, &_tokens, &tokenCount)
     
-    guard let tokens = _tokens, tokenCount > 2 else { return }
+    guard let tokens = _tokens, tokenCount == 3 else { return }
     
     defer {
       clang_disposeTokens(tu, tokens, tokenCount)
@@ -395,9 +396,40 @@ class ClangImporter: Pass {
     
     let name = clang_getTokenSpelling(tu, tokens[0]).asSwift()
     guard context.global(named: Identifier(name: name)) == nil else { return }
-    guard clang_getTokenKind(tokens[1]) == CXToken_Literal else { return }
-    guard let assign = parse(tu: tu, token: tokens[1], name: name) else { return }
-    context.add(assign)
+    switch clang_getTokenKind(tokens[1]) {
+    case CXToken_Literal:
+      guard let assign = parse(tu: tu, token: tokens[1], name: name) else { return }
+      context.add(assign)
+    case CXToken_Identifier:
+      let identifierName = clang_getTokenSpelling(tu, tokens[1]).asSwift()
+      guard let _ = context.global(named: identifierName) else { return }
+      let rhs = VarExpr(name: Identifier(name: identifierName, range: SourceRange(clangRange: clang_getTokenExtent(tu, tokens[1]))))
+      let varDecl = VarAssignDecl(name: Identifier(name: name),
+                                  typeRef: nil,
+                                  kind: .global,
+                                  rhs: rhs,
+                                  modifiers: [.implicit],
+                                  mutable: false,
+                                  sourceRange: SourceRange(clangRange: range))
+      context.add(varDecl!)
+    default:
+      return
+    }
+  }
+  
+  func importVariableDeclation(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
+    guard let type = convertToTrillType(clang_getCursorType(cursor)) else { return }
+    let name = clang_getCursorSpelling(cursor).asSwift()
+    let identifier = Identifier(name: name, range: SourceRange(clangRange: clang_getCursorExtent(cursor)))
+    if let existing = context.global(named: name), existing.sourceRange == identifier.range { return }
+    
+    context.add(VarAssignDecl(name: identifier,
+                              typeRef: type.ref(),
+                              kind: .global,
+                              rhs: nil,
+                              modifiers: [.foreign, .implicit],
+                              mutable: false,
+                              sourceRange: identifier.range)!)
   }
   
   // FIXME: Actually use Clang's lexer instead of re-implementing parts of
@@ -504,6 +536,8 @@ class ClangImporter: Pass {
         self.importMacro(child, in: tu, context: context)
       case CXCursor_UnionDecl:
         self.importUnion(child, context: context)
+      case CXCursor_VarDecl:
+        self.importVariableDeclation(child, in: tu, context: context)
       default:
         break
       }
@@ -577,7 +611,8 @@ class ClangImporter: Pass {
     "int64_t": .int64,
     "int32_t": .int32,
     "int16_t": .int16,
-    "int8_t": .int8
+    "int8_t": .int8,
+    "TRILL_ANY": .any,
   ]
   
   func convertToTrillType(_ type: CXType) -> DataType? {
@@ -630,11 +665,8 @@ class ClangImporter: Pass {
       guard let trillRet = convertToTrillType(ret) else { return nil }
       return .function(args: [], returnType: trillRet)
     case CXType_Typedef:
-      guard let typeName = clang_getTypeSpelling(type)
-                            .asSwift()
-                            .lastWord else {
-          return nil
-      }
+      let typeDecl = clang_getTypeDeclaration(type)
+      let typeName = clang_getCursorSpelling(typeDecl).asSwift()
       if let replacement = ClangImporter.builtinTypeReplacements[typeName] {
         return replacement
       }

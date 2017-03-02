@@ -286,14 +286,8 @@ extension IRGenerator {
     
     if case .as = expr.op {
       let lhs: IRValue
-      
-      // To support casting between indirect types and void pointers,
-      // don't actually load the lhs here. Just get a pointer to it.
-      if let decl = context.decl(for: expr.lhs.type!), decl.isIndirect {
-        lhs = resolvePtr(expr.lhs)
-      } else {
-        lhs = visit(expr.lhs)!
-      }
+
+      lhs = visit(expr.lhs)!
       return coerce(lhs, from: expr.lhs.type!, to: expr.type!)
     }
     

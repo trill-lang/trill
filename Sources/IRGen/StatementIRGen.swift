@@ -35,7 +35,7 @@ extension IRGenerator {
     guard var global = binding.ref as? Global else {
       fatalError("global binding is not a Global?")
     }
-    if decl.has(attribute: .foreign) && decl.rhs != nil {
+    if decl.has(attribute: .foreign) {
       global.isExternallyInitialized = true
       return binding
     }
@@ -45,7 +45,7 @@ extension IRGenerator {
       global.isGlobalConstant = !decl.mutable
       return binding
     }
-    if context.isGlobalConstant(rhs) {
+    if context.isGlobalConstant(rhs) && !(rhs is VarExpr) {
       global.initializer = visit(rhs)!
       global.isGlobalConstant = !decl.mutable
       return binding

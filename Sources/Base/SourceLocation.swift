@@ -15,7 +15,7 @@ struct SourceLocation: CustomStringConvertible {
     self.charOffset = charOffset
   }
   var description: String {
-    return "<line: \(line), col: \(column)>"
+    return "<file: \(file ?? "<none>") line: \(line), col: \(column)>"
   }
   static let zero = SourceLocation(line: 0, column: 0)
 }
@@ -37,4 +37,10 @@ struct SourceRange {
   let end: SourceLocation
   
   static let zero = SourceRange(start: .zero, end: .zero)
+}
+
+extension SourceRange: Equatable {
+  static func ==(lhs: SourceRange, rhs: SourceRange) -> Bool {
+    return lhs.start == rhs.start && lhs.end == rhs.end
+  }
 }

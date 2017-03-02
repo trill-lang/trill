@@ -225,7 +225,7 @@ class VarExpr: GenericContainingExpr, LValue {
   var decl: Decl? = nil
   init(name: Identifier, genericParams: [GenericParam] = [], sourceRange: SourceRange? = nil) {
     self.name = name
-    super.init(genericParams: genericParams, sourceRange: sourceRange)
+    super.init(genericParams: genericParams, sourceRange: sourceRange ?? name.range)
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()

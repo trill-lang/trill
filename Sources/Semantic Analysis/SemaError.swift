@@ -50,7 +50,8 @@ enum SemaError: Error, CustomStringConvertible {
   case cannotOverloadOperator(op: BuiltinOperator, type: String)
   case typeDoesNotConform(DataType, protocol: DataType)
   case missingImplementation(FuncDecl)
-  case pointerFieldAccess(lhs: DataType, field: Identifier)
+  case pointerPropertyAccess(lhs: DataType, property: Identifier)
+  case tuplePropertyAccess(lhs: DataType, property: Identifier)
 
   var description: String {
     switch self {
@@ -158,8 +159,10 @@ enum SemaError: Error, CustomStringConvertible {
       return "'\(typeName)' does not conform to protocol '\(`protocol`)'"
     case .missingImplementation(let decl):
       return "missing implementation for '\(decl.formattedName)'"
-    case .pointerFieldAccess(let lhs, let field):
-      return "cannot access field \(field) of pointer type \(lhs)"
+    case .pointerPropertyAccess(let lhs, let property):
+      return "cannot access property \(property) of pointer type \(lhs)"
+    case .tuplePropertyAccess(let lhs, let property):
+      return "cannot access property \(property) on tuple type \(lhs)"
     }
   }
 }

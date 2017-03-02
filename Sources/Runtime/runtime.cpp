@@ -73,10 +73,11 @@ void trill_fatalError(const char *_Nonnull message) {
 }
 
 void *trill_alloc(size_t size) {
-    void *ptr = malloc(size); //GC_MALLOC(size);
+  void *ptr = malloc(size); //GC_MALLOC(size);
   if (!ptr) {
     trill_fatalError((char *)"malloc failed");
   }
+  memset(ptr, 0, size);
   return ptr;
 }
 
