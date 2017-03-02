@@ -120,6 +120,25 @@ class TypeChecker: ASTTransformer, Pass {
   }
   
   override func visitNumExpr(_ expr: NumExpr) {
+    func bounds(width: Int, signed: Bool) -> (lower: IntMax, upper: UIntMax) {
+        assert(width % 2 == 0, "width must be an even number")
+        assert(width <= 64, "the maximum width is 64 bits")
+        assert(width > 0, "width cannot be negative")
+        let lower: IntMax
+        let upper: UIntMax
+        if width == 64 && !signed {
+            upper = UIntMax.max
+            lower = 0
+        } else if width == 64 && signed {
+            upper = UIntMax(IntMax.max)
+            lower = IntMax.min
+        } else {
+            lower = signed ? IntMax(-(1 << (width - 1))) : 0
+            upper = UIntMax(bitPattern: Int64(1 << (width - (signed ? 1 : 0)))) - 1
+        }
+        return (lower, upper)
+    }
+
     guard let type = expr.type else { return }
     let canTy = context.canonicalType(type)
     let reportUnderflow = {
@@ -132,8 +151,8 @@ class TypeChecker: ASTTransformer, Pass {
         reportUnderflow()
         return
       }
-      let maximum = UIntMax(bitPattern: Int64(1 << (width - (signed ? 1 : 0))))
-      let minimum = IntMax(-(1 << (width / 2)))
+
+      let (minimum, maximum) = bounds(width: width, signed: signed)
 
       if expr.value >= 0 && UIntMax(expr.value) > maximum {
         error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),

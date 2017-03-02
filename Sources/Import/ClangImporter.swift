@@ -52,7 +52,7 @@ extension Collection where Iterator.Element == String, IndexDistance == Int {
         ptr[idx] = strdup(cStr)
       }
     }
-    return try ptr.withMemoryRebound(to: UnsafePointer<Int8>?.self,
+    return try ptr.withMemoryRebound(to: Optional<UnsafePointer<Int8>>.self,
                                      capacity: self.count, f)
   }
 }

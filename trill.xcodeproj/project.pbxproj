@@ -755,7 +755,9 @@
 				DC8EBA5B1E5FCEF800AE577C /* Products */,
 				DC8EBBBA1E5FD12600AE577C /* Frameworks */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		DC8EBA5B1E5FCEF800AE577C /* Products */ = {
 			isa = PBXGroup;
@@ -1269,7 +1271,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1614,10 +1616,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/opt/llvm/lib,
-					/usr/local/Cellar/llvm/3.9.1/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";
@@ -1630,10 +1629,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/opt/llvm/lib,
-					/usr/local/Cellar/llvm/3.9.1/lib,
-				);
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";
@@ -1653,6 +1649,10 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"GC_FASTCALL=",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
@@ -1676,6 +1676,10 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"GC_FASTCALL=",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
@@ -1745,7 +1749,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,
