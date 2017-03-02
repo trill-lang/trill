@@ -225,7 +225,6 @@ class IRGenerator: ASTVisitor, Pass {
     guard let jit = ORCJIT(module: module, machine: targetMachine) else {
       throw LLVMError.brokenJIT
     }
-    try addArchive(at: "/usr/local/lib/libtrillRuntime.a", to: jit.llvm)
     let main = try codegenMain(forJIT: true)
     do {
       try module.verify()

@@ -172,10 +172,10 @@ class Parser {
   
   func parseTopLevel(into context: ASTContext) throws {
     while true {
+      consumeLineSeparators()
       if case .eof = peek() {
         break
       }
-      consumeLineSeparators()
       let modifiers = try parseModifiers()
       switch peek() {
       case .poundWarning, .poundError:
