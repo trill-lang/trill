@@ -20,7 +20,7 @@ extern "C" {
 #define trill_assert(x)                               \
     ({                                                \
       if (!(x)) {                                     \
-          trill_fatalError(": assertion failed: "#x); \
+          trill_fatalError("assertion failed: "#x); \
       }                                               \
     })
 

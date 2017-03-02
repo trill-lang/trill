@@ -1271,7 +1271,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1617,6 +1617,7 @@
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";
@@ -1630,6 +1631,7 @@
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";
@@ -1656,6 +1658,10 @@
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wold-style-cast",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.harlanhaskins.trillRuntime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1683,6 +1689,10 @@
 				INFOPLIST_FILE = trillRuntime/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wold-style-cast",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.harlanhaskins.trillRuntime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1732,6 +1742,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wold-style-cast",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -1741,6 +1755,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-Wold-style-cast",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -1749,7 +1767,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,

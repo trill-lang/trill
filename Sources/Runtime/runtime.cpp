@@ -39,7 +39,7 @@ std::string demangle(std::string symbol) {
 }
     
 void trill_once(uint64_t *predicate, void (*initializer)()) {
-    std::call_once(*((std::once_flag *)predicate), initializer);
+    std::call_once(*reinterpret_cast<std::once_flag *>(predicate), initializer);
 }
 
 void trill_printStackTrace() {
@@ -51,12 +51,16 @@ void trill_printStackTrace() {
     if (dladdr(symbols[i], &handle) == 0) {
       continue;
     }
-    auto base = basename((char *)handle.dli_fname);
+
+    auto copy = strdup(handle.dli_fname); // need to un-const this value
+    auto base = basename(copy);
+    free(copy);
     
     auto symbol = demangle(handle.dli_sname);
     fprintf(stderr, "%-4d %-34s 0x%016" PRIxPTR " %s + %ld\n", i, base,
-            (long)handle.dli_saddr, symbol.c_str(),
-            (intptr_t)symbols[i] - (intptr_t)handle.dli_saddr);
+            reinterpret_cast<long>(handle.dli_saddr), symbol.c_str(),
+            reinterpret_cast<intptr_t>(symbols[i]) -
+            reinterpret_cast<intptr_t>(handle.dli_saddr));
   }
 }
 
@@ -75,7 +79,7 @@ void trill_fatalError(const char *_Nonnull message) {
 void *trill_alloc(size_t size) {
   void *ptr = malloc(size); //GC_MALLOC(size);
   if (!ptr) {
-    trill_fatalError((char *)"malloc failed");
+    trill_fatalError("malloc failed");
   }
   memset(ptr, 0, size);
   return ptr;

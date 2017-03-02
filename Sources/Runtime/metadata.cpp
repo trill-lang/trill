@@ -11,90 +11,84 @@
 #include <iostream>
 #include <string>
 
-#define TYPE_PUN(ptr, ty) *((ty *)(ptr))
-
 namespace trill {
 
 const char *trill_getTypeName(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
-  auto real = (TypeMetadata *)typeMeta;
-  return real->name;
+  return reinterpret_cast<const TypeMetadata *>(typeMeta)->name;
 }
 
 uint64_t trill_getTypeSizeInBits(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
-  auto real = (TypeMetadata *)typeMeta;
-  return real->sizeInBits;
+  return reinterpret_cast<const TypeMetadata *>(typeMeta)->sizeInBits;
 }
 
 uint8_t trill_isReferenceType(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
-  auto real = (TypeMetadata *)typeMeta;
-  return real->isReferenceType;
+  return reinterpret_cast<const TypeMetadata *>(typeMeta)->isReferenceType;
 }
 
 uint64_t trill_getNumFields(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
-  auto real = (TypeMetadata *)typeMeta;
-  return real->fieldCount;
+  return reinterpret_cast<const TypeMetadata *>(typeMeta)->fieldCount;
 }
 
 const void *_Nullable trill_getFieldMetadata(const void *typeMeta, uint64_t field) {
   trill_assert(typeMeta != nullptr);
-  auto real = (TypeMetadata *)typeMeta;
+  auto real = reinterpret_cast<const TypeMetadata *>(typeMeta);
   if (real->fieldCount <= field) {
     trill_fatalError("field index out of bounds");
   }
-  return &((FieldMetadata *)real->fields)[field];
+  return &(real->fields[field]);
 }
 
-const char *_Nullable trill_getFieldName(const void *_Nullable fieldMeta) {
+const char *_Nonnull trill_getFieldName(const void *_Nonnull fieldMeta) {
   trill_assert(fieldMeta != nullptr);
-  auto real = (FieldMetadata *)fieldMeta;
-  return real->name;
+  return reinterpret_cast<const FieldMetadata *>(fieldMeta)->name;
 }
 
-const void *_Nullable trill_getFieldType(const void *_Nullable fieldMeta) {
+const void *_Nonnull trill_getFieldType(const void *_Nonnull fieldMeta) {
   trill_assert(fieldMeta != nullptr);
-  auto real = (FieldMetadata *)fieldMeta;
-  return real->type;
+  return reinterpret_cast<const FieldMetadata *>(fieldMeta)->typeMetadata;
 }
 
 size_t trill_getFieldOffset(const void *_Nullable fieldMeta) {
   trill_assert(fieldMeta != nullptr);
-  return ((FieldMetadata *)fieldMeta)->offset;
+  return reinterpret_cast<const FieldMetadata *>(fieldMeta)->offset;
 }
 
-TRILL_ANY trill_allocateAny(void *typeMetadata_) {
-  trill_assert(typeMetadata_ != nullptr);
-  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
-  size_t fullSize = sizeof(AnyBox) + typeMetadata->sizeInBits;
-  AnyBox *ptr = (AnyBox *)trill_alloc(fullSize);
+TRILL_ANY trill_allocateAny(const void *typeMeta) {
+  trill_assert(typeMeta != nullptr);
+  auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMeta);
+  auto fullSize = sizeof(AnyBox) + typeMetadata->sizeInBits;
+  auto ptr = reinterpret_cast<AnyBox *>(trill_alloc(fullSize));
   ptr->typeMetadata = typeMetadata;
   return {ptr};
 }
 
 TRILL_ANY trill_copyAny(TRILL_ANY any) {
-  AnyBox *ptr = (AnyBox *)any._any;
+  auto ptr = any.any();
   trill_assert(ptr != nullptr);
-  auto typeMetadata = reinterpret_cast<TypeMetadata*>(ptr->typeMetadata);
+  auto typeMetadata = ptr->typeMetadata;
   if (typeMetadata->isReferenceType) { return any; }
-  uint64_t size = typeMetadata->sizeInBits;
-  AnyBox *header = (AnyBox *)trill_alloc(sizeof(AnyBox) + size);
-  memcpy(header, ptr, sizeof(AnyBox) + size);
-  return {header};
+  auto newAny = trill_allocateAny(typeMetadata);
+  auto valuePtr = trill_getAnyValuePtr(any);
+  auto newValuePtr = trill_getAnyValuePtr(newAny);
+  memcpy(newValuePtr, valuePtr, typeMetadata->sizeInBits);
+  return newAny;
 }
 
-static FieldMetadata *trill_getAnyFieldMetadata(AnyBox *any, uint64_t fieldNum) {
-  auto meta = (TypeMetadata *)any->typeMetadata;
+static const FieldMetadata *trill_getAnyFieldMetadata(AnyBox *any,
+                                                      uint64_t fieldNum) {
+  auto meta = any->typeMetadata;
   trill_assert(meta != nullptr);
   trill_assert(fieldNum < meta->fieldCount);
-  auto fieldMeta = (FieldMetadata *)trill_getFieldMetadata(meta, fieldNum);
+  auto fieldMeta = trill_getFieldMetadata(meta, fieldNum);
   trill_assert(fieldMeta != nullptr);
-  return fieldMeta;
+  return reinterpret_cast<const FieldMetadata *>(fieldMeta);
 }
 
-void trill_reportCastError(TypeMetadata *anyMetadata, TypeMetadata *typeMetadata) {
+void trill_reportCastError(const TypeMetadata *anyMetadata, const TypeMetadata *typeMetadata) {
   std::string failureDesc = "checked cast failed: cannot convert ";
   failureDesc += trill_getTypeName(anyMetadata);
   failureDesc += " to ";
@@ -103,24 +97,25 @@ void trill_reportCastError(TypeMetadata *anyMetadata, TypeMetadata *typeMetadata
 }
 
 void *trill_getAnyFieldValuePtr(TRILL_ANY any_, uint64_t fieldNum) {
-  auto any = (AnyBox *)any_._any;
+  auto any = any_.any();
   trill_assert(any != nullptr);
   auto origPtr = trill_getAnyValuePtr(any_);
   trill_assert(origPtr != nullptr);
-  auto typeMeta = reinterpret_cast<TypeMetadata*>(trill_getAnyTypeMetadata(any_));
+  auto typeMeta = any->typeMetadata;
   auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
   if (typeMeta->isReferenceType) {
-    origPtr = *reinterpret_cast<void**>(origPtr);
+    origPtr = *reinterpret_cast<void **>(origPtr);
     trill_assert(origPtr != nullptr);
   }
-  return (void *)((intptr_t)origPtr + fieldMeta->offset);
+  return reinterpret_cast<void *>(
+          reinterpret_cast<intptr_t>(origPtr) + fieldMeta->offset);
 }
 
 TRILL_ANY trill_extractAnyField(TRILL_ANY any_, uint64_t fieldNum) {
-  auto any = (AnyBox *)any_._any;
+  auto any = any_.any();
   trill_assert(any != nullptr);
   auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
-  auto fieldTypeMeta = (TypeMetadata *)fieldMeta->type;
+  auto fieldTypeMeta = fieldMeta->typeMetadata;
   auto newAny = trill_allocateAny(fieldTypeMeta);
   auto fieldPtr = trill_getAnyValuePtr(newAny);
   auto anyFieldValuePointer = trill_getAnyFieldValuePtr(any_, fieldNum);
@@ -129,35 +124,40 @@ TRILL_ANY trill_extractAnyField(TRILL_ANY any_, uint64_t fieldNum) {
 }
 
 void trill_updateAny(TRILL_ANY any_, uint64_t fieldNum, TRILL_ANY newAny_) {
-  auto any = (AnyBox *)any_._any;
-  auto newAny = (AnyBox *)newAny_._any;
+  auto any = any_.any();
+  auto newAny = newAny_.any();
   trill_assert(any != nullptr);
   trill_assert(newAny != nullptr);
-  auto newType = (TypeMetadata *)newAny->typeMetadata;
+  auto newType = newAny->typeMetadata;
   trill_assert(newType);
   auto fieldMeta = trill_getAnyFieldMetadata(any, fieldNum);
-  if (fieldMeta->type != newType) {
-    trill_reportCastError((TypeMetadata *)fieldMeta->type, (TypeMetadata *)newAny->typeMetadata);
+  if (fieldMeta->typeMetadata != newType) {
+    trill_reportCastError(fieldMeta->typeMetadata, newAny->typeMetadata);
   }
   auto fieldPtr = trill_getAnyFieldValuePtr({any}, fieldNum);
   auto newPtr = trill_getAnyValuePtr({newAny});
   memcpy(fieldPtr, newPtr, newType->sizeInBits);
 }
 
-void *trill_getAnyValuePtr(TRILL_ANY anyValue) {
-  return (void *)((intptr_t)anyValue._any + sizeof(AnyBox));
+void *_Nonnull trill_getAnyValuePtr(TRILL_ANY anyValue) {
+  return reinterpret_cast<void *>(
+           reinterpret_cast<intptr_t>(anyValue._any) + sizeof(AnyBox));
 }
 
-void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY anyValue) {
+const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY anyValue) {
   trill_assert(anyValue._any != nullptr);
-  return ((AnyBox *)anyValue._any)->typeMetadata;
+  return anyValue.any()->typeMetadata;
 }
 
-void trill_debugPrintFields(const void *fields, uint64_t count, std::string indent = "") {
+void trill_debugPrintFields(const FieldMetadata *fields,
+                            uint64_t count,
+                            std::string indent = "") {
   for (size_t i = 0; i < count; i++) {
-    FieldMetadata field = ((FieldMetadata *)fields)[i];
-    std::cout << indent << "  " << field.name << ": "
-              << trill_getTypeName(field.type) << std::endl;
+    auto field = fields[i];
+    std::string typeName = field.typeMetadata->name;
+    std::string fieldName = field.name;
+    std::cout << indent << "  " << fieldName << ": "
+              << typeName << std::endl;
   }
 }
 
@@ -166,7 +166,7 @@ void trill_debugPrintTypeMetadata(const void *ptr_, std::string indent = "") {
     std::cout << "<null>" << std::endl;
     return;
   }
-  TypeMetadata *ptr = (TypeMetadata *)ptr_;
+  auto ptr = reinterpret_cast<const TypeMetadata *>(ptr_);
   std::string typeName = ptr->name;
   std::cout << "TypeMetadata {" << std::endl;
   std::cout << indent << "  const char *name = \"" << typeName << "\"" << std::endl;
@@ -185,18 +185,20 @@ void trill_debugPrintAny(TRILL_ANY ptr_) {
     std::cout << "<null>" << std::endl;
     return;
   }
-  AnyBox *ptr = (AnyBox *)ptr_._any;
+  auto ptr = ptr_.any();
   std::cout << "AnyBox {" << std::endl;
   std::cout << "  void *typeMetadata = ";
   trill_debugPrintTypeMetadata(ptr->typeMetadata, "  ");
   if (ptr->typeMetadata) {
     auto value = trill_getAnyValuePtr({ptr});
-    TypeMetadata *meta = (TypeMetadata *)ptr->typeMetadata;
+    auto meta = ptr->typeMetadata;
     std::string typeName = meta->name;
     if (typeName == "Int") {
-      std::cout << "  int64_t value = " << TYPE_PUN(value, int64_t) << std::endl;
+      std::cout << "  int64_t value = " <<
+        *reinterpret_cast<int64_t *>(value) << std::endl;
     } else if (typeName == "Bool") {
-      std::cout << "  bool value = " << (TYPE_PUN(value, bool) ? "true" : "false") << std::endl;
+      std::cout << "  bool value = " <<
+        (*reinterpret_cast<bool *>(value) ? "true" : "false") << std::endl;
     } else if (strncmp(meta->name, "*", 1) == 0) {
       std::cout << value << std::endl;
     }
@@ -213,19 +215,19 @@ void trill_dumpProtocol(ProtocolMetadata *proto) {
     std::cout << "}" << std::endl;
 }
   
-uint8_t trill_checkTypes(TRILL_ANY anyValue_, void *typeMetadata_) {
-  AnyBox *anyValue = (AnyBox *)anyValue_._any;
-  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
-  trill_assert(anyValue != nullptr);
-  TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
+uint8_t trill_checkTypes(TRILL_ANY anyValue_, const void *typeMetadata_) {
+  auto any = anyValue_.any();
+  auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
+  trill_assert(any != nullptr);
+  auto anyMetadata = any->typeMetadata;
   return anyMetadata == typeMetadata;
 }
 
-void *trill_checkedCast(TRILL_ANY anyValue_, void *typeMetadata_) {
-  AnyBox *anyValue = (AnyBox *)anyValue_._any;
-  TypeMetadata *typeMetadata = (TypeMetadata *)typeMetadata_;
-  trill_assert(anyValue != nullptr);
-  TypeMetadata *anyMetadata = (TypeMetadata *)anyValue->typeMetadata;
+const void *trill_checkedCast(TRILL_ANY anyValue_, const void *typeMetadata_) {
+  auto any = anyValue_.any();
+  auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
+  trill_assert(any != nullptr);
+  auto anyMetadata = any->typeMetadata;
   if (anyMetadata != typeMetadata) {
     trill_reportCastError(anyMetadata, typeMetadata);
   }
@@ -233,12 +235,12 @@ void *trill_checkedCast(TRILL_ANY anyValue_, void *typeMetadata_) {
 }
 
 uint8_t trill_anyIsNil(TRILL_ANY any_) {
-  auto any = reinterpret_cast<AnyBox*>(any_._any);
+  auto any = any_.any();
   trill_assert(any != nullptr);
-  auto metadata = reinterpret_cast<TypeMetadata*>(any->typeMetadata);
+  auto metadata = any->typeMetadata;
   auto pointerLevel = metadata->pointerLevel;
   if (pointerLevel > 0) { return 0; }
-  auto anyValuePointer = reinterpret_cast<uintptr_t*>(trill_getAnyValuePtr(any_));
+  auto anyValuePointer = reinterpret_cast<uintptr_t *>(trill_getAnyValuePtr(any_));
   if (*anyValuePointer == 0) {
     return 1;
   }

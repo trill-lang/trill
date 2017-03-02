@@ -4,12 +4,12 @@
 
 using namespace trill;
 
-void *trill_createGenericBox(void *typeMetadata, void *witnessTable) {
+void *trill_createGenericBox(const void *typeMetadata, const void **witnessTable) {
     trill_assert(typeMetadata != nullptr);
     trill_assert(witnessTable != nullptr);
-    auto metadata = (TypeMetadata *)typeMetadata;
+    auto metadata = reinterpret_cast<const TypeMetadata *>(typeMetadata);
     auto fullSize = sizeof(GenericBox) + metadata->sizeInBits;
-    auto box = (GenericBox *)trill_alloc(fullSize);
+    auto box = reinterpret_cast<GenericBox *>(trill_alloc(fullSize));
     trill_assert(box != nullptr);
     box->typeMetadata = metadata;
     box->witnessTable = witnessTable;
@@ -18,5 +18,5 @@ void *trill_createGenericBox(void *typeMetadata, void *witnessTable) {
 
 void *trill_genericBoxValuePtr(void *box) {
     trill_assert(box != nullptr);
-    return ((intptr_t *)box) + sizeof(GenericBox);
+    return reinterpret_cast<intptr_t *>(box) + sizeof(GenericBox);
 }

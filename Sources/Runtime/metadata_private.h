@@ -11,34 +11,36 @@
 
 #include "metadata.h"
 
-typedef struct FieldMetadata {
-    const char *name;
-    const void *type;
-    size_t offset;
-} FieldMetadata;
+struct TypeMetadata;
 
-typedef struct TypeMetadata {
+struct FieldMetadata {
     const char *name;
-    const void *fields;
+    const TypeMetadata *typeMetadata;
+    const size_t offset;
+};
+
+struct TypeMetadata {
+    const char *name;
+    const FieldMetadata *fields;
     uint8_t isReferenceType;
     uint64_t sizeInBits;
     uint64_t fieldCount;
     uint64_t pointerLevel;
-} TypeMetadata;
+};
 
-typedef struct ProtocolMetadata {
+struct ProtocolMetadata {
     const char *name;
     const char **methodNames;
-    size_t methodCount;
-} ProtocolMetadata;
+    const size_t methodCount;
+};
 
-typedef struct AnyBox {
-    void *typeMetadata;
-} AnyBox;
+struct AnyBox {
+  const TypeMetadata *typeMetadata;
+};
 
-typedef struct GenericBox {
-    void *typeMetadata;
-    void *witnessTable;
-} GenericBox;
+struct GenericBox {
+    const TypeMetadata *typeMetadata;
+    const void **witnessTable;
+};
 
 #endif /* metadata_private_h */
