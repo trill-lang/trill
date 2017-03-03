@@ -73,14 +73,14 @@ public class DiagnosticEngine {
   }
   
   func error(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
-    diagnostics.append(Diagnostic(message: message, diagnosticType: .error, loc: loc, highlights: highlights.flatMap { $0 }))
+    add(Diagnostic(message: message, diagnosticType: .error, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   
   func warning(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
-    diagnostics.append(Diagnostic(message: message, diagnosticType: .warning, loc: loc, highlights: highlights.flatMap { $0 }))
+    add(Diagnostic(message: message, diagnosticType: .warning, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   func note(_ message: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
-    diagnostics.append(Diagnostic(message: message, diagnosticType: .note, loc: loc, highlights: highlights.flatMap { $0 }))
+    add(Diagnostic(message: message, diagnosticType: .note, loc: loc, highlights: highlights.flatMap { $0 }))
   }
   
   func add(_ diag: Diagnostic) {

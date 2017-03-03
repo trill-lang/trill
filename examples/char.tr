@@ -1,3 +1,3 @@
 func main() {
-  while true { putchar('\x{7}' as Int32) }
+  putchar('\x{7}' as Int32)
 }

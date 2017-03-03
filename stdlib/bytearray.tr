@@ -167,4 +167,3 @@ indirect type ByteArray {
     free(self.bytes as *Void)
   }
 }
-

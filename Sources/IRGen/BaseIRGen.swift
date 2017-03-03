@@ -263,7 +263,7 @@ class IRGenerator: ASTVisitor, Pass {
         throw LLVMError.noMainFunction
     }
     let hasArgcArgv = mainFlags.contains(.args)
-    let ret = resolveLLVMType(.int64)
+    let ret = resolveLLVMType(.int32)
     
     let mainType = FunctionType(argTypes: [
       IntType.int32,
@@ -289,7 +289,7 @@ class IRGenerator: ASTVisitor, Pass {
     }
     
     if mainFlags.contains(.exitCode) {
-      builder.buildRet(val)
+      builder.buildRet(builder.buildTrunc(val, type: ret, name: "main-ret-trunc"))
     } else {
       builder.buildRet(ret.null())
     }

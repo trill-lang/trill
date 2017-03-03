@@ -9,6 +9,10 @@ func print(_ value: Any) {
     printf("%p", value as *Void)
   } else if value is String {
     print(value as String)
+  } else if value is AnyDictionary {
+    print(value as AnyDictionary)
+  } else if value is AnyArray {
+    print(value as AnyArray)
   } else {
     Mirror(reflecting: value).print(to: stdout)
   }
@@ -89,4 +93,12 @@ func print(_ double: Double) {
 
 func println(_ double: Double) {
     printf("%f\n", double)
+}
+
+func print(_ array: AnyArray) {
+  array.dump()
+}
+
+func print(_ dictionary: AnyDictionary) {
+  dictionary.dump()
 }

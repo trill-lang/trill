@@ -51,14 +51,14 @@ type PointArray {
         self._boundsCheck(index)
         self.count += 1
         self._growIfNeeded()
-        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Point))
+        memmove(&self.elements[index + 1] as *Void, &self.elements[index] as *Void, sizeof(Point) as UInt)
         self.elements[index] = element
     }
     mutating func remove(at index: Int) -> Point {
         self._boundsCheck(index)
         self._shrinkIfNeeded()
         self.count -= 1
-        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Point))
+        memmove(&self.elements[index] as *Void, &self.elements[index + 1] as *Void, sizeof(Point) as UInt)
         return self.elements[self.count + 1]
     }
     func get(_ index: Int) -> Point {

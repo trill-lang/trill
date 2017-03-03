@@ -1,7 +1,7 @@
 type Foo {
     let bar: Int
     let baz: *Foo
-    let tup: (uint16_t, Bool)
+    let tup: (UInt16, Bool)
     let function: (Int, (Bool, *Void)) -> Void
 }
 

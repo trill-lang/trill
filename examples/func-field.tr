@@ -4,6 +4,7 @@ type Foo {
 
 func doCallback(_ f: Foo) {
   cnt += 1
+  if cnt > 5 { return }
   printf("[%s %s %d] %d\n", #file, #function, #line, cnt)
   f.callback(f)
 }

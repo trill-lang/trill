@@ -6,9 +6,9 @@ func -(lhs: Int, rhs: Bool) -> Int {
   return lhs - (rhs ? 1 : 0)
 }
 
-func +(lhs: String, rhs: String) -> String {
+func +(lhs: String, rhs: Bool) -> String {
   var new = lhs.copy()
-  new.append(rhs)
+  new.append(rhs ? "true" : "false")
   return new
 }
 
@@ -26,4 +26,5 @@ func main() {
   let b = true + false
   printf("1 - true = %d\n", 1 - true)
   printf("1 - false = %d\n", 1 - false)
+  print(hello + false)
 }

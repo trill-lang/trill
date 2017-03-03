@@ -13,7 +13,7 @@ namespace trill {
 bool readNum(std::string &str, int &out) {
   char *end;
   const char *start = str.c_str();
-  int num = (int)strtol(start, &end, 10);
+  auto num = static_cast<int>(strtol(start, &end, 10));
   if (end == start) { return false; }
   str.erase(0, end - start);
   out = num;

@@ -1,7 +1,5 @@
 foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 foreign func usleep(_: Int)
-foreign var stdout: *FILE
-
 
 let SEEK_END = 2 as Int32
 let SEEK_SET = 0 as Int32

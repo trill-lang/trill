@@ -32,7 +32,7 @@ type AnyArray {
     return self.count as Double / self.capacity as Double
   }
   func _boundsCheck(_ index: Int) {
-    if index > self.count {
+    if index < 0 || index > self.count {
       trill_fatalError("index out of bounds")
     }
   }
@@ -67,23 +67,14 @@ type AnyArray {
     putchar('[' as Int32)
     for var i = 0; i < self.count; i += 1 {
       let elem = self.elements[i]
-      if elem is *Int8 {
-        printf("%d", "\"%s\"", elem as *Int8)
-      } else if elem is Int {
-        printf("%d", elem as Int)
-      } else if elem is Bool {
-        printf("%d", elem as Bool ? "true" : "false")
-      } else if elem is AnyArray {
-        (elem as AnyArray).dump()
-      } else {
-        printf("<%s 0x%p>", Mirror(reflecting: elem).name(), elem)
-      }
+      print(elem)
       if i != self.count - 1 {
         printf(", ")
       }
     }
     putchar(']' as Int32)
   }
+
   func isEmpty() -> Bool {
     return self.count == 0
   }

@@ -1,7 +1,3 @@
-func println(_ val: Int) {
-  printf("%d\n", val);
-}
-
 type Job {
   var salary: Int;
   var isExecutive: Bool;
@@ -9,6 +5,7 @@ type Job {
     return (self.salary < 100_000) && self.isExecutive;
   }
 }
+
 type Person {
   var age: Int;
   var job: Job;
@@ -28,8 +25,6 @@ func main() {
   var president = Job(salary: 400_000, isExecutive: true);
   var obama = Person(age: 55, job: president);
   println(obama.job.isUnderpaid().toInt());
-  obama.job.salary = 50_000 + "";
+  obama.job.salary = 50_000;
   println(obama.job.isUnderpaid().toInt());
 }
-
-

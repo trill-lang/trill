@@ -3,7 +3,7 @@ let bar = garbage()
 
 func garbage() -> Int {
   printf("%s called!\n", #function)
-  trill_printStackTrace()
+  // trill_printStackTrace()
   return 100
 }
 

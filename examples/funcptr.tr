@@ -1,8 +1,13 @@
-func takesFunc(_ f: () -> Void) {
-  f()
+func takesFunc(_ i: Int, _ f: (Int) -> Void) {
+  if i > 1000 { return }
+  f(i + 1)
 }
-func main() {
-  var m: () -> Void = main
+
+func callsFunc(i: Int) {
   printf("Recursion!\n")
-  takesFunc(m)
+  takesFunc(i, callsFunc)
+}
+
+func main() {
+  takesFunc(0, callsFunc)
 }

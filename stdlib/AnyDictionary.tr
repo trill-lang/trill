@@ -1,22 +1,22 @@
-indirect type Bucket {
+indirect type _AnyDictionaryBucket {
   let key: String
   let value: Any
 }
 
 type AnyDictionary {
-  var storage: *Bucket
+  var storage: *_AnyDictionaryBucket
   var capacity: Int
   var count: Int
 
   init(capacity: Int) {
     assert(capacity > 0, "Cannot initialize a dictionary with 0 capacity")
-    self.storage = calloc(capacity, sizeof(Any)) as *Bucket
+    self.storage = calloc(capacity, sizeof(Any)) as *_AnyDictionaryBucket
     self.capacity = capacity
     self.count = 0
   }
   init() {
     let capacity = 20
-    self.storage = calloc(capacity, sizeof(Any)) as *Bucket
+    self.storage = calloc(capacity, sizeof(Any)) as *_AnyDictionaryBucket
     self.capacity = capacity
     self.count = 0
   }
@@ -43,7 +43,7 @@ type AnyDictionary {
     self._rehash(oldCapacity: oldCap)
   }
 
-  mutating func insert(_ bucket: Bucket) {
+  mutating func insert(_ bucket: _AnyDictionaryBucket) {
     self._growIfNeeded()
     let hash = bucket.key.hash()
     var index = hash % self.capacity
@@ -58,18 +58,18 @@ type AnyDictionary {
   }
 
   mutating func insert(_ value: Any, forKey key: String) {
-    self.insert(Bucket(key: key, value: value))
+    self.insert(_AnyDictionaryBucket(key: key, value: value))
   }
 
   mutating func insert(_ value: Any, forKey key: *Int8) {
-    self.insert(Bucket(key: String(cString: key), value: value))
+    self.insert(_AnyDictionaryBucket(key: String(cString: key), value: value))
   }
 
   func contains(_ key: String) -> Bool {
     return self._findBucket(key) != nil
   }
 
-  func _findBucket(_ key: String) -> Bucket {
+  func _findBucket(_ key: String) -> _AnyDictionaryBucket {
     var index = key.hash()
     while self.storage[index] != nil {
       if self.storage[index].key == key {
@@ -98,7 +98,7 @@ type AnyDictionary {
 
   mutating func _rehash(oldCapacity: Int) {
     var oldStorage = self.storage
-    self.storage = calloc(self.capacity, sizeof(Any)) as *Bucket
+    self.storage = calloc(self.capacity, sizeof(Any)) as *_AnyDictionaryBucket
     for var i = 0; i < oldCapacity; i += 1 {
       let bucket = self.storage[i]
       if bucket == nil { continue }
@@ -107,16 +107,23 @@ type AnyDictionary {
   }
 
   func dump() {
-    printf("size: %d\ncapacity: %d\nelements: [\n", self.count, self.capacity)
-    for var i = 0; i < self.capacity; i += 1 {
+    let count = self.count
+    let capacity = self.capacity
+    if count == 0 { print("{}"); return }
+    print("{")
+    var seen = 0
+    for var i = 0; i < capacity; i += 1 {
       let bucket = self.storage[i]
-      if bucket == nil {
-        printf("  <nil>\n")
-      } else {
-        printf("  \"%s\": ", bucket.key.cString())
-        println(bucket.value)
+      if bucket != nil {
+        seen += 1
+        print(bucket.key)
+        print(": ")
+        print(bucket.value)
+        if seen < count {
+          print(", ")
+        }
       }
     }
-    printf("]\n")
+    print("}")
   }
 }

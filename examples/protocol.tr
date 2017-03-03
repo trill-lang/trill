@@ -6,5 +6,12 @@ type Bar: Debuggable {
   func foo() {
     printf("eyyy")
   }
+
+  func debugDescription() -> String {
+    return String(cString: Mirror(reflecting: self).name())
+  }
 }
 
+func main() {
+  print(Bar().debugDescription())
+}
