@@ -12,6 +12,7 @@ matrix:
     before_install:
     - brew update
     - brew install llvm
+    - sudo gem install xcpretty
     script:
-      - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData
+      - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData | xcpretty
       - swift utils/run-examples.swift
