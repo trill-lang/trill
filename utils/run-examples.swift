@@ -3,33 +3,45 @@
 import Foundation
 
 let fileManager = FileManager.default
+let trillExecutable: String
+let examplesDir: String
+let stdlibDir: String
+if CommandLine.arguments.count == 4 {
+  trillExecutable = CommandLine.arguments[1]
+  examplesDir = CommandLine.arguments[2]
+  stdlibDir = CommandLine.arguments[3]
+} else {
+  trillExecutable = "build/DerivedData/Trill/Build/Products/Debug/trill"
+  examplesDir = "examples"
+  stdlibDir = "stdlib"
+}
 
 var success = true
-let examples = try! fileManager.contentsOfDirectory(atPath: "examples")
-let stdlib = try! fileManager.contentsOfDirectory(atPath: "stdlib").map { "stdlib/\($0)" }
+let examples = try! fileManager.contentsOfDirectory(atPath: examplesDir)
+let stdlib = try! fileManager.contentsOfDirectory(atPath: stdlibDir).map { "\(stdlibDir)/\($0)" }
 for example in examples {
   let files: [String]
   if example.hasSuffix(".tr") { files = [example] }
   else if example == "multi-file" {
-    files = try! fileManager.contentsOfDirectory(atPath: "examples/\(example)").map { "\(example)/\($0)" }
+    files = try! fileManager.contentsOfDirectory(atPath: "\(examplesDir)/\(example)").map { "\(example)/\($0)" }
   }
   else { continue }
 
   var command = ["-run"]
   var argv = [
-    "bf.tr": ["examples/bf.bf"],
-    "cat.tr": ["examples/cat.tr", "README.md"],
+    "bf.tr": ["\(examplesDir)/bf.bf"],
+    "cat.tr": ["\(examplesDir)/cat.tr", "\(stdlibDir)/String.tr"],
     "fib.tr": ["11"],
-    "same.tr": ["examples/same.tr"],
+    "same.tr": ["\(examplesDir)/same.tr"],
   ]
 
   let requiresStdin = ["area.tr", "string.tr"]
   if requiresStdin.contains(example) { command = ["-emit", "ast"] }
   print("running \(example)...")
   let exampleArgs = argv[example].map { ["--args"] + $0 } ?? []
-  let args = command + stdlib + files.map { "examples/\($0)" } + exampleArgs
+  let args = command + stdlib + files.map { "\(examplesDir)/\($0)" } + exampleArgs
   let process = Process()
-  process.launchPath = "build/DerivedData/Trill/Build/Products/Debug/trill"
+  process.launchPath = trillExecutable
   process.arguments = args
   process.standardOutput = nil
   process.launch()

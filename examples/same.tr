@@ -33,7 +33,7 @@ func main(argc: Int, argv: **Int8) -> Int {
     for var i = 0; i < file.1; i += 1 {
         putchar(file.0[i] as Int32)
         fflush(stdout)
-        usleep(10000 + (rand() % 3000) as Int)
+        usleep(1 + (rand() % 30) as Int)
     }
     free(file.0 as *Void)
     return 0
