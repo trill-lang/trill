@@ -3,6 +3,8 @@ machine:
     LC_CTYPE: en_US.UTF-8
   xcode:
     version: "8.2.1"
+  osx:
+    version: "10.12"
 
 dependencies:
   pre:
