@@ -7,13 +7,14 @@ let fileManager = FileManager.default
 var success = true
 let examples = try! fileManager.contentsOfDirectory(atPath: "examples")
 let stdlib = try! fileManager.contentsOfDirectory(atPath: "stdlib").map { "stdlib/\($0)" }
-for example in examples {
+
+func runExample(_ example: String) {
   let files: [String]
   if example.hasSuffix(".tr") { files = [example] }
   else if example == "multi-file" {
     files = try! fileManager.contentsOfDirectory(atPath: "examples/\(example)").map { "\(example)/\($0)" }
   }
-  else { continue }
+  else { return }
 
   var command = ["-run"]
   var argv = [
@@ -38,6 +39,10 @@ for example in examples {
     success = false
     print("\n\nrunning \(example) failed\n\n")
   }
+}
+
+DispatchQueue.concurrentPerform(iterations: examples.count) { index in
+  runExample(examples[index])
 }
 
 exit(success ? 0 : 1)
