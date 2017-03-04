@@ -8,6 +8,8 @@ dependencies:
   pre:
     - brew update
     - brew install llvm
+    - sudo gem install xcpretty
+    - git submodule update --init
 
 test:
   post:
