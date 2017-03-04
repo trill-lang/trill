@@ -1,0 +1,14 @@
+machine:
+  environment:
+    LC_CTYPE: en_US.UTF-8
+  xcode:
+    version: "8.2"
+
+dependencies:
+  pre:
+    - brew update
+    - brew install llvm
+
+test:
+  - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData
+  - swift utils/run-examples.swift
