@@ -4,14 +4,17 @@ machine:
   xcode:
     version: "8.2.1"
 
+checkout:
+  post:
+    - git submodule update --init
+
 dependencies:
   pre:
     - brew update
     - brew install llvm
     - sudo gem install xcpretty
-    - git submodule update --init
 
 test:
-  post:
+  override:
     - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData
     - swift utils/run-examples.swift
