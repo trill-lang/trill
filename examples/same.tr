@@ -1,4 +1,3 @@
-foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 foreign func usleep(_: Int)
 
 let SEEK_END = 2 as Int32

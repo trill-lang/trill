@@ -1,7 +1,4 @@
-foreign func memcpy(_: *Int8, _: *Int8, _: Int)
-foreign func strlen(_: *Int8) -> Int
 foreign func isprint(_: Int8) -> Int
-foreign func fopen(_: *Int8, _: *Int8) -> *FILE
 
 var SEEK_SET = 0 as Int32
 var SEEK_END = 2 as Int32

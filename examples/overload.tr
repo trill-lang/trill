@@ -13,6 +13,11 @@ type Foo {
   }
 }
 
+// overloads the imported Int32 declaration
+func putchar(_ char: Int8) {
+  putchar(char as Int32)
+}
+
 func main() {
   var f = Foo()
   f.bar()

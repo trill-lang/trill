@@ -299,8 +299,7 @@ class ClangImporter: Pass {
   
   func importFunction(_ cursor: CXCursor, in context: ASTContext)  {
     let name = clang_getCursorSpelling(cursor).asSwift()
-    let existing = context.functions(named: Identifier(name: name))
-    if !existing.isEmpty { return }
+    if importedFunctions[Identifier(name: name)] != nil { return }
     let numArgs = clang_Cursor_getNumArguments(cursor)
     guard numArgs != -1 else { return }
     var modifiers = [DeclModifier.foreign, DeclModifier.implicit]
@@ -555,41 +554,54 @@ class ClangImporter: Pass {
     
     return "/usr/lib/include/trill"
   }()
-
-  func run(in context: ASTContext) {
+  
+  func importBuiltinAliases(into context: ASTContext) {
     context.add(makeAlias(name: "__builtin_va_list",
                           type: .pointer(type: .void)))
     context.add(makeAlias(name: "__va_list_tag",
                           type: .pointer(type: .void)))
     context.add(makeAlias(name: "__darwin_pthread_handler_rec",
-                               type: .pointer(type: .void)))
-    context.add(synthesize(name: "trill_fatalError",
-                                args: [.pointer(type: .int8)],
-                                return: .void,
-                                hasVarArgs: false,
-                                modifiers: [.foreign, .noreturn],
-                                range: nil))
+                          type: .pointer(type: .void)))
+  }
+  
+  func importBuiltinFunctions(into context: ASTContext) {
+    func add(_ decl: FuncDecl) {
+      context.add(decl)
+      importedFunctions[decl.name] = decl
+    }
+    
+    add(synthesize(name: "trill_fatalError",
+                   args: [.pointer(type: .int8)],
+                   return: .void,
+                   hasVarArgs: false,
+                   modifiers: [.foreign, .noreturn],
+                   range: nil))
     
     // calloc and realloc is imported with `int` for their arguments.
     // I need to override them with .int64 for their arguments.
-    context.add(synthesize(name: "malloc",
-                           args: [.int64],
-                           return: .pointer(type: .void),
-                           hasVarArgs: false,
-                           modifiers: [.foreign],
-                           range: nil))
-    context.add(synthesize(name: "calloc",
-                           args: [.int64, .int64],
-                           return: .pointer(type: .void),
-                           hasVarArgs: false,
-                           modifiers: [.foreign],
-                           range: nil))
-    context.add(synthesize(name: "realloc",
-                           args: [.pointer(type: .void), .int64],
-                           return: .pointer(type: .void),
-                           hasVarArgs: false,
-                           modifiers: [.foreign],
-                           range: nil))
+    add(synthesize(name: "malloc",
+                   args: [.int64],
+                   return: .pointer(type: .void),
+                   hasVarArgs: false,
+                   modifiers: [.foreign],
+                   range: nil))
+    add(synthesize(name: "calloc",
+                   args: [.int64, .int64],
+                   return: .pointer(type: .void),
+                   hasVarArgs: false,
+                   modifiers: [.foreign],
+                   range: nil))
+    add(synthesize(name: "realloc",
+                   args: [.pointer(type: .void), .int64],
+                   return: .pointer(type: .void),
+                   hasVarArgs: false,
+                   modifiers: [.foreign],
+                   range: nil))
+  }
+
+  func run(in context: ASTContext) {
+    importBuiltinAliases(into: context)
+    importBuiltinFunctions(into: context)
 
     importDeclarations(for: URL(fileURLWithPath: ClangImporter.runtimeHeaderPath).appendingPathComponent("trill.h").path,
                        in: context)
