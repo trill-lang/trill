@@ -366,11 +366,11 @@ extension IRGenerator {
     let endbb = function.appendBasicBlock(named: "ternary-end", in: llvmContext)
     builder.buildCondBr(condition: cond, then: truebb, else: falsebb)
     builder.positionAtEnd(of: truebb)
-    let trueVal = visit(expr.trueCase)!
+    let trueVal = coerce(visit(expr.trueCase)!, from: expr.trueCase.type!, to: type)!
     result.write(trueVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: falsebb)
-    let falseVal = visit(expr.falseCase)!
+    let falseVal = coerce(visit(expr.falseCase)!, from: expr.falseCase.type!, to: type)!
     result.write(falseVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: endbb)

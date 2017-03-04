@@ -147,6 +147,7 @@ class Sema: ASTTransformer, Pass {
       return
     }
     guard !decl.has(attribute: .foreign) else { return }
+    if let rhs = decl.rhs { context.propagateContextualType(decl.type, to: rhs) }
     if let type = decl.typeRef?.type {
       if !context.isValidType(type) {
         error(SemaError.unknownType(type: type),

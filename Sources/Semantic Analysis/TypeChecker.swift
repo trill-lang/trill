@@ -252,13 +252,32 @@ class TypeChecker: ASTTransformer, Pass {
         ])
       return
     }
-    guard matches(trueType, falseType) else {
-      error(TypeCheckError.typeMismatch(expected: trueType, got: falseType),
-            loc: expr.startLoc,
-            highlights: [
-              expr.sourceRange
-        ])
-      return
+    if let exprType = expr.type {
+      guard matches(exprType, trueType) else {
+        error(TypeCheckError.typeMismatch(expected: exprType, got: trueType),
+              loc: expr.startLoc,
+              highlights: [
+                expr.sourceRange
+          ])
+        return
+      }
+      guard matches(exprType, falseType) else {
+        error(TypeCheckError.typeMismatch(expected: exprType, got: falseType),
+              loc: expr.startLoc,
+              highlights: [
+                expr.sourceRange
+          ])
+        return
+      }
+    } else {
+      guard matches(trueType, falseType) else {
+        error(TypeCheckError.typeMismatch(expected: trueType, got: falseType),
+              loc: expr.startLoc,
+              highlights: [
+                expr.sourceRange
+          ])
+        return
+      }
     }
     super.visitTernaryExpr(expr)
   }

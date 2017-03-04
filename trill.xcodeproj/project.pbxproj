@@ -165,7 +165,6 @@
 		DC8EBB641E5FD03C00AE577C /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */; };
 		DC8EBB651E5FD03C00AE577C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB561E5FD03C00AE577C /* Main.storyboard */; };
 		DC8EBB661E5FD03C00AE577C /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */; };
-		DC8EBB671E5FD03C00AE577C /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB591E5FD03C00AE577C /* Info.plist */; };
 		DC8EBB681E5FD03C00AE577C /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5A1E5FD03C00AE577C /* InputViewController.swift */; };
 		DC8EBB691E5FD03C00AE577C /* JavaScriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5B1E5FD03C00AE577C /* JavaScriptRunner.swift */; };
 		DC8EBB6A1E5FD03C00AE577C /* NavController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5C1E5FD03C00AE577C /* NavController.swift */; };
@@ -1511,7 +1510,6 @@
 			files = (
 				DC8EBB631E5FD03C00AE577C /* Assets.xcassets in Resources */,
 				DC8EBB651E5FD03C00AE577C /* Main.storyboard in Resources */,
-				DC8EBB671E5FD03C00AE577C /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1804,6 +1802,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};

@@ -281,7 +281,7 @@ public class ASTContext {
     return bestCandidate?.candidate
   }
   
-  
+  /// - Returns: Whether the expression's type was changed
   @discardableResult
   func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
     let canTy = canonicalType(contextualType)
@@ -333,6 +333,11 @@ public class ASTContext {
         expr.type = contextualType
       }
       return changed
+    case let expr as TernaryExpr:
+      if case .any = canTy {
+        expr.type = contextualType
+        return true
+      }
     default:
       break
     }

@@ -6,6 +6,7 @@
 #ifndef LLVMWrappers_h
 #define LLVMWrappers_h
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #define _DEBUG

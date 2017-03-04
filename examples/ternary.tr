@@ -1,0 +1,9 @@
+func inferenceAsAny() {
+  let a: Any = rand() != 0 ? 0 : "true"
+  print(a)
+  print(1 < 0 ? false : "true")
+}
+
+func main() {
+  inferenceAsAny()
+}
