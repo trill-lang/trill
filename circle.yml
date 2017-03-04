@@ -10,5 +10,6 @@ dependencies:
     - brew install llvm
 
 test:
-  - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData
-  - swift utils/run-examples.swift
+  post:
+    - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData
+    - swift utils/run-examples.swift
