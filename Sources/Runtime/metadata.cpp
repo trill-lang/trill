@@ -23,12 +23,17 @@ uint64_t trill_getTypeSizeInBits(const void *typeMeta) {
   return reinterpret_cast<const TypeMetadata *>(typeMeta)->sizeInBits;
 }
 
+uint64_t trill_getTypePointerLevel(const void *_Nonnull typeMeta) {
+  trill_assert(typeMeta != nullptr);
+  return reinterpret_cast<const TypeMetadata *>(typeMeta)->pointerLevel;
+}
+
 uint8_t trill_isReferenceType(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
   return reinterpret_cast<const TypeMetadata *>(typeMeta)->isReferenceType;
 }
 
-uint64_t trill_getNumFields(const void *typeMeta) {
+uint64_t trill_getTypeFieldCount(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
   return reinterpret_cast<const TypeMetadata *>(typeMeta)->fieldCount;
 }

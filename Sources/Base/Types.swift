@@ -192,9 +192,9 @@ class TypeDecl: Decl {
   let deinitializer: DeinitializerDecl?
   
   func indexOfProperty(named name: Identifier) -> Int? {
-    return properties.index { property in
-      property.name == name
-    }
+    return properties.lazy
+                     .filter { !$0.isComputed }
+                     .index { $0.name == name }
   }
   
   func addInitializer(_ decl: InitializerDecl) {

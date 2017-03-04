@@ -14,16 +14,24 @@ type Mirror {
     self._metadata = typeMeta
   }
 
-  func name() -> *Int8 {
+  var typeName: *Int8 {
     return trill_getTypeName(self._metadata)
   }
 
-  func sizeInBits() -> Int {
+  var sizeInBits: Int {
     return trill_getTypeSizeInBits(self._metadata) as Int
   }
 
-  func isReferenceType() -> Bool {
+  var pointerLevel: Int {
+    return trill_getTypePointerLevel(self._metadata) as Int
+  }
+
+  var isReferenceType: Bool {
     return trill_isReferenceType(self._metadata) != 0
+  }
+
+  var fieldCount: Int {
+    return trill_getTypeFieldCount(self._metadata) as Int
   }
 
   func child(_ index: Int) -> Any {
@@ -35,8 +43,8 @@ type Mirror {
   }
 
   func set(value: Any, forKey name: *Int8) {
-    for var i = 0; i < self.numberOfFields(); i += 1 {
-      if strcmp(self.field(at: i).name(), name) == 0 {
+    for var i = 0; i < self.fieldCount; i += 1 {
+      if strcmp(self.field(at: i).name, name) == 0 {
         self.set(value: value, forChild: i)
         return
       }
@@ -49,16 +57,16 @@ type Mirror {
       puts("Metadata is null!\n");
       return;
     }
-    printf("Metadata for type %s (size: %d):\n", self.name(), self.sizeInBits());
-    for var i = 0; i < self.numberOfFields(); i += 1 {
+    printf("Metadata for type %s (size: %d):\n", self.typeName, self.sizeInBits);
+    for var i = 0; i < self.fieldCount; i += 1 {
       let field = self.field(at: i)
       printf("└ ")
-      let name = field.name()
-      printf("(offset %d) ", field.offset())
+      let name = field.name
+      printf("(offset %d) ", field.offset)
       if name != nil {
         printf("%s: ", name)
       }
-      printf("%s\n", field.typeMetadata().name());
+      printf("%s\n", field.typeMetadata.typeName);
 
       // println(self.child(i))
     }
@@ -69,15 +77,20 @@ type Mirror {
       fprintf(file, "nil")
       return
     }
-    fprintf(file, "%s(", self.name())
-    for var i = 0; i < self.numberOfFields(); i += 1 {
+    if self.pointerLevel > 0 {
+      fprintf(file, "%p as %s",
+              *(trill_getAnyValuePtr(self.value) as **Void),
+              self.typeName)
+      return
+    }
+    fprintf(file, "%s(", self.typeName)
+    for var i = 0; i < self.fieldCount; i += 1 {
       let field = self.field(at: i)
       if i != 0 { fprintf(file, ", ") }
-      let name = field.name()
+      let name = field.name
       if name == nil { // tuple
         fprintf(file, ".%d: ", i)
-      }
-      else {
+      } else {
         fprintf(file, "%s: ", name)
       }
       print(self.child(i))
@@ -88,9 +101,6 @@ type Mirror {
   func field(at index: Int) -> FieldMirror {
     return FieldMirror(reflecting: trill_getFieldMetadata(self._metadata, index as UInt))
   }
-  func numberOfFields() -> Int {
-    return trill_getNumFields(self._metadata) as Int
-  }
 }
 
 type FieldMirror {
@@ -98,13 +108,13 @@ type FieldMirror {
   init(reflecting field: FieldMetadata) {
     self._metadata = field
   }
-  func name() -> *Int8 {
+  var name: *Int8 {
     return trill_getFieldName(self._metadata)
   }
-  func typeMetadata() -> Mirror {
+  var typeMetadata: Mirror {
     return Mirror(reflectingType: trill_getFieldType(self._metadata))
   }
-  func offset() -> Int {
+  var offset: Int {
     return trill_getFieldOffset(self._metadata)
   }
 }

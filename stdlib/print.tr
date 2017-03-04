@@ -3,6 +3,20 @@ func print(_ value: Any) {
     print(value as *Int8)
   } else if value is Int {
     print(value as Int)
+  } else if value is Int8 {
+    print(value as Int8)
+  } else if value is Int16 {
+    print(value as Int16)
+  } else if value is Int32 {
+    print(value as Int32)
+  } else if value is UInt {
+    print(value as UInt)
+  } else if value is UInt8 {
+    print(value as UInt8)
+  } else if value is UInt16 {
+    print(value as UInt16)
+  } else if value is UInt32 {
+    print(value as UInt32)
   } else if value is Bool {
     print(value as Bool)
   } else if value is *Void {
@@ -20,79 +34,59 @@ func print(_ value: Any) {
 
 func println(_ value: Any) {
   print(value)
-  putchar(10)
+  putchar('\n' as Int32)
 }
 
 func print(_ string: String) {
     print(string.cString())
 }
 
-func println(_ string: String) {
-    println(string.cString())
-}
-
 func print(_ string: *Int8) {
     printf("%s", string)
-}
-
-func println(_ string: *Int8) {
-    printf("%s\n", string)
 }
 
 func print(_ bool: Bool) {
     printf("%s", bool ? "true" : "false")
 }
 
-func println(_ bool: Bool) {
-    printf("%s\n", bool ? "true" : "false")
-}
-
 func print(_ int: Int) {
     printf("%d", int)
-}
-
-func println(_ int: Int) {
-    printf("%d\n", int)
 }
 
 func print(_ int: Int8) {
     printf("%c", int)
 }
 
-func println(_ int: Int8) {
-    printf("%c\n", int)
-}
-
 func print(_ int: Int16) {
     printf("%d", int)
-}
-
-func println(_ int: Int16) {
-    printf("%d\n", int)
 }
 
 func print(_ int: Int32) {
     printf("%d", int)
 }
 
-func println(_ int: Int32) {
-    printf("%d\n", int)
+func print(_ int: UInt) {
+    printf("%u", int)
+}
+
+func print(_ int: UInt8) {
+    printf("%u", int)
+}
+
+func print(_ int: UInt16) {
+    printf("%d", int)
+}
+
+func print(_ int: UInt32) {
+    printf("%u", int)
 }
 
 func print(_ float: Float) {
     printf("%f", float)
 }
 
-func println(_ float: Float) {
-    printf("%f\n", float)
-}
-
 func print(_ double: Double) {
     printf("%f", double)
-}
-
-func println(_ double: Double) {
-    printf("%f\n", double)
 }
 
 func print(_ array: AnyArray) {

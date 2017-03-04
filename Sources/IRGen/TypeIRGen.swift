@@ -213,7 +213,11 @@ extension IRGenerator {
   }
   
   /// Gives a valid pointer to any given Expr.
-  /// PropertyRefExpr: it will yield a getelementptr instruction.
+  /// PropertyRefExpr: If the property is a computed property with a getter,
+  ///                  it will execute the getter, store the result in a
+  ///                  stack variable, and give a pointer to that.
+  ///                  Otherwise it will yield a getelementptr instruction to
+  ///                  the specific field.
   /// VarExpr: it'll look through any variable bindings to find the
   ///          pointer that represents the value. For reference bindings, it'll
   ///          yield the underlying pointer. For value bindings, it'll yield the
@@ -240,6 +244,11 @@ extension IRGenerator {
     }
     switch expr {
     case let expr as PropertyRefExpr:
+      // If we need to indirect through a property getter, then apply the
+      // getter and store the result in a temporary mutable variable
+      if let decl = expr.decl as? PropertyDecl, decl.getter != nil {
+        return createTmpPointer(expr)
+      }
       return elementPtr(expr)
     case let expr as VarExpr:
       guard let binding = resolveVarBinding(expr) else {

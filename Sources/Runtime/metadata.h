@@ -43,6 +43,13 @@ typedef struct TRILL_ANY {
  */
 const char *_Nonnull trill_getTypeName(const void *_Nonnull typeMeta);
 
+/**
+ Gets the pointer level of a given type metadata object.
+
+ @param typeMeta The type metadata.
+ @return The pointer level of this metadata.
+ */
+uint64_t trill_getTypePointerLevel(const void *_Nonnull typeMeta);
 
 /**
  Gets the size of type metadata in bits. This takes into account the specific
@@ -72,7 +79,7 @@ uint8_t trill_isReferenceType(const void *_Nonnull typeMeta);
  @param typeMeta The type metadata.
  @return The number of fields in this type.
  */
-uint64_t trill_getNumFields(const void *_Nonnull typeMeta);
+uint64_t trill_getTypeFieldCount(const void *_Nonnull typeMeta);
 
 
 /**
@@ -80,7 +87,7 @@ uint64_t trill_getNumFields(const void *_Nonnull typeMeta);
  provided \c TypeMetadata.
  
  @note This function will abort if the field index is out of bounds. Ensure
-       the field you pass in is in-bounds by calling \c trill_getNumFields and
+       the field you pass in is in-bounds by calling \c trill_getTypeFieldCount and
        comparing the result.
 
  @param typeMeta The type metadata.
@@ -152,7 +159,7 @@ TRILL_ANY trill_copyAny(TRILL_ANY any);
  inside the payload.
 
  @note This function will abort if the field index is out of bounds. Ensure
-       the field you pass in is in-bounds by calling \c trill_getNumFields and
+       the field you pass in is in-bounds by calling \c trill_getTypeFieldCount and
        comparing the result.
 
  @param any_ The \c Any you're inspecting.
@@ -168,7 +175,7 @@ void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any_, uint64_t fieldNum);
  
 
  @note This function will abort if the field index is out of bounds. Ensure
-       the field you pass in is in-bounds by calling \c trill_getNumFields and
+       the field you pass in is in-bounds by calling \c trill_getTypeFieldCount and
        comparing the result.
 
  @param any_ The composite type from which you're extracting a field.

@@ -8,7 +8,7 @@ type Bar: Debuggable {
   }
 
   func debugDescription() -> String {
-    return String(cString: Mirror(reflecting: self).name())
+    return String(cString: Mirror(reflecting: self).typeName)
   }
 }
 
