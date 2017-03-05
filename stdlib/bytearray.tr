@@ -32,14 +32,13 @@ indirect type ByteArray {
     strncpy(self.bytes, string, length as UInt)
   }
   mutating func _growIfNeeded() {
-    if self.load() > 0.75 {
+    if self._load > 0.75 {
       self.capacity *= 2
       self.bytes = realloc(self.bytes as *Void, self.capacity * sizeof(Int8)) as *Int8
     }
   }
   mutating func _shrinkIfNeeded() {
-    printf("self: %p, self.bytes: %p\n", self, self.bytes)
-    if self.load() < 0.5 {
+    if self._load < 0.5 {
       self.capacity /= 2
       self.bytes = realloc(self.bytes as *Void, self.capacity * sizeof(Int8)) as *Int8
     }
@@ -93,7 +92,7 @@ indirect type ByteArray {
             &self.bytes[index + 1] as *Void, 1)
     return self.bytes[self.length + 1]
   }
-  func get(_ index: Int) -> Int8 {
+  subscript(_ index: Int) -> Int8 {
     self._boundsCheck(index)
     return self.bytes[index]
   }
@@ -101,14 +100,14 @@ indirect type ByteArray {
     self._boundsCheck(index)
     self.bytes[index] = element
   }
-  func load() -> Double {
+  var _load: Double {
     return self.length as Double / self.capacity as Double
   }
   func copy() -> ByteArray {
     return ByteArray(self.bytes, length: self.length)
   }
   func dump() {
-    printf("capacity: %d, length: %d (load %f)\n", self.capacity, self.length, self.load())
+    printf("capacity: %d, length: %d (load %f)\n", self.capacity, self.length, self._load)
     putchar('[' as Int32)
       for var i = 0; i < self.length; i += 1 {
         printf("0x%x", self.bytes[i] as Int)
@@ -124,7 +123,7 @@ indirect type ByteArray {
     printf("length: %d, start: %d, end: %d, newLength: %d\n", self.length, start, end, newLength)
     return ByteArray(&self.bytes[start], length: newLength)
   }
-  func isEmpty() -> Bool {
+  var isEmpty: Bool {
     return self.length == 0
   }
   func mergeSorted() -> ByteArray {
@@ -142,17 +141,17 @@ indirect type ByteArray {
     var result = ByteArray(capacity: self.length + other.length)
     while selfCursor < self.length && otherCursor < other.length {
       if selfCursor >= self.length {
-        result.append(other.get(otherCursor))
+        result.append(other[otherCursor])
         otherCursor += 1
         continue
       }
       if otherCursor >= self.length {
-        result.append(self.get(selfCursor))
+        result.append(self[selfCursor])
         selfCursor += 1
         continue
       }
-      let selfVal = self.get(selfCursor)
-      let otherVal = other.get(otherCursor)
+      let selfVal = self[selfCursor]
+      let otherVal = other[otherCursor]
       if selfVal < otherVal {
         result.append(selfVal)
         selfCursor += 1

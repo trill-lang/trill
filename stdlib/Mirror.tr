@@ -93,7 +93,11 @@ type Mirror {
       } else {
         fprintf(file, "%s: ", name)
       }
-      print(self.child(i))
+      let child = self.child(i)
+      var shouldQuote = child is *Int8 || child is String
+      if shouldQuote { print("\"") }
+      print(child)
+      if shouldQuote { print("\"") }
     }
     fprintf(file, ")", self.value)
   }

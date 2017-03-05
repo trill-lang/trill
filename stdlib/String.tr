@@ -11,10 +11,10 @@ type String {
         self._storage = ByteArray(capacity: 256)
         self._storage.append(0)
     }
-    func length() -> Int {
+    var length: Int {
         return self._storage.length
     }
-    func cString() -> *Int8 {
+    var cString: *Int8 {
         return self._storage.bytes
     }
     mutating func append(_ char: Int8) {
@@ -33,23 +33,23 @@ type String {
         self._storage.append(0)
     }
     mutating func append(_ cString: *Int8, length: Int) {
-        self._storage.remove(at: self.length())
-        self._storage.insert(cString, length: length, at: self.length())
+        self._storage.remove(at: self.length)
+        self._storage.insert(cString, length: length, at: self.length)
         self._storage.append(0)
     }
     mutating func insert(_ cString: *Int8, length: Int, at index: Int) {
-        if index == self.length() {
-            self._storage.remove(at: self.length())
+        if index == self.length {
+            self._storage.remove(at: self.length)
         }
         self._storage.insert(cString, length: length, at: index)
-        if index == self.length() {
+        if index == self.length {
             self._storage.append(0)
         }
     }
     mutating func insert(_ cString: *Int8, at index: Int) {
-        let isEnd = index == self.length()
+        let isEnd = index == self.length
         if isEnd {
-            self._storage.remove(at: self.length())
+            self._storage.remove(at: self.length)
         }
         self._storage.insert(cString, at: index)
         if isEnd {
@@ -57,9 +57,9 @@ type String {
         }
     }
     mutating func insert(_ string: String, at index: Int) {
-        let isEnd = index == self.length()
+        let isEnd = index == self.length
         if isEnd {
-            self._storage.remove(at: self.length())
+            self._storage.remove(at: self.length)
         }
         self._storage.insert(string._storage, at: index)
         if isEnd {
@@ -67,44 +67,44 @@ type String {
         }
     }
     func copy() -> String {
-      return String(_storage: self._storage.copy())
+        return String(_storage: self._storage.copy())
     }
-    func get(_ index: Int) -> Int8 {
-        return self._storage.get(index)
+    subscript(_ index: Int) -> Int8 {
+        return self._storage[index]
     }
-    func isEmpty() -> Bool {
-        return self._storage.isEmpty()
-    }
-    func hash() -> Int {
+    var hash: Int {
         // A very simple implementation of djb2
         var hash = 5381
-        for var i = 0; i < self.length(); i += 1 {
+        for var i = 0; i < self.length; i += 1 {
             hash = (hash * 33) ^ self._storage.bytes[i] as Int
         }
         return hash
     }
     func hasPrefix(_ string: String) -> Bool {
-        if self.length() < string.length() { return false }
-        for var i = 0; i < string.length(); i += 1 {
-            if self.get(i) != string.get(i) { return false }
+        if self.length < string.length { return false }
+        for var i = 0; i < string.length; i += 1 {
+            if self[i] != string[i] { return false }
         }
         return true
     }
     func hasSuffix(_ string: String) -> Bool {
-        if self.length() < string.length() { return false }
-        for var i = string.length() - 1; i >= 0; i -= 1 {
-            if self.get(i) != string.get(i) { return false }
+        if self.length < string.length { return false }
+        for var i = string.length - 1; i >= 0; i -= 1 {
+            if self[i] != string[i] { return false }
         }
         return true
     }
     func mergeSorted() -> String {
         return String(_storage: self._storage.mergeSorted())
     }
+    var isEmpty: Bool {
+        return self.length == 0
+    }
 }
 
 func ==(lhs: String, rhs: String) -> Bool {
-  if lhs.length() != rhs.length() { return false }
-  return strncmp(lhs._storage.bytes, rhs._storage.bytes, lhs.length() as UInt) == 0
+  if lhs.length != rhs.length { return false }
+  return strncmp(lhs._storage.bytes, rhs._storage.bytes, lhs.length as UInt) == 0
 }
 
 func !=(lhs: String, rhs: String) -> Bool {

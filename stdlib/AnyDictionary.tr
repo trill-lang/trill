@@ -45,7 +45,7 @@ type AnyDictionary {
 
   mutating func insert(_ bucket: _AnyDictionaryBucket) {
     self._growIfNeeded()
-    let hash = bucket.key.hash()
+    let hash = bucket.key.hash
     var index = hash % self.capacity
     while self.storage[index] != nil {
       index += 1
@@ -70,7 +70,7 @@ type AnyDictionary {
   }
 
   func _findBucket(_ key: String) -> _AnyDictionaryBucket {
-    var index = key.hash()
+    var index = key.hash
     while self.storage[index] != nil {
       if self.storage[index].key == key {
         return self.storage[index]

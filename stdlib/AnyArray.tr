@@ -36,6 +36,22 @@ type AnyArray {
       trill_fatalError("index out of bounds")
     }
   }
+
+  /// Reserves a new capacity value for this array, and forces reallocation.
+  /// - parameter capacity: The new capacity.
+  /// - note: This new capacity must be greater or equal to the current capacity
+  mutating func _reserveCapacity(_ capacity: Int) {
+    assert(capacity >= self.capacity, "cannot reserve smaller capacity")
+    self.capacity = capacity;
+    self._reallocate()
+  }
+
+  mutating func append(contentsOf array: AnyArray) {
+    self._reserveCapacity(self.capacity + array.count)
+    for var i = 0; i < array.count; i += 1 {
+      self.append(array[i])
+    }
+  }
   mutating func append(_ element: Any) {
     self.elements[self.count] = element
     self.count += 1

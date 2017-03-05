@@ -38,7 +38,7 @@ func println(_ value: Any) {
 }
 
 func print(_ string: String) {
-    print(string.cString())
+    print(string.cString)
 }
 
 func print(_ string: *Int8) {

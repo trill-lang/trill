@@ -11,7 +11,7 @@ func putc(_ c: Int8) {
 extension String {
   func printCStrings() {
     var lastNonPrintable = 0 as *Int8
-    for var i = 0; i < self.length(); i += 1 {
+    for var i = 0; i < self.length; i += 1 {
       var ptr = &self._storage.bytes[i]
       var c = self._storage.bytes[i]
       var length = (ptr as Int) - (lastNonPrintable as Int)
