@@ -10,6 +10,7 @@
 #define SpecialTypes_def_h
 
 SPECIAL_TYPE('I', "Int")
+SPECIAL_TYPE('U', "UInt")
 SPECIAL_TYPE('f', "Float")
 SPECIAL_TYPE('d', "Double")
 SPECIAL_TYPE('F', "Float80")

@@ -81,7 +81,7 @@ bool readType(std::string &str, std::string &out) {
   } else if (str.front() == 's') {
     str.erase(0, 1);
     switch (str.front()) {
-    case 'i':
+    case 'i': {
       str.erase(0, 1);
       out += "Int";
       int num;
@@ -89,6 +89,16 @@ bool readType(std::string &str, std::string &out) {
         out += std::to_string(num);
       }
       break;
+    }
+    case 'u': {
+      str.erase(0, 1);
+      out += "UInt";
+      int num;
+      if (readNum(str, num)) {
+        out += std::to_string(num);
+      }
+      break;
+    }
 #define SPECIAL_TYPE(c, name) \
     case c:                   \
       str.erase(0, 1);        \

@@ -7,7 +7,7 @@ import Foundation
 
 enum TokenKind: Equatable {
   case number(value: IntMax, raw: String)
-  case float(left: IntMax, right: IntMax, raw: String)
+  case float(value: Double)
   case identifier(String)
   case unknown(String)
   case char(UInt8)
@@ -125,8 +125,8 @@ enum TokenKind: Equatable {
   
   var text: String {
     switch self {
-    case .number(let value): return "\(value)"
-    case .float(let left, let right, _): return "\(left).\(right)"
+    case .number(_, let raw): return raw
+    case .float(let value): return "\(value)"
     case .identifier(let value): return value
     case .unknown(let char): return char
     case .char(let value): return String(UnicodeScalar(value))
@@ -226,8 +226,8 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   switch (lhs, rhs) {
   case (.number(let value, let raw), .number(let otherValue, let otherRaw)):
     return value == otherValue && raw == otherRaw
-  case (.float(let left, let right, let raw), .float(let otherLeft, let otherRight, let otherRaw)):
-    return left == otherLeft && right == otherRight && raw == otherRaw
+  case (.float(let value), .float(let otherValue)):
+    return value == otherValue
   case (.identifier(let value), .identifier(let otherValue)):
     return value == otherValue
   case (.unknown(let v), .unknown(let v2)):
@@ -530,7 +530,7 @@ struct Lexer {
           advance()
           let num = collectWhile { $0.isNumeric }
           if !num.isEmpty, let right = num.asNumber() {
-            return Token(kind: .float(left: numVal, right: right, raw: "\(id).\(num)"),
+            return Token(kind: .float(value: Double("\(numVal).\(right)")!),
                          range: range(start: startLoc))
           }
         } else {

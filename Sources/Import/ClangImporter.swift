@@ -560,8 +560,6 @@ class ClangImporter: Pass {
                           type: .pointer(type: .void)))
     context.add(makeAlias(name: "__va_list_tag",
                           type: .pointer(type: .void)))
-    context.add(makeAlias(name: "__darwin_pthread_handler_rec",
-                          type: .pointer(type: .void)))
   }
   
   func importBuiltinFunctions(into context: ASTContext) {

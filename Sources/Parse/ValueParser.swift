@@ -73,11 +73,9 @@ extension Parser {
       valExpr = NumExpr(value: num,
                         raw: raw,
                         sourceRange: tok.range)
-    case .float(let left, let right, let raw):
+    case .float(let value):
       consumeToken()
-      let newValue: Double = Double(left) + (Double(right) / 100.0)
-      valExpr = FloatExpr(value: newValue,
-                          raw: raw,
+      valExpr = FloatExpr(value: value,
                           sourceRange: range(start: startLoc))
     case .true:
       consumeToken()

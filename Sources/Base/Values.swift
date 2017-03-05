@@ -12,6 +12,13 @@ enum Promotion {
 class Expr: ASTNode {
   var type: DataType? = nil
   var promotion: Promotion? = nil
+
+  /// Looks through syntactic sugar expressions like `ParenExpr` to find the
+  /// underlying expression that informs the semantics of this expression.
+  var semanticsProvidingExpr: Expr {
+    return self
+  }
+
   override func attributes() -> [String : Any] {
     var attrs = super.attributes()
     if let type = type {
@@ -71,12 +78,9 @@ class ParenExpr: Expr {
     self.value = value
     super.init(sourceRange: sourceRange)
   }
-  
-  var rootExpr: Expr {
-    if let paren = value as? ParenExpr {
-      return paren.rootExpr
-    }
-    return value
+
+  override var semanticsProvidingExpr: Expr {
+    return value.semanticsProvidingExpr
   }
 }
 
@@ -120,19 +124,16 @@ class FloatExpr: ConstantExpr {
     get { return .double } set { }
   }
   let value: Double
-  let raw: String
-  init(value: Double, raw: String, sourceRange: SourceRange? = nil) {
+  init(value: Double, sourceRange: SourceRange? = nil) {
     self.value = value
-    self.raw = raw
     super.init(sourceRange: sourceRange)
   }
   override var text: String {
-    return raw
+    return "\(value)"
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
     superAttrs["value"] = value
-    superAttrs["raw"] = raw
     return superAttrs
   }
 }
@@ -147,7 +148,7 @@ class BoolExpr: ConstantExpr {
     super.init(sourceRange: sourceRange)
   }
   override var text: String {
-    return "\(value)"
+    return value.description
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
@@ -198,7 +199,7 @@ class CharExpr: ConstantExpr {
     super.init(sourceRange: sourceRange)
   }
   override var text: String {
-    return "\(value)"
+    return value.description
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()

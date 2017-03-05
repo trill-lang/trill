@@ -205,9 +205,7 @@ class Sema: ASTTransformer, Pass {
         expr.valueType = varExpr.type
       }
     }
-    if let varExpr = expr.value as? VarExpr {
-      handleVar(varExpr)
-    } else if let varExpr = (expr.value as? ParenExpr)?.rootExpr as? VarExpr {
+    if let varExpr = expr.value?.semanticsProvidingExpr as? VarExpr {
       handleVar(varExpr)
     } else {
       super.visitSizeofExpr(expr)
@@ -628,7 +626,7 @@ class Sema: ASTTransformer, Pass {
     
     var setLHSDecl: (Decl) -> Void = {_ in }
     
-    switch expr.lhs {
+    switch expr.lhs.semanticsProvidingExpr {
     case let lhs as PropertyRefExpr:
       name = lhs.name
       let propertyKind = visitPropertyRefExpr(lhs, callArgs: expr.args)

@@ -63,12 +63,11 @@ extension IRGenerator {
     return builder.buildBr(target)
   }
 
-  func synthesizeIntializer(_ decl: FuncDecl, function: Function) -> IRValue {
-    guard decl is InitializerDecl,
-        let body = decl.body,
-        body.stmts.isEmpty,
-      let type = decl.returnType.type,
-        let typeDecl = context.decl(for: type) else {
+  func synthesizeIntializer(_ decl: InitializerDecl, function: Function) -> IRValue {
+    guard let body = decl.body,
+          body.stmts.isEmpty,
+          let type = decl.returnType.type,
+          let typeDecl = context.decl(for: type) else {
       fatalError("must synthesize an empty initializer")
     }
     let entryBB = function.appendBasicBlock(named: "entry")
@@ -109,8 +108,8 @@ extension IRGenerator {
     
     if decl.has(attribute: .foreign) { return function }
     
-    if decl is InitializerDecl, let body = decl.body, body.stmts.isEmpty {
-      return synthesizeIntializer(decl, function: function)
+    if let initializer = decl as? InitializerDecl, let body = decl.body, body.stmts.isEmpty {
+      return synthesizeIntializer(initializer, function: function)
     }
     
     let entrybb = function.appendBasicBlock(named: "entry", in: llvmContext)
@@ -218,12 +217,28 @@ extension IRGenerator {
       }
     }
 
+    /// Creates intermediary AST nodes that get the address of the provided
+    /// expr.
+    let createAddressOf: (Expr, DataType) -> Expr = {
+      let operatorExpr = PrefixOperatorExpr(op: .ampersand, rhs: $0)
+      operatorExpr.type = .pointer(type: $1)
+      return operatorExpr
+    }
+
     if
       let method = decl as? MethodDecl,
       var implicitSelf = findImplicitSelf(expr) {
+
+      /// We need to get the address of the implicit self if and only if
+      /// - The implicit self is a value type, or
+      /// - It is a reference type directly referencing `self` in an
+      ///   initializer.
       if storage(for: method.parentType) == .value {
-        implicitSelf = PrefixOperatorExpr(op: .ampersand, rhs: implicitSelf)
-        implicitSelf.type = .pointer(type: method.parentType)
+        implicitSelf = createAddressOf(implicitSelf, method.parentType)
+      } else if let varExpr = implicitSelf.semanticsProvidingExpr as? VarExpr,
+                    varExpr.isSelf,
+                    currentFunction!.function is InitializerDecl {
+        implicitSelf = createAddressOf(implicitSelf, method.parentType)
       }
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }

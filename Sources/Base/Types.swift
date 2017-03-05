@@ -253,8 +253,7 @@ class TypeDecl: Decl {
   
   static func synthesizeInitializer(properties: [PropertyDecl],
                                     genericParams: [GenericParamDecl],
-                                    type: DataType,
-                                    modifiers: [DeclModifier]) -> InitializerDecl {
+                                    type: DataType) -> InitializerDecl {
     let initProperties = properties.lazy
                                    .filter { !$0.isComputed }
                                    .map { ParamDecl(name: $0.name,
@@ -265,7 +264,7 @@ class TypeDecl: Decl {
                            genericParams: genericParams,
                            returnType: type.ref(),
                            body: CompoundStmt(stmts: []),
-                           modifiers: modifiers)
+                           modifiers: [.implicit])
   }
   
   init(name: Identifier,
@@ -285,8 +284,7 @@ class TypeDecl: Decl {
     self.deinitializer = `deinit`
     let synthInit = TypeDecl.synthesizeInitializer(properties: properties,
                                                    genericParams: genericParams,
-                                                   type: type,
-                                                   modifiers: modifiers + [.implicit])
+                                                   type: type)
     self.initializers.append(synthInit)
     self.name = name
     self.conformances = conformances
@@ -304,6 +302,12 @@ class TypeDecl: Decl {
     for property in properties {
       propertyDict[property.name.name] = property.type
     }
+  }
+
+  /// Finds all properties that are not computed and actually contribute
+  /// to the size of this type.
+  var storedProperties: [PropertyDecl] {
+    return properties.filter { !$0.isComputed }
   }
   
   var isIndirect: Bool {
