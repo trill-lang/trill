@@ -113,6 +113,8 @@ class ClangImporter: Pass {
     "sys/time.h",
     "sys/resource.h",
     "sched.h",
+    "dlfcn.h",
+    "execinfo.h",
   ]
   #if os(macOS)
   static func loadSDKPath() -> String? {
