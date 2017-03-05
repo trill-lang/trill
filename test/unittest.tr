@@ -1,0 +1,95 @@
+let TestResultPass  = 0
+let TestResultFail  = 1
+let TestResultXFail = 2
+
+type TestResultType = Int
+
+type TestResult {
+  let function: String
+  let message: String
+  let resultType: TestResultType
+}
+
+indirect type TestHandler {
+  var results: AnyArray
+  var expectingFailure: Bool
+
+  init() {
+    self.results = AnyArray()
+    self.expectingFailure = false
+  }
+
+  func findTestFunction() -> String {
+    let frames = StackTrace.frames(skipping: 1)
+    for var i = 0; i < frames.count; i += 1 {
+      let sym = (frames[i] as StackFrame).demangledSymbol
+      if !sym.hasPrefix(String(cString: "TestHandler.")) { return sym }
+    }
+    return String()
+  }
+
+  mutating func addPass(_ message: String) {
+    let result = TestResult(function: self.findTestFunction(),
+                            message: message,
+                            resultType: TestResultPass)
+    print("appending result: ")
+    println(result)
+    self.results.append(result)
+  }
+
+  mutating func addFail(_ message: String) {
+    let resultType = self.expectingFailure ? TestResultXFail : TestResultFail
+    let result = TestResult(function: self.findTestFunction(),
+                            message: message,
+                            resultType: resultType)
+    print("appending result: ")
+    println(result)
+    self.results.append(result)
+  }
+
+  mutating func expect(_ message: String, _ result: Bool) {
+    if result {
+      self.addPass(message)
+    } else {
+      self.addFail(message)
+    }
+  }
+
+  func dumpResults() {
+    for var i = 0; i < self.results.count; i += 1 {
+      let result = self.results[i] as TestResult
+      print(result.function)
+      print(": ")
+      printResultType(result.resultType)
+      if result.resultType == TestResultFail {
+        print(": ")
+        print(result.message)
+      }
+      println("")
+    }
+  }
+}
+
+func printResultType(_ result: TestResultType) {
+  if result == TestResultPass {
+    print("PASS")
+  } else if result == TestResultFail {
+    print("FAIL")
+  } else if result == TestResultXFail {
+    print("XFAIL")
+  } else {
+    trill_fatalError("Invalid TestResultType")
+  }
+}
+
+func main() {
+  var handler = TestHandler()
+  handler.expect(String(cString: "true is true"), true == true)
+  handler.expect(String(cString: "false is true"), false == true)
+
+  handler.expectingFailure = true
+  handler.expect(String(cString: "4 == 5"), 4 == 5)
+  handler.expectingFailure = false
+
+  handler.dumpResults()
+}

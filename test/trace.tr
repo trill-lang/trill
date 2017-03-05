@@ -1,0 +1,47 @@
+type StackFrame {
+    let symbol: String
+    let file: String
+
+    var demangledSymbol: String {
+        return trill_demangleName(self.symbol)
+    }
+}
+
+type StackTrace {
+  static func frames() -> AnyArray {
+    return StackTrace.frames(skipping: 0)
+  }
+  static func frames(skipping skip: Int) -> AnyArray {
+    var symbols = AnyArray()
+    let stackSize = 256
+    let addrs = malloc(sizeof(nil as *Void) * stackSize) as **Void
+    let frameCount = backtrace(addrs, stackSize as Int32) as Int
+    for var i = skip; i < frameCount; i += 1 {
+      var info = Dl_info(dli_fname: nil, dli_fbase: nil,
+                         dli_sname: nil, dli_saddr: nil)
+      let addr = addrs[i]
+      if addr == nil { continue }
+      let addrResult = dladdr(addr, &info)
+      if addrResult == 0 { continue }
+      let symbol = String(cString: info.dli_sname)
+      let filename = String(cString: info.dli_fname)
+      let frame = StackFrame(symbol: symbol, file: filename)
+      println(frame.demangledSymbol)
+      symbols.append(frame)
+    }
+    free(addrs as *Void)
+    return symbols
+  }
+}
+
+func trill_demangleName(_ mangledName: String) -> String {
+  let demangledNamePtr = trill_demangle(mangledName.cString)
+
+  if demangledNamePtr == nil {
+    return mangledName
+  }
+
+  let demangledName = String(_storage: ByteArray(_owning: demangledNamePtr,
+                                                 length: strlen(demangledNamePtr) as Int))
+  return demangledName
+}
