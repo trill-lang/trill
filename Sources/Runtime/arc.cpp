@@ -101,6 +101,9 @@ public:
    */
   void retain() {
     auto locker = LockRAII(box->mutex);
+    if (box->retainCount == UINT32_MAX) {
+      trill_fatalError("attempting to retain object with retain count UINT32_MAX");
+    }
     box->retainCount++;
   }
 
@@ -109,6 +112,9 @@ public:
    */
   void release() {
     auto locker = LockRAII(box->mutex);
+    if (box->retainCount == 0) {
+      trill_fatalError("attempting to release object with retain count 0");
+    }
     box->retainCount--;
     if (box->retainCount == 0) {
       dealloc();
