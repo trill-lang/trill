@@ -69,10 +69,8 @@ build the `trill` scheme.
 
 ## Outstanding issues
 
-- The LLVM JIT doesn't currently work when linking the trill runtime. I'm trying to fix this with little luck.
-  - You'll need to compile trill programs to run them.
 - Closures are entirely unsupported in the LLVM backend. Closures are very much still in progress.
-- There are no generics. I’m still speccing out the generics system, but I’m thinking it’ll be fairly similar to C++’s [Concepts](https://en.wikipedia.org/wiki/Concepts_(C%2B%2B)) proposal — everything verified before being explicitly instantiated.
+- There are no generics. I’m working on a protocol-based generics system that uses runtime boxes with type metadata.
 - There are no `enum` s, like in Swift. `enum`s from C are currently imported as global constants
 - There is a very limited standard library that exists alongside libc. You pretty much just get whatever you get with C, which includes all the pitfalls of manual pointers.
   - Ideally I have a standard library that vends common types like `Array` , `String` , `Dictionary` , `Set` , etc.
