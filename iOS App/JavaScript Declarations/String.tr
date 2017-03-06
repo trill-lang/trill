@@ -1,0 +1,40 @@
+foreign type String {
+  foreign var length: Int
+  foreign func charAt(_: Int) -> Int8
+  foreign func charCodeAt(_: Int) -> Int8
+  foreign func codePointAt(_: Int) -> Int
+  foreign func concat(_: String) -> String
+  foreign func includes(_: String) -> Bool
+  foreign func endsWith(_: String) -> Bool
+  foreign func indexOf(_: String) -> Bool
+  foreign func indexOf(_: String, startingFrom index: Int) -> Bool
+  foreign func lastIndexOf(_: String) -> Bool
+  foreign func lastIndexOf(_: String, startingFrom index: Int) -> Bool
+  foreign func localeCompare(_: String) -> Bool
+  foreign func match(_: String) -> Bool
+  foreign func normalize() -> String
+  foreign func padEnd(_: Int) -> String
+  foreign func padEnd(_: Int, _: String) -> String
+  foreign func padStart(_: Int) -> String
+  foreign func padStart(_: Int, _: String) -> String
+  foreign func repeat(_: Int) -> String
+  foreign func replace(_: String, with: String) -> String
+
+// TODO: Fill the rest out
+  foreign func search()
+  foreign func slice()
+  foreign func split()
+  foreign func startsWith()
+  foreign func substr()
+  foreign func substring()
+  foreign func toLocaleLowerCase()
+  foreign func toLocaleUpperCase()
+  foreign func toLowerCase()
+  foreign func toSource()
+  foreign func toString()
+  foreign func toUpperCase()
+  foreign func trim()
+  foreign func trimLeft()
+  foreign func trimRight()
+  foreign func valueOf()
+}

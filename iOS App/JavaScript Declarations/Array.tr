@@ -1,0 +1,34 @@
+foreign type Array {
+    foreign init(_: ...) -> Array
+    foreign func copyWithin()
+    foreign func fill(_ val: Any)
+    foreign func pop()
+    foreign func push()
+    foreign func reverse()
+    foreign func shift(_ val: Any) -> Int
+    foreign func sort()
+    foreign func sort(compare: (Any, Any) -> Bool)
+    foreign func splice(start: Int)
+    foreign func splice(start: Int, delete: Int)
+    foreign func splice(start: Int, delete: Int, value: Any)
+    foreign func unshift(_: Any) -> Int
+    foreign func concat(_: Array) -> Array
+    foreign func includes(_: Any) -> Bool
+    foreign func indexOf(_: Any) -> Int
+    foreign func join(_: String)
+    foreign func lastIndexOf(_: Int) -> Int
+    foreign func slice(from: Int, to: Int) -> Int
+    foreign func toSource()
+    foreign func toString()
+    foreign func toLocaleString()
+    foreign func every(_: (Any) -> Bool) -> Array
+    foreign func filter(_: (Any) -> Bool) -> Array
+    foreign func find(_: (Any) -> Bool) -> Any
+    foreign func findIndex(_: (Any) -> Bool) -> Int
+    foreign func forEach(_: (Any) -> Void)
+    foreign func map(_: (Any) -> (Any)) -> Array
+    foreign func reduce(_: (Any, Any) -> Any) -> Any
+    foreign func reduce(_: (Any, Any) -> Any, initial: Any) -> Any
+    foreign func some(_: (Any) -> Bool) -> Bool
+    foreign var length: Int
+}

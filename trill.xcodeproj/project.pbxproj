@@ -499,6 +499,8 @@
 		DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVCodeGen.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVCodeGen.a"; sourceTree = "<group>"; };
 		DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVDesc.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVDesc.a"; sourceTree = "<group>"; };
 		DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVInfo.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVInfo.a"; sourceTree = "<group>"; };
+		DC1112B61E6CDFA800F86E5E /* Array.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Array.tr; path = "iOS App/JavaScript Declarations/Array.tr"; sourceTree = "<group>"; };
+		DC1112B71E6CDFA800F86E5E /* String.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = String.tr; path = "iOS App/JavaScript Declarations/String.tr"; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -983,6 +985,15 @@
 			);
 			path = stdlib;
 			sourceTree = "<group>";
+    }
+		DC1112B51E6CDF8900F86E5E /* JavaScript Declarations */ = {
+			isa = PBXGroup;
+			children = (
+				DC1112B61E6CDFA800F86E5E /* Array.tr */,
+				DC1112B71E6CDFA800F86E5E /* String.tr */,
+			);
+			name = "JavaScript Declarations";
+			sourceTree = "<group>";
 		};
 		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
 			isa = PBXGroup;
@@ -1180,6 +1191,7 @@
 		DC8EBB501E5FD03300AE577C /* Trill iOS */ = {
 			isa = PBXGroup;
 			children = (
+				DC1112B51E6CDF8900F86E5E /* JavaScript Declarations */,
 				DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */,
 				DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */,
 				DC8EBB531E5FD03C00AE577C /* Assets.xcassets */,
