@@ -324,11 +324,6 @@
 		DC8EBC981E5FD32600AE577C /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBC971E5FD32600AE577C /* libz.tbd */; };
 		DC8EBC9A1E5FD3B100AE577C /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBC991E5FD3B100AE577C /* libclang.dylib */; };
 		DC8EBC9D1E5FD3E200AE577C /* trillRuntime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */; };
-		DC8EBCB01E5FD42A00AE577C /* gc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA31E5FD42A00AE577C /* gc.h */; };
-		DC8EBCB11E5FD42A00AE577C /* gc_gcj.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA41E5FD42A00AE577C /* gc_gcj.h */; };
-		DC8EBCB21E5FD42A00AE577C /* gc_mark.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA51E5FD42A00AE577C /* gc_mark.h */; };
-		DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA81E5FD42A00AE577C /* javaxfc.h */; };
-		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
 		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
 		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
 		DCBFE9381E6FD31700573329 /* metadata_private.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCBFE9371E6FD31700573329 /* metadata_private.cpp */; };
@@ -680,18 +675,6 @@
 		DC8EBC6E1E5FD15D00AE577C /* libclangToolingCore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libclangToolingCore.a; path = ../../../../../../usr/local/Cellar/llvm/3.9.1/lib/libclangToolingCore.a; sourceTree = "<group>"; };
 		DC8EBC971E5FD32600AE577C /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		DC8EBC991E5FD3B100AE577C /* libclang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libclang.dylib; path = ../../../../../../usr/local/Cellar/llvm/3.9.1/lib/libclang.dylib; sourceTree = "<group>"; };
-		DC8EBC9F1E5FD42A00AE577C /* .gitattributes */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitattributes; sourceTree = "<group>"; };
-		DC8EBCA01E5FD42A00AE577C /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		DC8EBCA11E5FD42A00AE577C /* ChangeLog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
-		DC8EBCA21E5FD42A00AE577C /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
-		DC8EBCA31E5FD42A00AE577C /* gc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc.h; sourceTree = "<group>"; };
-		DC8EBCA41E5FD42A00AE577C /* gc_gcj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc_gcj.h; sourceTree = "<group>"; };
-		DC8EBCA51E5FD42A00AE577C /* gc_mark.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = gc_mark.h; sourceTree = "<group>"; };
-		DC8EBCA71E5FD42A00AE577C /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
-		DC8EBCA81E5FD42A00AE577C /* javaxfc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = javaxfc.h; sourceTree = "<group>"; };
-		DC8EBCA91E5FD42A00AE577C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		DC8EBCAA1E5FD42A00AE577C /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		DC8EBCAB1E5FD42A00AE577C /* tinygc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinygc.c; sourceTree = "<group>"; };
 		DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAE21EC1E63970A00645143 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DCBFE9371E6FD31700573329 /* metadata_private.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata_private.cpp; path = Sources/Runtime/metadata_private.cpp; sourceTree = "<group>"; };
@@ -907,7 +890,6 @@
 		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
 			isa = PBXGroup;
 			children = (
-				DC8EBC9E1E5FD42A00AE577C /* TinyGC */,
 				DC8EBB1B1E5FCFCC00AE577C /* defines.h */,
 				DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */,
 				DC8EBB1D1E5FCFCC00AE577C /* demangle.h */,
@@ -1339,33 +1321,6 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		DC8EBC9E1E5FD42A00AE577C /* TinyGC */ = {
-			isa = PBXGroup;
-			children = (
-				DC8EBC9F1E5FD42A00AE577C /* .gitattributes */,
-				DC8EBCA01E5FD42A00AE577C /* .gitignore */,
-				DC8EBCA11E5FD42A00AE577C /* ChangeLog */,
-				DC8EBCA21E5FD42A00AE577C /* COPYING */,
-				DC8EBCA31E5FD42A00AE577C /* gc.h */,
-				DC8EBCA41E5FD42A00AE577C /* gc_gcj.h */,
-				DC8EBCA51E5FD42A00AE577C /* gc_mark.h */,
-				DC8EBCA61E5FD42A00AE577C /* htdocs */,
-				DC8EBCA81E5FD42A00AE577C /* javaxfc.h */,
-				DC8EBCA91E5FD42A00AE577C /* LICENSE */,
-				DC8EBCAA1E5FD42A00AE577C /* README */,
-				DC8EBCAB1E5FD42A00AE577C /* tinygc.c */,
-			);
-			path = TinyGC;
-			sourceTree = SOURCE_ROOT;
-		};
-		DC8EBCA61E5FD42A00AE577C /* htdocs */ = {
-			isa = PBXGroup;
-			children = (
-				DC8EBCA71E5FD42A00AE577C /* index.html */,
-			);
-			path = htdocs;
-			sourceTree = "<group>";
-		};
 		DCAE21EA1E63970A00645143 /* trill-demangle */ = {
 			isa = PBXGroup;
 			children = (
@@ -1389,11 +1344,7 @@
 				DC8EBB341E5FCFCC00AE577C /* trill.h in Headers */,
 				DC8EBB321E5FCFCC00AE577C /* runtime.h in Headers */,
 				DC8EBB2C1E5FCFCC00AE577C /* generics.h in Headers */,
-				DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */,
 				DC8EBB301E5FCFCC00AE577C /* metadata_private.h in Headers */,
-				DC8EBCB11E5FD42A00AE577C /* gc_gcj.h in Headers */,
-				DC8EBCB21E5FD42A00AE577C /* gc_mark.h in Headers */,
-				DC8EBCB01E5FD42A00AE577C /* gc.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1624,7 +1575,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */,
 				DC8EBB311E5FCFCC00AE577C /* runtime.cpp in Sources */,
 				DC8EBB291E5FCFCC00AE577C /* demangle.cpp in Sources */,
 				DC8EBB2B1E5FCFCC00AE577C /* generics.cpp in Sources */,

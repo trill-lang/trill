@@ -15,12 +15,6 @@
 #include <signal.h>
 #include <string>
 
-#define GC_PRINT_MSGS
-#include "gc.h"
-#undef GC_PRINT_MSGS
-
-#define TRILL_ENABLE_GC 0
-
 namespace trill {
 
 #define MAX_STACK_DEPTH 256
@@ -80,11 +74,7 @@ void trill_fatalError(const char *_Nonnull message) {
   
 __attribute__((always_inline))
 static void *trill_malloc(size_t size) {
-#if TRILL_ENABLE_GC
-  return GC_malloc(size);
-#else
   return malloc(size);
-#endif
 }
 
 void *trill_alloc(size_t size) {
@@ -97,9 +87,6 @@ void *trill_alloc(size_t size) {
 }
 
 void trill_registerDeinitializer(void *object, void (*deinitializer)(void *)) {
-#if TRILL_ENABLE_GC
-  GC_register_finalizer_no_order(object, reinterpret_cast<GC_finalization_proc>(deinitializer), NULL, NULL, NULL);
-#endif
 }
   
 void trill_handleSignal(int signal) {
@@ -109,7 +96,6 @@ void trill_handleSignal(int signal) {
 void trill_init() {
   signal(SIGSEGV, trill_handleSignal);
   signal(SIGILL, trill_handleSignal);
-  GC_INIT();
 }
 
 }
