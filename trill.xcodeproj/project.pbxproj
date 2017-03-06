@@ -63,6 +63,8 @@
 		C080F02F1E69163400F34AA5 /* libLLVMXCoreDesc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02A1E69163400F34AA5 /* libLLVMXCoreDesc.a */; };
 		C080F0301E69163400F34AA5 /* libLLVMXCoreDisassembler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02B1E69163400F34AA5 /* libLLVMXCoreDisassembler.a */; };
 		C080F0311E69163400F34AA5 /* libLLVMXCoreInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02C1E69163400F34AA5 /* libLLVMXCoreInfo.a */; };
+		DC352BDE1E6E172D00B43EE6 /* arc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC352BDC1E6E172D00B43EE6 /* arc.cpp */; };
+		DC352BDF1E6E172D00B43EE6 /* arc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC352BDD1E6E172D00B43EE6 /* arc.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA71E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
@@ -440,6 +442,8 @@
 		C080F02A1E69163400F34AA5 /* libLLVMXCoreDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDesc.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreDesc.a; sourceTree = "<group>"; };
 		C080F02B1E69163400F34AA5 /* libLLVMXCoreDisassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDisassembler.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreDisassembler.a; sourceTree = "<group>"; };
 		C080F02C1E69163400F34AA5 /* libLLVMXCoreInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreInfo.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreInfo.a; sourceTree = "<group>"; };
+		DC352BDC1E6E172D00B43EE6 /* arc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = arc.cpp; path = Sources/Runtime/arc.cpp; sourceTree = "<group>"; };
+		DC352BDD1E6E172D00B43EE6 /* arc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = arc.h; path = Sources/Runtime/arc.h; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -890,6 +894,8 @@
 		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
 			isa = PBXGroup;
 			children = (
+				DC352BDC1E6E172D00B43EE6 /* arc.cpp */,
+				DC352BDD1E6E172D00B43EE6 /* arc.h */,
 				DC8EBB1B1E5FCFCC00AE577C /* defines.h */,
 				DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */,
 				DC8EBB1D1E5FCFCC00AE577C /* demangle.h */,
@@ -1338,6 +1344,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC8EBB281E5FCFCC00AE577C /* defines.h in Headers */,
+				DC352BDF1E6E172D00B43EE6 /* arc.h in Headers */,
 				DC8EBB2A1E5FCFCC00AE577C /* demangle.h in Headers */,
 				DC8EBB2F1E5FCFCC00AE577C /* metadata.h in Headers */,
 				DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */,
@@ -1575,6 +1582,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC352BDE1E6E172D00B43EE6 /* arc.cpp in Sources */,
 				DC8EBB311E5FCFCC00AE577C /* runtime.cpp in Sources */,
 				DC8EBB291E5FCFCC00AE577C /* demangle.cpp in Sources */,
 				DC8EBB2B1E5FCFCC00AE577C /* generics.cpp in Sources */,

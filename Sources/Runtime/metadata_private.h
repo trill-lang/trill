@@ -178,8 +178,8 @@ void trill_reportCastError(const TypeMetadata *anyMetadata,
                            const TypeMetadata *typeMetadata);
 
 struct GenericBox {
-    const TypeMetadata *typeMetadata;
-    const void **witnessTable;
+  const TypeMetadata *typeMetadata;
+  const void **witnessTable;
 };
 
 }

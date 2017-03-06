@@ -10,5 +10,6 @@
 #include "metadata.h"
 #include "runtime.h"
 #include "generics.h"
+#include "arc.h"
 
 #endif /* trill_h */
