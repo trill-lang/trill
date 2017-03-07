@@ -72,3 +72,14 @@ let ansiEscapeSupportedOnStdErr: Bool = {
     
     return true
 }()
+
+let runtimeFramework: Bundle? = Bundle(identifier: "com.trill-lang.trillRuntime")
+
+extension FileManager {
+  func recursiveChildren(of path: String) -> [String]? {
+    guard let enumerator = enumerator(at: URL(fileURLWithPath: path), includingPropertiesForKeys: nil, options: [], errorHandler: nil) else {
+      return nil
+    }
+    return enumerator.map { ($0 as! URL).path }
+  }
+}

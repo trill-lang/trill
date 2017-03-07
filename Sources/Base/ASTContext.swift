@@ -94,6 +94,7 @@ public class ASTContext {
   var diagnostics = [PoundDiagnosticStmt]()
   var globals = [VarAssignDecl]()
   var typeAliases = [TypeAliasDecl]()
+  var stdlib: StdLibASTContext?
   
   private var funcDeclMap = [String: [FuncDecl]]()
   private var protocolDeclMap = [String: ProtocolDecl]()
@@ -233,8 +234,8 @@ public class ASTContext {
     }
     return bestCandidate?.candidate
   }
-  
-  
+
+
   func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
     var bestCandidate: CandidateResult<FuncDecl>?
     search: for candidate in candidates {
@@ -261,7 +262,7 @@ public class ASTContext {
         if propagateContextualType(candType, to: exprArg.val) {
           valType = candType
         }
-        
+
         // Even though they 'match', we don't want to demote an any to a specific
         // type without being asked.
         if candType != .any && valType == .any {
@@ -335,6 +336,11 @@ public class ASTContext {
       return changed
     case let expr as TernaryExpr:
       if case .any = canTy {
+        expr.type = contextualType
+        return true
+      }
+    case let expr as StringExpr:
+      if [.string, .pointer(type: DataType.int8)].contains(canTy) {
         expr.type = contextualType
         return true
       }
@@ -594,6 +600,10 @@ public class ASTContext {
   func sourceFile(named name: String) -> SourceFile? {
     return sourceFileMap[name]
   }
+
+  func type(named name: String) -> TypeDecl? {
+    return typeDeclMap[DataType(name: name)]
+  }
   
   func `protocol`(named name: Identifier) -> ProtocolDecl? {
     return protocolDeclMap[name.name]
@@ -779,6 +789,19 @@ public class ASTContext {
                     body: nil,
                     modifiers: [.implicit],
                     isPlaceholder: true)
+  }
+}
+
+public class StdLibASTContext: ASTContext {
+  var string: TypeDecl {
+    return type(named: "String")!
+  }
+  
+  var staticStringInitializer: InitializerDecl {
+    return string.initializers.first { initializer in
+      // TODO: find a way to do this that doesn't require string comparison
+      initializer.formattedParameterList == "(_global cString: *Int8, length: Int)"
+    }!
   }
 }
 

@@ -21,21 +21,7 @@ func populate(driver: Driver, options: Options,
               context: ASTContext) throws {
   var gen: IRGenerator? = nil
   driver.add("Lexing and Parsing") { context in
-    if sourceFiles.count == 1 {
-      sourceFiles[0].parse()
-      context.merge(context: sourceFiles[0].context)
-      return
-    }
-    let group = DispatchGroup()
-    for file in sourceFiles {
-      DispatchQueue.global().async(group: group) {
-        file.parse()
-      }
-    }
-    group.wait()
-    for file in sourceFiles {
-      context.merge(context: file.context)
-    }
+    lexAndParse(sourceFiles: sourceFiles, into: context)
   }
   
   if options.importC {
@@ -46,6 +32,24 @@ func populate(driver: Driver, options: Options,
                            target: irgen.targetMachine.triple).run(in: context)
     }
     gen = irgen
+  }
+  
+  if options.includeStdlib {
+    driver.add("Parsing Standard Library") { context in
+      let stdlibContext = StdLibASTContext(diagnosticEngine: context.diag)
+      guard let stdlibPath = runtimeFramework?.path(forResource: "stdlib", ofType: nil), FileManager.default.fileExists(atPath: stdlibPath) else {
+        context.diag.error("Unable to find the stdlib in the trill runtime")
+        return
+      }
+      guard let stdlibFiles = FileManager.default.recursiveChildren(of: stdlibPath)?.filter({ f in f.hasSuffix(".tr") }) else {
+        context.diag.error("Unable to enumerate stdlib at \(stdlibPath)")
+        return
+      }
+      let stdlibSourceFiles = try _sourceFiles(from: stdlibFiles, diag: context.diag)
+      lexAndParse(sourceFiles: stdlibSourceFiles, into: stdlibContext)
+      context.stdlib = stdlibContext
+      context.merge(context: stdlibContext)
+    }
   }
   
   let addASTPass: () -> Bool = {
@@ -93,7 +97,7 @@ func populate(driver: Driver, options: Options,
   case .jit:
     driver.add("Executing the JIT") { context in
       var args = options.jitArgs
-      args.insert("\(options.filenames.first!)", at: 0)
+      args.insert("\(options.filenames.first ?? "<>")", at: 0)
       let ret = try gen!.execute(args)
       if ret != 0 {
         context.diag.error("program exited with non-zero exit code \(ret)")
@@ -111,13 +115,35 @@ func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile
     context.add(file)
     return [file]
   } else {
-    return try options.filenames.map { path in
-      let context = ASTContext(diagnosticEngine: diag)
-      let url = URL(fileURLWithPath: path)
-      let file = try SourceFile(path: .file(url), context: context)
-      context.add(file)
-      return file
+    return try _sourceFiles(from: options.filenames, diag: diag)
+  }
+}
+
+func _sourceFiles(from filenames: [String], diag: DiagnosticEngine) throws -> [SourceFile] {
+  return try filenames.map { path in
+    let context = ASTContext(diagnosticEngine: diag)
+    let url = URL(fileURLWithPath: path)
+    let file = try SourceFile(path: .file(url), context: context)
+    context.add(file)
+    return file
+  }
+}
+
+func lexAndParse(sourceFiles: [SourceFile], into context: ASTContext) {
+  if sourceFiles.count == 1 {
+    sourceFiles[0].parse()
+    context.merge(context: sourceFiles[0].context)
+    return
+  }
+  let group = DispatchGroup()
+  for file in sourceFiles {
+    DispatchQueue.global().async(group: group) {
+      file.parse()
     }
+  }
+  group.wait()
+  for file in sourceFiles {
+    context.merge(context: file.context)
   }
 }
 

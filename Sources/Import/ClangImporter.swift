@@ -547,9 +547,10 @@ class ClangImporter: Pass {
 
   static let runtimeHeaderPath: String = {
     let fileManager = FileManager.default
-    if let executableURL = CommandLine.arguments.first.map({ URL(fileURLWithPath: $0) }) {
-      let frameworkURL = executableURL.deletingLastPathComponent().appendingPathComponent("trillRuntime.framework/Headers")
-      if fileManager.fileExists(atPath: frameworkURL.path) { return frameworkURL.path }
+    
+    if let headersURL = runtimeFramework?.bundleURL.appendingPathComponent("Headers"),
+      fileManager.fileExists(atPath: headersURL.path) {
+      return headersURL.path
     }
     
     return "/usr/lib/include/trill"

@@ -122,7 +122,7 @@ extension IRGenerator {
     }
     
     let metaName = name + ".metadata"
-    let nameValue = codegenGlobalStringPtr(fullName)
+    let nameValue = codegenGlobalStringPtr(fullName).ptr
     let elementPtrs: [IRType] = [
       nameValue.type,        // name string
       PointerType.toVoid,    // field types
@@ -146,7 +146,7 @@ extension IRGenerator {
     for (idx, (propName, type)) in properties.enumerated() {
       let meta = codegenTypeMetadata(type)
       
-      let name = codegenGlobalStringPtr(propName)
+      let name = codegenGlobalStringPtr(propName).ptr
 
       propertyVals.append(StructType.constant(values: [
         builder.buildBitCast(name, type: PointerType.toVoid),

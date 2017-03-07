@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C019190A1E6E2B6800FDFB87 /* AnyArray.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FA1E6E2AD700FDFB87 /* AnyArray.tr */; };
+		C019190B1E6E2B6800FDFB87 /* AnyDictionary.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FB1E6E2AD700FDFB87 /* AnyDictionary.tr */; };
+		C019190C1E6E2B6800FDFB87 /* bytearray.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FC1E6E2AD700FDFB87 /* bytearray.tr */; };
+		C019190D1E6E2B6800FDFB87 /* Int.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FD1E6E2AD700FDFB87 /* Int.tr */; };
+		C019190E1E6E2B6800FDFB87 /* Mirror.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FE1E6E2AD700FDFB87 /* Mirror.tr */; };
+		C019190F1E6E2B6800FDFB87 /* print.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FF1E6E2AD700FDFB87 /* print.tr */; };
+		C01919101E6E2B6800FDFB87 /* String.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01919001E6E2AD700FDFB87 /* String.tr */; };
 		C080EFD71E6914A300F34AA5 /* libLLVMAArch64AsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD01E6914A300F34AA5 /* libLLVMAArch64AsmParser.a */; };
 		C080EFD81E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD11E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a */; };
 		C080EFD91E6914A300F34AA5 /* libLLVMAArch64CodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD21E6914A300F34AA5 /* libLLVMAArch64CodeGen.a */; };
@@ -138,13 +145,11 @@
 		DC8EBB2A1E5FCFCC00AE577C /* demangle.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB1D1E5FCFCC00AE577C /* demangle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB2B1E5FCFCC00AE577C /* generics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB1E1E5FCFCC00AE577C /* generics.cpp */; };
 		DC8EBB2C1E5FCFCC00AE577C /* generics.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB1F1E5FCFCC00AE577C /* generics.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DC8EBB2D1E5FCFCC00AE577C /* MangledOperators.def in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */; };
 		DC8EBB2E1E5FCFCC00AE577C /* metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB211E5FCFCC00AE577C /* metadata.cpp */; };
 		DC8EBB2F1E5FCFCC00AE577C /* metadata.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB221E5FCFCC00AE577C /* metadata.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB301E5FCFCC00AE577C /* metadata_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB231E5FCFCC00AE577C /* metadata_private.h */; };
 		DC8EBB311E5FCFCC00AE577C /* runtime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB241E5FCFCC00AE577C /* runtime.cpp */; };
 		DC8EBB321E5FCFCC00AE577C /* runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB251E5FCFCC00AE577C /* runtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DC8EBB331E5FCFCC00AE577C /* SpecialTypes.def in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */; };
 		DC8EBB341E5FCFCC00AE577C /* trill.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB271E5FCFCC00AE577C /* trill.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB3A1E5FCFD500AE577C /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB361E5FCFD500AE577C /* Mangler.swift */; };
 		DC8EBB3B1E5FCFD500AE577C /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB361E5FCFD500AE577C /* Mangler.swift */; };
@@ -321,17 +326,10 @@
 		DC8EBC981E5FD32600AE577C /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBC971E5FD32600AE577C /* libz.tbd */; };
 		DC8EBC9A1E5FD3B100AE577C /* libclang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBC991E5FD3B100AE577C /* libclang.dylib */; };
 		DC8EBC9D1E5FD3E200AE577C /* trillRuntime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */; };
-		DC8EBCAC1E5FD42A00AE577C /* .gitattributes in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBC9F1E5FD42A00AE577C /* .gitattributes */; };
-		DC8EBCAD1E5FD42A00AE577C /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCA01E5FD42A00AE577C /* .gitignore */; };
-		DC8EBCAE1E5FD42A00AE577C /* ChangeLog in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCA11E5FD42A00AE577C /* ChangeLog */; };
-		DC8EBCAF1E5FD42A00AE577C /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCA21E5FD42A00AE577C /* COPYING */; };
 		DC8EBCB01E5FD42A00AE577C /* gc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA31E5FD42A00AE577C /* gc.h */; };
 		DC8EBCB11E5FD42A00AE577C /* gc_gcj.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA41E5FD42A00AE577C /* gc_gcj.h */; };
 		DC8EBCB21E5FD42A00AE577C /* gc_mark.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA51E5FD42A00AE577C /* gc_mark.h */; };
-		DC8EBCB31E5FD42A00AE577C /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCA71E5FD42A00AE577C /* index.html */; };
 		DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA81E5FD42A00AE577C /* javaxfc.h */; };
-		DC8EBCB51E5FD42A00AE577C /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCA91E5FD42A00AE577C /* LICENSE */; };
-		DC8EBCB61E5FD42A00AE577C /* README in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBCAA1E5FD42A00AE577C /* README */; };
 		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
 		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
 		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
@@ -355,6 +353,22 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		C01919091E6E2B4C00FDFB87 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = stdlib;
+			dstSubfolderSpec = 7;
+			files = (
+				C019190A1E6E2B6800FDFB87 /* AnyArray.tr in CopyFiles */,
+				C019190B1E6E2B6800FDFB87 /* AnyDictionary.tr in CopyFiles */,
+				C019190C1E6E2B6800FDFB87 /* bytearray.tr in CopyFiles */,
+				C019190D1E6E2B6800FDFB87 /* Int.tr in CopyFiles */,
+				C019190E1E6E2B6800FDFB87 /* Mirror.tr in CopyFiles */,
+				C019190F1E6E2B6800FDFB87 /* print.tr in CopyFiles */,
+				C01919101E6E2B6800FDFB87 /* String.tr in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC8EBA581E5FCEF800AE577C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -376,6 +390,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C01918FA1E6E2AD700FDFB87 /* AnyArray.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AnyArray.tr; sourceTree = "<group>"; };
+		C01918FB1E6E2AD700FDFB87 /* AnyDictionary.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AnyDictionary.tr; sourceTree = "<group>"; };
+		C01918FC1E6E2AD700FDFB87 /* bytearray.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = bytearray.tr; sourceTree = "<group>"; };
+		C01918FD1E6E2AD700FDFB87 /* Int.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Int.tr; sourceTree = "<group>"; };
+		C01918FE1E6E2AD700FDFB87 /* Mirror.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Mirror.tr; sourceTree = "<group>"; };
+		C01918FF1E6E2AD700FDFB87 /* print.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = print.tr; sourceTree = "<group>"; };
+		C01919001E6E2AD700FDFB87 /* String.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = String.tr; sourceTree = "<group>"; };
 		C080EFD01E6914A300F34AA5 /* libLLVMAArch64AsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64AsmParser.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64AsmParser.a; sourceTree = "<group>"; };
 		C080EFD11E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64AsmPrinter.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64AsmPrinter.a; sourceTree = "<group>"; };
 		C080EFD21E6914A300F34AA5 /* libLLVMAArch64CodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64CodeGen.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64CodeGen.a; sourceTree = "<group>"; };
@@ -869,6 +890,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C01918F91E6E2AD700FDFB87 /* stdlib */ = {
+			isa = PBXGroup;
+			children = (
+				C01918FA1E6E2AD700FDFB87 /* AnyArray.tr */,
+				C01918FB1E6E2AD700FDFB87 /* AnyDictionary.tr */,
+				C01918FC1E6E2AD700FDFB87 /* bytearray.tr */,
+				C01918FD1E6E2AD700FDFB87 /* Int.tr */,
+				C01918FE1E6E2AD700FDFB87 /* Mirror.tr */,
+				C01918FF1E6E2AD700FDFB87 /* print.tr */,
+				C01919001E6E2AD700FDFB87 /* String.tr */,
+			);
+			path = stdlib;
+			sourceTree = "<group>";
+		};
 		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
 			isa = PBXGroup;
 			children = (
@@ -896,6 +931,7 @@
 			children = (
 				DCAE21EA1E63970A00645143 /* trill-demangle */,
 				DC6BE9861E63968A00E9964E /* trillRuntime */,
+				C01918F91E6E2AD700FDFB87 /* stdlib */,
 				DC8EBB501E5FD03300AE577C /* Trill iOS */,
 				DC8EBA921E5FCF5F00AE577C /* trill */,
 				DC8EBA5B1E5FCEF800AE577C /* Products */,
@@ -1388,7 +1424,7 @@
 				DC8EBA641E5FCF0100AE577C /* Sources */,
 				DC8EBA651E5FCF0100AE577C /* Frameworks */,
 				DC8EBA661E5FCF0100AE577C /* Headers */,
-				DC8EBA671E5FCF0100AE577C /* Resources */,
+				C01919091E6E2B4C00FDFB87 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -1466,7 +1502,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1488,22 +1524,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		DC8EBA671E5FCF0100AE577C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC8EBCB61E5FD42A00AE577C /* README in Resources */,
-				DC8EBCB31E5FD42A00AE577C /* index.html in Resources */,
-				DC8EBCAF1E5FD42A00AE577C /* COPYING in Resources */,
-				DC8EBCB51E5FD42A00AE577C /* LICENSE in Resources */,
-				DC8EBCAE1E5FD42A00AE577C /* ChangeLog in Resources */,
-				DC8EBCAD1E5FD42A00AE577C /* .gitignore in Resources */,
-				DC8EBB2D1E5FCFCC00AE577C /* MangledOperators.def in Resources */,
-				DC8EBCAC1E5FD42A00AE577C /* .gitattributes in Resources */,
-				DC8EBB331E5FCFCC00AE577C /* SpecialTypes.def in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DC8EBA731E5FCF0D00AE577C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1859,7 +1879,7 @@
 					"$(OTHER_CFLAGS)",
 					"-Wold-style-cast",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.harlanhaskins.trillRuntime;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trill-lang.trillRuntime";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1890,7 +1910,7 @@
 					"$(OTHER_CFLAGS)",
 					"-Wold-style-cast",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.harlanhaskins.trillRuntime;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.trill-lang.trillRuntime";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1966,7 +1986,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,

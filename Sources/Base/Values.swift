@@ -158,9 +158,6 @@ class BoolExpr: ConstantExpr {
 }
 
 class StringExpr: ConstantExpr {
-  override var type: DataType? {
-    get { return .pointer(type: .int8) } set { }
-  }
   var value: String
   init(value: String, sourceRange: SourceRange? = nil) {
     self.value = value

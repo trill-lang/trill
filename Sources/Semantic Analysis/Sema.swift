@@ -245,31 +245,6 @@ class Sema: ASTTransformer, Pass {
     return true
   }
   
-  func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
-    search: for candidate in candidates {
-      var candArgs = candidate.args
-      if let first = candArgs.first, first.isImplicitSelf {
-        candArgs.remove(at: 0)
-      }
-      if !candidate.hasVarArgs && candArgs.count != args.count { continue }
-      for (candArg, exprArg) in zip(candArgs, args) {
-        if let externalName = candArg.externalName,
-           exprArg.label != externalName { continue search }
-        guard var valType = exprArg.val.type else { continue search }
-        let type = context.canonicalType(candArg.type)
-        // automatically coerce number literals.
-        if context.propagateContextualType(type, to: exprArg.val) {
-          valType = type
-        }
-        if !matches(type, .any) && !matches(type, valType) {
-          continue search
-        }
-      }
-      return candidate
-    }
-    return nil
-  }
-  
   override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
     _ = visitPropertyRefExpr(expr, callArgs: nil)
   }
@@ -814,14 +789,14 @@ class Sema: ASTTransformer, Pass {
     guard var lhsType = expr.lhs.type else { return }
     guard var rhsType = expr.rhs.type else { return }
     
-    let canLhs = context.canonicalType(lhsType)
-    let canRhs = context.canonicalType(rhsType)
-    
     if context.propagateContextualType(rhsType, to: expr.lhs) {
       lhsType = rhsType
     } else if context.propagateContextualType(lhsType, to: expr.rhs) {
       rhsType = lhsType
     }
+    
+    let canLhs = context.canonicalType(lhsType)
+    let canRhs = context.canonicalType(rhsType)
     
     if expr.op.isAssign {
       expr.type = .void
@@ -921,6 +896,15 @@ class Sema: ASTTransformer, Pass {
     expr.type = expr.trueCase.type
   }
   
+  override func visitStringExpr(_ expr: StringExpr) {
+    super.visitStringExpr(expr)
+    if context.isValidType(.string) {
+      expr.type = .string
+    } else {
+      expr.type = .pointer(type: .int8)
+    }
+  }
+  
   override func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {
     super.visitPoundFunctionExpr(expr)
     guard let funcDecl = currentFunction else {
@@ -931,6 +915,7 @@ class Sema: ASTTransformer, Pass {
         ])
       return
     }
+    visitStringExpr(expr)
     expr.value = funcDecl.formattedName
   }
   

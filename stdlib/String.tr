@@ -7,6 +7,12 @@ type String {
     init(_owning cString: *Int8, length: Int) {
         self._storage = ByteArray(_owning: cString, length: length)
     }
+    init(_global cString: *Int8, length: Int) {
+        // TODO: make this not call into a ByteArray initializer
+        // that immediately allocates a new buffer -- it should be
+        // CoW
+        self._storage = ByteArray(cString, length: length)
+    }
     init() {
         self._storage = ByteArray(capacity: 256)
         self._storage.append(0)
@@ -121,4 +127,8 @@ func +(lhs: *Int8, rhs: *Int8) -> String {
   var str = String(cString: lhs)
   str.append(rhs)
   return str
+}
+
+func fatalError(_ message: String) {
+  trill_fatalError(message.cString)
 }

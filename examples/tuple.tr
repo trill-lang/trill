@@ -1,7 +1,7 @@
 let nested = (1, (2, 3), (4, 5, (6, 7)))
 let large = (3, 4, 5, true, "Hello, World!", true, 3, nested)
 extension Bool {
-  func str() -> *Int8 {
+  func str() -> String {
     return self ? "true" : "false"
   }
 }
@@ -12,7 +12,7 @@ func foo(tuple: (Int, Bool)) -> (Int, Bool) {
 }
 
 func main() {
-  printf("large: (%d, %d, %d, %s, \"%s\", %s, %d)\n", large.0, large.1, large.2, large.3.str(), large.4, large.5.str(), large.6)
+  printf("large: (%d, %d, %d, %s, \"%s\", %s, %d)\n", large.0, large.1, large.2, large.3.str().cString, large.4, large.5.str().cString, large.6)
   printf("nested: (%d, (%d, %d), (%d, %d, (%d, %d)))\n", nested)
   // var t = (2, false)
   // for var i = 0; i < 100; i += 1 {

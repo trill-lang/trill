@@ -74,12 +74,14 @@ LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMT
 }
 
 RawOptions ParseArguments(int argc, char **argv) {
+  cl::OptionCategory category("trill");
+  cl::cat cat(category);
   cl::opt<OptimizationLevel> optimizationLevel(cl::desc("Choose optimization level:"),
                                                cl::values(clEnumVal(O0 , "No optimizations, enable debugging"),
                                                           clEnumVal(O1, "Enable trivial optimizations"),
                                                           clEnumVal(O2, "Enable default optimizations"),
                                                           clEnumVal(O3, "Enable expensive optimizations"),
-                                                          clEnumValEnd));
+                                                          clEnumValEnd), cat);
   cl::opt<RawOutputFormat> emit("emit", cl::desc("Output format to emit"),
                                 cl::values(clEnumValN(Binary, "binary", "A binary executable"),
                                            clEnumValN(Object, "object", "An object file that has not been linked (.o)"),
@@ -88,25 +90,28 @@ RawOptions ParseArguments(int argc, char **argv) {
                                            clEnumValN(Bitcode, "bitcode", "LLVM Bitcode (.bc)"),
                                            clEnumValN(AST, "ast", "A serailized Abstract Syntax Tree"),
                                            clEnumValN(JavaScript, "js", "JavaScript"),
-                                           clEnumValEnd));
-  cl::opt<bool> jit("run", cl::desc("JIT the specified files"));
-  cl::opt<bool> parseOnly("parse-only", cl::desc("Only parse, do not run semantic analysis"));
-  cl::opt<bool> showImports("show-imports", cl::desc("Show imported items in the AST dump"));
-  cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"));
-  cl::opt<bool> printTiming("debug-print-timing", cl::desc("Emit pass times (for performance debugging)"));
-  cl::opt<bool> onlyDiagnostics("diagnostics-only", cl::desc("Only emit diagnostics"));
-  cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"));
-  cl::opt<std::string> outputFile("o", cl::desc("Output filename"));
-  cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"));
+                                           clEnumValEnd), cat);
+  cl::opt<bool> jit("run", cl::desc("JIT the specified files"), cat);
+  cl::opt<bool> parseOnly("parse-only", cl::desc("Only parse, do not run semantic analysis"), cat);
+  cl::opt<bool> showImports("show-imports", cl::desc("Show imported items in the AST dump"), cat);
+  cl::opt<bool> stdlib("stdlib", cl::desc("Include the trill standard library"), cat);
+  stdlib = true;
+  cl::opt<bool> jsonDiagnostics("json-diagnostics", cl::desc("Emit diagnostics as JSON"), cat);
+  cl::opt<bool> printTiming("debug-print-timing", cl::desc("Emit pass times (for performance debugging)"), cat);
+  cl::opt<bool> onlyDiagnostics("diagnostics-only", cl::desc("Only emit diagnostics"), cat);
+  cl::opt<std::string> target("target", cl::desc("Override the LLVM target machine"), cat);
+  cl::opt<std::string> outputFile("o", cl::desc("Output filename"), cat);
+  cl::list<std::string> filenames(cl::Positional, cl::desc("<filenames>"), cat);
   cl::list<std::string> linkerFlags("Xlinker", cl::Positional,
                                     cl::PositionalEatsArgs,
-                                    cl::desc("<extra linker flags>"));
+                                    cl::desc("<extra linker flags>"), cat);
   cl::list<std::string> ccFlags("Xcc", cl::Positional,
                                 cl::PositionalEatsArgs,
-                                cl::desc("<extra clang flags>"));
+                                cl::desc("<extra clang flags>"), cat);
   cl::list<std::string> jitArgs("args", cl::Positional,
                                 cl::PositionalEatsArgs,
-                                cl::desc("<JIT arguments>"));
+                                cl::desc("<JIT arguments>"), cat);
+  cl::HideUnrelatedOptions(category);
   cl::ParseCommandLineOptions(argc, argv);
   
   RawMode mode;
@@ -144,6 +149,7 @@ RawOptions ParseArguments(int argc, char **argv) {
     isStdin,
     jsonDiagnostics,
     showImports,
+    stdlib,
     mode,
     outputFormat,
     targetMachine,

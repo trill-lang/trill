@@ -59,6 +59,7 @@ public class Options {
   let parseOnly: Bool
   let isStdin: Bool
   let showImports: Bool
+  let includeStdlib: Bool
   let optimizationLevel: OptimizationLevel
   let raw: RawOptions
   let jitArgs: [String]
@@ -75,6 +76,7 @@ public class Options {
     self.jsonDiagnostics = raw.jsonDiagnostics
     self.parseOnly = raw.parseOnly
     self.showImports = raw.showImports
+    self.includeStdlib = raw.stdlib
     if let outputFilename = raw.outputFilename {
       self.outputFilename = String(cString: outputFilename)
     } else {

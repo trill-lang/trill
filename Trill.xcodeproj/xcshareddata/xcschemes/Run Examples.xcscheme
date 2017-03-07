@@ -77,10 +77,6 @@
             argument = "${PROJECT_DIR}/examples"
             isEnabled = "YES">
          </CommandLineArgument>
-         <CommandLineArgument
-            argument = "${PROJECT_DIR}/stdlib"
-            isEnabled = "YES">
-         </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
       </AdditionalOptions>

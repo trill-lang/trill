@@ -162,7 +162,7 @@ class IRGenerator: ASTVisitor, Pass {
   
   /// A table that holds global string values, as strings are interned.
   /// String literals are held at global scope.
-  var globalStringMap = [String: IRValue]()
+  var globalStringMap = [String: (IRValue, Int)]()
   
   /// The function currently being generated.
   var currentFunction: FunctionState?

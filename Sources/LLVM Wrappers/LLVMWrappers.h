@@ -58,6 +58,7 @@ typedef struct RawOptions {
   bool isStdin;
   bool jsonDiagnostics;
   bool showImports;
+  bool stdlib;
   RawMode mode;
   RawOutputFormat outputFormat;
   char *_Nullable target;

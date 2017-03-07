@@ -1,8 +1,9 @@
-func assert(_ condition: Bool, _ message: *Int8) {
+func assert(_ condition: Bool, _ message: String) {
   if !condition {
-    trill_fatalError(message)
+    fatalError(message)
   }
 }
+
 indirect type ByteArray {
   var bytes: *Int8
   var length: Int
@@ -50,7 +51,7 @@ indirect type ByteArray {
   }
   func _boundsCheck(_ index: Int) {
     if index > self.length {
-      trill_fatalError("index out of bounds")
+      fatalError("index out of bounds")
     }
   }
   mutating func append(_ element: Int8) {
@@ -120,7 +121,6 @@ indirect type ByteArray {
   func slice(from start: Int, to end: Int) -> ByteArray {
     assert(end >= start, "invalid slice bounds")
     let newLength = end - start
-    printf("length: %d, start: %d, end: %d, newLength: %d\n", self.length, start, end, newLength)
     return ByteArray(&self.bytes[start], length: newLength)
   }
   var isEmpty: Bool {

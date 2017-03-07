@@ -35,7 +35,7 @@ enum DataType: CustomStringConvertible, Hashable {
   static func incompleteArray(field: DataType) -> DataType {
     return .array(field: field, length: nil)
   }
-  static let string = DataType.pointer(type: .int8)
+  static let string = DataType.custom(name: "String")
   
   init(name: String) {
     switch name {
