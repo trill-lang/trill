@@ -266,8 +266,8 @@ extension IRGenerator {
         type = .pointer(type: field)
         val = builder.buildBitCast(alloca.ref, type: PointerType(pointee: resolveLLVMType(field)))
       }
-      if let declArg = decl.args[safe: idx], declArg.type == .any {
-        val = codegenPromoteToAny(value: val, type: type)
+      if let declArg = decl.args[safe: idx] {
+        val = codegenImplicitCopy(val, type: type, destType: declArg.type)
       }
       argVals.append(val)
     }
@@ -290,11 +290,9 @@ extension IRGenerator {
     }
     var store: IRValue? = nil
     if !(expr.value is VoidExpr) {
-      var val = visit(expr.value)!
-      if let type = expr.value.type,
-         case .any = context.canonicalType(currentDecl.returnType.type!) {
-        val = codegenPromoteToAny(value: val, type: type)
-      }
+      let val = codegenImplicitCopy(visit(expr.value)!,
+                                    type: expr.value.type!,
+                                    destType: currentDecl.returnType.type!)
       if !(currentDecl is InitializerDecl) {
         store = builder.buildStore(val, to: currentFunction.resultAlloca!)
       }

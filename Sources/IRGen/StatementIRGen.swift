@@ -89,11 +89,10 @@ extension IRGenerator {
     var value: IRValue
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
-      if case .any = type {
-        value = codegenPromoteToAny(value: value, type: rhs.type!)
-      } else if rhs.type! != type {
-        value = coerce(value, from: rhs.type!, to: type)!
+      if rhs.type! != type {
+        value = coerce(value, from: rhs.type!, to: type)
       }
+      value = codegenImplicitCopy(value, type: rhs.type!, destType: type)
     } else {
       value = irType.null()
     }
@@ -102,7 +101,7 @@ extension IRGenerator {
                                name: decl.name.name,
                                storage: storage(for: type))
     varIRBindings[decl.name] = binding
-    builder.buildStore(value, to: binding.ref)
+    binding.write(value)
     return binding.ref
   }
   
@@ -120,7 +119,9 @@ extension IRGenerator {
       let bb = function.appendBasicBlock(named: "then", in: llvmContext)
       bodyBlocks.append(bb)
       builder.positionAtEnd(of: bb)
-      withScope { visitCompoundStmt(body) }
+      withScope {
+        visitCompoundStmt(body)
+      }
       let currBlock = builder.insertBlock!
       if !currBlock.endsWithTerminator {
         builder.buildBr(mergebb)
@@ -138,6 +139,7 @@ extension IRGenerator {
     if let elseBody = stmt.elseBody {
       builder.buildBr(elsebb)
       builder.positionAtEnd(of: elsebb)
+
       withScope {
         visitCompoundStmt(elseBody)
       }

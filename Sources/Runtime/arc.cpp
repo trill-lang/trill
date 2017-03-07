@@ -64,7 +64,7 @@ public:
   static RefCountBox *createBox(size_t size, trill_deinitializer_t deinit) {
     auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
     auto box = reinterpret_cast<RefCountBox *>(boxPtr);
-    *box = RefCountBox(1, deinit);
+    *box = RefCountBox(0, deinit);
     return box;
   }
 

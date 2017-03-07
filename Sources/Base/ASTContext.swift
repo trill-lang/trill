@@ -485,6 +485,30 @@ public class ASTContext {
     }
     return true
   }
+
+  /// Determines if a given type is "trivially copyable".
+  /// A type is trivially copyable if:
+  ///  - It is a pointer type (pointers are just integers)
+  ///  - It is not the `Any` type (`Any` is a reference-counted type)
+  ///  - It is not an indirect type (those require reference counting)
+  ///  - It is a type with no stored properties
+  ///  - All stored properties of this type are themselves trivially copyable
+  ///
+  /// - parameter type: The type you're checking
+  /// - returns: True if the type can be copied without reference counting
+  ///            operations.
+  func isTriviallyCopyable(_ type: DataType) -> Bool {
+    let type = canonicalType(type)
+    if case .pointer = type { return true }
+    // TODO: An Any should be reference-counted
+//    if case .any = type { return false }
+    guard let decl = decl(for: type) else { return false }
+    if decl.isIndirect { return false }
+    for prop in decl.storedProperties {
+      if !isTriviallyCopyable(prop.type) { return false }
+    }
+    return true
+  }
   
   func isIntrinsic(decl: Decl) -> Bool {
     return decl.has(attribute: .foreign) || decl.sourceRange == nil

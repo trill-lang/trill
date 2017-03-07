@@ -57,9 +57,7 @@ extension IRGenerator {
     for (idx, value) in expr.values.enumerated() {
       var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
-      if case .any = context.canonicalType(fieldTy) {
-        irValue = codegenPromoteToAny(value: irValue, type: value.type!)
-      }
+      irValue = codegenImplicitCopy(irValue, type: value.type!, destType: fieldTy)
       initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
     return initial
@@ -72,11 +70,11 @@ extension IRGenerator {
     }
     var initial = type.null()
     for (idx, field) in expr.values.enumerated() {
-      var val = visit(field)!
       let canTupleTy = context.canonicalType(tupleTypes[idx])
-      if case .any = canTupleTy {
-        val = codegenPromoteToAny(value: val, type: field.type!)
-      }
+      let val = codegenImplicitCopy(visit(field)!,
+                                    type: field.type!,
+                                    destType: canTupleTy)
+
       initial = builder.buildInsertValue(aggregate: initial,
                                          element: val,
                                          index: idx,
@@ -119,7 +117,7 @@ extension IRGenerator {
     return type.null()
   }
   
-  func coerce(_ value: IRValue, from fromType: DataType, to type: DataType) -> Result {
+  func coerce(_ value: IRValue, from fromType: DataType, to type: DataType) -> IRValue {
     let irType = resolveLLVMType(type)
     switch (context.canonicalType(fromType), context.canonicalType(type)) {
     case (.int(let lhsWidth, _), .int(let rhsWidth, _)):
@@ -173,6 +171,43 @@ extension IRGenerator {
     } else {
       return visitFuncCallExpr(expr)
     }
+  }
+
+  func codegenImplicitCopy(_ value: IRValue, type: DataType, destType: DataType) -> IRValue {
+    let canTy = context.canonicalType(type)
+    let canDestTy = context.canonicalType(destType)
+
+    if case .any = canDestTy {
+      return codegenPromoteToAny(value: value, type: canTy)
+    }
+
+    if context.isTriviallyCopyable(canTy) {
+      return value
+    }
+
+    guard let decl = context.decl(for: canTy) else {
+      fatalError("no decl for non-trivially-copyable type?")
+    }
+
+    if decl.isIndirect {
+      let irType = resolveLLVMType(canDestTy)
+      let allocaForRelease = createEntryBlockAlloca(currentFunction!.functionRef!,
+                                                    type: irType,
+                                                    name: "releasable",
+                                                    storage: .reference)
+      allocaForRelease.write(value)
+      codegenRetain(value)
+      releaseCalls.append({ [unowned self] in
+        let value = allocaForRelease.read()
+        self.codegenRelease(value)
+      })
+    } else {
+      // Handle structs with retained members
+      // - They should call retain on all their properties
+      //   that are themselves indirect
+    }
+
+    return value
   }
   
   func codegen(_ decl: OperatorDecl, lhs: IRValue, rhs: IRValue, type: DataType) -> Result {
@@ -315,9 +350,9 @@ extension IRGenerator {
     var rhs = visit(expr.rhs)!
     
     if case .assign = expr.op {
-      if case .any? = expr.lhs.type {
-        rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type!)
-      }
+      rhs = codegenImplicitCopy(rhs,
+                                type: expr.rhs.type!,
+                                destType: expr.lhs.type!)
       if let propRef = expr.lhs as? PropertyRefExpr,
          let propDecl = propRef.decl as? PropertyDecl,
          let propSetter = propDecl.setter {
@@ -382,11 +417,11 @@ extension IRGenerator {
     let endbb = function.appendBasicBlock(named: "ternary-end", in: llvmContext)
     builder.buildCondBr(condition: cond, then: truebb, else: falsebb)
     builder.positionAtEnd(of: truebb)
-    let trueVal = coerce(visit(expr.trueCase)!, from: expr.trueCase.type!, to: type)!
+    let trueVal = coerce(visit(expr.trueCase)!, from: expr.trueCase.type!, to: type)
     result.write(trueVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: falsebb)
-    let falseVal = coerce(visit(expr.falseCase)!, from: expr.falseCase.type!, to: type)!
+    let falseVal = coerce(visit(expr.falseCase)!, from: expr.falseCase.type!, to: type)
     result.write(falseVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: endbb)

@@ -81,8 +81,8 @@ extension OutputFormat {
 /// Stores the state of the current function that's being generated.
 /// Use this to find contextual information that might be necessary, i.e.
 /// repositioning the builder temporarily.
+/// Also contains the end of the current scope used for release instructions.
 struct FunctionState {
-  
   /// The AST node of the current function being codegenned.
   let function: FuncDecl?
   
@@ -172,6 +172,10 @@ class IRGenerator: ASTVisitor, Pass {
   
   /// The target basic block that a `continue` will break to.
   var currentContinueTarget: BasicBlock? = nil
+
+  /// An array of closures that will emit the appropriate release calls at the
+  /// end of the current scope.
+  var releaseCalls = [() -> Void]()
   
   /// The LLVM value for the `main` function.
   var mainFunction: IRValue? = nil
@@ -488,10 +492,29 @@ class IRGenerator: ASTVisitor, Pass {
     let oldVarIRBindings = varIRBindings
     let oldBreakTarget = currentBreakTarget
     let oldContinueTarget = currentContinueTarget
+    let oldReleaseCalls = releaseCalls
+    releaseCalls = [] // Clear the release calls
     block()
+    emitReleaseCalls()
     currentBreakTarget = oldBreakTarget
     currentContinueTarget = oldContinueTarget
+    releaseCalls = oldReleaseCalls
     varIRBindings = oldVarIRBindings
+  }
+
+  /// Emits the appropriate releases at the end of this scope,
+  /// before the terminator instruction if applicable.
+  func emitReleaseCalls() {
+    guard let block = builder.insertBlock else {
+      fatalError("scope ended outside block")
+    }
+    if block.endsWithTerminator {
+      builder.positionBefore(block.lastInstruction!)
+    }
+    for call in releaseCalls {
+      call()
+    }
+    builder.positionAtEnd(of: block)
   }
 
   func visitPropertyDecl(_ decl: PropertyDecl) -> IRValue? {

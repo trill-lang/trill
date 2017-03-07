@@ -27,6 +27,18 @@ extension IRGenerator {
                                  args: [token, function])
     return (token: token, call: call)
   }
+
+  @discardableResult
+  func codegenRetain(_ value: IRValue) -> IRValue {
+    let cast = builder.buildBitCast(value, type: PointerType.toVoid)
+    return builder.buildCall(codegenIntrinsic(named: "trill_retain"), args: [cast])
+  }
+
+  @discardableResult
+  func codegenRelease(_ value: IRValue) -> IRValue {
+    let cast = builder.buildBitCast(value, type: PointerType.toVoid)
+    return builder.buildCall(codegenIntrinsic(named: "trill_release"), args: [cast])
+  }
   
   func codegenPromoteToAny(value: IRValue, type: DataType) -> IRValue {
     if case .any = type {
