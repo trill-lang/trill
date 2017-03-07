@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <atomic>
 #include <mutex>
+#include <iostream>
 
 using namespace trill;
 
@@ -50,11 +51,15 @@ public:
   /**
    Creates a \c RefCountBox along with a payload of the specific size.
    @param size The size of the underlying payload.
+   @param deinit The deinitializer for the type being created.
    */
-  static RefCountBox *createBox(size_t size) {
+  static RefCountBox *createBox(size_t size, trill_deinitializer_t deinit) {
     auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
     auto box = reinterpret_cast<RefCountBox *>(boxPtr);
-    box->retainCount = 0;
+    box->retainCount = 1;
+    box->deinit = deinit;
+    std::cout << "allocated new retained object with retain count " << box->retainCount
+              << "and deinitializer " << deinit << std::endl;
     return box;
   }
 
@@ -69,13 +74,16 @@ public:
     box = reinterpret_cast<RefCountBox *>(boxPtr);
   }
 
+  /**
+   Gets the current retain count of an object.
+   */
   uint32_t retainCount() {
     std::lock_guard<std::mutex> guard(box->mutex);
     return box->retainCount;
   }
 
   /**
-   Retains the value inside a RefCountBox.
+   Retains the value inside a \c RefCountBox.
    */
   void retain() {
     std::lock_guard<std::mutex> guard(box->mutex);
@@ -86,7 +94,7 @@ public:
   }
 
   /**
-   Releases the value inside a RefCountBox.
+   Releases the value inside a \c RefCountBox.
    */
   void release() {
     std::lock_guard<std::mutex> guard(box->mutex);
@@ -100,7 +108,7 @@ public:
   }
 
   /**
-   Deallocates the value inside a RefCountBox.
+   Deallocates the value inside a \c RefCountBox.
    */
   void dealloc() {
     std::lock_guard<std::mutex> guard(box->mutex);
@@ -112,10 +120,16 @@ public:
     }
     free(box->value());
   }
+
+  bool isUniquelyReferenced() {
+    std::lock_guard<std::mutex> guard(box->mutex);
+    return box->retainCount == 1;
+  }
 };
 
-void *_Nonnull trill_allocateIndirectType(size_t size) {
-  return RefCounted::createBox(size)->value();
+void *_Nonnull trill_allocateIndirectType(size_t size,
+                                          trill_deinitializer_t deinit) {
+  return RefCounted::createBox(size, deinit)->value();
 }
 
 void trill_retain(void *_Nonnull instance) {
@@ -126,4 +140,9 @@ void trill_retain(void *_Nonnull instance) {
 void trill_release(void *_Nonnull instance) {
   auto refCounted = RefCounted(instance);
   refCounted.release();
+}
+
+bool trill_isUniquelyReferenced(void *_Nonnull instance) {
+  auto refCounted = RefCounted(instance);
+  return refCounted.isUniquelyReferenced();
 }

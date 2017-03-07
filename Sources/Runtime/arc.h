@@ -39,19 +39,30 @@ void *_Nonnull trill_allocateIndirectType(size_t size,
  Performs a thread-safe retain operation that increases the retain count of an
  indirect type.
 
- @param instance A pointer to the top of an indirect type.
+ @param instance A pointer to an indirect type.
  */
 void trill_retain(void *_Nonnull instance);
 
 /**
- Performs a thread-safe release operation that increases the retain count of an
+ Performs a thread-safe release operation that decreases the retain count of an
  indirect type.
 
- @param instance A pointer to the top of an indirect type.
+ @param instance A pointer to an indirect type.
  @note If the retain count becomes zero as a result of this operation, then the
-       indirect type will be deallocated and this instance will be invalid.
+       indirect type will be deallocated, its deinitializer will be called,
+       and this instance will be invalidated.
  */
 void trill_release(void *_Nonnull instance);
+
+/**
+ Determines if an indirect type instance is uniquely referenced. This is used
+ to implement Copy-on-Write.
+ 
+ @param instance A pointer to an indirect type.
+ @return True if the instance's retain count is exactly one,
+         otherwise returns false.
+ */
+bool trill_isUniquelyReferenced(void *_Nonnull instance);
 
 #ifdef __cplusplus
 } // end extern "C"

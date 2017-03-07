@@ -86,7 +86,7 @@ extension IRGenerator {
                                          name: "init-insert")
     }
     if typeDecl.isIndirect {
-      let result = codegenAlloc(type: type).ref
+      let result = codegenAllocateIndirect(type: type).ref
       builder.buildStore(initial, to: result)
       builder.buildRet(result)
     } else {
@@ -123,7 +123,7 @@ extension IRGenerator {
       builder.positionAtEnd(of: entrybb)
       if decl.returnType != .void {
         if isReferenceInitializer {
-          res = codegenAlloc(type: returnType)
+          res = codegenAllocateIndirect(type: returnType)
         } else {
           res = createEntryBlockAlloca(function, type: type,
                                        name: "res", storage: storageKind)
