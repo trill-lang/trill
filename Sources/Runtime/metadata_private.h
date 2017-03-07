@@ -52,10 +52,14 @@ struct TypeMetadata {
    Metadata of all the stored fields of this type.
    */
   const FieldMetadata *fields;
+<<<<<<< 8ef57c22934af071826e0192be883061b6df7fd0
 
   /**
    Whether this type is a reference type (spelled as \c indirect \c type).
    */
+=======
+  void (*deinit)(void *);
+>>>>>>> added denitializers to type metadata and made Any values use allocateIndirectType
   uint8_t isReferenceType;
 
   /**

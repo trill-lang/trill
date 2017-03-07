@@ -12,6 +12,20 @@
 #include <atomic>
 #include <mutex>
 #include <iostream>
+#include <chrono>
+
+#define DEBUG_ARC
+
+#ifdef DEBUG_ARC
+#define DEBUG_ARC_LOG(x) do { \
+   auto time = std::chrono::system_clock::now(); \
+   auto timeVal = std::chrono::system_clock::to_time_t(time); \
+   std::cout << std::ctime(&timeVal) << "  " x << " (" << box->value() \
+             << ") -- retain count is now " << box->retainCount << std::endl; \
+} while (false)
+#else
+#define DEBUG_ARC_LOG ({})
+#endif
 
 namespace trill {
 
@@ -30,6 +44,9 @@ namespace trill {
                                          ^~ indirect type "begins" here
  */
 struct RefCountBox {
+#ifdef DEBUG_ARC
+  uint32_t magic = 0xaaffbbcc;
+#endif
   uint32_t retainCount;
   trill_deinitializer_t deinit;
 
@@ -65,6 +82,7 @@ public:
     auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
     auto box = reinterpret_cast<RefCountBox *>(boxPtr);
     *box = RefCountBox(0, deinit);
+    DEBUG_ARC_LOG("creating box");
     return box;
   }
 
@@ -79,11 +97,21 @@ public:
     box = reinterpret_cast<RefCountBox *>(boxPtr);
   }
 
+
+  void checkValidity() {
+#ifdef DEBUG_ARC
+    if (box->magic != 0xaaffbbcc) {
+      trill_fatalError("INVALID MAGIC HEADER");
+    }
+#endif
+  }
+
   /**
    Determines if this object's reference count is exactly one.
    */
   bool isUniquelyReferenced() {
     trill_assert(box != nullptr);
+    checkValidity();
     std::lock_guard<std::mutex> guard(*box->mutex);
     return box->retainCount == 1;
   }
@@ -93,7 +121,9 @@ public:
    */
   uint32_t retainCount() {
     trill_assert(box != nullptr);
+    checkValidity();
     std::lock_guard<std::mutex> guard(*box->mutex);
+    DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
   }
 
@@ -102,11 +132,13 @@ public:
    */
   void retain() {
     trill_assert(box != nullptr);
+    checkValidity();
     std::lock_guard<std::mutex> guard(*box->mutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
     }
     box->retainCount++;
+    DEBUG_ARC_LOG("retaining object");
   }
 
   /**
@@ -115,11 +147,14 @@ public:
    */
   void release() {
     trill_assert(box != nullptr);
+    checkValidity();
     box->mutex->lock();
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
     box->retainCount--;
+
+    DEBUG_ARC_LOG("releasing object");
 
     if (box->retainCount == 0) {
       dealloc(); // will unlock and invalidate the mutex.
@@ -138,10 +173,13 @@ private:
    */
   void dealloc() {
     trill_assert(box != nullptr);
+    checkValidity();
 
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
     }
+
+    DEBUG_ARC_LOG("deallocating");
 
     if (box->deinit != nullptr) {
       box->deinit(box->value());

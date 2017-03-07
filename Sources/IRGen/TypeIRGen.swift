@@ -84,6 +84,7 @@ extension IRGenerator {
   /// typedef struct TypeMetadata {
   ///   const char *name;
   ///   const void *fields;
+  ///   void (*deinit)(void *_Nonnull);
   ///   uint8_t isReferenceType;
   ///   uint64_t sizeInBits;
   ///   uint64_t fieldCount;
@@ -99,6 +100,7 @@ extension IRGenerator {
     let fullName = type.description
     let name = Mangler.mangle(type)
     var properties = [(String, DataType)]()
+    var deinitDecl: DeinitializerDecl? = nil
     switch type {
     case .pointer:
       pointerLevel = type.pointerLevel()
@@ -108,6 +110,7 @@ extension IRGenerator {
       }
       properties = decl.storedProperties
                        .map { ($0.name.name, $0.type) }
+      deinitDecl = decl.deinitializer
     case .tuple(let types):
       properties = types.enumerated().map { (".\($0.offset)", $0.element) }
     default:
@@ -123,9 +126,13 @@ extension IRGenerator {
     
     let metaName = name + ".metadata"
     let nameValue = codegenGlobalStringPtr(fullName).ptr
+    let deinitTy = FunctionType(argTypes: [PointerType.toVoid],
+                                returnType: VoidType())
+    let deinitPtrTy = PointerType(pointee: deinitTy)
     let elementPtrs: [IRType] = [
       nameValue.type,        // name string
       PointerType.toVoid,    // field types
+      deinitPtrTy,           // deinit
       IntType.int8,          // isReferenceType
       IntType.int64,         // size of type
       IntType.int64,         // number of fields
@@ -161,10 +168,19 @@ extension IRGenerator {
     globalFieldVec.initializer = propVec
     
     let gep = builder.buildInBoundsGEP(globalFieldVec, indices: [IntType.int64.zero()])
+
+    let deinitVal: IRValue
+    if let deinitDecl = deinitDecl {
+      let proto = codegenFunctionPrototype(deinitDecl)
+      deinitVal = builder.buildBitCast(proto, type: deinitPtrTy)
+    } else {
+      deinitVal = deinitPtrTy.null()
+    }
     
     global.initializer = StructType.constant(values: [
       nameValue,
       builder.buildBitCast(gep, type: PointerType.toVoid),
+      deinitVal,
       IntType.int8.constant(isIndirect ? 1 : 0, signExtend: true),
       IntType.int64.constant(layout.sizeOfTypeInBits(irType), signExtend: true),
       IntType.int64.constant(properties.count, signExtend: true),

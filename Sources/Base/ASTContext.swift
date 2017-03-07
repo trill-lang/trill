@@ -500,8 +500,7 @@ public class ASTContext {
   func isTriviallyCopyable(_ type: DataType) -> Bool {
     let type = canonicalType(type)
     if case .pointer = type { return true }
-    // TODO: An Any should be reference-counted
-//    if case .any = type { return false }
+    if case .any = type { return false }
     guard let decl = decl(for: type) else { return false }
     if decl.isIndirect { return false }
     for prop in decl.storedProperties {

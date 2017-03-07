@@ -8,6 +8,7 @@
 
 #include "metadata_private.h"
 #include "runtime.h"
+#include "arc.h"
 #include <iostream>
 #include <string>
 
