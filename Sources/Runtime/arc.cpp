@@ -14,7 +14,7 @@
 #include <iostream>
 #include <chrono>
 
-#define DEBUG_ARC
+
 
 #ifdef DEBUG_ARC
 #define DEBUG_ARC_LOG(x) do { \
@@ -24,24 +24,26 @@
              << ") -- retain count is now " << box->retainCount << std::endl; \
 } while (false)
 #else
-#define DEBUG_ARC_LOG ({})
+#define DEBUG_ARC_LOG(x) ({})
 #endif
 
 namespace trill {
+
+// TODO: Make a pool of mutexes
+std::mutex refcountMutex;
 
 /**
  A RefCountBox contains
   - A retain count
   - A pointer to the type's deinitializer
-  - A mutex used to synchronize retains and releases
   - A variably-sized payload that is not represented by a data member.
 
   It is meant as a hidden store for retain count data alongside the allocated
   contents of an indirect type.
 
   Trill will always see this as:
-      [retainCount][mutex][deinitializer][payload]
-                                         ^~ indirect type "begins" here
+      [retainCount][deinitializer][payload]
+                                  ^~ indirect type "begins" here
  */
 struct RefCountBox {
 #ifdef DEBUG_ARC
@@ -51,11 +53,11 @@ struct RefCountBox {
   trill_deinitializer_t deinit;
 
   // TODO: Figure out how to avoid heap-allocating this mutex.
-  std::mutex *mutex;
+//  std::mutex *mutex;
 
   RefCountBox(uint32_t retainCount, trill_deinitializer_t deinit):
     retainCount(retainCount), deinit(deinit) {
-      this->mutex = new std::mutex();
+//      this->mutex = new std::mutex();
   }
 
   /// Finds the payload by walking to the end of the data members of this box.
@@ -112,7 +114,7 @@ public:
   bool isUniquelyReferenced() {
     trill_assert(box != nullptr);
     checkValidity();
-    std::lock_guard<std::mutex> guard(*box->mutex);
+    std::lock_guard<std::mutex> guard(refcountMutex);
     return box->retainCount == 1;
   }
 
@@ -122,7 +124,7 @@ public:
   uint32_t retainCount() {
     trill_assert(box != nullptr);
     checkValidity();
-    std::lock_guard<std::mutex> guard(*box->mutex);
+    std::lock_guard<std::mutex> guard(refcountMutex);
     DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
   }
@@ -133,7 +135,7 @@ public:
   void retain() {
     trill_assert(box != nullptr);
     checkValidity();
-    std::lock_guard<std::mutex> guard(*box->mutex);
+    std::lock_guard<std::mutex> guard(refcountMutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
     }
@@ -148,7 +150,7 @@ public:
   void release() {
     trill_assert(box != nullptr);
     checkValidity();
-    box->mutex->lock();
+    refcountMutex.lock();
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
@@ -160,7 +162,7 @@ public:
       dealloc(); // will unlock and invalidate the mutex.
     } else {
       // if we did not deallocate, we need to explicitly unlock the mutex.
-      box->mutex->unlock();
+      refcountMutex.unlock();
     }
   }
 
@@ -185,9 +187,9 @@ private:
       box->deinit(box->value());
     }
 
-    box->mutex->unlock();
+    refcountMutex.unlock();
 
-    delete box->mutex;
+//    delete box->mutex;
 
     // Cannot delete the box because it was allocated manually.
     free(box);
