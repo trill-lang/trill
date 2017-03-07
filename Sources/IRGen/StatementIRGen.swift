@@ -92,7 +92,7 @@ extension IRGenerator {
       if rhs.type! != type {
         value = coerce(value, from: rhs.type!, to: type)
       }
-      value = codegenImplicitCopy(value, type: rhs.type!, destType: type)
+      value = codegenImplicitCopy(value, expr: rhs, destType: type)
     } else {
       value = irType.null()
     }

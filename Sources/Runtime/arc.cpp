@@ -14,7 +14,7 @@
 #include <iostream>
 #include <chrono>
 
-
+#define DEBUG_ARC
 
 #ifdef DEBUG_ARC
 #define DEBUG_ARC_LOG(x) do { \
@@ -28,9 +28,6 @@
 #endif
 
 namespace trill {
-
-// TODO: Make a pool of mutexes
-std::mutex refcountMutex;
 
 /**
  A RefCountBox contains
@@ -48,9 +45,12 @@ std::mutex refcountMutex;
 struct RefCountBox {
   uint32_t retainCount;
   trill_deinitializer_t deinit;
+  std::mutex *mutex;
 
   RefCountBox(uint32_t retainCount, trill_deinitializer_t deinit):
-    retainCount(retainCount), deinit(deinit) {}
+    retainCount(retainCount), deinit(deinit) {
+      this->mutex = new std::mutex();
+    }
 
   /// Finds the payload by walking to the end of the data members of this box.
   void *value() {
@@ -96,7 +96,7 @@ public:
    */
   bool isUniquelyReferenced() {
     trill_assert(box != nullptr);
-    std::lock_guard<std::mutex> guard(refcountMutex);
+    std::lock_guard<std::mutex> guard(*box->mutex);
     return box->retainCount == 1;
   }
 
@@ -105,7 +105,7 @@ public:
    */
   uint32_t retainCount() {
     trill_assert(box != nullptr);
-    std::lock_guard<std::mutex> guard(refcountMutex);
+    std::lock_guard<std::mutex> guard(*box->mutex);
     DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
   }
@@ -115,7 +115,7 @@ public:
    */
   void retain() {
     trill_assert(box != nullptr);
-    std::lock_guard<std::mutex> guard(refcountMutex);
+    std::lock_guard<std::mutex> guard(*box->mutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
     }
@@ -129,16 +129,19 @@ public:
    */
   void release() {
     trill_assert(box != nullptr);
-    std::lock_guard<std::mutex> guard(refcountMutex);
+    box->mutex->lock();
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
+
     box->retainCount--;
 
     DEBUG_ARC_LOG("releasing object");
 
     if (box->retainCount == 0) {
-      dealloc();
+      dealloc(); // mutex will be unlocked and invalidated
+    } else {
+      box->mutex->unlock(); // otherwise manually unlock
     }
   }
 
@@ -159,6 +162,11 @@ private:
     if (box->deinit != nullptr) {
       box->deinit(box->value());
     }
+
+    // Explicitly unlock the mutex before deleting it
+    box->mutex->unlock();
+
+    delete box->mutex;
 
     // Cannot delete the box because it was allocated manually.
     free(box);

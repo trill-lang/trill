@@ -267,7 +267,7 @@ extension IRGenerator {
         val = builder.buildBitCast(alloca.ref, type: PointerType(pointee: resolveLLVMType(field)))
       }
       if let declArg = decl.args[safe: idx] {
-        val = codegenImplicitCopy(val, type: type, destType: declArg.type)
+        val = codegenImplicitCopy(val, expr: arg.val, destType: declArg.type)
       }
       argVals.append(val)
     }
@@ -291,7 +291,7 @@ extension IRGenerator {
     var store: IRValue? = nil
     if !(expr.value is VoidExpr) {
       let val = codegenImplicitCopy(visit(expr.value)!,
-                                    type: expr.value.type!,
+                                    expr: expr.value,
                                     destType: currentDecl.returnType.type!)
       if !(currentDecl is InitializerDecl) {
         store = builder.buildStore(val, to: currentFunction.resultAlloca!)

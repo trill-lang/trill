@@ -94,6 +94,7 @@ void trill_handleSignal(int signal) {
 }
   
 void trill_init() {
+  signal(SIGABRT, trill_handleSignal);
   signal(SIGSEGV, trill_handleSignal);
   signal(SIGILL, trill_handleSignal);
 }

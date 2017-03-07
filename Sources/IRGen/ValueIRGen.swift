@@ -57,7 +57,7 @@ extension IRGenerator {
     for (idx, value) in expr.values.enumerated() {
       var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
-      irValue = codegenImplicitCopy(irValue, type: value.type!, destType: fieldTy)
+      irValue = codegenImplicitCopy(irValue, expr: value, destType: fieldTy)
       initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
     return initial
@@ -72,7 +72,7 @@ extension IRGenerator {
     for (idx, field) in expr.values.enumerated() {
       let canTupleTy = context.canonicalType(tupleTypes[idx])
       let val = codegenImplicitCopy(visit(field)!,
-                                    type: field.type!,
+                                    expr: field,
                                     destType: canTupleTy)
 
       initial = builder.buildInsertValue(aggregate: initial,
@@ -173,8 +173,9 @@ extension IRGenerator {
     }
   }
 
-  func codegenImplicitCopy(_ value: IRValue, type: DataType, destType: DataType) -> IRValue {
-    let canTy = context.canonicalType(type)
+  @discardableResult
+  func codegenImplicitCopy(_ value: IRValue, expr: Expr, destType: DataType) -> IRValue {
+    let canTy = context.canonicalType(expr.type!)
     let canDestTy = context.canonicalType(destType)
 
     if case .any = canDestTy {
@@ -202,9 +203,17 @@ extension IRGenerator {
         self.codegenRelease(value)
       })
     } else {
-      // Handle structs with retained members
-      // - They should call retain on all their properties
-      //   that are themselves indirect
+      for property in decl.storedProperties {
+        let canPropTy = context.canonicalType(property.type)
+        if !context.isTriviallyCopyable(canPropTy) {
+          let ref = PropertyRefExpr(lhs: expr, name: property.name)
+          ref.type = property.type
+          ref.decl = property
+          ref.typeDecl = decl
+          let val = visitPropertyRefExpr(ref)!
+          codegenImplicitCopy(val, expr: ref, destType: property.type)
+        }
+      }
     }
 
     return value
@@ -351,7 +360,7 @@ extension IRGenerator {
     
     if case .assign = expr.op {
       rhs = codegenImplicitCopy(rhs,
-                                type: expr.rhs.type!,
+                                expr: expr.rhs,
                                 destType: expr.lhs.type!)
       if let propRef = expr.lhs as? PropertyRefExpr,
          let propDecl = propRef.decl as? PropertyDecl,
