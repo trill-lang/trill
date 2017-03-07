@@ -15,28 +15,6 @@
 using namespace trill;
 
 /**
- A RAII class that will lock a mutex when it's constructed
- and unlock the mutex once it's destroyed.
- */
-struct LockRAII {
-  pthread_mutex_t mutex;
-
-  /**
-   Locks the provided mutex
-   */
-  LockRAII(pthread_mutex_t mutex): mutex(mutex) {
-    pthread_mutex_lock(&mutex);
-  }
-
-  /**
-   Unlocks the provided mutex
-   */
-  ~LockRAII() {
-    pthread_mutex_unlock(&mutex);
-  }
-};
-
-/**
  A RefCountBox contains
   - A retain count
   - A mutex used to synchronize retains and releases
@@ -51,7 +29,7 @@ struct LockRAII {
  */
 struct RefCountBox {
   uint32_t retainCount;
-  pthread_mutex_t mutex;
+  std::mutex mutex;
 
   /// Finds the payload by walking to the end of the data members of this box.
   void *value() {
@@ -76,7 +54,6 @@ public:
     auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
     auto box = reinterpret_cast<RefCountBox *>(boxPtr);
     box->retainCount = 0;
-    pthread_mutex_init(&box->mutex, nullptr);
     return box;
   }
 
@@ -92,7 +69,7 @@ public:
   }
 
   uint32_t retainCount() {
-    auto locker = LockRAII(box->mutex);
+    std::lock_guard<std::mutex> guard(box->mutex);
     return box->retainCount;
   }
 
@@ -100,9 +77,9 @@ public:
    Retains the value inside a RefCountBox.
    */
   void retain() {
-    auto locker = LockRAII(box->mutex);
-    if (box->retainCount == UINT32_MAX) {
-      trill_fatalError("attempting to retain object with retain count UINT32_MAX");
+    std::lock_guard<std::mutex> guard(box->mutex);
+    if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
+      trill_fatalError("retain count overflow");
     }
     box->retainCount++;
   }
@@ -111,7 +88,7 @@ public:
    Releases the value inside a RefCountBox.
    */
   void release() {
-    auto locker = LockRAII(box->mutex);
+    std::lock_guard<std::mutex> guard(box->mutex);
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
@@ -125,13 +102,11 @@ public:
    Deallocates the value inside a RefCountBox.
    */
   void dealloc() {
-    pthread_mutex_lock(&box->mutex);
+    std::lock_guard<std::mutex> guard(box->mutex);
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
     }
     free(box->value());
-    pthread_mutex_unlock(&box->mutex);
-    pthread_mutex_destroy(&box->mutex);
   }
 };
 

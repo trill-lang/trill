@@ -10,7 +10,8 @@
 #define arc_h
 
 #include "defines.h"
-#include <unistd.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 namespace trill {
@@ -26,7 +27,6 @@ extern "C" {
          can be cast to the Trill type.
  */
 void *_Nonnull trill_allocateIndirectType(size_t size);
-
 
 /**
  Performs a thread-safe retain operation that increases the retain count of an
