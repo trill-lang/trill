@@ -19,14 +19,21 @@ extern "C" {
 #endif
 
 /**
+ A deinitializer function that tears down an indirect type.
+ */
+typedef void (*_Nullable trill_deinitializer_t)(void *_Nonnull);
+
+/**
  Creates a heap-allocated, reference-counted box that holds the retain count
  for an indirect type.
 
  @param size The indirect type's size.
+ @param deinit (optional) A pointer to the deinitializer for this indirect type.
  @return A pointer to the top of the raw payload of the indirect type, which
          can be cast to the Trill type.
  */
-void *_Nonnull trill_allocateIndirectType(size_t size);
+void *_Nonnull trill_allocateIndirectType(size_t size,
+                                          trill_deinitializer_t deinit);
 
 /**
  Performs a thread-safe retain operation that increases the retain count of an

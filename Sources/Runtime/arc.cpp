@@ -29,6 +29,7 @@ using namespace trill;
  */
 struct RefCountBox {
   uint32_t retainCount;
+  trill_deinitializer_t deinit;
   std::mutex mutex;
 
   /// Finds the payload by walking to the end of the data members of this box.
@@ -105,6 +106,9 @@ public:
     std::lock_guard<std::mutex> guard(box->mutex);
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
+    }
+    if (box->deinit != nullptr) {
+      box->deinit(box->value());
     }
     free(box->value());
   }
