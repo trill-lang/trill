@@ -62,7 +62,7 @@ void trill_release(void *_Nonnull instance);
  @return True if the instance's retain count is exactly one,
          otherwise returns false.
  */
-bool trill_isUniquelyReferenced(void *_Nonnull instance);
+uint8_t trill_isUniquelyReferenced(void *_Nonnull instance);
 
 #ifdef __cplusplus
 } // end extern "C"

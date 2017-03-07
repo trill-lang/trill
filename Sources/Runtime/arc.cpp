@@ -18,6 +18,7 @@ using namespace trill;
 /**
  A RefCountBox contains
   - A retain count
+  - A pointer to the type's deinitializer
   - A mutex used to synchronize retains and releases
   - A variably-sized payload that is not represented by a data member.
 
@@ -25,8 +26,8 @@ using namespace trill;
   contents of an indirect type.
 
   Trill will always see this as:
-      [retainCount][mutex][payload]
-                          ^~ indirect type "begins" here
+      [retainCount][mutex][deinitializer][payload]
+                                         ^~ indirect type "begins" here
  */
 struct RefCountBox {
   uint32_t retainCount;
@@ -142,7 +143,7 @@ void trill_release(void *_Nonnull instance) {
   refCounted.release();
 }
 
-bool trill_isUniquelyReferenced(void *_Nonnull instance) {
+uint8_t trill_isUniquelyReferenced(void *_Nonnull instance) {
   auto refCounted = RefCounted(instance);
-  return refCounted.isUniquelyReferenced();
+  return refCounted.isUniquelyReferenced() ? 1 : 0;
 }
