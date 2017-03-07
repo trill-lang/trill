@@ -95,8 +95,8 @@ extension IRGenerator {
     return builder.buildLoad(castResult, name: "cast-load")
   }
   
-  /// Allocates a heap box in the garbage collector, and registers a finalizer
-  /// specified by that type's deinit.
+  /// Allocates a reference-counted heap box and registers the type's
+  /// deinitializer to be called when the object is deallocated.
   func codegenAllocateIndirect(type: DataType) -> VarBinding {
     let irType = resolveLLVMType(type)
     let alloc = codegenIntrinsic(named: "trill_allocateIndirectType")
