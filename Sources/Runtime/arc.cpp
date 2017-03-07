@@ -13,7 +13,7 @@
 #include <mutex>
 #include <iostream>
 
-using namespace trill;
+namespace trill {
 
 /**
  A RefCountBox contains
@@ -32,7 +32,14 @@ using namespace trill;
 struct RefCountBox {
   uint32_t retainCount;
   trill_deinitializer_t deinit;
-  std::mutex mutex;
+
+  // TODO: Figure out how to avoid heap-allocating this mutex.
+  std::mutex *mutex;
+
+  RefCountBox(uint32_t retainCount, trill_deinitializer_t deinit):
+    retainCount(retainCount), deinit(deinit) {
+      this->mutex = new std::mutex();
+  }
 
   /// Finds the payload by walking to the end of the data members of this box.
   void *value() {
@@ -57,10 +64,7 @@ public:
   static RefCountBox *createBox(size_t size, trill_deinitializer_t deinit) {
     auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
     auto box = reinterpret_cast<RefCountBox *>(boxPtr);
-    box->retainCount = 1;
-    box->deinit = deinit;
-    std::cout << "allocated new retained object with retain count " << box->retainCount
-              << "and deinitializer " << deinit << std::endl;
+    *box = RefCountBox(1, deinit);
     return box;
   }
 
@@ -76,10 +80,20 @@ public:
   }
 
   /**
+   Determines if this object's reference count is exactly one.
+   */
+  bool isUniquelyReferenced() {
+    trill_assert(box != nullptr);
+    std::lock_guard<std::mutex> guard(*box->mutex);
+    return box->retainCount == 1;
+  }
+
+  /**
    Gets the current retain count of an object.
    */
   uint32_t retainCount() {
-    std::lock_guard<std::mutex> guard(box->mutex);
+    trill_assert(box != nullptr);
+    std::lock_guard<std::mutex> guard(*box->mutex);
     return box->retainCount;
   }
 
@@ -87,7 +101,8 @@ public:
    Retains the value inside a \c RefCountBox.
    */
   void retain() {
-    std::lock_guard<std::mutex> guard(box->mutex);
+    trill_assert(box != nullptr);
+    std::lock_guard<std::mutex> guard(*box->mutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
     }
@@ -95,36 +110,50 @@ public:
   }
 
   /**
-   Releases the value inside a \c RefCountBox.
+   Releases the value inside a \c RefCountBox. If the value hits zero when
+   this method is called, then the object will be explicitly deallocated.
    */
   void release() {
-    std::lock_guard<std::mutex> guard(box->mutex);
+    trill_assert(box != nullptr);
+    box->mutex->lock();
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
     box->retainCount--;
+
     if (box->retainCount == 0) {
-      dealloc();
+      dealloc(); // will unlock and invalidate the mutex.
+    } else {
+      // if we did not deallocate, we need to explicitly unlock the mutex.
+      box->mutex->unlock();
     }
   }
 
+private:
   /**
    Deallocates the value inside a \c RefCountBox.
+   @note This function *must* be called with a locked \c mutex.
+         The mutex will be explicitly unlocked when this function runs,
+         and will be invalidated.
    */
   void dealloc() {
-    std::lock_guard<std::mutex> guard(box->mutex);
+    trill_assert(box != nullptr);
+
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
     }
+
     if (box->deinit != nullptr) {
       box->deinit(box->value());
     }
-    free(box->value());
-  }
 
-  bool isUniquelyReferenced() {
-    std::lock_guard<std::mutex> guard(box->mutex);
-    return box->retainCount == 1;
+    box->mutex->unlock();
+
+    delete box->mutex;
+
+    // Cannot delete the box because it was allocated manually.
+    free(box);
+    box = nullptr;
   }
 };
 
@@ -146,4 +175,6 @@ void trill_release(void *_Nonnull instance) {
 uint8_t trill_isUniquelyReferenced(void *_Nonnull instance) {
   auto refCounted = RefCounted(instance);
   return refCounted.isUniquelyReferenced() ? 1 : 0;
+}
+
 }

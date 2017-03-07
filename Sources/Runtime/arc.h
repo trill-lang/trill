@@ -65,8 +65,8 @@ void trill_release(void *_Nonnull instance);
 uint8_t trill_isUniquelyReferenced(void *_Nonnull instance);
 
 #ifdef __cplusplus
-} // end extern "C"
-} // end namespace trill
+}
+}
 #endif
 
-#endif /* arc_hpp */
+#endif /* arc_h */
