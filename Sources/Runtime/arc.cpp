@@ -46,19 +46,11 @@ std::mutex refcountMutex;
                                   ^~ indirect type "begins" here
  */
 struct RefCountBox {
-#ifdef DEBUG_ARC
-  uint32_t magic = 0xaaffbbcc;
-#endif
   uint32_t retainCount;
   trill_deinitializer_t deinit;
 
-  // TODO: Figure out how to avoid heap-allocating this mutex.
-//  std::mutex *mutex;
-
   RefCountBox(uint32_t retainCount, trill_deinitializer_t deinit):
-    retainCount(retainCount), deinit(deinit) {
-//      this->mutex = new std::mutex();
-  }
+    retainCount(retainCount), deinit(deinit) {}
 
   /// Finds the payload by walking to the end of the data members of this box.
   void *value() {
@@ -99,21 +91,11 @@ public:
     box = reinterpret_cast<RefCountBox *>(boxPtr);
   }
 
-
-  void checkValidity() {
-#ifdef DEBUG_ARC
-    if (box->magic != 0xaaffbbcc) {
-      trill_fatalError("INVALID MAGIC HEADER");
-    }
-#endif
-  }
-
   /**
    Determines if this object's reference count is exactly one.
    */
   bool isUniquelyReferenced() {
     trill_assert(box != nullptr);
-    checkValidity();
     std::lock_guard<std::mutex> guard(refcountMutex);
     return box->retainCount == 1;
   }
@@ -123,7 +105,6 @@ public:
    */
   uint32_t retainCount() {
     trill_assert(box != nullptr);
-    checkValidity();
     std::lock_guard<std::mutex> guard(refcountMutex);
     DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
@@ -134,7 +115,6 @@ public:
    */
   void retain() {
     trill_assert(box != nullptr);
-    checkValidity();
     std::lock_guard<std::mutex> guard(refcountMutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
@@ -149,8 +129,7 @@ public:
    */
   void release() {
     trill_assert(box != nullptr);
-    checkValidity();
-    refcountMutex.lock();
+    std::lock_guard<std::mutex> guard(refcountMutex);
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
@@ -159,10 +138,7 @@ public:
     DEBUG_ARC_LOG("releasing object");
 
     if (box->retainCount == 0) {
-      dealloc(); // will unlock and invalidate the mutex.
-    } else {
-      // if we did not deallocate, we need to explicitly unlock the mutex.
-      refcountMutex.unlock();
+      dealloc();
     }
   }
 
@@ -170,12 +146,9 @@ private:
   /**
    Deallocates the value inside a \c RefCountBox.
    @note This function *must* be called with a locked \c mutex.
-         The mutex will be explicitly unlocked when this function runs,
-         and will be invalidated.
    */
   void dealloc() {
     trill_assert(box != nullptr);
-    checkValidity();
 
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
@@ -187,12 +160,9 @@ private:
       box->deinit(box->value());
     }
 
-    refcountMutex.unlock();
-
-//    delete box->mutex;
-
     // Cannot delete the box because it was allocated manually.
     free(box);
+
     box = nullptr;
   }
 };
