@@ -89,12 +89,19 @@ public:
   }
 
   /**
-   Reaches into the payload to find the reference counted box.
+   Reaches into the payload to find the reference counted box. We compute this
+   every time because when a box is deallocated the reference is nulled out.
+   We can check for use-after-dealloc by checking if the result of this 
+   function is nullptr.
    */
   RefCountBox *box() {
     return *boxPtr;
   }
 
+  /**
+   Raises a fatal error if the box associated with this reference counted
+   object is null.
+   */
   void checkForUseAfterDealloc() {
     if (box() == nullptr) {
       std::stringstream msg;
@@ -176,8 +183,9 @@ private:
       box()->deinit(value);
     }
 
-    // Explicitly unlock the mutex before deleting it
+    // Explicitly unlock the mutex before deleting the box
     box()->mutex.unlock();
+
     delete box();
 
     // Erase the box's location
