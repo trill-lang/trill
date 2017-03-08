@@ -22,7 +22,7 @@
    auto time = std::chrono::system_clock::now(); \
    auto timeVal = std::chrono::system_clock::to_time_t(time); \
    std::cout << std::ctime(&timeVal) << "  " << x << " (" << value \
-             << ") -- retain count is now " << box()->retainCount << std::endl; \
+             << ") -- retain count is now " << box->retainCount << std::endl; \
 } while (false)
 #else
 #define DEBUG_ARC_LOG(x) ({})
@@ -59,7 +59,7 @@ struct RefCountBox {
  */
 struct RefCounted {
 public:
-  RefCountBox **boxPtr;
+  RefCountBox *box;
   void *value;
 
   /**
@@ -68,14 +68,14 @@ public:
    @param deinit The deinitializer for the type being created.
    */
   RefCounted(size_t size, trill_deinitializer_t deinit) {
-    auto boxFullPtr = trill_alloc(sizeof(RefCountBox *) + size);
-    boxPtr = reinterpret_cast<RefCountBox **>(boxFullPtr);
-    *boxPtr = new RefCountBox(0, deinit);
+    auto boxPtr = trill_alloc(sizeof(RefCountBox) + size);
+    new (boxPtr) RefCountBox(0, deinit);
+    box = reinterpret_cast<RefCountBox *>(boxPtr);
     value = reinterpret_cast<void *>(
-              reinterpret_cast<uintptr_t>(boxFullPtr) + sizeof(boxPtr));
+              reinterpret_cast<uintptr_t>(boxPtr) + sizeof(RefCountBox));
     DEBUG_ARC_LOG("creating box");
   }
-
+  
   /**
    Gets a \c RefCounted instance for a given pointer into a box, by offsetting
    the value pointer with the size of the \c RefCountBox.
@@ -84,62 +84,37 @@ public:
    */
   RefCounted(void *_Nonnull boxedValue) {
     value = boxedValue;
-    boxPtr = reinterpret_cast<RefCountBox **>(
-               reinterpret_cast<uintptr_t>(value) - sizeof(RefCountBox **));;
-  }
-
-  /**
-   Reaches into the payload to find the reference counted box. We compute this
-   every time because when a box is deallocated the reference is nulled out.
-   We can check for use-after-dealloc by checking if the result of this 
-   function is nullptr.
-   */
-  RefCountBox *box() {
-    return *boxPtr;
-  }
-
-  /**
-   Raises a fatal error if the box associated with this reference counted
-   object is null.
-   */
-  void checkForUseAfterDealloc() {
-    if (box() == nullptr) {
-      std::stringstream msg;
-      msg << "object (" << value << ") used after deallocation";
-      trill_fatalError(msg.str().c_str());
-    }
+    box = reinterpret_cast<RefCountBox *>(
+            reinterpret_cast<uintptr_t>(value) - sizeof(RefCountBox));;
   }
 
   /**
    Determines if this object's reference count is exactly one.
    */
   bool isUniquelyReferenced() {
-    checkForUseAfterDealloc();
-    std::lock_guard<std::mutex> guard(box()->mutex);
-    return box()->retainCount == 1;
+    std::lock_guard<std::mutex> guard(box->mutex);
+    return box->retainCount == 1;
   }
 
   /**
    Gets the current retain count of an object.
    */
   uint32_t retainCount() {
-    checkForUseAfterDealloc();
-    std::lock_guard<std::mutex> guard(box()->mutex);
+    std::lock_guard<std::mutex> guard(box->mutex);
     DEBUG_ARC_LOG("getting retain count");
-    return box()->retainCount;
+    return box->retainCount;
   }
 
   /**
    Retains the value inside a \c RefCountBox.
    */
   void retain() {
-    checkForUseAfterDealloc();
     DEBUG_ARC_LOG(value);
-    std::lock_guard<std::mutex> guard(box()->mutex);
-    if (box()->retainCount == std::numeric_limits<decltype(box()->retainCount)>::max()) {
+    std::lock_guard<std::mutex> guard(box->mutex);
+    if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
     }
-    box()->retainCount++;
+    box->retainCount++;
     DEBUG_ARC_LOG("retaining object");
   }
 
@@ -148,20 +123,19 @@ public:
    this method is called, then the object will be explicitly deallocated.
    */
   void release() {
-    checkForUseAfterDealloc();
-    box()->mutex.lock();
-    if (box()->retainCount == 0) {
+    box->mutex.lock();
+    if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
     }
 
-    box()->retainCount--;
+    box->retainCount--;
 
     DEBUG_ARC_LOG("releasing object");
 
-    if (box()->retainCount == 0) {
+    if (box->retainCount == 0) {
       dealloc(); // mutex will be unlocked and invalidated
     } else {
-      box()->mutex.unlock(); // otherwise manually unlock
+      box->mutex.unlock(); // otherwise manually unlock
     }
   }
 
@@ -171,25 +145,20 @@ private:
    @note This function *must* be called with a locked \c mutex.
    */
   void dealloc() {
-    checkForUseAfterDealloc();
-
-    if (box()->retainCount > 0) {
+    if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
     }
 
     DEBUG_ARC_LOG("deallocating");
 
-    if (box()->deinit != nullptr) {
-      box()->deinit(value);
+    if (box->deinit != nullptr) {
+      box->deinit(value);
     }
 
     // Explicitly unlock the mutex before deleting the box
-    box()->mutex.unlock();
+    box->mutex.unlock();
 
-    delete box();
-
-    // Erase the box's location
-    *boxPtr = nullptr;
+    free(box);
   }
 };
 
