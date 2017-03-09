@@ -14,9 +14,9 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
-struct AnyBox;
 
 namespace trill {
+struct AnyBox;
 extern "C" {
 #endif
 
@@ -28,9 +28,7 @@ extern "C" {
 typedef struct TRILL_ANY {
   void * _Nonnull _any;
 #ifdef __cplusplus
-  AnyBox *_Nonnull any() {
-    return reinterpret_cast<AnyBox *>(_any);
-  }
+  AnyBox *_Nonnull any();
 #endif
 } TRILL_ANY;
 

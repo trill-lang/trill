@@ -166,9 +166,7 @@
 		DC8EBB4F1E5FCFE400AE577C /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB491E5FCFE400AE577C /* JavaScriptGen.swift */; };
 		DC8EBB611E5FD03C00AE577C /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */; };
 		DC8EBB621E5FD03C00AE577C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */; };
-		DC8EBB631E5FD03C00AE577C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB531E5FD03C00AE577C /* Assets.xcassets */; };
 		DC8EBB641E5FD03C00AE577C /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */; };
-		DC8EBB651E5FD03C00AE577C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC8EBB561E5FD03C00AE577C /* Main.storyboard */; };
 		DC8EBB661E5FD03C00AE577C /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */; };
 		DC8EBB681E5FD03C00AE577C /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5A1E5FD03C00AE577C /* InputViewController.swift */; };
 		DC8EBB691E5FD03C00AE577C /* JavaScriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5B1E5FD03C00AE577C /* JavaScriptRunner.swift */; };
@@ -333,6 +331,7 @@
 		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
 		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
 		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
+		DCBFE9381E6FD31700573329 /* metadata_private.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCBFE9371E6FD31700573329 /* metadata_private.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -695,6 +694,7 @@
 		DC8EBCAB1E5FD42A00AE577C /* tinygc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinygc.c; sourceTree = "<group>"; };
 		DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAE21EC1E63970A00645143 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		DCBFE9371E6FD31700573329 /* metadata_private.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata_private.cpp; path = Sources/Runtime/metadata_private.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -916,6 +916,7 @@
 				DC8EBB201E5FCFCC00AE577C /* MangledOperators.def */,
 				DC8EBB211E5FCFCC00AE577C /* metadata.cpp */,
 				DC8EBB221E5FCFCC00AE577C /* metadata.h */,
+				DCBFE9371E6FD31700573329 /* metadata_private.cpp */,
 				DC8EBB231E5FCFCC00AE577C /* metadata_private.h */,
 				DC8EBB241E5FCFCC00AE577C /* runtime.cpp */,
 				DC8EBB251E5FCFCC00AE577C /* runtime.h */,
@@ -1441,7 +1442,6 @@
 			buildPhases = (
 				DC8EBA711E5FCF0D00AE577C /* Sources */,
 				DC8EBA721E5FCF0D00AE577C /* Frameworks */,
-				DC8EBA731E5FCF0D00AE577C /* Resources */,
 			);
 			buildRules = (
 			);
@@ -1502,7 +1502,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1522,18 +1522,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		DC8EBA731E5FCF0D00AE577C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC8EBB631E5FD03C00AE577C /* Assets.xcassets in Resources */,
-				DC8EBB651E5FD03C00AE577C /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		DC8EBA561E5FCEF800AE577C /* Sources */ = {
@@ -1640,6 +1628,7 @@
 				DC8EBB311E5FCFCC00AE577C /* runtime.cpp in Sources */,
 				DC8EBB291E5FCFCC00AE577C /* demangle.cpp in Sources */,
 				DC8EBB2B1E5FCFCC00AE577C /* generics.cpp in Sources */,
+				DCBFE9381E6FD31700573329 /* metadata_private.cpp in Sources */,
 				DC8EBB2E1E5FCFCC00AE577C /* metadata.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1831,7 +1820,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path /usr/local/opt/llvm/lib";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1846,7 +1835,7 @@
 			buildSettings = {
 				DEVELOPMENT_TEAM = W7GJMYD5A4;
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
-				LD_RUNPATH_SEARCH_PATHS = "@executable_path";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path /usr/local/opt/llvm/lib";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1986,7 +1975,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,
