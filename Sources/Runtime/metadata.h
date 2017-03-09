@@ -14,9 +14,9 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
-struct AnyBox;
 
 namespace trill {
+struct AnyBox;
 extern "C" {
 #endif
 
