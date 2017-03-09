@@ -13,6 +13,11 @@
 
 namespace trill {
 
+AnyBox *TRILL_ANY::any() {
+  trill_assert(_any != nullptr && "passed a null value for Any");
+  return reinterpret_cast<AnyBox *>(_any);
+}
+
 const char *trill_getTypeName(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
   return reinterpret_cast<const TypeMetadata *>(typeMeta)->name;
