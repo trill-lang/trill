@@ -127,12 +127,11 @@ extension Parser {
       }
     case .leftBrace:
       consumeToken()
-      let (genericParams, args, ret, _) = try parseFuncSignature()
+      let (args, ret, _) = try parseFuncSignature()
       try consume(.in)
       let exprs = try parseStatements(terminators: [.rightBrace])
       consumeToken()
       valExpr = ClosureExpr(args: args,
-                            genericParams: genericParams,
                             returnType: ret,
                             body: CompoundStmt(stmts: exprs),
                             sourceRange: range(start: startLoc))

@@ -70,7 +70,10 @@ extension Parser {
     // Deinitializers don't have arguments or return types.
     if case .deinitializer = kind {
     } else {
-      (genericArgs, args, returnType, hasVarArgs) = try parseFuncSignature()
+      if case .operator(.lessThan) = peek() {
+        genericArgs = try parseGenericParamDecls()
+      }
+      (args, returnType, hasVarArgs) = try parseFuncSignature()
     }
 
     // Try to parse a body.
@@ -146,13 +149,7 @@ extension Parser {
     }
   }
   
-  func parseFuncSignature() throws -> (genericArgs: [GenericParamDecl], args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
-    var genericArgs = [GenericParamDecl]()
-
-    if case .operator(.lessThan) = peek() {
-      genericArgs = try parseGenericParamDecls()
-    }
-
+  func parseFuncSignature() throws -> (args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
     try consume(.leftParen)
     var hasVarArgs = false
     var args = [ParamDecl]()
@@ -207,7 +204,7 @@ extension Parser {
     } else {
       returnType = TypeRefExpr(type: .void, name: "Void")
     }
-    return (genericArgs: genericArgs, args: args, ret: returnType, hasVarArgs: hasVarArgs)
+    return (args: args, ret: returnType, hasVarArgs: hasVarArgs)
   }
 
   func parseGenericParamDecls() throws -> [GenericParamDecl] {
