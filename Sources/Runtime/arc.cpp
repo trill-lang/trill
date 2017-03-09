@@ -15,17 +15,27 @@
 #include <sstream>
 #include <chrono>
 
-#define DEBUG_ARC
+// #define DEBUG_ARC
 
 #ifdef DEBUG_ARC
 #define DEBUG_ARC_LOG(x) do { \
-   auto time = std::chrono::system_clock::now(); \
-   auto timeVal = std::chrono::system_clock::to_time_t(time); \
-   std::cout << std::ctime(&timeVal) << "  " << x << " (" << value \
+   std::cout << x << " (" << value \
              << ") -- retain count is now " << box->retainCount << std::endl; \
 } while (false)
 #else
 #define DEBUG_ARC_LOG(x) ({})
+#endif
+
+#ifdef DEBUG_ARC
+#define CHECK_VALID_BOX() do {                    \
+  if (box->deallocated) {                         \
+    std::cout << "object (" << value              \
+              << ") accessed after deallocation"  \
+              << std::endl;                       \
+  }                                               \
+} while (false)
+#else
+#define CHECK_VALID_BOX() ({})
 #endif
 
 namespace trill {
@@ -45,6 +55,9 @@ namespace trill {
                                      ^~ indirect type "begins" here
  */
 struct RefCountBox {
+#ifdef DEBUG_ARC
+  bool deallocated;
+#endif
   uint32_t retainCount;
   trill_deinitializer_t deinit;
   std::mutex mutex;
@@ -75,7 +88,7 @@ public:
               reinterpret_cast<uintptr_t>(boxPtr) + sizeof(RefCountBox));
     DEBUG_ARC_LOG("creating box");
   }
-  
+
   /**
    Gets a \c RefCounted instance for a given pointer into a box, by offsetting
    the value pointer with the size of the \c RefCountBox.
@@ -92,6 +105,7 @@ public:
    Determines if this object's reference count is exactly one.
    */
   bool isUniquelyReferenced() {
+    CHECK_VALID_BOX();
     std::lock_guard<std::mutex> guard(box->mutex);
     return box->retainCount == 1;
   }
@@ -100,6 +114,7 @@ public:
    Gets the current retain count of an object.
    */
   uint32_t retainCount() {
+    CHECK_VALID_BOX();
     std::lock_guard<std::mutex> guard(box->mutex);
     DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
@@ -109,7 +124,7 @@ public:
    Retains the value inside a \c RefCountBox.
    */
   void retain() {
-    DEBUG_ARC_LOG(value);
+    CHECK_VALID_BOX();
     std::lock_guard<std::mutex> guard(box->mutex);
     if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
       trill_fatalError("retain count overflow");
@@ -123,6 +138,7 @@ public:
    this method is called, then the object will be explicitly deallocated.
    */
   void release() {
+    CHECK_VALID_BOX();
     box->mutex.lock();
     if (box->retainCount == 0) {
       trill_fatalError("attempting to release object with retain count 0");
@@ -145,6 +161,7 @@ private:
    @note This function *must* be called with a locked \c mutex.
    */
   void dealloc() {
+    CHECK_VALID_BOX();
     if (box->retainCount > 0) {
       trill_fatalError("object deallocated with retain count > 0");
     }
@@ -158,7 +175,11 @@ private:
     // Explicitly unlock the mutex before deleting the box
     box->mutex.unlock();
 
+#ifdef DEBUG_ARC
+    box->deallocated = true;
+#else
     free(box);
+#endif
   }
 };
 
