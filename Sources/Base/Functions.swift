@@ -227,18 +227,15 @@ class ParamDecl: VarAssignDecl {
 
 class ClosureExpr: Expr {
   let args: [ParamDecl]
-  let genericParams: [GenericParamDecl]
   let returnType: TypeRefExpr
   let body: CompoundStmt
   
   private(set) var captures = Set<ASTNode>()
 
   init(args: [ParamDecl],
-       genericParams: [GenericParamDecl],
        returnType: TypeRefExpr,
        body: CompoundStmt,
        sourceRange: SourceRange? = nil) {
-    self.genericParams = genericParams
     self.args = args
     self.returnType = returnType
     self.body = body
