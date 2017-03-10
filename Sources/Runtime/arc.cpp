@@ -42,9 +42,8 @@ namespace trill {
 
 /**
  A RefCountBox contains
-  - A retain count
+  - An atomic retain count
   - A pointer to the type's deinitializer
-  - A mutex used to synchronize retains/releases
   - A variably-sized payload that is not represented by a data member.
 
   It is meant as a hidden store for retain count data alongside the allocated
@@ -58,9 +57,8 @@ struct RefCountBox {
 #ifdef DEBUG_ARC
   bool deallocated;
 #endif
-  uint32_t retainCount;
+  std::atomic<uint32_t> retainCount;
   trill_deinitializer_t deinit;
-  std::mutex mutex;
 
   RefCountBox(uint32_t retainCount, trill_deinitializer_t deinit):
     retainCount(retainCount), deinit(deinit) {}
@@ -106,7 +104,6 @@ public:
    */
   bool isUniquelyReferenced() {
     CHECK_VALID_BOX();
-    std::lock_guard<std::mutex> guard(box->mutex);
     return box->retainCount == 1;
   }
 
@@ -115,7 +112,6 @@ public:
    */
   uint32_t retainCount() {
     CHECK_VALID_BOX();
-    std::lock_guard<std::mutex> guard(box->mutex);
     DEBUG_ARC_LOG("getting retain count");
     return box->retainCount;
   }
@@ -125,12 +121,13 @@ public:
    */
   void retain() {
     CHECK_VALID_BOX();
-    std::lock_guard<std::mutex> guard(box->mutex);
-    if (box->retainCount == std::numeric_limits<decltype(box->retainCount)>::max()) {
-      trill_fatalError("retain count overflow");
-    }
-    box->retainCount++;
+    auto prev = box->retainCount.fetch_add(1);
     DEBUG_ARC_LOG("retaining object");
+    if (prev == std::numeric_limits<uint32_t>::max()) {
+      std::stringstream msg;
+      msg << "retain count overflowed for " << value;
+      trill_fatalError(msg.str().c_str());
+    }
   }
 
   /**
@@ -139,20 +136,18 @@ public:
    */
   void release() {
     CHECK_VALID_BOX();
-    box->mutex.lock();
-    if (box->retainCount == 0) {
-      trill_fatalError("attempting to release object with retain count 0");
-    }
+    uint32_t prev = box->retainCount.fetch_sub(1);
 
-    box->retainCount--;
+    if (prev == 1) {
+      dealloc();
+    } else if (prev == std::numeric_limits<uint32_t>::min()) {
+      std::stringstream msg;
+      msg << "retain count underflowed for " << value;
+      trill_fatalError(msg.str().c_str());
+    }
 
     DEBUG_ARC_LOG("releasing object");
 
-    if (box->retainCount == 0) {
-      dealloc(); // mutex will be unlocked and invalidated
-    } else {
-      box->mutex.unlock(); // otherwise manually unlock
-    }
   }
 
 private:
@@ -171,9 +166,6 @@ private:
     if (box->deinit != nullptr) {
       box->deinit(value);
     }
-
-    // Explicitly unlock the mutex before deleting the box
-    box->mutex.unlock();
 
 #ifdef DEBUG_ARC
     box->deallocated = true;
