@@ -1,15 +1,16 @@
 foreign type Array {
-    foreign init(_: ...) -> Array
+    foreign init() -> Array
+    foreign init(_: Int) -> Array
     foreign func copyWithin()
     foreign func fill(_ val: Any)
-    foreign func pop()
-    foreign func push()
+    foreign func pop() -> Any
+    foreign func push(_: Any)
     foreign func reverse()
     foreign func shift(_ val: Any) -> Int
-    foreign func sort()
+    // foreign func sort()
     foreign func sort(compare: (Any, Any) -> Bool)
-    foreign func splice(start: Int)
-    foreign func splice(start: Int, delete: Int)
+    // foreign func splice(start: Int)
+    // foreign func splice(start: Int, delete: Int)
     foreign func splice(start: Int, delete: Int, value: Any)
     foreign func unshift(_: Any) -> Int
     foreign func concat(_: Array) -> Array
@@ -27,8 +28,9 @@ foreign type Array {
     foreign func findIndex(_: (Any) -> Bool) -> Int
     foreign func forEach(_: (Any) -> Void)
     foreign func map(_: (Any) -> (Any)) -> Array
-    foreign func reduce(_: (Any, Any) -> Any) -> Any
+    // foreign func reduce(_: (Any, Any) -> Any) -> Any
     foreign func reduce(_: (Any, Any) -> Any, initial: Any) -> Any
     foreign func some(_: (Any) -> Bool) -> Bool
     foreign var length: Int
+    foreign subscript(_: Int) -> Any
 }

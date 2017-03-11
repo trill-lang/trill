@@ -1,0 +1,2 @@
+foreign func print(_: Any)
+foreign func println(_: Any)

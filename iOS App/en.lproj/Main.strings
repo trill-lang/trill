@@ -1,0 +1,21 @@
+
+/* Class = "UIBarButtonItem"; title = "Timing"; ObjectID = "EB1-A0-BZP"; */
+"EB1-A0-BZP.title" = "Timing";
+
+/* Class = "UILabel"; text = "Detail"; ObjectID = "JvI-3P-3kl"; */
+"JvI-3P-3kl.text" = "Detail";
+
+/* Class = "UITableViewController"; title = "Timing"; ObjectID = "PTH-sG-45C"; */
+"PTH-sG-45C.title" = "Timing";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "fGu-5b-rSy"; */
+"fGu-5b-rSy.text" = "Title";
+
+/* Class = "UINavigationItem"; title = "Results"; ObjectID = "fI2-li-ojw"; */
+"fI2-li-ojw.title" = "Results";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "ko9-4T-ZGs"; */
+"ko9-4T-ZGs.text" = "Title";
+
+/* Class = "UINavigationItem"; title = "Trill"; ObjectID = "tUX-WV-WWl"; */
+"tUX-WV-WWl.title" = "Trill";

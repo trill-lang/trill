@@ -42,9 +42,11 @@ struct Attribute {
 
 class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   let attributes: TextAttributes
+  let file: String
   
-  init(attributes: TextAttributes, context: ASTContext) {
+  init(attributes: TextAttributes, file: String, context: ASTContext) {
     self.attributes = attributes
+    self.file = file
     super.init(context: context)
   }
   
@@ -69,6 +71,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   func attributes(for typeRef: TypeRefExpr) -> [Attribute] {
+    guard typeRef.startLoc?.file == file else { return [] }
     var attrs = [Attribute]()
     if let funcRef = typeRef as? FuncTypeRefExpr {
       for type in funcRef.argNames {
@@ -100,6 +103,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitStringExpr(_ expr: StringExpr) {
+    guard expr.startLoc?.file == file else { return }
     if let range = expr.sourceRange?.nsRange {
       add(style: expr is PoundFileExpr ? attributes.keyword : attributes.string,
           range: range)
@@ -108,6 +112,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
+    guard expr.startLoc?.file == file else { return }
     guard let decl = expr.decl else { return }
     if let range =  expr.name.range?.nsRange {
       let style = context.isIntrinsic(decl: decl) ? attributes.externalName : attributes.internalName
@@ -117,37 +122,48 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitParamDecl(_ decl: ParamDecl) {
+    guard decl.startLoc?.file == file else { return }
     add(attributes(for: decl.typeRef!))
     super.visitParamDecl(decl)
   }
   
   override func visitFuncDecl(_ decl: FuncDecl) {
+    guard decl.startLoc?.file == file else { return }
     add(attributes(for: decl.returnType))
     super.visitFuncDecl(decl)
   }
   
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
+    guard decl.startLoc?.file == file else { return }
     add(attributes(for: decl.typeRef!))
     super.visitVarAssignDecl(decl)
   }
-  
-  override func visitExtensionDecl(_ expr: ExtensionDecl) {
-    add(attributes(for: expr.typeRef))
-    super.visitExtensionDecl(expr)
+
+  override func visitPropertyDecl(_ decl: PropertyDecl) {
+    visitVarAssignDecl(decl)
   }
   
-  override func visitTypeDecl(_ expr: TypeDecl) {
-    let ref = TypeRefExpr(type: expr.type, name: expr.name)
+  override func visitExtensionDecl(_ decl: ExtensionDecl) {
+    guard decl.startLoc?.file == file else { return }
+    add(attributes(for: decl.typeRef))
+    super.visitExtensionDecl(decl)
+  }
+  
+  override func visitTypeDecl(_ decl: TypeDecl) {
+    guard decl.startLoc?.file == file else { return }
+    let ref = TypeRefExpr(type: decl.type, name: decl.name)
     add(attributes(for: ref))
-    super.visitTypeDecl(expr)
+    super.visitTypeDecl(decl)
   }
   
   override func visitTypeAliasDecl(_ decl: TypeAliasDecl) {
+    guard decl.startLoc?.file == file else { return }
     add(attributes(for: decl.bound))
     super.visitTypeAliasDecl(decl)
   }
   
   override func visitClosureExpr(_ expr: ClosureExpr) {
+    guard expr.startLoc?.file == file else { return }
     add(attributes(for: expr.returnType))
     super.visitClosureExpr(expr)
   }
@@ -157,6 +173,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   }
   
   override func visitVarExpr(_ expr: VarExpr) {
+    guard expr.startLoc?.file == file else { return }
     super.visitVarExpr(expr)
     guard let decl = expr.decl else { return }
     guard let range = expr.sourceRange?.nsRange else { return }
@@ -190,6 +207,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   
   func consume(_ diagnostic: Diagnostic) {
     for r in diagnostic.highlights {
+      guard diagnostic.loc?.file == file else { continue }
       let range = r.nsRange
       let color = diagnostic.diagnosticType == .warning ?
         Color(red: 1.0, green: 221.0/255.0, blue: 0, alpha: 1.0) :

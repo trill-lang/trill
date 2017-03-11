@@ -90,59 +90,88 @@
 		DC072ADC1E7758E100927232 /* libLLVMRISCVCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */; };
 		DC072ADD1E7758E100927232 /* libLLVMRISCVDesc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */; };
 		DC072ADE1E7758E100927232 /* libLLVMRISCVInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */; };
+		DC0EE9B71E73515500AFC103 /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */; };
+		DC0EE9B81E73515500AFC103 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */; };
+		DC0EE9B91E73515500AFC103 /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */; };
+		DC0EE9BA1E73515500AFC103 /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */; };
+		DC0EE9BB1E73515500AFC103 /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5A1E5FD03C00AE577C /* InputViewController.swift */; };
+		DC0EE9BC1E73515500AFC103 /* JavaScriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5B1E5FD03C00AE577C /* JavaScriptRunner.swift */; };
+		DC0EE9BD1E73515500AFC103 /* RunViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5D1E5FD03C00AE577C /* RunViewController.swift */; };
+		DC0EE9BE1E73517900AFC103 /* NavController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5C1E5FD03C00AE577C /* NavController.swift */; };
+		DC0EE9BF1E73517900AFC103 /* SourceAnnotator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5E1E5FD03C00AE577C /* SourceAnnotator.swift */; };
+		DC0EE9C01E73517900AFC103 /* SourceDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5F1E5FD03C00AE577C /* SourceDocument.swift */; };
+		DC0EE9C11E73517900AFC103 /* TimingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB601E5FD03C00AE577C /* TimingViewController.swift */; };
+		DC0EE9C21E73517900AFC103 /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB471E5FCFE400AE577C /* ASTDumper.swift */; };
+		DC0EE9C31E73517900AFC103 /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB491E5FCFE400AE577C /* JavaScriptGen.swift */; };
+		DC0EE9C41E73517900AFC103 /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB361E5FCFD500AE577C /* Mangler.swift */; };
+		DC0EE9C51E73517900AFC103 /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB371E5FCFD500AE577C /* Sema.swift */; };
+		DC0EE9C61E73517900AFC103 /* SemaError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB381E5FCFD500AE577C /* SemaError.swift */; };
+		DC0EE9C71E73517900AFC103 /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB391E5FCFD500AE577C /* TypeChecker.swift */; };
+		DC0EE9C81E73517900AFC103 /* BaseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB081E5FCFC500AE577C /* BaseParser.swift */; };
+		DC0EE9C91E73517900AFC103 /* FunctionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB091E5FCFC500AE577C /* FunctionParser.swift */; };
+		DC0EE9CA1E73517900AFC103 /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0A1E5FCFC500AE577C /* Lexer.swift */; };
+		DC0EE9CB1E73517900AFC103 /* StatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0B1E5FCFC500AE577C /* StatementParser.swift */; };
+		DC0EE9CC1E73517900AFC103 /* TypeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0C1E5FCFC500AE577C /* TypeParser.swift */; };
+		DC0EE9CD1E73517900AFC103 /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0D1E5FCFC500AE577C /* ValueParser.swift */; };
+		DC0EE9CE1E73517900AFC103 /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACE1E5FCFA500AE577C /* ANSIColor.swift */; };
+		DC0EE9CF1E73517900AFC103 /* ColoredStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACF1E5FCFA500AE577C /* ColoredStream.swift */; };
+		DC0EE9D01E73517900AFC103 /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD01E5FCFA500AE577C /* DiagnosticConsumer.swift */; };
+		DC0EE9D11E73517900AFC103 /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD11E5FCFA500AE577C /* DiagnosticEngine.swift */; };
+		DC0EE9D21E73517900AFC103 /* Driver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD21E5FCFA500AE577C /* Driver.swift */; };
+		DC0EE9D31E73517900AFC103 /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD51E5FCFA500AE577C /* StreamConsumer.swift */; };
+		DC0EE9D41E73517900AFC103 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD71E5FCFA500AE577C /* Utilities.swift */; };
+		DC0EE9D51E73517900AFC103 /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
+		DC0EE9D61E73517900AFC103 /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
+		DC0EE9D71E73517900AFC103 /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA961E5FCF6E00AE577C /* ASTTransformer.swift */; };
+		DC0EE9D81E73517900AFC103 /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA971E5FCF6E00AE577C /* ASTVisitor.swift */; };
+		DC0EE9D91E73517900AFC103 /* Decl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA981E5FCF6E00AE577C /* Decl.swift */; };
+		DC0EE9DA1E73517900AFC103 /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA991E5FCF6E00AE577C /* Functions.swift */; };
+		DC0EE9DB1E73517900AFC103 /* Generic.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9A1E5FCF6E00AE577C /* Generic.swift */; };
+		DC0EE9DC1E73517900AFC103 /* Identifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9B1E5FCF6E00AE577C /* Identifier.swift */; };
+		DC0EE9DD1E73517900AFC103 /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9C1E5FCF6E00AE577C /* Operators.swift */; };
+		DC0EE9DE1E73517900AFC103 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9D1E5FCF6E00AE577C /* Protocols.swift */; };
+		DC0EE9DF1E73517900AFC103 /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9E1E5FCF6E00AE577C /* SourceFile.swift */; };
+		DC0EE9E01E73517900AFC103 /* SourceLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9F1E5FCF6E00AE577C /* SourceLocation.swift */; };
+		DC0EE9E11E73517900AFC103 /* Statements.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA11E5FCF6E00AE577C /* Statements.swift */; };
+		DC0EE9E21E73517900AFC103 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA21E5FCF6E00AE577C /* Types.swift */; };
+		DC0EE9E31E73517900AFC103 /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA41E5FCF6E00AE577C /* Values.swift */; };
+		DC0EE9E41E73518100AFC103 /* WitnessTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA51E5FCF6E00AE577C /* WitnessTable.swift */; };
+		DC0EE9E51E73519F00AFC103 /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
+		DC0EE9E81E736AF100AFC103 /* Array.tr in Resources */ = {isa = PBXBuildFile; fileRef = DC1112B61E6CDFA800F86E5E /* Array.tr */; };
+		DC0EE9E91E736AF100AFC103 /* String.tr in Resources */ = {isa = PBXBuildFile; fileRef = DC1112B71E6CDFA800F86E5E /* String.tr */; };
+		DC0EE9ED1E736CF800AFC103 /* print.tr in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9EC1E736CF600AFC103 /* print.tr */; };
+		DC0EE9EF1E73849A00AFC103 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9EE1E73849A00AFC103 /* Assets.xcassets */; };
+		DC0EE9F11E7384A900AFC103 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F01E7384A900AFC103 /* Launch Screen.storyboard */; };
+		DC0EE9F31E73854100AFC103 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F21E73854100AFC103 /* Info.plist */; };
+		DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F41E73854B00AFC103 /* Main.storyboard */; };
 		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
-		DC8EBAA71E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA81E5FCF6E00AE577C /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
-		DC8EBAA91E5FCF6E00AE577C /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
 		DC8EBAAA1E5FCF6E00AE577C /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA961E5FCF6E00AE577C /* ASTTransformer.swift */; };
-		DC8EBAAB1E5FCF6E00AE577C /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA961E5FCF6E00AE577C /* ASTTransformer.swift */; };
 		DC8EBAAC1E5FCF6E00AE577C /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA971E5FCF6E00AE577C /* ASTVisitor.swift */; };
-		DC8EBAAD1E5FCF6E00AE577C /* ASTVisitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA971E5FCF6E00AE577C /* ASTVisitor.swift */; };
 		DC8EBAAE1E5FCF6E00AE577C /* Decl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA981E5FCF6E00AE577C /* Decl.swift */; };
-		DC8EBAAF1E5FCF6E00AE577C /* Decl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA981E5FCF6E00AE577C /* Decl.swift */; };
 		DC8EBAB01E5FCF6E00AE577C /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA991E5FCF6E00AE577C /* Functions.swift */; };
-		DC8EBAB11E5FCF6E00AE577C /* Functions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA991E5FCF6E00AE577C /* Functions.swift */; };
 		DC8EBAB21E5FCF6E00AE577C /* Generic.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9A1E5FCF6E00AE577C /* Generic.swift */; };
-		DC8EBAB31E5FCF6E00AE577C /* Generic.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9A1E5FCF6E00AE577C /* Generic.swift */; };
 		DC8EBAB41E5FCF6E00AE577C /* Identifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9B1E5FCF6E00AE577C /* Identifier.swift */; };
-		DC8EBAB51E5FCF6E00AE577C /* Identifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9B1E5FCF6E00AE577C /* Identifier.swift */; };
 		DC8EBAB61E5FCF6E00AE577C /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9C1E5FCF6E00AE577C /* Operators.swift */; };
-		DC8EBAB71E5FCF6E00AE577C /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9C1E5FCF6E00AE577C /* Operators.swift */; };
 		DC8EBAB81E5FCF6E00AE577C /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9D1E5FCF6E00AE577C /* Protocols.swift */; };
-		DC8EBAB91E5FCF6E00AE577C /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9D1E5FCF6E00AE577C /* Protocols.swift */; };
 		DC8EBABA1E5FCF6E00AE577C /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9E1E5FCF6E00AE577C /* SourceFile.swift */; };
-		DC8EBABB1E5FCF6E00AE577C /* SourceFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9E1E5FCF6E00AE577C /* SourceFile.swift */; };
 		DC8EBABC1E5FCF6E00AE577C /* SourceLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9F1E5FCF6E00AE577C /* SourceLocation.swift */; };
-		DC8EBABD1E5FCF6E00AE577C /* SourceLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA9F1E5FCF6E00AE577C /* SourceLocation.swift */; };
 		DC8EBAC01E5FCF6E00AE577C /* Statements.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA11E5FCF6E00AE577C /* Statements.swift */; };
-		DC8EBAC11E5FCF6E00AE577C /* Statements.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA11E5FCF6E00AE577C /* Statements.swift */; };
 		DC8EBAC21E5FCF6E00AE577C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA21E5FCF6E00AE577C /* Types.swift */; };
-		DC8EBAC31E5FCF6E00AE577C /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA21E5FCF6E00AE577C /* Types.swift */; };
 		DC8EBAC61E5FCF6E00AE577C /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA41E5FCF6E00AE577C /* Values.swift */; };
-		DC8EBAC71E5FCF6E00AE577C /* Values.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA41E5FCF6E00AE577C /* Values.swift */; };
 		DC8EBAC81E5FCF6E00AE577C /* WitnessTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA51E5FCF6E00AE577C /* WitnessTable.swift */; };
-		DC8EBAC91E5FCF6E00AE577C /* WitnessTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAA51E5FCF6E00AE577C /* WitnessTable.swift */; };
 		DC8EBACC1E5FCF9D00AE577C /* ClangImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACB1E5FCF9D00AE577C /* ClangImporter.swift */; };
 		DC8EBAD81E5FCFA500AE577C /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACE1E5FCFA500AE577C /* ANSIColor.swift */; };
-		DC8EBAD91E5FCFA500AE577C /* ANSIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACE1E5FCFA500AE577C /* ANSIColor.swift */; };
 		DC8EBADA1E5FCFA500AE577C /* ColoredStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACF1E5FCFA500AE577C /* ColoredStream.swift */; };
-		DC8EBADB1E5FCFA500AE577C /* ColoredStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBACF1E5FCFA500AE577C /* ColoredStream.swift */; };
 		DC8EBADC1E5FCFA500AE577C /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD01E5FCFA500AE577C /* DiagnosticConsumer.swift */; };
-		DC8EBADD1E5FCFA500AE577C /* DiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD01E5FCFA500AE577C /* DiagnosticConsumer.swift */; };
 		DC8EBADE1E5FCFA500AE577C /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD11E5FCFA500AE577C /* DiagnosticEngine.swift */; };
-		DC8EBADF1E5FCFA500AE577C /* DiagnosticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD11E5FCFA500AE577C /* DiagnosticEngine.swift */; };
 		DC8EBAE01E5FCFA500AE577C /* Driver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD21E5FCFA500AE577C /* Driver.swift */; };
-		DC8EBAE11E5FCFA500AE577C /* Driver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD21E5FCFA500AE577C /* Driver.swift */; };
 		DC8EBAE21E5FCFA500AE577C /* JSONDiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD31E5FCFA500AE577C /* JSONDiagnosticConsumer.swift */; };
-		DC8EBAE31E5FCFA500AE577C /* JSONDiagnosticConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD31E5FCFA500AE577C /* JSONDiagnosticConsumer.swift */; };
 		DC8EBAE41E5FCFA500AE577C /* Options.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD41E5FCFA500AE577C /* Options.swift */; };
 		DC8EBAE61E5FCFA500AE577C /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD51E5FCFA500AE577C /* StreamConsumer.swift */; };
-		DC8EBAE71E5FCFA500AE577C /* StreamConsumer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD51E5FCFA500AE577C /* StreamConsumer.swift */; };
 		DC8EBAE81E5FCFA500AE577C /* TableFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD61E5FCFA500AE577C /* TableFormatter.swift */; };
-		DC8EBAE91E5FCFA500AE577C /* TableFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD61E5FCFA500AE577C /* TableFormatter.swift */; };
 		DC8EBAEA1E5FCFA500AE577C /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD71E5FCFA500AE577C /* Utilities.swift */; };
-		DC8EBAEB1E5FCFA500AE577C /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAD71E5FCFA500AE577C /* Utilities.swift */; };
 		DC8EBAF81E5FCFB200AE577C /* BaseIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAED1E5FCFB200AE577C /* BaseIRGen.swift */; };
 		DC8EBAF91E5FCFB200AE577C /* BuiltinIRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEE1E5FCFB200AE577C /* BuiltinIRGen.swift */; };
 		DC8EBAFA1E5FCFB200AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
@@ -156,17 +185,11 @@
 		DC8EBB021E5FCFB200AE577C /* VarBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAF71E5FCFB200AE577C /* VarBinding.swift */; };
 		DC8EBB061E5FCFBC00AE577C /* LLVMWrappers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB041E5FCFBC00AE577C /* LLVMWrappers.cpp */; };
 		DC8EBB0E1E5FCFC500AE577C /* BaseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB081E5FCFC500AE577C /* BaseParser.swift */; };
-		DC8EBB0F1E5FCFC500AE577C /* BaseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB081E5FCFC500AE577C /* BaseParser.swift */; };
 		DC8EBB101E5FCFC500AE577C /* FunctionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB091E5FCFC500AE577C /* FunctionParser.swift */; };
-		DC8EBB111E5FCFC500AE577C /* FunctionParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB091E5FCFC500AE577C /* FunctionParser.swift */; };
 		DC8EBB121E5FCFC500AE577C /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0A1E5FCFC500AE577C /* Lexer.swift */; };
-		DC8EBB131E5FCFC500AE577C /* Lexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0A1E5FCFC500AE577C /* Lexer.swift */; };
 		DC8EBB141E5FCFC500AE577C /* StatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0B1E5FCFC500AE577C /* StatementParser.swift */; };
-		DC8EBB151E5FCFC500AE577C /* StatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0B1E5FCFC500AE577C /* StatementParser.swift */; };
 		DC8EBB161E5FCFC500AE577C /* TypeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0C1E5FCFC500AE577C /* TypeParser.swift */; };
-		DC8EBB171E5FCFC500AE577C /* TypeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0C1E5FCFC500AE577C /* TypeParser.swift */; };
 		DC8EBB181E5FCFC500AE577C /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0D1E5FCFC500AE577C /* ValueParser.swift */; };
-		DC8EBB191E5FCFC500AE577C /* ValueParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB0D1E5FCFC500AE577C /* ValueParser.swift */; };
 		DC8EBB281E5FCFCC00AE577C /* defines.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB1B1E5FCFCC00AE577C /* defines.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB291E5FCFCC00AE577C /* demangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB1C1E5FCFCC00AE577C /* demangle.cpp */; };
 		DC8EBB2A1E5FCFCC00AE577C /* demangle.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB1D1E5FCFCC00AE577C /* demangle.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -179,29 +202,12 @@
 		DC8EBB321E5FCFCC00AE577C /* runtime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB251E5FCFCC00AE577C /* runtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB341E5FCFCC00AE577C /* trill.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBB271E5FCFCC00AE577C /* trill.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBB3A1E5FCFD500AE577C /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB361E5FCFD500AE577C /* Mangler.swift */; };
-		DC8EBB3B1E5FCFD500AE577C /* Mangler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB361E5FCFD500AE577C /* Mangler.swift */; };
 		DC8EBB3C1E5FCFD500AE577C /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB371E5FCFD500AE577C /* Sema.swift */; };
-		DC8EBB3D1E5FCFD500AE577C /* Sema.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB371E5FCFD500AE577C /* Sema.swift */; };
 		DC8EBB3E1E5FCFD500AE577C /* SemaError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB381E5FCFD500AE577C /* SemaError.swift */; };
-		DC8EBB3F1E5FCFD500AE577C /* SemaError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB381E5FCFD500AE577C /* SemaError.swift */; };
 		DC8EBB401E5FCFD500AE577C /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB391E5FCFD500AE577C /* TypeChecker.swift */; };
-		DC8EBB411E5FCFD500AE577C /* TypeChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB391E5FCFD500AE577C /* TypeChecker.swift */; };
 		DC8EBB451E5FCFDD00AE577C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB441E5FCFDD00AE577C /* main.swift */; };
 		DC8EBB4A1E5FCFE400AE577C /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB471E5FCFE400AE577C /* ASTDumper.swift */; };
-		DC8EBB4B1E5FCFE400AE577C /* ASTDumper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB471E5FCFE400AE577C /* ASTDumper.swift */; };
 		DC8EBB4E1E5FCFE400AE577C /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB491E5FCFE400AE577C /* JavaScriptGen.swift */; };
-		DC8EBB4F1E5FCFE400AE577C /* JavaScriptGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB491E5FCFE400AE577C /* JavaScriptGen.swift */; };
-		DC8EBB611E5FD03C00AE577C /* AnnotatedTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */; };
-		DC8EBB621E5FD03C00AE577C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */; };
-		DC8EBB641E5FD03C00AE577C /* AttributedStringStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */; };
-		DC8EBB661E5FD03C00AE577C /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */; };
-		DC8EBB681E5FD03C00AE577C /* InputViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5A1E5FD03C00AE577C /* InputViewController.swift */; };
-		DC8EBB691E5FD03C00AE577C /* JavaScriptRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5B1E5FD03C00AE577C /* JavaScriptRunner.swift */; };
-		DC8EBB6A1E5FD03C00AE577C /* NavController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5C1E5FD03C00AE577C /* NavController.swift */; };
-		DC8EBB6B1E5FD03C00AE577C /* RunViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5D1E5FD03C00AE577C /* RunViewController.swift */; };
-		DC8EBB6C1E5FD03C00AE577C /* SourceAnnotator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5E1E5FD03C00AE577C /* SourceAnnotator.swift */; };
-		DC8EBB6D1E5FD03C00AE577C /* SourceDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB5F1E5FD03C00AE577C /* SourceDocument.swift */; };
-		DC8EBB6E1E5FD03C00AE577C /* TimingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB601E5FD03C00AE577C /* TimingViewController.swift */; };
 		DC8EBB951E5FD06C00AE577C /* Alias.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB701E5FD06C00AE577C /* Alias.swift */; };
 		DC8EBB961E5FD06C00AE577C /* ArrayType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB711E5FD06C00AE577C /* ArrayType.swift */; };
 		DC8EBB971E5FD06C00AE577C /* BasicBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBB721E5FD06C00AE577C /* BasicBlock.swift */; };
@@ -356,7 +362,6 @@
 		DC8EBCB21E5FD42A00AE577C /* gc_mark.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA51E5FD42A00AE577C /* gc_mark.h */; };
 		DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA81E5FD42A00AE577C /* javaxfc.h */; };
 		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
-		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
 		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
 		DCBFE9381E6FD31700573329 /* metadata_private.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCBFE9371E6FD31700573329 /* metadata_private.cpp */; };
 /* End PBXBuildFile section */
@@ -499,12 +504,17 @@
 		DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVCodeGen.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVCodeGen.a"; sourceTree = "<group>"; };
 		DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVDesc.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVDesc.a"; sourceTree = "<group>"; };
 		DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVInfo.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVInfo.a"; sourceTree = "<group>"; };
+		DC0EE9A51E7350D300AFC103 /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC0EE9EC1E736CF600AFC103 /* print.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = print.tr; path = "iOS App/JavaScript Declarations/print.tr"; sourceTree = "<group>"; };
+		DC0EE9EE1E73849A00AFC103 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = "iOS App/Assets.xcassets"; sourceTree = "<group>"; };
+		DC0EE9F01E7384A900AFC103 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = "Launch Screen.storyboard"; path = "iOS App/Launch Screen.storyboard"; sourceTree = "<group>"; };
+		DC0EE9F21E73854100AFC103 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "iOS App/Info.plist"; sourceTree = "<group>"; };
+		DC0EE9F51E73854B00AFC103 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "iOS App/Base.lproj/Main.storyboard"; sourceTree = "<group>"; };
 		DC1112B61E6CDFA800F86E5E /* Array.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Array.tr; path = "iOS App/JavaScript Declarations/Array.tr"; sourceTree = "<group>"; };
 		DC1112B71E6CDFA800F86E5E /* String.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = String.tr; path = "iOS App/JavaScript Declarations/String.tr"; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC8EBA751E5FCF0D00AE577C /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA8B1E5FCF1700AE577C /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTBase.swift; sourceTree = "<group>"; };
 		DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ASTContext.swift; sourceTree = "<group>"; };
@@ -575,7 +585,6 @@
 		DC8EBB491E5FCFE400AE577C /* JavaScriptGen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptGen.swift; sourceTree = "<group>"; };
 		DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AnnotatedTextStorage.swift; path = "iOS App/AnnotatedTextStorage.swift"; sourceTree = "<group>"; };
 		DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = "iOS App/AppDelegate.swift"; sourceTree = "<group>"; };
-		DC8EBB531E5FD03C00AE577C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = "iOS App/Assets.xcassets"; sourceTree = "<group>"; };
 		DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AttributedStringStream.swift; path = "iOS App/AttributedStringStream.swift"; sourceTree = "<group>"; };
 		DC8EBB571E5FD03C00AE577C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Main.storyboard; sourceTree = "<group>"; };
 		DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DocumentViewController.swift; path = "iOS App/DocumentViewController.swift"; sourceTree = "<group>"; };
@@ -754,6 +763,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		DC0EE9A21E7350D300AFC103 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC8EBA571E5FCEF800AE577C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -955,13 +971,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DC8EBA721E5FCF0D00AE577C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DC8EBA881E5FCF1700AE577C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -985,10 +994,11 @@
 			);
 			path = stdlib;
 			sourceTree = "<group>";
-    }
+		};
 		DC1112B51E6CDF8900F86E5E /* JavaScript Declarations */ = {
 			isa = PBXGroup;
 			children = (
+				DC0EE9EC1E736CF600AFC103 /* print.tr */,
 				DC1112B61E6CDFA800F86E5E /* Array.tr */,
 				DC1112B71E6CDFA800F86E5E /* String.tr */,
 			);
@@ -1039,8 +1049,8 @@
 			children = (
 				DC8EBA5A1E5FCEF800AE577C /* trill */,
 				DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */,
-				DC8EBA751E5FCF0D00AE577C /* Trill iOS.app */,
 				DC8EBA8B1E5FCF1700AE577C /* trill-demangle */,
+				DC0EE9A51E7350D300AFC103 /* Trill iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1191,10 +1201,13 @@
 		DC8EBB501E5FD03300AE577C /* Trill iOS */ = {
 			isa = PBXGroup;
 			children = (
+				DC0EE9F01E7384A900AFC103 /* Launch Screen.storyboard */,
+				DC0EE9F41E73854B00AFC103 /* Main.storyboard */,
+				DC0EE9F21E73854100AFC103 /* Info.plist */,
+				DC0EE9EE1E73849A00AFC103 /* Assets.xcassets */,
 				DC1112B51E6CDF8900F86E5E /* JavaScript Declarations */,
 				DC8EBB511E5FD03C00AE577C /* AnnotatedTextStorage.swift */,
 				DC8EBB521E5FD03C00AE577C /* AppDelegate.swift */,
-				DC8EBB531E5FD03C00AE577C /* Assets.xcassets */,
 				DC8EBB541E5FD03C00AE577C /* AttributedStringStream.swift */,
 				DC8EBB551E5FD03C00AE577C /* Base.lproj */,
 				DC8EBB581E5FD03C00AE577C /* DocumentViewController.swift */,
@@ -1520,6 +1533,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		DC0EE9A41E7350D300AFC103 /* Trill iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC0EE9B41E7350D300AFC103 /* Build configuration list for PBXNativeTarget "Trill iOS" */;
+			buildPhases = (
+				DC0EE9A11E7350D300AFC103 /* Sources */,
+				DC0EE9A21E7350D300AFC103 /* Frameworks */,
+				DC0EE9A31E7350D300AFC103 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Trill iOS";
+			productName = "Trill iOS";
+			productReference = DC0EE9A51E7350D300AFC103 /* Trill iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 		DC8EBA591E5FCEF800AE577C /* trill */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DC8EBA611E5FCEF800AE577C /* Build configuration list for PBXNativeTarget "trill" */;
@@ -1556,22 +1586,6 @@
 			productReference = DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		DC8EBA741E5FCF0D00AE577C /* Trill iOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DC8EBA841E5FCF0D00AE577C /* Build configuration list for PBXNativeTarget "Trill iOS" */;
-			buildPhases = (
-				DC8EBA711E5FCF0D00AE577C /* Sources */,
-				DC8EBA721E5FCF0D00AE577C /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "Trill iOS";
-			productName = "Trill iOS";
-			productReference = DC8EBA751E5FCF0D00AE577C /* Trill iOS.app */;
-			productType = "com.apple.product-type.application";
-		};
 		DC8EBA8A1E5FCF1700AE577C /* trill-demangle */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DC8EBA8F1E5FCF1700AE577C /* Build configuration list for PBXNativeTarget "trill-demangle" */;
@@ -1600,17 +1614,17 @@
 				LastUpgradeCheck = 0830;
 				ORGANIZATIONNAME = Harlan;
 				TargetAttributes = {
+					DC0EE9A41E7350D300AFC103 = {
+						CreatedOnToolsVersion = 8.3;
+						DevelopmentTeam = W7GJMYD5A4;
+						ProvisioningStyle = Automatic;
+					};
 					DC8EBA591E5FCEF800AE577C = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = W7GJMYD5A4;
 						ProvisioningStyle = Automatic;
 					};
 					DC8EBA681E5FCF0100AE577C = {
-						CreatedOnToolsVersion = 8.3;
-						DevelopmentTeam = W7GJMYD5A4;
-						ProvisioningStyle = Automatic;
-					};
-					DC8EBA741E5FCF0D00AE577C = {
 						CreatedOnToolsVersion = 8.3;
 						DevelopmentTeam = W7GJMYD5A4;
 						ProvisioningStyle = Automatic;
@@ -1637,13 +1651,84 @@
 			targets = (
 				DC8EBA591E5FCEF800AE577C /* trill */,
 				DC8EBA681E5FCF0100AE577C /* trillRuntime */,
-				DC8EBA741E5FCF0D00AE577C /* Trill iOS */,
 				DC8EBA8A1E5FCF1700AE577C /* trill-demangle */,
+				DC0EE9A41E7350D300AFC103 /* Trill iOS */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		DC0EE9A31E7350D300AFC103 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */,
+				DC0EE9E81E736AF100AFC103 /* Array.tr in Resources */,
+				DC0EE9ED1E736CF800AFC103 /* print.tr in Resources */,
+				DC0EE9F31E73854100AFC103 /* Info.plist in Resources */,
+				DC0EE9E91E736AF100AFC103 /* String.tr in Resources */,
+				DC0EE9EF1E73849A00AFC103 /* Assets.xcassets in Resources */,
+				DC0EE9F11E7384A900AFC103 /* Launch Screen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		DC0EE9A11E7350D300AFC103 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC0EE9E51E73519F00AFC103 /* Builtins.swift in Sources */,
+				DC0EE9E41E73518100AFC103 /* WitnessTable.swift in Sources */,
+				DC0EE9BE1E73517900AFC103 /* NavController.swift in Sources */,
+				DC0EE9BF1E73517900AFC103 /* SourceAnnotator.swift in Sources */,
+				DC0EE9C01E73517900AFC103 /* SourceDocument.swift in Sources */,
+				DC0EE9C11E73517900AFC103 /* TimingViewController.swift in Sources */,
+				DC0EE9C21E73517900AFC103 /* ASTDumper.swift in Sources */,
+				DC0EE9C31E73517900AFC103 /* JavaScriptGen.swift in Sources */,
+				DC0EE9C41E73517900AFC103 /* Mangler.swift in Sources */,
+				DC0EE9C51E73517900AFC103 /* Sema.swift in Sources */,
+				DC0EE9C61E73517900AFC103 /* SemaError.swift in Sources */,
+				DC0EE9C71E73517900AFC103 /* TypeChecker.swift in Sources */,
+				DC0EE9C81E73517900AFC103 /* BaseParser.swift in Sources */,
+				DC0EE9C91E73517900AFC103 /* FunctionParser.swift in Sources */,
+				DC0EE9CA1E73517900AFC103 /* Lexer.swift in Sources */,
+				DC0EE9CB1E73517900AFC103 /* StatementParser.swift in Sources */,
+				DC0EE9CC1E73517900AFC103 /* TypeParser.swift in Sources */,
+				DC0EE9CD1E73517900AFC103 /* ValueParser.swift in Sources */,
+				DC0EE9CE1E73517900AFC103 /* ANSIColor.swift in Sources */,
+				DC0EE9CF1E73517900AFC103 /* ColoredStream.swift in Sources */,
+				DC0EE9D01E73517900AFC103 /* DiagnosticConsumer.swift in Sources */,
+				DC0EE9D11E73517900AFC103 /* DiagnosticEngine.swift in Sources */,
+				DC0EE9D21E73517900AFC103 /* Driver.swift in Sources */,
+				DC0EE9D31E73517900AFC103 /* StreamConsumer.swift in Sources */,
+				DC0EE9D41E73517900AFC103 /* Utilities.swift in Sources */,
+				DC0EE9D51E73517900AFC103 /* ASTBase.swift in Sources */,
+				DC0EE9D61E73517900AFC103 /* ASTContext.swift in Sources */,
+				DC0EE9D71E73517900AFC103 /* ASTTransformer.swift in Sources */,
+				DC0EE9D81E73517900AFC103 /* ASTVisitor.swift in Sources */,
+				DC0EE9D91E73517900AFC103 /* Decl.swift in Sources */,
+				DC0EE9DA1E73517900AFC103 /* Functions.swift in Sources */,
+				DC0EE9DB1E73517900AFC103 /* Generic.swift in Sources */,
+				DC0EE9DC1E73517900AFC103 /* Identifier.swift in Sources */,
+				DC0EE9DD1E73517900AFC103 /* Operators.swift in Sources */,
+				DC0EE9DE1E73517900AFC103 /* Protocols.swift in Sources */,
+				DC0EE9DF1E73517900AFC103 /* SourceFile.swift in Sources */,
+				DC0EE9E01E73517900AFC103 /* SourceLocation.swift in Sources */,
+				DC0EE9E11E73517900AFC103 /* Statements.swift in Sources */,
+				DC0EE9E21E73517900AFC103 /* Types.swift in Sources */,
+				DC0EE9E31E73517900AFC103 /* Values.swift in Sources */,
+				DC0EE9B71E73515500AFC103 /* AnnotatedTextStorage.swift in Sources */,
+				DC0EE9B81E73515500AFC103 /* AppDelegate.swift in Sources */,
+				DC0EE9B91E73515500AFC103 /* AttributedStringStream.swift in Sources */,
+				DC0EE9BA1E73515500AFC103 /* DocumentViewController.swift in Sources */,
+				DC0EE9BB1E73515500AFC103 /* InputViewController.swift in Sources */,
+				DC0EE9BC1E73515500AFC103 /* JavaScriptRunner.swift in Sources */,
+				DC0EE9BD1E73515500AFC103 /* RunViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DC8EBA561E5FCEF800AE577C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1753,62 +1838,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DC8EBA711E5FCF0D00AE577C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DC8EBABB1E5FCF6E00AE577C /* SourceFile.swift in Sources */,
-				DC8EBAA91E5FCF6E00AE577C /* ASTContext.swift in Sources */,
-				DC8EBAEB1E5FCFA500AE577C /* Utilities.swift in Sources */,
-				DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */,
-				DC8EBAAB1E5FCF6E00AE577C /* ASTTransformer.swift in Sources */,
-				DC8EBAC31E5FCF6E00AE577C /* Types.swift in Sources */,
-				DC8EBAB31E5FCF6E00AE577C /* Generic.swift in Sources */,
-				DC8EBAAF1E5FCF6E00AE577C /* Decl.swift in Sources */,
-				DC8EBB3D1E5FCFD500AE577C /* Sema.swift in Sources */,
-				DC8EBB6D1E5FD03C00AE577C /* SourceDocument.swift in Sources */,
-				DC8EBAA71E5FCF6E00AE577C /* ASTBase.swift in Sources */,
-				DC8EBAB91E5FCF6E00AE577C /* Protocols.swift in Sources */,
-				DC8EBAC91E5FCF6E00AE577C /* WitnessTable.swift in Sources */,
-				DC8EBB6B1E5FD03C00AE577C /* RunViewController.swift in Sources */,
-				DC8EBAE91E5FCFA500AE577C /* TableFormatter.swift in Sources */,
-				DC8EBAE71E5FCFA500AE577C /* StreamConsumer.swift in Sources */,
-				DC8EBB191E5FCFC500AE577C /* ValueParser.swift in Sources */,
-				DC8EBB6E1E5FD03C00AE577C /* TimingViewController.swift in Sources */,
-				DC8EBAC11E5FCF6E00AE577C /* Statements.swift in Sources */,
-				DC8EBB661E5FD03C00AE577C /* DocumentViewController.swift in Sources */,
-				DC8EBB6C1E5FD03C00AE577C /* SourceAnnotator.swift in Sources */,
-				DC8EBADB1E5FCFA500AE577C /* ColoredStream.swift in Sources */,
-				DC8EBB0F1E5FCFC500AE577C /* BaseParser.swift in Sources */,
-				DC8EBB611E5FD03C00AE577C /* AnnotatedTextStorage.swift in Sources */,
-				DC8EBAE11E5FCFA500AE577C /* Driver.swift in Sources */,
-				DC8EBB151E5FCFC500AE577C /* StatementParser.swift in Sources */,
-				DC8EBB6A1E5FD03C00AE577C /* NavController.swift in Sources */,
-				DC8EBAC71E5FCF6E00AE577C /* Values.swift in Sources */,
-				DC8EBADF1E5FCFA500AE577C /* DiagnosticEngine.swift in Sources */,
-				DC8EBB681E5FD03C00AE577C /* InputViewController.swift in Sources */,
-				DC8EBB111E5FCFC500AE577C /* FunctionParser.swift in Sources */,
-				DC8EBAAD1E5FCF6E00AE577C /* ASTVisitor.swift in Sources */,
-				DC8EBADD1E5FCFA500AE577C /* DiagnosticConsumer.swift in Sources */,
-				DC8EBAE31E5FCFA500AE577C /* JSONDiagnosticConsumer.swift in Sources */,
-				DC8EBB171E5FCFC500AE577C /* TypeParser.swift in Sources */,
-				DC8EBB3F1E5FCFD500AE577C /* SemaError.swift in Sources */,
-				DC8EBB621E5FD03C00AE577C /* AppDelegate.swift in Sources */,
-				DC8EBAD91E5FCFA500AE577C /* ANSIColor.swift in Sources */,
-				DC8EBAB51E5FCF6E00AE577C /* Identifier.swift in Sources */,
-				DC8EBB131E5FCFC500AE577C /* Lexer.swift in Sources */,
-				DC8EBB411E5FCFD500AE577C /* TypeChecker.swift in Sources */,
-				DC8EBABD1E5FCF6E00AE577C /* SourceLocation.swift in Sources */,
-				DC8EBB4F1E5FCFE400AE577C /* JavaScriptGen.swift in Sources */,
-				DC8EBB691E5FD03C00AE577C /* JavaScriptRunner.swift in Sources */,
-				DC8EBAB11E5FCF6E00AE577C /* Functions.swift in Sources */,
-				DC8EBB4B1E5FCFE400AE577C /* ASTDumper.swift in Sources */,
-				DC8EBAB71E5FCF6E00AE577C /* Operators.swift in Sources */,
-				DC8EBB641E5FD03C00AE577C /* AttributedStringStream.swift in Sources */,
-				DC8EBB3B1E5FCFD500AE577C /* Mangler.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DC8EBA871E5FCF1700AE577C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1833,6 +1862,14 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		DC0EE9F41E73854B00AFC103 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DC0EE9F51E73854B00AFC103 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
 		DC8EBB561E5FD03C00AE577C /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -1844,6 +1881,42 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		DC0EE9B51E7350D300AFC103 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = W7GJMYD5A4;
+				INFOPLIST_FILE = "iOS App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DC0EE9B61E7350D300AFC103 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = W7GJMYD5A4;
+				INFOPLIST_FILE = "iOS App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		DC8EBA5F1E5FCEF800AE577C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2029,43 +2102,6 @@
 			};
 			name = Release;
 		};
-		DC8EBA851E5FCF0D00AE577C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = W7GJMYD5A4;
-				INFOPLIST_FILE = "$(SRCROOT)/iOS App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 3.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		DC8EBA861E5FCF0D00AE577C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = W7GJMYD5A4;
-				INFOPLIST_FILE = "$(SRCROOT)/iOS App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.harlanhaskins.Trill-iOS";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 3.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
 		DC8EBA901E5FCF1700AE577C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2097,7 +2133,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
+		DC0EE9B41E7350D300AFC103 /* Build configuration list for PBXNativeTarget "Trill iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DC0EE9B51E7350D300AFC103 /* Debug */,
+				DC0EE9B61E7350D300AFC103 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,
@@ -2120,15 +2165,6 @@
 			buildConfigurations = (
 				DC8EBA6F1E5FCF0100AE577C /* Debug */,
 				DC8EBA701E5FCF0100AE577C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DC8EBA841E5FCF0D00AE577C /* Build configuration list for PBXNativeTarget "Trill iOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DC8EBA851E5FCF0D00AE577C /* Debug */,
-				DC8EBA861E5FCF0D00AE577C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
