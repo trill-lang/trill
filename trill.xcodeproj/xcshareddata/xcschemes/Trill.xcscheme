@@ -17,7 +17,7 @@
                BlueprintIdentifier = "DC8EBA591E5FCEF800AE577C"
                BuildableName = "trill"
                BlueprintName = "trill"
-               ReferencedContainer = "container:Trill.xcodeproj">
+               ReferencedContainer = "container:trill.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
             BlueprintIdentifier = "DC8EBA591E5FCEF800AE577C"
             BuildableName = "trill"
             BlueprintName = "trill"
-            ReferencedContainer = "container:Trill.xcodeproj">
+            ReferencedContainer = "container:trill.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -58,7 +58,7 @@
             BlueprintIdentifier = "DC8EBA591E5FCEF800AE577C"
             BuildableName = "trill"
             BlueprintName = "trill"
-            ReferencedContainer = "container:Trill.xcodeproj">
+            ReferencedContainer = "container:trill.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -68,23 +68,23 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "$(PROJECT_DIR)/stdlib/Int.tr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "$(PROJECT_DIR)/stdlib/Mirror.tr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "$(PROJECT_DIR)/stdlib/String.tr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "$(PROJECT_DIR)/stdlib/bytearray.tr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "$(PROJECT_DIR)/stdlib/print.tr"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
@@ -103,7 +103,7 @@
             BlueprintIdentifier = "DC8EBA591E5FCEF800AE577C"
             BuildableName = "trill"
             BlueprintName = "trill"
-            ReferencedContainer = "container:Trill.xcodeproj">
+            ReferencedContainer = "container:trill.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -59,6 +59,11 @@ extension Array where Element: Hashable {
         }
         return uniqued
     }
+
+    subscript(safe index: Int) -> Element? {
+      guard index < count, index >= 0 else { return nil }
+      return self[index]
+    }
 }
 
 let ansiEscapeSupportedOnStdErr: Bool = {

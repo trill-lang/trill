@@ -60,6 +60,7 @@ struct MainFuncFlags: OptionSet {
 public class ASTContext {
   
   let diag: DiagnosticEngine
+  var allowForeignOverloads = false
   
   init(diagnosticEngine: DiagnosticEngine) {
     self.diag = diagnosticEngine
@@ -361,8 +362,14 @@ public class ASTContext {
     }
     
     let decls = functions(named: funcDecl.name)
-    let declNames = decls.map { Mangler.mangle($0) }
-    if declNames.contains(Mangler.mangle(funcDecl)) {
+    let declNames = decls.map { decl -> String in
+      if allowForeignOverloads {
+        return decl.uniqueSignatureKey
+      } else {
+        return Mangler.mangle(decl)
+      }
+    }
+    if declNames.contains(allowForeignOverloads ? funcDecl.uniqueSignatureKey : Mangler.mangle(funcDecl)) {
       error(ASTError.duplicateFunction(name: funcDecl.name),
             loc: funcDecl.name.range?.start,
             highlights: [ funcDecl.name.range ])
@@ -443,6 +450,7 @@ public class ASTContext {
   }
   
   func merge(context: ASTContext) {
+    allowForeignOverloads = context.allowForeignOverloads
     for function in context.functions {
       add(function)
     }

@@ -69,6 +69,16 @@ class FuncDecl: Decl { // func <id>(<id>: <type-id>) -> <type-id> { <expr>* }
                modifiers: modifiers,
                sourceRange: sourceRange)
   }
+  var uniqueSignatureKey: String {
+    var s = ""
+    for arg in args where !arg.isImplicitSelf {
+      s += arg.externalName?.name ?? "_"
+      s += ":"
+      s += arg.type.description
+      s += "__"
+    }
+    return s
+  }
   var formattedParameterList: String {
     var s = "("
     for (idx, arg) in args.enumerated() where !arg.isImplicitSelf {

@@ -9,15 +9,15 @@ foreign type String {
   foreign func includes(_: String) -> Bool
   foreign func endsWith(_: String) -> Bool
   foreign func indexOf(_: String) -> Bool
-  // foreign func indexOf(_: String, startingFrom index: Int) -> Bool
+  foreign func indexOf(_: String, startingFrom index: Int) -> Bool
   foreign func lastIndexOf(_: String) -> Bool
-  // foreign func lastIndexOf(_: String, startingFrom index: Int) -> Bool
+  foreign func lastIndexOf(_: String, startingFrom index: Int) -> Bool
   foreign func localeCompare(_: String) -> Bool
   foreign func match(_: String) -> Bool
   foreign func normalize() -> String
-  // foreign func padEnd(_: Int) -> String
+  foreign func padEnd(_: Int) -> String
   foreign func padEnd(_: Int, _: String) -> String
-  // foreign func padStart(_: Int) -> String
+  foreign func padStart(_: Int) -> String
   foreign func padStart(_: Int, _: String) -> String
   foreign func repeat(_: Int) -> String
   foreign func replace(_: String, with: String) -> String
