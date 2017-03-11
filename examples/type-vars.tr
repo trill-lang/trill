@@ -1,0 +1,21 @@
+indirect type IT {
+
+}
+
+type T {
+
+}
+
+func iterateMetadata(_ meta: Mirror) {
+  meta.print()
+}
+
+func main() {
+  println(IT)
+  println(T)
+  iterateMetadata(IT)
+  iterateMetadata(T)
+  let m = Mirror
+  println(m.typeName)
+  iterateMetadata(m)
+}

@@ -471,6 +471,17 @@ class IRGenerator: ASTVisitor, Pass {
                                  })
         return binding
       }
+    } else if let decl = expr.decl, expr.isTypeVar, DataType(name: "Mirror") == expr.type {
+      let mirrorInitializer = context.stdlib!.mirrorReflectingTypeMetadataInitializer
+      let function = codegenFunctionPrototype(mirrorInitializer)
+      return VarBinding(ref: function,
+                        storage: .reference,
+                        read: {
+                          let meta = self.codegenTypeMetadata(decl.type)
+                          let arg = self.builder.buildBitCast(meta, type: PointerType(pointee: IntType.int8))
+                          return self.builder.buildCall(function, args: [arg])
+                        },
+                        write: { _ in fatalError("Cannot reassign type") })
     }
     fatalError("unknown var \(expr.name.name)")
   }

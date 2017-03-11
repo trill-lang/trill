@@ -338,6 +338,9 @@ public class ASTContext {
       if case .any = canTy {
         expr.type = contextualType
         return true
+      } else if propagateContextualType(contextualType, to: expr.trueCase) && propagateContextualType(contextualType, to: expr.falseCase) {
+        expr.type = contextualType
+        return true
       }
     case let expr as StringExpr:
       if [.string, .pointer(type: DataType.int8)].contains(canTy) {
@@ -801,6 +804,17 @@ public class StdLibASTContext: ASTContext {
     return string.initializers.first { initializer in
       // TODO: find a way to do this that doesn't require string comparison
       initializer.formattedParameterList == "(_global cString: *Int8, length: Int)"
+    }!
+  }
+  
+  var mirror: TypeDecl {
+    return type(named: "Mirror")!
+  }
+  
+  var mirrorReflectingTypeMetadataInitializer: InitializerDecl {
+    return mirror.initializers.first { initializer in
+      // TODO: find a way to do this that doesn't require string comparison
+      initializer.formattedParameterList == "(reflectingType typeMeta: *Void)"
     }!
   }
 }

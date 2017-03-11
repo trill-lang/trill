@@ -4,6 +4,13 @@ func inferenceAsAny() {
   print(1 < 0 ? false : "true")
 }
 
+func takesInt8(_ i: Int8) {}
+
+func parallelPropagation() {
+  takesInt8(true ? 9 : 10)
+}
+
 func main() {
   inferenceAsAny()
+  parallelPropagation()
 }

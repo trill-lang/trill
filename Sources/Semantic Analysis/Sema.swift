@@ -257,7 +257,7 @@ class Sema: ASTTransformer, Pass {
       // An error will already have been thrown from here
       return .property
     }
-    if let type = expr.lhs.type, case .pointer(_) = context.canonicalType(type) {
+    if case .pointer(_) = context.canonicalType(type) {
       error(SemaError.pointerPropertyAccess(lhs: type, property: expr.name),
             loc: expr.dotLoc,
             highlights: [
@@ -290,9 +290,9 @@ class Sema: ASTTransformer, Pass {
       return .property
     }
     expr.typeDecl = typeDecl
-    if let varExpr = expr.lhs as? VarExpr, varExpr.isTypeVar {
-      expr.decl = varExpr.decl
-      expr.type = varExpr.decl?.type
+    if let varExpr = expr.lhs as? VarExpr, varExpr.isTypeVar, let varTypeDecl = varExpr.decl as? TypeDecl {
+      expr.typeDecl = varTypeDecl
+      expr.type = varTypeDecl.type
       return .staticMethod
     }
     let candidateMethods = typeDecl.methods(named: expr.name.name)
@@ -475,7 +475,7 @@ class Sema: ASTTransformer, Pass {
     } else if let decl = context.decl(for: DataType(name: expr.name.name)) {
       expr.isTypeVar = true
       expr.decl = decl
-      expr.type = DataType(name: expr.name.name)
+      expr.type = context.stdlib?.mirror.type ?? DataType(name: expr.name.name)
     }
     guard let decl = expr.decl else {
       error(SemaError.unknownVariableName(name: expr.name),
