@@ -77,9 +77,8 @@ class Parser {
   }
   
   func unexpectedToken() -> Error {
-    let end = adjustedEnd()
     return Diagnostic.error(ParseError.unexpectedToken(token: peek()),
-                            loc: end,
+                            loc: currentToken().range.start,
                             highlights: [
                               currentToken().range
                         ])
