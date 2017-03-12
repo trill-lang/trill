@@ -145,6 +145,7 @@
 		DC0EE9F31E73854100AFC103 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F21E73854100AFC103 /* Info.plist */; };
 		DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F41E73854B00AFC103 /* Main.storyboard */; };
 		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DC772F481E760A87004BE15E /* Date.tr in Resources */ = {isa = PBXBuildFile; fileRef = DCD6D78D1E76063E00905575 /* Date.tr */; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA81E5FCF6E00AE577C /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
 		DC8EBAAA1E5FCF6E00AE577C /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA961E5FCF6E00AE577C /* ASTTransformer.swift */; };
@@ -760,6 +761,7 @@
 		DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAE21EC1E63970A00645143 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		DCBFE9371E6FD31700573329 /* metadata_private.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata_private.cpp; path = Sources/Runtime/metadata_private.cpp; sourceTree = "<group>"; };
+		DCD6D78D1E76063E00905575 /* Date.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Date.tr; path = "iOS App/JavaScript Declarations/Date.tr"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1001,6 +1003,7 @@
 				DC0EE9EC1E736CF600AFC103 /* print.tr */,
 				DC1112B61E6CDFA800F86E5E /* Array.tr */,
 				DC1112B71E6CDFA800F86E5E /* String.tr */,
+				DCD6D78D1E76063E00905575 /* Date.tr */,
 			);
 			name = "JavaScript Declarations";
 			sourceTree = "<group>";
@@ -1663,6 +1666,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */,
+				DC772F481E760A87004BE15E /* Date.tr in Resources */,
 				DC0EE9E81E736AF100AFC103 /* Array.tr in Resources */,
 				DC0EE9ED1E736CF800AFC103 /* print.tr in Resources */,
 				DC0EE9F31E73854100AFC103 /* Info.plist in Resources */,

@@ -200,7 +200,7 @@ class ClangImporter: Pass {
     return FuncDecl(name: Identifier(name: name),
                         returnType: `return`.ref(),
                         args: args.enumerated().map { (idx, type) in
-                          let range = argRanges[safe: idx]
+                          let range = idx < argRanges.count ? argRanges[idx] : nil
                           let ref = type.ref(range: range)
                           return ParamDecl(name: "", type: ref, sourceRange: range)
                         },

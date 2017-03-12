@@ -31,12 +31,16 @@ class JavaScriptRunner: TextOutputStream {
       guard let exception = exception else { return }
       self.context.diag.error("JavaScript Error: \(exception)")
     }
-    let printlnFn: @convention(block) (AnyObject) -> Void = { v in
-      self.onMain { self.output("\(v)\n") }
-    }
-    jsContext?.setObject(unsafeBitCast(printlnFn, to: AnyObject.self), forKeyedSubscript: "println" as NSString)
-    let printFn: @convention(block) (AnyObject) -> Void = { v in
-      self.onMain { self.output("\(v)") }
+    let printFn: @convention(block) (Any, Any) -> Void = { v, term in
+      var terminator = "\n"
+      if let jsTerm = term as? JSValue,
+         !jsTerm.isUndefined, !jsTerm.isNull,
+         let str = jsTerm.toString() {
+        terminator = str
+      } else if let str = term as? String {
+        terminator = str
+      }
+      self.onMain { self.output("\(v)\(terminator)") }
     }
     jsContext?.setObject(unsafeBitCast(printFn, to: AnyObject.self), forKeyedSubscript: "print" as NSString)
     
@@ -47,14 +51,14 @@ class JavaScriptRunner: TextOutputStream {
     }
     jsContext?.setObject(unsafeBitCast(callObjC, to: AnyObject.self), forKeyedSubscript: "callObjC" as NSString)
     
-    let callObjC1: @convention(block) (String, AnyObject) -> Void = { sel, arg in
+    let callObjC1: @convention(block) (String, Any) -> Void = { sel, arg in
       self.onMain {
         self.objCReceiver!.perform(Selector(sel), with: arg)
       }
     }
     jsContext?.setObject(unsafeBitCast(callObjC1, to: AnyObject.self), forKeyedSubscript: "callObjC1" as NSString)
     
-    let callObjC2: @convention(block) (String, AnyObject, AnyObject) -> Void = { sel, arg1, arg2 in
+    let callObjC2: @convention(block) (String, Any, Any) -> Void = { sel, arg1, arg2 in
       self.onMain {
         self.objCReceiver!.perform(Selector(sel), with: arg1, with: arg2)
       }

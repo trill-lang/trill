@@ -1,0 +1,57 @@
+foreign type Date {
+  foreign init() -> Date
+  foreign init(utc: Int) -> Date
+  foreign init(string: String) -> Date
+  foreign init(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, millisecond: Int) -> Int
+  foreign func getDate() -> Int
+  foreign func getDay() -> Int
+  foreign func getFullYear() -> Int
+  foreign func getHours() -> Int
+  foreign func getMilliseconds() -> Int
+  foreign func getMinutes() -> Int
+  foreign func getMonth() -> Int
+  foreign func getSeconds() -> Int
+  foreign func getTime() -> Int
+  foreign func getTimezoneOffset() -> Int
+  foreign func getUTCDate() -> Int
+  foreign func getUTCDay() -> Int
+  foreign func getUTCFullYear() -> Int
+  foreign func getUTCHours() -> Int
+  foreign func getUTCMilliseconds() -> Int
+  foreign func getUTCMinutes() -> Int
+  foreign func getUTCMonth() -> Int
+  foreign func getUTCSeconds() -> Int
+  foreign func setDate(_: Int)
+  foreign func setFullYear(_: Int)
+  foreign func setHours(_: Int)
+  foreign func setMilliseconds(_: Int)
+  foreign func setMinutes(_: Int)
+  foreign func setMonth(_: Int)
+  foreign func setSeconds(_: Int)
+  foreign func setTime(_: Int)
+  foreign func setUTCDate(_: Int)
+  foreign func setUTCFullYear(_: Int)
+  foreign func setUTCHours(_: Int)
+  foreign func setUTCMilliseconds(_: Int)
+  foreign func setUTCMinutes(_: Int)
+  foreign func setUTCMonth(_: Int)
+  foreign func setUTCSeconds(_: Int)
+  foreign func toDateString() -> String
+  foreign func toISOString() -> String
+  foreign func toJSON() -> String
+  foreign func toLocaleDateString() -> String
+  foreign func toLocaleTimeString() -> String
+  foreign func toLocaleString() -> String
+  foreign func toString() -> String
+  foreign func toTimeString() -> String
+  foreign func toUTCString() -> String
+  foreign static func parse(_ str: String) -> Date
+  foreign static func now() -> Int
+  foreign static func UTC(year: Int, month: Int) -> Int
+  foreign static func UTC(year: Int, month: Int, day: Int) -> Int
+  foreign static func UTC(year: Int, month: Int, day: Int, hour: Int) -> Int
+  foreign static func UTC(year: Int, month: Int, day: Int, hour: Int, minute: Int) -> Int
+  foreign static func UTC(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int) -> Int
+  foreign static func UTC(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int, millisecond: Int) -> Int
+  foreign func valueOf() -> Int
+}
