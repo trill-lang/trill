@@ -19,9 +19,8 @@ foreign type Array {
     foreign func join(_: String)
     foreign func lastIndexOf(_: Int) -> Int
     foreign func slice(from: Int, to: Int) -> Int
-    foreign func toSource()
-    foreign func toString()
-    foreign func toLocaleString()
+    foreign func toString() -> String
+    foreign func toLocaleString() -> String
     foreign func every(_: (Any) -> Bool) -> Array
     foreign func filter(_: (Any) -> Bool) -> Array
     foreign func find(_: (Any) -> Bool) -> Any
