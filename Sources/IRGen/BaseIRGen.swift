@@ -472,7 +472,7 @@ class IRGenerator: ASTVisitor, Pass {
         return binding
       }
     } else if let decl = expr.decl, expr.isTypeVar, DataType(name: "Mirror") == expr.type {
-      let mirrorInitializer = context.stdlib!.mirrorReflectingTypeMetadataInitializer
+      let mirrorInitializer = context.stdlib!.mirrorReflectingTypeMetadataInitializer!
       let function = codegenFunctionPrototype(mirrorInitializer)
       return VarBinding(ref: function,
                         storage: .reference,

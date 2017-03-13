@@ -815,15 +815,15 @@ public class StdLibASTContext: ASTContext {
     }!
   }
   
-  var mirror: TypeDecl {
-    return type(named: "Mirror")!
+  var mirror: TypeDecl? {
+    return type(named: "Mirror")
   }
   
-  var mirrorReflectingTypeMetadataInitializer: InitializerDecl {
-    return mirror.initializers.first { initializer in
+  var mirrorReflectingTypeMetadataInitializer: InitializerDecl? {
+    return mirror?.initializers.first { initializer in
       // TODO: find a way to do this that doesn't require string comparison
       initializer.formattedParameterList == "(reflectingType typeMeta: *Void)"
-    }!
+    }
   }
 }
 

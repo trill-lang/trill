@@ -485,7 +485,7 @@ class Sema: ASTTransformer, Pass {
     } else if let decl = context.decl(for: DataType(name: expr.name.name)) {
       expr.isTypeVar = true
       expr.decl = decl
-      expr.type = context.stdlib?.mirror.type ?? DataType(name: expr.name.name)
+      expr.type = context.stdlib?.mirror?.type ?? DataType(name: expr.name.name)
     }
     guard let decl = expr.decl else {
       error(SemaError.unknownVariableName(name: expr.name),
