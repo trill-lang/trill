@@ -130,6 +130,13 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
   override func visitFuncDecl(_ decl: FuncDecl) {
     guard decl.startLoc?.file == file else { return }
     add(attributes(for: decl.returnType))
+    if let setter = decl as? PropertySetterDecl {
+      add(style: attributes.keyword, range: setter.setRange.nsRange)
+    }
+    if let getter = decl as? PropertyGetterDecl,
+       let range = getter.getRange?.nsRange {
+      add(style: attributes.keyword, range: range)
+    }
     super.visitFuncDecl(decl)
   }
   
@@ -141,6 +148,7 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
 
   override func visitPropertyDecl(_ decl: PropertyDecl) {
     visitVarAssignDecl(decl)
+    super.visitPropertyDecl(decl)
   }
   
   override func visitExtensionDecl(_ decl: ExtensionDecl) {

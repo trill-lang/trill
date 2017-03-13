@@ -108,12 +108,13 @@ class Parser {
   var sourceLoc: SourceLocation {
     return currentToken().range.start
   }
-  
-  func consume(_ token: TokenKind) throws {
+
+  @discardableResult
+  func consume(_ token: TokenKind) throws -> Token {
     guard token == peek() else {
       throw unexpectedToken()
     }
-    consumeToken()
+    return consumeToken()
   }
   
   func consumeAtLeastOneLineSeparator() throws {

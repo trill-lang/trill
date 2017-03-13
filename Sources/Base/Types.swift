@@ -350,8 +350,12 @@ class PropertyDecl: VarAssignDecl {
 
 class PropertyGetterDecl: MethodDecl {
   let propertyName: Identifier
-  init(parentType: DataType, propertyName: Identifier, type: TypeRefExpr, body: CompoundStmt, sourceRange: SourceRange? = nil) {
+  let getRange: SourceRange?
+  init(parentType: DataType, propertyName: Identifier, type: TypeRefExpr,
+       body: CompoundStmt, getRange: SourceRange?,
+       sourceRange: SourceRange? = nil) {
     self.propertyName = propertyName
+    self.getRange = getRange
     super.init(name: "",
                parentType: parentType,
                args: [],
@@ -366,12 +370,15 @@ class PropertyGetterDecl: MethodDecl {
 
 class PropertySetterDecl: MethodDecl {
   let propertyName: Identifier
+  let setRange: SourceRange
   init(parentType: DataType,
        propertyName: Identifier,
        type: TypeRefExpr,
        body: CompoundStmt,
+       setRange: SourceRange,
        sourceRange: SourceRange? = nil) {
     self.propertyName = propertyName
+    self.setRange = setRange
     super.init(name: "",
                parentType: parentType,
                args: [ParamDecl(name: "newValue", type: type)],

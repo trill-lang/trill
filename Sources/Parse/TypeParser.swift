@@ -138,6 +138,7 @@ extension Parser {
                                       propertyName: id,
                                       type: propType,
                                       body: body,
+                                      getRange: nil,
                                       sourceRange: range(start: loc))
           break accessors
         }
@@ -157,24 +158,26 @@ extension Parser {
 
   func parsePropertyGetter(type: DataType, name: Identifier, propType: TypeRefExpr) throws -> PropertyGetterDecl {
     let loc = sourceLoc
-    try consume(.identifier("get"))
+    let tok = try consume(.identifier("get"))
     let body = try parseCompoundStmt()
 
     return PropertyGetterDecl(parentType: type,
                               propertyName: name,
                               type: propType,
                               body: body,
+                              getRange: tok.range,
                               sourceRange: range(start: loc))
   }
 
   func parsePropertySetter(type: DataType, name: Identifier, propType: TypeRefExpr) throws -> PropertySetterDecl {
     let loc = sourceLoc
-    try consume(.identifier("set"))
+    let tok = try consume(.identifier("set"))
     let body = try parseCompoundStmt()
     return PropertySetterDecl(parentType: type,
                               propertyName: name,
                               type: propType,
                               body: body,
+                              setRange: tok.range,
                               sourceRange: range(start: loc))
   }
 
