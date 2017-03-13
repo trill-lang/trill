@@ -21,26 +21,25 @@ foreign type String {
   foreign func padStart(_: Int, _: String) -> String
   foreign func repeat(_: Int) -> String
   foreign func replace(_: String, with: String) -> String
-
   foreign subscript(_: Int) -> String
-
-// TODO: Fill the rest out
-  foreign func search()
-  // foreign func slice()
+  foreign func search(_: String) -> Int
+  foreign func search(_: String, flags: String) -> Int
+  foreign func slice(from: Int, to: Int) -> String
   foreign func split(_: String) -> Array
-  foreign func startsWith() -> Bool
-  // foreign func substr()
-  // foreign func substring()
-  // foreign func toLocaleLowerCase()
-  // foreign func toLocaleUpperCase()
+  foreign func startsWith(_: String) -> Bool
+  foreign func substr(from: Int, length: Int) -> String
+  foreign func substring(from: Int) -> String
+  foreign func substring(from: Int, to: Int) -> String
+  foreign func toLocaleLowerCase() -> String
+  foreign func toLocaleUpperCase() -> String
   foreign func toLowerCase() -> String
   foreign func toSource() -> String
   foreign func toString() -> String
   foreign func toUpperCase() -> String
-  // foreign func trim()
-  // foreign func trimLeft()
-  // foreign func trimRight()
-  // foreign func valueOf()
+  foreign func trim() -> String
+  foreign func trimLeft() -> String
+  foreign func trimRight() -> String
+  foreign func valueOf() -> String
 }
 
 foreign func +(lhs: String, rhs: Any) -> String
