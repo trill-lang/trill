@@ -198,6 +198,9 @@ class SourceAnnotator: ASTTransformer, DiagnosticConsumer {
     if decl.has(attribute: .foreign) {
       style = attributes.externalName
     }
+    if expr.isSelf {
+      style = attributes.keyword
+    }
     add(style: style, range: range)
   }
   

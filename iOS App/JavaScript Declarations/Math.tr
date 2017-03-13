@@ -1,0 +1,27 @@
+foreign type Math {
+  foreign static func abs(_: Double) -> Double
+  foreign static func abs(_: Int) -> Int
+  foreign static func acos(_: Double) -> Double
+  foreign static func asin(_: Double) -> Double
+  foreign static func atan(_: Double) -> Double
+  foreign static func atan2(_: Double, _: Double) -> Double
+  foreign static func atan2(_: Int, _: Int) -> Double
+  foreign static func ceil(_: Double) -> Int
+  foreign static func cos(_: Double) -> Double
+  foreign static func exp(_: Double) -> Double
+  foreign static func exp(_: Int) -> Double
+  foreign static func floor(_: Double) -> Int
+  foreign static func log(_: Double) -> Double
+  foreign static func log(_: Int) -> Double
+  foreign static func max(_: ...) -> Double
+  foreign static func min(_: ...) -> Double
+  foreign static func pow(_: Int, _: Int) -> Int
+  foreign static func pow(_: Double, _: Double) -> Double
+  foreign static func random() -> Double
+  foreign static func round(_: Double) -> Int
+  foreign static func sin(_: Double)
+  foreign static func sqrt(_: Double) -> Double
+  foreign static func tan(_: Double) -> Double
+}
+
+foreign let NaN: Double

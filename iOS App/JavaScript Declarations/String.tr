@@ -12,7 +12,7 @@ foreign type String {
   foreign func indexOf(_: String, startingFrom index: Int) -> Bool
   foreign func lastIndexOf(_: String) -> Bool
   foreign func lastIndexOf(_: String, startingFrom index: Int) -> Bool
-  foreign func localeCompare(_: String) -> Bool
+  foreign func localeCompare(_: String) -> Int
   foreign func match(_: String) -> Bool
   foreign func normalize() -> String
   foreign func padEnd(_: Int) -> String
@@ -25,7 +25,7 @@ foreign type String {
   foreign subscript(_: Int) -> String
 
 // TODO: Fill the rest out
-  // foreign func search()
+  foreign func search()
   // foreign func slice()
   foreign func split(_: String) -> Array
   foreign func startsWith() -> Bool

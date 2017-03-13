@@ -146,6 +146,7 @@
 		DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DC0EE9F41E73854B00AFC103 /* Main.storyboard */; };
 		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC772F481E760A87004BE15E /* Date.tr in Resources */ = {isa = PBXBuildFile; fileRef = DCD6D78D1E76063E00905575 /* Date.tr */; };
+		DC772F4A1E761610004BE15E /* Math.tr in Resources */ = {isa = PBXBuildFile; fileRef = DC772F491E761486004BE15E /* Math.tr */; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA81E5FCF6E00AE577C /* ASTContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA951E5FCF6E00AE577C /* ASTContext.swift */; };
 		DC8EBAAA1E5FCF6E00AE577C /* ASTTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA961E5FCF6E00AE577C /* ASTTransformer.swift */; };
@@ -514,6 +515,7 @@
 		DC1112B61E6CDFA800F86E5E /* Array.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Array.tr; path = "iOS App/JavaScript Declarations/Array.tr"; sourceTree = "<group>"; };
 		DC1112B71E6CDFA800F86E5E /* String.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = String.tr; path = "iOS App/JavaScript Declarations/String.tr"; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
+		DC772F491E761486004BE15E /* Math.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Math.tr; path = "iOS App/JavaScript Declarations/Math.tr"; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA8B1E5FCF1700AE577C /* trill-demangle */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "trill-demangle"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1004,6 +1006,7 @@
 				DC1112B61E6CDFA800F86E5E /* Array.tr */,
 				DC1112B71E6CDFA800F86E5E /* String.tr */,
 				DCD6D78D1E76063E00905575 /* Date.tr */,
+				DC772F491E761486004BE15E /* Math.tr */,
 			);
 			name = "JavaScript Declarations";
 			sourceTree = "<group>";
@@ -1667,6 +1670,7 @@
 			files = (
 				DC0EE9F61E73854B00AFC103 /* Main.storyboard in Resources */,
 				DC772F481E760A87004BE15E /* Date.tr in Resources */,
+				DC772F4A1E761610004BE15E /* Math.tr in Resources */,
 				DC0EE9E81E736AF100AFC103 /* Array.tr in Resources */,
 				DC0EE9ED1E736CF800AFC103 /* print.tr in Resources */,
 				DC0EE9F31E73854100AFC103 /* Info.plist in Resources */,
