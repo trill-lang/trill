@@ -385,7 +385,7 @@ class ClangImporter: Pass {
     var _tokens: UnsafeMutablePointer<CXToken>?
     clang_tokenize(tu, range, &_tokens, &tokenCount)
     
-    guard let tokens = _tokens, tokenCount == 3 else { return }
+    guard let tokens = _tokens, tokenCount >= 2 else { return }
     
     defer {
       clang_disposeTokens(tu, tokens, tokenCount)

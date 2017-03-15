@@ -80,8 +80,7 @@ RawOptions ParseArguments(int argc, char **argv) {
                                                cl::values(clEnumVal(O0 , "No optimizations, enable debugging"),
                                                           clEnumVal(O1, "Enable trivial optimizations"),
                                                           clEnumVal(O2, "Enable default optimizations"),
-                                                          clEnumVal(O3, "Enable expensive optimizations"),
-                                                          clEnumValEnd), cat);
+                                                          clEnumVal(O3, "Enable expensive optimizations")), cat);
   cl::opt<RawOutputFormat> emit("emit", cl::desc("Output format to emit"),
                                 cl::values(clEnumValN(Binary, "binary", "A binary executable"),
                                            clEnumValN(Object, "object", "An object file that has not been linked (.o)"),
@@ -89,8 +88,7 @@ RawOptions ParseArguments(int argc, char **argv) {
                                            clEnumValN(LLVM, "ir", "Textual LLVM IR (.ll)"),
                                            clEnumValN(Bitcode, "bitcode", "LLVM Bitcode (.bc)"),
                                            clEnumValN(AST, "ast", "A serailized Abstract Syntax Tree"),
-                                           clEnumValN(JavaScript, "js", "JavaScript"),
-                                           clEnumValEnd), cat);
+                                           clEnumValN(JavaScript, "js", "JavaScript")), cat);
   cl::opt<bool> jit("run", cl::desc("JIT the specified files"), cat);
   cl::opt<bool> parseOnly("parse-only", cl::desc("Only parse, do not run semantic analysis"), cat);
   cl::opt<bool> showImports("show-imports", cl::desc("Show imported items in the AST dump"), cat);
