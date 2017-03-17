@@ -85,6 +85,13 @@ struct TypeMetadata {
          type, this function throws a fatal error.
    */
   const FieldMetadata *fieldMetadata(uint64_t index) const;
+
+  /**
+   The size of this type, in bytes.
+   */
+  uint64_t sizeInBytes() const {
+    return sizeInBits / 8;
+  }
 };
 
 /**
@@ -119,6 +126,14 @@ struct AnyBox {
   const TypeMetadata *typeMetadata;
 
   /**
+   The payload inside this \c Any. If the underlying type is smaller than 24
+   bytes, then the payload will be stored in-line with this object. Otherwise,
+   the payload will be heap-allocated and a pointer to the value will be
+   stored in the payload.
+   */
+  uint8_t payload[24];
+
+  /**
    Creates an AnyBox that will eventually store a value that is the same type
    as the provided metadata.
    */
@@ -136,11 +151,21 @@ struct AnyBox {
   void updateField(uint64_t fieldNum, AnyBox *newValue);
 
   /**
+   Whether or not the payload underlying this value must be heap-allocated.
+   */
+  bool mustAllocatePayload() {
+    return !typeMetadata->isReferenceType &&
+            typeMetadata->sizeInBytes() > sizeof(payload);
+  }
+
+  /**
    Gets a pointer to the underlying value inside this \c Any.
    */
   void *value() {
-    return reinterpret_cast<void *>(
-             reinterpret_cast<uintptr_t>(this) + sizeof(AnyBox));
+    if (mustAllocatePayload()) {
+      return *reinterpret_cast<void **>(&payload);
+    }
+    return reinterpret_cast<void *>(&payload);
   }
 
   /**

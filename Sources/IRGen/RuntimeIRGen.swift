@@ -40,16 +40,42 @@ extension IRGenerator {
         return codegenCopyAny(value: value)
       }
     }
-    let allocateAny = codegenIntrinsic(named: "trill_allocateAny")
+    let irType = resolveLLVMType(type)
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta,
                                         type: PointerType.toVoid,
                                         name: "meta-cast")
-    let res = builder.buildCall(allocateAny, args: [castMeta],
-                                name: "allocate-any")
-    let valPtr = codegenAnyValuePtr(res, type: type)
-    builder.buildStore(value, to: valPtr)
-    return res
+
+    let anyPtr = createEntryBlockAlloca(currentFunction!.functionRef!,
+                                        type: createAnyType(),
+                                        name: "any",
+                                        storage: .value)
+
+    let metaGEP = builder.buildStructGEP(anyPtr.ref, index: 0)
+    builder.buildStore(castMeta, to: metaGEP)
+
+    let anyGEP = builder.buildBitCast(builder.buildStructGEP(anyPtr.ref, index: 1),
+                                      type: PointerType.toVoid)
+
+    // Any includes a 24-byte payload. If the size of this type is going to
+    // be larger than that, we need to heap-allocate the value and use it to
+    // initialize the any.
+    if targetMachine.dataLayout.sizeOfTypeInBits(irType) > 24 * 8 {
+      let store = builder.buildBitCast(anyGEP, type: PointerType(pointee: PointerType.toVoid))
+      let alloc = codegenAlloc(type: type)
+      alloc.write(value)
+      builder.buildStore(alloc.ref, to: store)
+    } else {
+      let storeTmp = createEntryBlockAlloca(currentFunction!.functionRef!,
+                                           type: irType,
+                                           name: "any-store-tmp",
+                                           storage: .value)
+      storeTmp.write(value)
+      let cast = builder.buildBitCast(anyGEP,
+                                      type: PointerType(pointee: irType))
+      builder.buildStore(value, to: cast)
+    }
+    return anyPtr.read()
   }
   
   func codegenCopyAny(value: IRValue) -> IRValue {

@@ -391,7 +391,15 @@ class IRGenerator: ASTVisitor, Pass {
   }
   
   func visitTypeRefExpr(_ expr: TypeRefExpr) -> Result { return nil }
-  
+
+  func createAnyType() -> IRType {
+    if let existing = module.type(named: "Any") { return existing }
+    return builder.createStruct(name: "Any", types: [
+      PointerType.toVoid,
+      ArrayType(elementType: IntType.int8, count: 24)
+    ])
+  }
+
   /// Shortcut for resolving the LLVM type of a TypeRefExpr
   /// - parameters:
   ///   - type: A TypeRefExpr from an expression.
@@ -411,7 +419,7 @@ class IRGenerator: ASTVisitor, Pass {
     }
     switch type {
     case .any:
-      fallthrough
+      return createAnyType()
     case .pointer(.void):
       return PointerType(pointee: IntType.int8)
     case .array(let field, let length):

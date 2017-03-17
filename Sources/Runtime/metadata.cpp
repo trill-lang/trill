@@ -59,33 +59,28 @@ size_t trill_getFieldOffset(const void *_Nullable fieldMeta) {
   return reinterpret_cast<const FieldMetadata *>(fieldMeta)->offset;
 }
 
-TRILL_ANY trill_allocateAny(const void *typeMeta) {
-  trill_assert(typeMeta != nullptr);
-  auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMeta);
-  return { AnyBox::create(typeMetadata) };
-}
-
-TRILL_ANY trill_copyAny(TRILL_ANY any) {
+Any trill_copyAny(Any any) {
   return { any->copy() };
 }
 
-void *trill_getAnyFieldValuePtr(TRILL_ANY any, uint64_t fieldNum) {
+void *trill_getAnyFieldValuePtr(Any any, uint64_t fieldNum) {
   return any->fieldValuePtr(fieldNum);
 }
 
-TRILL_ANY trill_extractAnyField(TRILL_ANY any, uint64_t fieldNum) {
+Any trill_extractAnyField(Any any, uint64_t fieldNum) {
   return { any->extractField(fieldNum) };
 }
 
-void trill_updateAny(TRILL_ANY any, uint64_t fieldNum, TRILL_ANY newAny) {
-  any->updateField(fieldNum, newAny);
+void trill_updateAny(Any any, uint64_t fieldNum, Any newAny_) {
+  any->updateField(fieldNum, newAny_.any());
 }
 
-void *_Nonnull trill_getAnyValuePtr(TRILL_ANY any) {
+void *_Nonnull trill_getAnyValuePtr(Any any) {
   return any->value();
 }
 
-const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY any) {
+const void *_Nonnull trill_getAnyTypeMetadata(Any any) {
+  trill_assert(any.any() != nullptr);
   return any->typeMetadata;
 }
   
@@ -97,13 +92,13 @@ void trill_dumpProtocol(ProtocolMetadata *proto) {
     }
     std::cout << "}" << std::endl;
 }
-  
-uint8_t trill_checkTypes(TRILL_ANY any, const void *typeMetadata_) {
+
+uint8_t trill_checkTypes(Any any, const void *typeMetadata_) {
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
   return any->typeMetadata == typeMetadata;
 }
 
-const void *trill_checkedCast(TRILL_ANY any, const void *typeMetadata_) {
+const void *trill_checkedCast(Any any, const void *typeMetadata_) {
   auto anyMetadata = any->typeMetadata;
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
   if (!trill_checkTypes(any, typeMetadata_)) {
@@ -112,7 +107,7 @@ const void *trill_checkedCast(TRILL_ANY any, const void *typeMetadata_) {
   return any->value();
 }
 
-uint8_t trill_anyIsNil(TRILL_ANY any) {
+uint8_t trill_anyIsNil(Any any) {
   return any->isNil() ? 1 : 0;
 }
 

@@ -21,22 +21,21 @@ struct AnyBox;
 extern "C" {
 #endif
 
-
 /**
- \c TRILL_ANY is a special type understood by the Trill compiler as the
+ \c Any is a special type understood by the Trill compiler as the
  representation of an \c Any value.
  */
-typedef struct TRILL_ANY {
-  void * _Nonnull _any;
+typedef struct Any {
+  const void *_Nonnull typeMetadata;
+  uint8_t payload[24];
 #ifdef __cplusplus
   inline AnyBox *_Nonnull any() {
-    trill_assert(_any != nullptr && "passed a null value for Any");
-    return reinterpret_cast<AnyBox *>(_any);
+    return reinterpret_cast<AnyBox *>(this);
   }
   inline AnyBox *_Nonnull operator->() noexcept { return any(); }
   inline operator AnyBox*_Nonnull() { return any(); }
 #endif
-} TRILL_ANY;
+} Any;
 
 /**
  Gets the formatted name of a given Trill type metadata object.
@@ -127,24 +126,6 @@ const void *_Nonnull trill_getFieldType(const void *_Nonnull fieldMeta);
  */
 size_t trill_getFieldOffset(const void *_Nullable fieldMeta);
 
-
-/**
- Creates an \c Any representation with the provided type metadata.
- An \c Any in Trill is a variable-sized, heap-allocated box that holds:
-
- - Type metadata for the underlying object, and
- - A payload that is the size specified in the metadata.
- 
- @note This value is uninitialized, and the payload will be empty. You
-       must initialize the payload with a value by casting and storing
-       the value into the pointer returned by \c trill_getAnyValuePtr.
-
- @param typeMeta The type metadata for the underlying value.
- @return A new \c Any box that is uninitialized.
- */
-TRILL_ANY trill_allocateAny(const void *_Nonnull typeMeta);
-
-
 /**
  Copies an \c Any if the underlying value's semantics mean it should be copied.
  If the underlying value is a reference type, then the provided \c Any is just
@@ -155,7 +136,7 @@ TRILL_ANY trill_allocateAny(const void *_Nonnull typeMeta);
          underlying value is has value semantics. Otherwise, the provided
          \c Any.
  */
-TRILL_ANY trill_copyAny(TRILL_ANY any);
+Any trill_copyAny(Any any);
 
 /**
  Gets a pointer to a field inside the \c Any structure. Specifically, this
@@ -171,7 +152,7 @@ TRILL_ANY trill_copyAny(TRILL_ANY any);
  @return A pointer into the payload that points to the value of the
          provided field.
  */
-void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any, uint64_t fieldNum);
+void *_Nonnull trill_getAnyFieldValuePtr(Any any, uint64_t fieldNum);
 
 
 /**
@@ -186,7 +167,7 @@ void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any, uint64_t fieldNum);
  @param fieldNum The field index.
  @return A new \c Any with a payload that comes from the field's contents.
  */
-TRILL_ANY trill_extractAnyField(TRILL_ANY any, uint64_t fieldNum);
+Any trill_extractAnyField(Any any, uint64_t fieldNum);
 
 
 /**
@@ -194,9 +175,9 @@ TRILL_ANY trill_extractAnyField(TRILL_ANY any, uint64_t fieldNum);
 
  @param any The \c Any for the composite type whose field you are replacing.
  @param fieldNum The index of the field to be replaced.
- @param newany The \c Any for the underlying field.
+ @param newAny The \c Any for the underlying field.
  */
-void trill_updateAny(TRILL_ANY any, uint64_t fieldNum, TRILL_ANY newany);
+void trill_updateAny(Any any, uint64_t fieldNum, Any newAny);
 
 
 /**
@@ -208,7 +189,7 @@ void trill_updateAny(TRILL_ANY any, uint64_t fieldNum, TRILL_ANY newany);
  @param anyValue The \c Any whose payload you want to use.
  @return A pointer to the payload that can be cast and then loaded from.
  */
-void *_Nonnull trill_getAnyValuePtr(TRILL_ANY anyValue);
+void *_Nonnull trill_getAnyValuePtr(Any anyValue);
 
 
 /**
@@ -217,7 +198,7 @@ void *_Nonnull trill_getAnyValuePtr(TRILL_ANY anyValue);
  @param anyValue The \c Any box.
  @return The underlying type metadata.
  */
-const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY anyValue);
+const void *_Nonnull trill_getAnyTypeMetadata(Any anyValue);
 
 
 /**
@@ -228,7 +209,7 @@ const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY anyValue);
  @return A non-zero value if the type metadata underlying the \c Any box
          is pointer-equal to the provided \c TypeMetadata. Otherwise, 0.
  */
-uint8_t trill_checkTypes(TRILL_ANY anyValue,
+uint8_t trill_checkTypes(Any anyValue,
                          const void *_Nonnull typeMetadata_);
 
 
@@ -245,7 +226,7 @@ uint8_t trill_checkTypes(TRILL_ANY anyValue,
  @return A pointer to the payload that is safe to cast based on the type
          metadata.
  */
-const void *_Nonnull trill_checkedCast(TRILL_ANY anyValue,
+const void *_Nonnull trill_checkedCast(Any anyValue,
                                        const void *_Nonnull typeMetadata_);
 
 
@@ -260,7 +241,7 @@ const void *_Nonnull trill_checkedCast(TRILL_ANY anyValue,
  @return A non-zero value if the underlying payload should be interpreted as a
          \c nil value.
  */
-uint8_t trill_anyIsNil(TRILL_ANY any);
+uint8_t trill_anyIsNil(Any any);
 
 
 #ifdef __cplusplus

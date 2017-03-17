@@ -623,7 +623,7 @@ class ClangImporter: Pass {
     "int32_t": .int32,
     "int16_t": .int16,
     "int8_t": .int8,
-    "TRILL_ANY": .any,
+    "Any": .any,
   ]
   
   func convertToTrillType(_ type: CXType) -> DataType? {
