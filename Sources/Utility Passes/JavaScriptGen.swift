@@ -330,9 +330,9 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
       stream.write("\(initDecl.parentType)")
     } else if isMethod && isForeign && !isInitializer {
       visit(expr.lhs)
-    } else if let lhs = expr.lhs as? ClosureExpr {
+    } else if decl.isPlaceholder {
       withParens {
-        visit(lhs)
+        visit(expr.lhs)
       }
     } else if let lhs = expr.lhs as? VarExpr,
            case .local? = (lhs.decl as? VarAssignDecl)?.kind {

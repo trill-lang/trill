@@ -129,6 +129,8 @@ RawOptions ParseArguments(int argc, char **argv) {
   }
   
   bool importC = !(mode == Emit && outputFormat == JavaScript);
+
+  stdlib = stdlib && outputFormat != JavaScript;
   
   auto outputFilename = outputFile.empty() ? nullptr : strdup(outputFile.c_str());
   auto targetMachine = target.empty() ? nullptr : strdup(target.c_str());
