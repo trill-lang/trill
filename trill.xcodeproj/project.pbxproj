@@ -63,6 +63,7 @@
 		C080F02F1E69163400F34AA5 /* libLLVMXCoreDesc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02A1E69163400F34AA5 /* libLLVMXCoreDesc.a */; };
 		C080F0301E69163400F34AA5 /* libLLVMXCoreDisassembler.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02B1E69163400F34AA5 /* libLLVMXCoreDisassembler.a */; };
 		C080F0311E69163400F34AA5 /* libLLVMXCoreInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080F02C1E69163400F34AA5 /* libLLVMXCoreInfo.a */; };
+		C0A0F0981E7CE7650098D2F1 /* trill_assert.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A0F0971E7CE3E50098D2F1 /* trill_assert.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC072AAF1E77286100927232 /* libLLVMMSP430AsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072AAB1E77286100927232 /* libLLVMMSP430AsmPrinter.a */; };
 		DC072AB01E77286100927232 /* libLLVMMSP430CodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072AAC1E77286100927232 /* libLLVMMSP430CodeGen.a */; };
 		DC072AB11E77286100927232 /* libLLVMMSP430Desc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072AAD1E77286100927232 /* libLLVMMSP430Desc.a */; };
@@ -471,6 +472,7 @@
 		C080F02A1E69163400F34AA5 /* libLLVMXCoreDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDesc.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreDesc.a; sourceTree = "<group>"; };
 		C080F02B1E69163400F34AA5 /* libLLVMXCoreDisassembler.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreDisassembler.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreDisassembler.a; sourceTree = "<group>"; };
 		C080F02C1E69163400F34AA5 /* libLLVMXCoreInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMXCoreInfo.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMXCoreInfo.a; sourceTree = "<group>"; };
+		C0A0F0971E7CE3E50098D2F1 /* trill_assert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trill_assert.h; path = Sources/Runtime/trill_assert.h; sourceTree = "<group>"; };
 		DC072AAB1E77286100927232 /* libLLVMMSP430AsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMSP430AsmPrinter.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMMSP430AsmPrinter.a"; sourceTree = "<group>"; };
 		DC072AAC1E77286100927232 /* libLLVMMSP430CodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMSP430CodeGen.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMMSP430CodeGen.a"; sourceTree = "<group>"; };
 		DC072AAD1E77286100927232 /* libLLVMMSP430Desc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMMSP430Desc.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMMSP430Desc.a"; sourceTree = "<group>"; };
@@ -497,14 +499,6 @@
 		DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVCodeGen.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVCodeGen.a"; sourceTree = "<group>"; };
 		DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVDesc.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVDesc.a"; sourceTree = "<group>"; };
 		DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVInfo.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVInfo.a"; sourceTree = "<group>"; };
-		DC0EE9A51E7350D300AFC103 /* Trill iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Trill iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC0EE9EC1E736CF600AFC103 /* print.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = print.tr; path = "iOS App/JavaScript Declarations/print.tr"; sourceTree = "<group>"; };
-		DC0EE9EE1E73849A00AFC103 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = "iOS App/Assets.xcassets"; sourceTree = "<group>"; };
-		DC0EE9F01E7384A900AFC103 /* Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = "Launch Screen.storyboard"; path = "iOS App/Launch Screen.storyboard"; sourceTree = "<group>"; };
-		DC0EE9F21E73854100AFC103 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "iOS App/Info.plist"; sourceTree = "<group>"; };
-		DC0EE9F51E73854B00AFC103 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "iOS App/Base.lproj/Main.storyboard"; sourceTree = "<group>"; };
-		DC1112B61E6CDFA800F86E5E /* Array.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = Array.tr; path = "iOS App/JavaScript Declarations/Array.tr"; sourceTree = "<group>"; };
-		DC1112B71E6CDFA800F86E5E /* String.tr */ = {isa = PBXFileReference; lastKnownFileType = text; name = String.tr; path = "iOS App/JavaScript Declarations/String.tr"; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1009,6 +1003,7 @@
 				DC8EBB261E5FCFCC00AE577C /* SpecialTypes.def */,
 				DC8EBB271E5FCFCC00AE577C /* trill.h */,
 				DC6BE9841E63968300E9964E /* trillRuntime.h */,
+				C0A0F0971E7CE3E50098D2F1 /* trill_assert.h */,
 			);
 			name = trillRuntime;
 			sourceTree = "<group>";
@@ -1500,6 +1495,7 @@
 				DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */,
 				DC8EBB341E5FCFCC00AE577C /* trill.h in Headers */,
 				DC8EBB321E5FCFCC00AE577C /* runtime.h in Headers */,
+				C0A0F0981E7CE7650098D2F1 /* trill_assert.h in Headers */,
 				DC8EBB2C1E5FCFCC00AE577C /* generics.h in Headers */,
 				DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */,
 				DC8EBB301E5FCFCC00AE577C /* metadata_private.h in Headers */,
@@ -1614,7 +1610,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -2089,7 +2085,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,

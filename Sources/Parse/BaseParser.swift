@@ -175,7 +175,18 @@ class Parser {
       if case .eof = peek() {
         break
       }
-      let modifiers = try parseModifiers()
+      let unexpected = {
+        throw Diagnostic.error(
+          ParseError.unexpectedExpression(expected: "function, type, or extension"),
+          loc: self.sourceLoc).highlighting(self.currentToken().range)
+      }
+      let modifiers: [DeclModifier]
+      do {
+        modifiers = try parseModifiers()
+      } catch {
+        try unexpected()
+        modifiers = []
+      }
       switch peek() {
       case .poundWarning, .poundError:
         context.add(try parsePoundDiagnosticExpr())
@@ -202,9 +213,7 @@ class Parser {
       case .var, .let:
         context.add(try parseVarAssignDecl(modifiers: modifiers))
       default:
-        throw Diagnostic.error(
-          ParseError.unexpectedExpression(expected: "function, type, or extension"),
-          loc: sourceLoc)
+        try unexpected()
       }
       try consumeAtLeastOneLineSeparator()
     }

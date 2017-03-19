@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
+#include "trill_assert.h"
 
 namespace trill {
 struct AnyBox;
@@ -28,7 +29,12 @@ extern "C" {
 typedef struct TRILL_ANY {
   void * _Nonnull _any;
 #ifdef __cplusplus
-  AnyBox *_Nonnull any();
+  inline AnyBox *_Nonnull any() {
+    trill_assert(_any != nullptr && "passed a null value for Any");
+    return reinterpret_cast<AnyBox *>(_any);
+  }
+  inline AnyBox *_Nonnull operator->() noexcept { return any(); }
+  inline operator AnyBox*_Nonnull() { return any(); }
 #endif
 } TRILL_ANY;
 
@@ -160,12 +166,12 @@ TRILL_ANY trill_copyAny(TRILL_ANY any);
        the field you pass in is in-bounds by calling \c trill_getTypeFieldCount and
        comparing the result.
 
- @param any_ The \c Any you're inspecting.
+ @param any The \c Any you're inspecting.
  @param fieldNum The field index you're accessing.
  @return A pointer into the payload that points to the value of the
          provided field.
  */
-void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any_, uint64_t fieldNum);
+void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any, uint64_t fieldNum);
 
 
 /**
@@ -176,21 +182,21 @@ void *_Nonnull trill_getAnyFieldValuePtr(TRILL_ANY any_, uint64_t fieldNum);
        the field you pass in is in-bounds by calling \c trill_getTypeFieldCount and
        comparing the result.
 
- @param any_ The composite type from which you're extracting a field.
+ @param any The composite type from which you're extracting a field.
  @param fieldNum The field index.
  @return A new \c Any with a payload that comes from the field's contents.
  */
-TRILL_ANY trill_extractAnyField(TRILL_ANY any_, uint64_t fieldNum);
+TRILL_ANY trill_extractAnyField(TRILL_ANY any, uint64_t fieldNum);
 
 
 /**
  Updates a field with the value inside the provided \c Any.
 
- @param any_ The \c Any for the composite type whose field you are replacing.
+ @param any The \c Any for the composite type whose field you are replacing.
  @param fieldNum The index of the field to be replaced.
- @param newAny_ The \c Any for the underlying field.
+ @param newany The \c Any for the underlying field.
  */
-void trill_updateAny(TRILL_ANY any_, uint64_t fieldNum, TRILL_ANY newAny_);
+void trill_updateAny(TRILL_ANY any, uint64_t fieldNum, TRILL_ANY newany);
 
 
 /**
@@ -217,12 +223,12 @@ const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY anyValue);
 /**
  Checks if the underlying metadata of an \c Any matches the metadata provided.
 
- @param anyValue_ The \c Any whose type you're checking.
+ @param anyValue The \c Any whose type you're checking.
  @param typeMetadata_ The \c TypeMetadata you're checking.
  @return A non-zero value if the type metadata underlying the \c Any box
          is pointer-equal to the provided \c TypeMetadata. Otherwise, 0.
  */
-uint8_t trill_checkTypes(TRILL_ANY anyValue_,
+uint8_t trill_checkTypes(TRILL_ANY anyValue,
                          const void *_Nonnull typeMetadata_);
 
 
@@ -234,12 +240,12 @@ uint8_t trill_checkTypes(TRILL_ANY anyValue_,
        function causes a fatal error with a descriptive message and then
        aborts with a stack trace.
 
- @param anyValue_ The \c Any you're trying to cast.
+ @param anyValue The \c Any you're trying to cast.
  @param typeMetadata_ The \c TypeMetadata you're checking the \c Any against.
  @return A pointer to the payload that is safe to cast based on the type
          metadata.
  */
-const void *_Nonnull trill_checkedCast(TRILL_ANY anyValue_,
+const void *_Nonnull trill_checkedCast(TRILL_ANY anyValue,
                                        const void *_Nonnull typeMetadata_);
 
 
@@ -250,11 +256,11 @@ const void *_Nonnull trill_checkedCast(TRILL_ANY anyValue_,
  this function will read the payload and see if the value in the payload is
  \c NULL.
 
- @param any_ The \c Any you're checking.
+ @param any The \c Any you're checking.
  @return A non-zero value if the underlying payload should be interpreted as a
          \c nil value.
  */
-uint8_t trill_anyIsNil(TRILL_ANY any_);
+uint8_t trill_anyIsNil(TRILL_ANY any);
 
 
 #ifdef __cplusplus

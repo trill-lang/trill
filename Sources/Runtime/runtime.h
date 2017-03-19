@@ -7,6 +7,7 @@
 #define runtime_h
 
 #include "defines.h"
+#include "trill_assert.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -16,13 +17,6 @@
 namespace trill {
 extern "C" {
 #endif
-    
-#define trill_assert(x)                               \
-    ({                                                \
-      if (!(x)) {                                     \
-          trill_fatalError("assertion failed: "#x); \
-      }                                               \
-    })
 
 void trill_init();
 

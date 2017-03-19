@@ -13,11 +13,6 @@
 
 namespace trill {
 
-AnyBox *TRILL_ANY::any() {
-  trill_assert(_any != nullptr && "passed a null value for Any");
-  return reinterpret_cast<AnyBox *>(_any);
-}
-
 const char *trill_getTypeName(const void *typeMeta) {
   trill_assert(typeMeta != nullptr);
   return reinterpret_cast<const TypeMetadata *>(typeMeta)->name;
@@ -71,28 +66,27 @@ TRILL_ANY trill_allocateAny(const void *typeMeta) {
 }
 
 TRILL_ANY trill_copyAny(TRILL_ANY any) {
-  return { any.any()->copy() };
+  return { any->copy() };
 }
 
-void *trill_getAnyFieldValuePtr(TRILL_ANY any_, uint64_t fieldNum) {
-  return any_.any()->fieldValuePtr(fieldNum);
+void *trill_getAnyFieldValuePtr(TRILL_ANY any, uint64_t fieldNum) {
+  return any->fieldValuePtr(fieldNum);
 }
 
-TRILL_ANY trill_extractAnyField(TRILL_ANY any_, uint64_t fieldNum) {
-  return { any_.any()->extractField(fieldNum) };
+TRILL_ANY trill_extractAnyField(TRILL_ANY any, uint64_t fieldNum) {
+  return { any->extractField(fieldNum) };
 }
 
-void trill_updateAny(TRILL_ANY any_, uint64_t fieldNum, TRILL_ANY newAny_) {
-  any_.any()->updateField(fieldNum, newAny_.any());
+void trill_updateAny(TRILL_ANY any, uint64_t fieldNum, TRILL_ANY newAny) {
+  any->updateField(fieldNum, newAny);
 }
 
 void *_Nonnull trill_getAnyValuePtr(TRILL_ANY any) {
-  return any.any()->value();
+  return any->value();
 }
 
 const void *_Nonnull trill_getAnyTypeMetadata(TRILL_ANY any) {
-  trill_assert(any.any() != nullptr);
-  return any.any()->typeMetadata;
+  return any->typeMetadata;
 }
   
 void trill_dumpProtocol(ProtocolMetadata *proto) {
@@ -104,24 +98,22 @@ void trill_dumpProtocol(ProtocolMetadata *proto) {
     std::cout << "}" << std::endl;
 }
   
-uint8_t trill_checkTypes(TRILL_ANY any_, const void *typeMetadata_) {
-  auto any = any_.any();
+uint8_t trill_checkTypes(TRILL_ANY any, const void *typeMetadata_) {
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
-  trill_assert(any != nullptr);
   return any->typeMetadata == typeMetadata;
 }
 
 const void *trill_checkedCast(TRILL_ANY any, const void *typeMetadata_) {
-  auto anyMetadata = any.any()->typeMetadata;
+  auto anyMetadata = any->typeMetadata;
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
   if (!trill_checkTypes(any, typeMetadata_)) {
     trill_reportCastError(anyMetadata, typeMetadata);
   }
-  return any.any()->value();
+  return any->value();
 }
 
 uint8_t trill_anyIsNil(TRILL_ANY any) {
-  return any.any()->isNil() ? 1 : 0;
+  return any->isNil() ? 1 : 0;
 }
 
 }

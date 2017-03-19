@@ -77,6 +77,12 @@ void trill_fatalError(const char *_Nonnull message) {
   fprintf(stderr, "fatal error: %s\n", message);
   crash();
 }
+
+TRILL_NORETURN
+void trill_assertionFailure(const char *NONNULL message, const char *NONNULL file, const int line, const char *NONNULL function) {
+  fprintf(stderr, "%s:%d: %s: Assertion failure: %s\n", file, line, function, message);
+  crash();
+}
   
 __attribute__((always_inline))
 static void *trill_malloc(size_t size) {
