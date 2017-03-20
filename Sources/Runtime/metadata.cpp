@@ -59,10 +59,6 @@ size_t trill_getFieldOffset(const void *_Nullable fieldMeta) {
   return reinterpret_cast<const FieldMetadata *>(fieldMeta)->offset;
 }
 
-Any trill_copyAny(Any any) {
-  return { any->copy() };
-}
-
 void *trill_getAnyFieldValuePtr(Any any, uint64_t fieldNum) {
   return any->fieldValuePtr(fieldNum);
 }
@@ -71,8 +67,8 @@ Any trill_extractAnyField(Any any, uint64_t fieldNum) {
   return { any->extractField(fieldNum) };
 }
 
-void trill_updateAny(Any any, uint64_t fieldNum, Any newAny_) {
-  any->updateField(fieldNum, newAny_.any());
+void trill_updateAny(Any any, uint64_t fieldNum, Any newAny) {
+  any->updateField(fieldNum, newAny);
 }
 
 void *_Nonnull trill_getAnyValuePtr(Any any) {
@@ -80,8 +76,7 @@ void *_Nonnull trill_getAnyValuePtr(Any any) {
 }
 
 const void *_Nonnull trill_getAnyTypeMetadata(Any any) {
-  trill_assert(any.any() != nullptr);
-  return any->typeMetadata;
+  return any.typeMetadata;
 }
   
 void trill_dumpProtocol(ProtocolMetadata *proto) {

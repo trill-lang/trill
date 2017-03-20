@@ -515,23 +515,22 @@ public class ASTContext {
     }
     return false
   }
-  
-  func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
-    if !base && matchRank(typeDecl.type, type) != nil { return true }
+
+  func isCircularType(_ typeDecl: TypeDecl) -> PropertyDecl? {
     for property in typeDecl.properties {
-      if case .pointer = property.type { continue }
+      let type = canonicalType(property.type)
+      if case .pointer = type { continue }
+      if case .any = type { continue }
       if property.isComputed { continue }
-      if let decl = decl(for: property.type),
-        !decl.isIndirect,
-        containsInLayout(type: type, typeDecl: decl) {
-        return true
+      if matchRank(typeDecl.type, type) != nil {
+        return property
+      }
+      if let decl = decl(for: type), !decl.isIndirect,
+        let prop = isCircularType(decl) {
+        return prop
       }
     }
-    return false
-  }
-  
-  func isCircularType(_ typeDecl: TypeDecl) -> Bool {
-    return containsInLayout(type: typeDecl.type, typeDecl: typeDecl, base: true)
+    return nil
   }
   
   func matchRank(_ type1: DataType?, _ type2: DataType?) -> TypeRank? {

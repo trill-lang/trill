@@ -33,7 +33,7 @@ typedef struct Any {
     return reinterpret_cast<AnyBox *>(this);
   }
   inline AnyBox *_Nonnull operator->() noexcept { return any(); }
-  inline operator AnyBox*_Nonnull() { return any(); }
+  inline operator AnyBox *_Nonnull() { return any(); }
 #endif
 } Any;
 
@@ -125,18 +125,6 @@ const void *_Nonnull trill_getFieldType(const void *_Nonnull fieldMeta);
  @return The offset in bytes of a field in a composite type.
  */
 size_t trill_getFieldOffset(const void *_Nullable fieldMeta);
-
-/**
- Copies an \c Any if the underlying value's semantics mean it should be copied.
- If the underlying value is a reference type, then the provided \c Any is just
- returned unmodified.
-
- @param any The \c Any you wish to copy.
- @return A new \c Any containing the contents of the old \c Any, if the
-         underlying value is has value semantics. Otherwise, the provided
-         \c Any.
- */
-Any trill_copyAny(Any any);
 
 /**
  Gets a pointer to a field inside the \c Any structure. Specifically, this

@@ -52,28 +52,13 @@ void TypeMetadata::debugPrint(std::string indent) const {
   std::cout << indent << "}" << std::endl;
 }
 
-AnyBox *AnyBox::create(const trill::TypeMetadata *metadata) {
-  auto fullSize = sizeof(AnyBox) + metadata->sizeInBits;
-  auto anyBoxPtr = trill_alloc(fullSize);
-  auto ptr = reinterpret_cast<AnyBox *>(anyBoxPtr);
-  ptr->typeMetadata = metadata;
-  return ptr;
-}
-
-AnyBox *AnyBox::copy() {
-  if (typeMetadata->isReferenceType) { return this; }
-  auto newAny = AnyBox::create(typeMetadata);
-  memcpy(newAny->value(), value(), typeMetadata->sizeInBits);
-  return newAny;
-}
-
-void AnyBox::updateField(uint64_t fieldNum, trill::AnyBox *newValue) {
+void AnyBox::updateField(uint64_t fieldNum, Any newValue) {
   auto newType = newValue->typeMetadata;
   auto fieldMeta = fieldMetadata(fieldNum);
   if (fieldMeta->typeMetadata != newType) {
     trill_reportCastError(fieldMeta->typeMetadata, newValue->typeMetadata);
   }
-  memcpy(fieldValuePtr(fieldNum), newValue->value(), newType->sizeInBits);
+  memcpy(fieldValuePtr(fieldNum), newValue->value(), newType->sizeInBytes());
 }
 
 void *AnyBox::fieldValuePtr(uint64_t fieldNum) {
@@ -87,18 +72,19 @@ void *AnyBox::fieldValuePtr(uint64_t fieldNum) {
            reinterpret_cast<intptr_t>(origPtr) + fieldMeta->offset);
 }
 
-AnyBox *AnyBox::extractField(uint64_t fieldNum) {
+Any AnyBox::extractField(uint64_t fieldNum) {
   auto fieldMeta = fieldMetadata(fieldNum);
   auto fieldTypeMeta = fieldMeta->typeMetadata;
-  auto newAny = AnyBox::create(fieldTypeMeta);
-  memcpy(newAny->value(), fieldValuePtr(fieldNum),
-         fieldTypeMeta->sizeInBits);
+  Any newAny;
+  newAny.typeMetadata = fieldTypeMeta;
+  memcpy(newAny.payload, fieldValuePtr(fieldNum),
+         fieldTypeMeta->sizeInBytes());
   return newAny;
 }
 
 bool AnyBox::isNil() {
-  auto pointerLevel = typeMetadata->pointerLevel;
-  if (pointerLevel > 0) { return false; }
+  trill_assert(typeMetadata != nullptr);
+  if (typeMetadata->pointerLevel > 0) { return false; }
   auto anyValuePointer = reinterpret_cast<uintptr_t *>(value());
   if (*anyValuePointer == 0) {
     return true;

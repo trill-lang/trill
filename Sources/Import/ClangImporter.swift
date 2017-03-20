@@ -255,8 +255,11 @@ class ClangImporter: Pass {
         return nil
     }
     let name = Identifier(name: typeName)
-    
+
     if let e = importedTypes[name] { return e }
+    if ClangImporter.builtinTypeReplacements[name.name] != nil {
+      return nil
+    }
     
     var values = [PropertyDecl]()
     

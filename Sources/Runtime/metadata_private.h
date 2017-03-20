@@ -18,7 +18,6 @@ namespace trill {
 
 struct TypeMetadata;
 
-
 /**
  Stores the metadata necessary for accessing a field of a structure at runtime.
  */
@@ -133,22 +132,15 @@ struct AnyBox {
    */
   uint8_t payload[24];
 
-  /**
-   Creates an AnyBox that will eventually store a value that is the same type
-   as the provided metadata.
-   */
-  static AnyBox *create(const TypeMetadata *metadata);
-
-  /**
-   Copies the value in an \c Any into a new \c Any object.
-   */
-  AnyBox *copy();
+  AnyBox(Any &&any) {
+    memcpy(this, any, sizeof(Any));
+  }
 
   /**
    Updates the value at a certain field index with the value inside the provided
    \c Any
    */
-  void updateField(uint64_t fieldNum, AnyBox *newValue);
+  void updateField(uint64_t fieldNum, Any newValue);
 
   /**
    Whether or not the payload underlying this value must be heap-allocated.
@@ -176,7 +168,7 @@ struct AnyBox {
   /**
    Extracts the value at a given field in this \c Any into a new \c Any.
    */
-  AnyBox *extractField(uint64_t fieldNum);
+  Any extractField(uint64_t fieldNum);
 
   /**
    Gets the \c FieldMetadata for a field in this \c Any

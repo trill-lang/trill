@@ -63,11 +63,11 @@ class Sema: ASTTransformer, Pass {
         }
         methodNames.insert(mangled)
       }
-      if context.isCircularType(expr) {
+      if let offendingProperty = context.isCircularType(expr) {
         error(SemaError.referenceSelfInProp(name: expr.name),
-              loc: expr.startLoc,
+              loc: offendingProperty.startLoc,
               highlights: [
-                expr.name.range
+                offendingProperty.name.range
           ])
       }
     }
