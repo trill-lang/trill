@@ -56,7 +56,9 @@ func read(file: *Int8) -> String {
   fread(str as *Void, fsize, 1, f)
   fclose(f)
   str[fsize] = 0 as Int8
-  return String(_owning: str, length: fsize)
+  let string = String(cString: str)
+  free(str as *Void)
+  return string
 }
 
 func main(argc: Int, argv: **Int8) {

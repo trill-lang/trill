@@ -46,7 +46,7 @@ func print(_ string: *Int8) {
 }
 
 func print(_ bool: Bool) {
-    printf("%s", bool ? "true" : "false")
+    print(bool ? "true" as *Int8 : "false" as *Int8)
 }
 
 func print(_ int: Int) {

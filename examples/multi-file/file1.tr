@@ -3,7 +3,9 @@ extension Int {
         let length = floor(log10(labs(self) as Double)) as Int + 2
         let str = calloc(length, sizeof(Int8)) as *Int8
         snprintf(str, (length * sizeof(Int8)) as UInt, "%d", self)
-        return String(_owning: str, length: length)
+        let string = String(cString: str)
+        free(str as *Void)
+        return string
     }
 }
 
@@ -21,6 +23,5 @@ func main() {
     print("oneThousand.hash: ")
     println(oneThousand.hash)
     println(oneThousand.isEmpty)
-    let sorted = oneThousand.mergeSorted()
     print(oneThousand)
 }

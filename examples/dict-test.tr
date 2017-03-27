@@ -1,7 +1,7 @@
 func main(argc: Int, argv: **Int8) {
   var dict = AnyDictionary()
   for var i = 0; i < argc; i += 1 {
-    dict.insert(i, forKey: argv[i] + "foo")
+    dict.insert(i, forKey: String(cString: argv[i]) + "foo")
   }
   dict.dump()
 }
