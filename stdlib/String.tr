@@ -18,7 +18,7 @@ type String {
     init(repeating string: String, count: Int) {
         self._storage = ByteArray(capacity: (string.length * count) + 1)
         for var i = 0; i < count; i += 1 {
-            self._storage.insert(string.cString, 
+            self._storage.insert(string.cString,
                                  length: string.length,
                                  at: self._storage.length)
         }
@@ -106,9 +106,10 @@ type String {
         return true
     }
     func hasSuffix(_ string: String) -> Bool {
-        if self.length < string.length { return false }
+        let lengthDifference = self.length - string.length
+        if lengthDifference < 0 { return false }
         for var i = string.length - 1; i >= 0; i -= 1 {
-            if self[i] != string[i] { return false }
+            if self[lengthDifference + i] != string[i] { return false }
         }
         return true
     }
