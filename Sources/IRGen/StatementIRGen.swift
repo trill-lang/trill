@@ -151,7 +151,7 @@ extension IRGenerator {
       }
     } else {
       builder.buildBr(mergebb)
-      elsebb.delete()
+      elsebb.removeFromParent()
     }
     builder.positionAtEnd(of: mergebb)
     return nil
