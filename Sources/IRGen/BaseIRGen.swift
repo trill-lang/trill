@@ -356,7 +356,7 @@ class IRGenerator: ASTVisitor, Pass {
     for op in context.operators {
       codegenFunctionPrototype(op)
     }
-    for type in context.types {
+    for type in context.types where !type.has(attribute: .foreign) {
       visitTypeDecl(type)
     }
     for ext in context.extensions {
@@ -396,7 +396,7 @@ class IRGenerator: ASTVisitor, Pass {
     if let existing = module.type(named: "Any") { return existing }
     return builder.createStruct(name: "Any", types: [
       PointerType.toVoid,
-      ArrayType(elementType: IntType.int8, count: 24)
+      PointerType.toVoid
     ])
   }
 
@@ -532,7 +532,7 @@ class IRGenerator: ASTVisitor, Pass {
   
   func codegenDebugPrintf(format: String, _ values: IRValue...) {
     var args = Array(values)
-    args.insert(visitStringExpr(StringExpr(value: format))!, at: 0)
+    args.insert(codegenGlobalStringPtr(format).ptr, at: 0)
     let printfCall = codegenIntrinsic(named: "printf")
     _ = builder.buildCall(printfCall, args: args)
   }

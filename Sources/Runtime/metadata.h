@@ -21,13 +21,28 @@ struct AnyBox;
 extern "C" {
 #endif
 
+typedef struct FOO_TEST {
+  uint8_t payload[24];
+  const void *bar;
+} FOO_TEST;
+
 /**
  \c Any is a special type understood by the Trill compiler as the
  representation of an \c Any value.
  */
 typedef struct Any {
-  const void *_Nonnull typeMetadata;
+  /**
+   The payload inside this \c Any. If the underlying type is smaller than 24
+   bytes, then the payload will be stored in-line with this object. Otherwise,
+   the payload will be heap-allocated and a pointer to the value will be
+   stored in the payload.
+   */
   uint8_t payload[24];
+
+  /**
+   The type metadata for the underlying value inside this box.
+   */
+  const void *_Nonnull typeMetadata;
 #ifdef __cplusplus
   inline AnyBox *_Nonnull any() {
     return reinterpret_cast<AnyBox *>(this);
@@ -36,6 +51,8 @@ typedef struct Any {
   inline operator AnyBox *_Nonnull() { return any(); }
 #endif
 } Any;
+
+void print_bytes(const void *_Nonnull bytes, size_t size);
 
 /**
  Gets the formatted name of a given Trill type metadata object.

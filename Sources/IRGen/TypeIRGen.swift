@@ -186,11 +186,9 @@ extension IRGenerator {
   func visitTypeDecl(_ expr: TypeDecl) -> Result {
     codegenTypePrototype(expr)
 
-    // Visit the synthesized initializers of a type
-    _ = expr.initializers.map(visitFuncDecl)
-
     if expr.has(attribute: .foreign) { return nil }
-    
+
+    _ = expr.initializers.map(visitFuncDecl)
     _ = expr.methods.map(visitFuncDecl)
     _ = expr.deinitializer.map(visitFuncDecl)
     _ = expr.subscripts.map(visitFuncDecl)

@@ -243,6 +243,15 @@ extension IRGenerator {
       args.insert(Argument(val: implicitSelf, label: nil), at: 0)
     }
 
+    // Lazily emit synthesized initializers for foreign decls when we call them.
+    if let initializer = decl as? InitializerDecl,
+      let type = context.decl(for: initializer.parentType),
+      type.has(attribute: .foreign) {
+      let block = builder.insertBlock!
+      _ = visitFuncDecl(initializer)
+      builder.positionAtEnd(of: block)
+    }
+
     if decl.isPlaceholder {
       function = visit(expr.lhs)
     } else {

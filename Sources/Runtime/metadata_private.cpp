@@ -52,11 +52,20 @@ void TypeMetadata::debugPrint(std::string indent) const {
   std::cout << indent << "}" << std::endl;
 }
 
+void print_bytes(const void *bytes, size_t size) {
+  printf("\n\n===== printing bytes for %p(%zu) =====\n", bytes, size);
+  for (size_t i = 0; i < size; i += 1) {
+    printf("%02x%s", reinterpret_cast<const uint8_t *>(bytes)[i],
+           (i + 1) % 8 == 0 ? "\n" : " ");
+  }
+  printf("=== end printing bytes for %p(%zu) ===\n\n", bytes, size);
+}
+
 void AnyBox::updateField(uint64_t fieldNum, Any newValue) {
-  auto newType = newValue->typeMetadata;
+  auto newType = newValue->getTypeMetadata();
   auto fieldMeta = fieldMetadata(fieldNum);
   if (fieldMeta->typeMetadata != newType) {
-    trill_reportCastError(fieldMeta->typeMetadata, newValue->typeMetadata);
+    trill_reportCastError(fieldMeta->typeMetadata, newValue->getTypeMetadata());
   }
   memcpy(fieldValuePtr(fieldNum), newValue->value(), newType->sizeInBytes());
 }
@@ -64,7 +73,7 @@ void AnyBox::updateField(uint64_t fieldNum, Any newValue) {
 void *AnyBox::fieldValuePtr(uint64_t fieldNum) {
   auto origPtr = value();
   auto fieldMeta = fieldMetadata(fieldNum);
-  if (typeMetadata->isReferenceType) {
+  if (getTypeMetadata()->isReferenceType) {
     origPtr = *reinterpret_cast<void **>(origPtr);
     trill_assert(origPtr != nullptr);
   }
@@ -83,8 +92,8 @@ Any AnyBox::extractField(uint64_t fieldNum) {
 }
 
 bool AnyBox::isNil() {
-  trill_assert(typeMetadata != nullptr);
-  if (typeMetadata->pointerLevel > 0) { return false; }
+  trill_assert(getTypeMetadata() != nullptr);
+  if (getTypeMetadata()->pointerLevel > 0) { return false; }
   auto anyValuePointer = reinterpret_cast<uintptr_t *>(value());
   if (*anyValuePointer == 0) {
     return true;
@@ -95,7 +104,8 @@ bool AnyBox::isNil() {
 void AnyBox::debugPrint(std::string indent) {
   std::cout << "AnyBox {" << std::endl;
   std::cout << "  void *typeMetadata = ";
-  if (typeMetadata) {
+  auto typeMetadata = getTypeMetadata();
+  if (typeMetadata != nullptr) {
     typeMetadata->debugPrint("  ");
     auto value = this->value();
     std::string typeName = typeMetadata->name;

@@ -27,60 +27,73 @@ extension IRGenerator {
                                  args: [token, function])
     return (token: token, call: call)
   }
+
+  func createMemset() -> Function {
+    let name = "llvm.memset.p0i8.i64"
+    if let existing = module.function(named: name) {
+      return existing
+    }
+    let type = FunctionType(argTypes: [PointerType.toVoid, IntType.int8,
+                                       IntType.int64, IntType.int32, IntType.int1],
+                            returnType: VoidType())
+    return builder.addFunction(name, type: type)
+  }
+
+  func codegenMemset(pointer: IRValue, type: DataType, initial: Int8) {
+    let memsetFn = createMemset()
+    let cast = builder.buildBitCast(pointer, type: PointerType.toVoid)
+    let irType = resolveLLVMType(type)
+    _ = builder.buildCall(memsetFn, args: [
+      cast, initial,
+      module.dataLayout.abiSizeOfType(irType),
+      IntType.int32.constant(0),
+      false
+    ])
+  }
   
   func codegenPromoteToAny(value: IRValue, type: DataType) -> IRValue {
     if case .any = type {
-      if storage(for: type) == .reference {
-        // If we're promoting an existing Any value of a reference type, just
-        // thread it through.
-        return value
-      } else {
-        // If we're promoting an existing Any value of a value type, 
-        // then this should just be a copy of the existing value.
-        return codegenCopyAny(value: value)
-      }
+      // If we're promoting an existing Any value of a reference type, just
+      // thread it through.
+      return value
     }
     let irType = resolveLLVMType(type)
     let meta = codegenTypeMetadata(type)
     let castMeta = builder.buildBitCast(meta,
                                         type: PointerType.toVoid,
                                         name: "meta-cast")
-
+    let anyTy = createAnyType()
     let anyPtr = createEntryBlockAlloca(currentFunction!.functionRef!,
-                                        type: createAnyType(),
+                                        type: anyTy,
                                         name: "any",
                                         storage: .value)
+    codegenMemset(pointer: anyPtr.ref, type: .any, initial: 0)
 
-    let metaGEP = builder.buildStructGEP(anyPtr.ref, index: 0)
+    let metaGEP = builder.buildStructGEP(anyPtr.ref, index: 1,
+                                         name: "any-meta-gep")
     builder.buildStore(castMeta, to: metaGEP)
 
-    let anyGEP = builder.buildBitCast(builder.buildStructGEP(anyPtr.ref, index: 1),
-                                      type: PointerType.toVoid)
+    let anyGEP = builder.buildBitCast(builder.buildStructGEP(anyPtr.ref, index: 0,
+                                                             name: "any-value-gep"),
+                                      type: PointerType.toVoid,
+                                      name: "any-cast-value-gep")
 
     // Any includes a 24-byte payload. If the size of this type is going to
     // be larger than that, we need to heap-allocate the value and use it to
     // initialize the any.
     if targetMachine.dataLayout.sizeOfTypeInBits(irType) > 24 * 8 {
-      let store = builder.buildBitCast(anyGEP, type: PointerType(pointee: PointerType.toVoid))
       let alloc = codegenAlloc(type: type)
+      let store = builder.buildBitCast(anyGEP, type: alloc.ref.type,
+                                       name: "any-cast-store-box")
       alloc.write(value)
-      builder.buildStore(alloc.ref, to: store)
+      builder.buildStore(alloc.read(), to: store)
     } else {
-      let storeTmp = createEntryBlockAlloca(currentFunction!.functionRef!,
-                                           type: irType,
-                                           name: "any-store-tmp",
-                                           storage: .value)
-      storeTmp.write(value)
       let cast = builder.buildBitCast(anyGEP,
-                                      type: PointerType(pointee: irType))
+                                      type: PointerType(pointee: irType),
+                                      name: "any-cast-store-value")
       builder.buildStore(value, to: cast)
     }
     return anyPtr.read()
-  }
-  
-  func codegenCopyAny(value: IRValue) -> IRValue {
-    return builder.buildCall(codegenIntrinsic(named: "trill_copyAny"),
-                             args: [value], name: "copy-any")
   }
   
   func codegenAnyValuePtr(_ binding: IRValue, type: DataType) -> IRValue {
@@ -124,7 +137,10 @@ extension IRGenerator {
   /// Allocates a heap box in the garbage collector, and registers a finalizer
   /// specified by that type's deinit.
   func codegenAlloc(type: DataType) -> VarBinding {
-    let irType = resolveLLVMType(type)
+    var irType = resolveLLVMType(type)
+    if !context.isIndirect(type) {
+      irType = PointerType(pointee: irType)
+    }
     let alloc = codegenIntrinsic(named: "trill_alloc")
     let register = codegenIntrinsic(named: "trill_registerDeinitializer")
     guard let typeDecl = context.decl(for: type, canonicalized: true) else {

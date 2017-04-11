@@ -8,7 +8,7 @@ type Foo {
 }
 
 func main() {
-  var f = Foo(a: 1, b: true, c: 8, d: "Hello, world", e: false) //, f: (true, 1))
+  var f = Foo(a: 1, b: true, c: 8, d: "Hello, world", e: 0x99) //, f: (true, 1))
 
   printf("f.a: %d\n", f.a)
   let mirror = Mirror(reflecting: f)

@@ -119,22 +119,9 @@ struct ProtocolMetadata {
    - A variably-sized payload
  */
 struct AnyBox {
-  /**
-   The type metadata for the underlying value inside this box.
-   */
-  const TypeMetadata *typeMetadata;
+  Any &any;
 
-  /**
-   The payload inside this \c Any. If the underlying type is smaller than 24
-   bytes, then the payload will be stored in-line with this object. Otherwise,
-   the payload will be heap-allocated and a pointer to the value will be
-   stored in the payload.
-   */
-  uint8_t payload[24];
-
-  AnyBox(Any &&any) {
-    memcpy(this, any, sizeof(Any));
-  }
+  AnyBox(Any &any): any(any) {}
 
   /**
    Updates the value at a certain field index with the value inside the provided
@@ -142,12 +129,16 @@ struct AnyBox {
    */
   void updateField(uint64_t fieldNum, Any newValue);
 
+  const TypeMetadata *getTypeMetadata() {
+    return reinterpret_cast<const TypeMetadata *>(any.typeMetadata);
+  }
+
   /**
    Whether or not the payload underlying this value must be heap-allocated.
    */
   bool mustAllocatePayload() {
-    return !typeMetadata->isReferenceType &&
-            typeMetadata->sizeInBytes() > sizeof(payload);
+    return !getTypeMetadata()->isReferenceType &&
+            getTypeMetadata()->sizeInBytes() > sizeof(any.payload);
   }
 
   /**
@@ -155,9 +146,9 @@ struct AnyBox {
    */
   void *value() {
     if (mustAllocatePayload()) {
-      return *reinterpret_cast<void **>(&payload);
+      return *reinterpret_cast<void **>(&any.payload);
     }
-    return reinterpret_cast<void *>(&payload);
+    return reinterpret_cast<void *>(&any.payload);
   }
 
   /**
@@ -174,7 +165,7 @@ struct AnyBox {
    Gets the \c FieldMetadata for a field in this \c Any
    */
   const FieldMetadata *fieldMetadata(uint64_t fieldNum) {
-    return typeMetadata->fieldMetadata(fieldNum);
+    return getTypeMetadata()->fieldMetadata(fieldNum);
   }
 
   /**

@@ -64,7 +64,7 @@ void *trill_getAnyFieldValuePtr(Any any, uint64_t fieldNum) {
 }
 
 Any trill_extractAnyField(Any any, uint64_t fieldNum) {
-  return { any->extractField(fieldNum) };
+  return any->extractField(fieldNum);
 }
 
 void trill_updateAny(Any any, uint64_t fieldNum, Any newAny) {
@@ -76,9 +76,10 @@ void *_Nonnull trill_getAnyValuePtr(Any any) {
 }
 
 const void *_Nonnull trill_getAnyTypeMetadata(Any any) {
+  print_bytes(&any, sizeof(any));
   return any.typeMetadata;
 }
-  
+
 void trill_dumpProtocol(ProtocolMetadata *proto) {
     trill_assert(proto != nullptr);
     std::cout << proto->name << " {" << std::endl;
@@ -90,11 +91,11 @@ void trill_dumpProtocol(ProtocolMetadata *proto) {
 
 uint8_t trill_checkTypes(Any any, const void *typeMetadata_) {
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
-  return any->typeMetadata == typeMetadata;
+  return any->getTypeMetadata() == typeMetadata;
 }
 
 const void *trill_checkedCast(Any any, const void *typeMetadata_) {
-  auto anyMetadata = any->typeMetadata;
+  auto anyMetadata = any->getTypeMetadata();
   auto typeMetadata = reinterpret_cast<const TypeMetadata *>(typeMetadata_);
   if (!trill_checkTypes(any, typeMetadata_)) {
     trill_reportCastError(anyMetadata, typeMetadata);
