@@ -278,6 +278,16 @@ class ASTTransformer: ASTVisitor {
   func visitExprStmt(_ stmt: ExprStmt) -> () {
     visit(stmt.expr)
   }
+
+  func visitIsExpr(_ expr: IsExpr) -> Void {
+    visit(expr.lhs)
+    visit(expr.rhs)
+  }
+
+  func visitCoercionExpr(_ expr: CoercionExpr) -> Void {
+    visit(expr.lhs)
+    visit(expr.rhs)
+  }
   
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     visit(expr.lhs)

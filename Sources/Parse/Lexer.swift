@@ -41,6 +41,8 @@ enum TokenKind: Equatable {
   case `nil`
   case `if`
   case `in`
+  case `as`
+  case `is`
   case `else`
   case `var`
   case `let`
@@ -111,8 +113,8 @@ enum TokenKind: Equatable {
     case "default": self = .default
     case "for": self = .for
     case "nil": self = .nil
-    case "as": self = .operator(.as)
-    case "is": self = .operator(.is)
+    case "as": self = .as
+    case "is": self = .is
     case "#function": self = .poundFunction
     case "#file": self = .poundFile
     case "#line": self = .poundLine
@@ -153,6 +155,8 @@ enum TokenKind: Equatable {
     case .nil: return "nil"
     case .if: return "if"
     case .in: return "in"
+    case .as: return "as"
+    case .is: return "is"
     case .else: return "else"
     case .var: return "var"
     case .let: return "let"
@@ -183,15 +187,14 @@ enum TokenKind: Equatable {
   
   var isKeyword: Bool {
     switch self {
-    case .func, .while, .if, .in, .else, .for, .nil, .break, .case, .switch,
-         .default, .continue, .return, .underscore, .extension, .sizeOf, .where,
+    case .func, .while, .if, .in, .as, .is, .else, .for, .nil, .break, .case,
+         .switch, .default, .continue, .return, .underscore, .extension, .where,
          .protocol, .subscript, .var, .let, .type, .true, .false, .Init, .deinit,
-         .poundFunction, .poundFile, .poundLine, .poundWarning, .poundError:
+         .sizeOf, .poundFunction, .poundFile, .poundLine, .poundWarning,
+         .poundError:
          return true
     case .identifier(let value):
         return DeclModifier(rawValue: value) != nil || value == "self"
-    case .operator(op: .as): return true
-    case .operator(op: .is): return true
     default: return false
     }
   }
@@ -266,6 +269,8 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   case (.nil, .nil): return true
   case (.if, .if): return true
   case (.in, .in): return true
+  case (.as, .as): return true
+  case (.is, .is): return true
   case (.else, .else): return true
   case (.var, .var): return true
   case (.let, .let): return true

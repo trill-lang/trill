@@ -97,6 +97,10 @@ protocol ASTVisitor {
   @discardableResult
   func visitSwitchStmt(_ expr: SwitchStmt) -> Result
   @discardableResult
+  func visitIsExpr(_ expr: IsExpr) -> Result
+  @discardableResult
+  func visitCoercionExpr(_ expr: CoercionExpr) -> Result
+  @discardableResult
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result
   @discardableResult
   func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) -> Result
@@ -215,6 +219,10 @@ extension ASTVisitor {
       return visitTypeRefExpr(expr)
     case let expr as NilExpr:
       return visitNilExpr(expr)
+    case let expr as CoercionExpr:
+      return visitCoercionExpr(expr)
+    case let expr as IsExpr:
+      return visitIsExpr(expr)
     case let expr as InfixOperatorExpr:
       return visitInfixOperatorExpr(expr)
     case let expr as PrefixOperatorExpr:

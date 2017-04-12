@@ -31,6 +31,13 @@ extension Parser {
       } else if let infix = val as? InfixOperatorExpr {
         return attachPrefixToInfix(op, prefixRange: opRange,
                                    startLoc: tok.range.start, expr: infix)
+      } else if let isExpr = val as? IsExpr {
+        return attachPrefixToIsExpr(op, prefixRange: opRange,
+                                    startLoc: tok.range.start, expr: isExpr)
+      } else if let coercionExpr = val as? CoercionExpr {
+        return attachPrefixToCoercionExpr(op, prefixRange: opRange,
+                                          startLoc: tok.range.start,
+                                          expr: coercionExpr)
       }
       return PrefixOperatorExpr(op: op, rhs: val, opRange: opRange,
                                 sourceRange: range(start: startLoc))
@@ -185,17 +192,24 @@ extension Parser {
         let falseVal = try parseValExpr()
         expr = TernaryExpr(condition: expr, trueCase: trueVal, falseCase: falseVal,
                            sourceRange: range(start: startLoc))
+      case .as:
+        let asToken = consumeToken()
+        let rhs = try parseType()
+        expr = CoercionExpr(lhs: expr, rhs: rhs,
+                            asRange: asToken.range,
+                            sourceRange: range(start: startLoc))
+      case .is:
+        let isToken = consumeToken()
+        let rhs = try parseType()
+        expr = IsExpr(lhs: expr, rhs: rhs,
+                      isRange: isToken.range,
+                      sourceRange: range(start: startLoc))
       case .operator(let op):
         if op == .star && peek(ahead: -1).isLineSeparator { break outer }
 
         let opRange = currentToken().range
         consumeToken()
-        let val: Expr
-        if [.as, .is].contains(op) {
-          val = try parseType()
-        } else {
-          val = try parseValExpr()
-        }
+        let val = try parseValExpr()
         if let infix = val as? InfixOperatorExpr, infix.op.infixPrecedence < op.infixPrecedence {
           let r: SourceRange?
           if let exprRange = expr.sourceRange, let lhsRange = infix.lhs.sourceRange {
@@ -236,9 +250,13 @@ extension Parser {
     return expr
   }
   
-  func attachPrefixToInfix(_ prefixOp: BuiltinOperator, prefixRange: SourceRange, startLoc: SourceLocation, expr: InfixOperatorExpr) -> Expr {
+  func attachPrefixToInfix(_ prefixOp: BuiltinOperator,
+                           prefixRange: SourceRange,
+                           startLoc: SourceLocation,
+                           expr: InfixOperatorExpr) -> Expr {
     if let infix = expr.lhs as? InfixOperatorExpr {
-      let prefix = attachPrefixToInfix(prefixOp, prefixRange: prefixRange, startLoc: startLoc, expr: infix)
+      let prefix = attachPrefixToInfix(prefixOp, prefixRange: prefixRange,
+                                       startLoc: startLoc, expr: infix)
       return InfixOperatorExpr(op: expr.op,
                                lhs: prefix,
                                rhs: expr.rhs,
@@ -254,6 +272,34 @@ extension Parser {
                              rhs: expr.rhs,
                              opRange: expr.opRange,
                              sourceRange: expr.sourceRange)
+  }
+
+  func attachPrefixToIsExpr(_ prefixOp: BuiltinOperator,
+                            prefixRange: SourceRange,
+                            startLoc: SourceLocation,
+                            expr: IsExpr) -> Expr {
+    let r = expr.lhs.sourceRange.map {
+      SourceRange(start: startLoc, end: $0.end)
+    }
+    let prefix = PrefixOperatorExpr(op: prefixOp,
+                                    rhs: expr.lhs,
+                                    opRange: prefixRange,
+                                    sourceRange: r)
+    return IsExpr(lhs: prefix, rhs: expr.rhs)
+  }
+
+  func attachPrefixToCoercionExpr(_ prefixOp: BuiltinOperator,
+                                  prefixRange: SourceRange,
+                                  startLoc: SourceLocation,
+                                  expr: CoercionExpr) -> CoercionExpr {
+    let r = expr.lhs.sourceRange.map {
+      SourceRange(start: startLoc, end: $0.end)
+    }
+    let prefix = PrefixOperatorExpr(op: prefixOp,
+                                    rhs: expr.lhs,
+                                    opRange: prefixRange,
+                                    sourceRange: r)
+    return CoercionExpr(lhs: prefix, rhs: expr.rhs)
   }
 
   /// Any token that begins with '>' will be split and re-inserted

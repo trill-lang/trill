@@ -294,22 +294,20 @@ extension IRGenerator {
   func visitParenExpr(_ expr: ParenExpr) -> Result {
     return visit(expr.value)
   }
+
+  func visitIsExpr(_ expr: IsExpr) -> Result {
+    let lhs = visit(expr.lhs)!
+    return codegenTypeCheck(lhs, type: expr.rhs.type!)
+  }
+
+  func visitCoercionExpr(_ expr: CoercionExpr) -> Result {
+    let lhs = visit(expr.lhs)!
+    return coerce(lhs, from: expr.lhs.type!, to: expr.type!)
+  }
   
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
     if [.and, .or].contains(expr.op) {
       return codegenShortCircuit(expr)
-    }
-    
-    if case .as = expr.op {
-      let lhs: IRValue
-
-      lhs = visit(expr.lhs)!
-      return coerce(lhs, from: expr.lhs.type!, to: expr.type!)
-    }
-    
-    if case .is = expr.op {
-      let lhs = visit(expr.lhs)!
-      return codegenTypeCheck(lhs, type: expr.rhs.type!)
     }
     
     var rhs = visit(expr.rhs)!

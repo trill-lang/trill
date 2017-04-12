@@ -763,6 +763,9 @@ public class ASTContext {
   }
   
   func canCoerce(_ type: DataType, to other: DataType) -> Bool {
+    let type = canonicalType(type)
+    let other = canonicalType(other)
+    
     // You should be able to cast between an indirect type and a pointer.
     if isIndirect(other), case .pointer = type {
       return true

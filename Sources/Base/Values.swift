@@ -280,3 +280,35 @@ class TernaryExpr: Expr {
     super.init(sourceRange: sourceRange)
   }
 }
+
+/// <expr> as <expr>
+class CoercionExpr: Expr {
+  let lhs: Expr
+  let rhs: TypeRefExpr
+  let asRange: SourceRange?
+
+  init(lhs: Expr, rhs: TypeRefExpr,
+       asRange: SourceRange? = nil,
+       sourceRange: SourceRange? = nil) {
+    self.lhs = lhs
+    self.asRange = asRange
+    self.rhs = rhs
+    super.init(sourceRange: sourceRange)
+  }
+}
+
+/// <expr> is <expr>
+class IsExpr: Expr {
+  let lhs: Expr
+  let rhs: TypeRefExpr
+  let isRange: SourceRange?
+
+  init(lhs: Expr, rhs: TypeRefExpr,
+       isRange: SourceRange? = nil,
+       sourceRange: SourceRange? = nil) {
+    self.lhs = lhs
+    self.isRange = isRange
+    self.rhs = rhs
+    super.init(sourceRange: sourceRange)
+  }
+}

@@ -135,14 +135,19 @@ class JavaScriptGen<StreamType: TextOutputStream>: ASTTransformer {
     stream.write("return ")
     visit(expr.value)
   }
+
+  override func visitCoercionExpr(_ expr: CoercionExpr) {
+    visit(expr.lhs)
+  }
+
+  override func visitIsExpr(_ expr: IsExpr) {
+    visit(expr.lhs)
+    stream.write(" instanceof ")
+    visit(expr.rhs)
+  }
   
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     let emit: () -> Void = {
-      if case .as = expr.op {
-        self.visit(expr.lhs)
-        return
-      }
-      
       if let decl = expr.decl,
         !decl.has(attribute: .foreign),
         !decl.has(attribute: .implicit) {

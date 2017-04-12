@@ -783,7 +783,65 @@ class Sema: ASTTransformer, Pass {
     }
     super.visitOperatorDecl(decl)
   }
-  
+
+  override func visitCoercionExpr(_ expr: CoercionExpr) {
+    super.visitCoercionExpr(expr)
+
+    guard var lhsType = expr.lhs.type else { return }
+    guard let rhsType = expr.rhs.type else { return }
+
+    if context.propagateContextualType(rhsType, to: expr.lhs) {
+      lhsType = rhsType
+    }
+
+    guard context.isValidType(rhsType) else {
+      error(SemaError.unknownType(type: rhsType),
+            loc: expr.rhs.startLoc,
+            highlights: [expr.rhs.sourceRange])
+      return
+    }
+    if !context.canCoerce(lhsType, to: rhsType) {
+      error(SemaError.cannotCoerce(type: lhsType,
+                                   toType: rhsType),
+            loc: expr.asRange?.start,
+            highlights: [
+              expr.lhs.sourceRange,
+              expr.asRange,
+              expr.rhs.sourceRange
+            ])
+      return
+    }
+    expr.type = rhsType
+    return
+  }
+
+  override func visitIsExpr(_ expr: IsExpr)  {
+    super.visitIsExpr(expr)
+    guard let lhsType = expr.lhs.type else { return }
+    guard let rhsType = expr.rhs.type else { return }
+
+    guard context.isValidType(rhsType) else {
+      error(SemaError.unknownType(type: rhsType),
+            loc: expr.rhs.startLoc,
+            highlights: [expr.rhs.sourceRange])
+      return
+    }
+
+    guard case .any? = expr.lhs.type else {
+      let matched = !matches(lhsType, rhsType)
+      error(SemaError.isCheckAlways(fails: matched),
+            loc: expr.isRange?.start,
+            highlights: [
+              expr.lhs.sourceRange,
+              expr.isRange,
+              expr.rhs.sourceRange
+        ])
+      return
+    }
+    expr.type = .bool
+    return
+  }
+
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     super.visitInfixOperatorExpr(expr)
     guard var lhsType = expr.lhs.type else { return }
@@ -794,8 +852,7 @@ class Sema: ASTTransformer, Pass {
     } else if context.propagateContextualType(lhsType, to: expr.rhs) {
       rhsType = lhsType
     }
-    
-    let canLhs = context.canonicalType(lhsType)
+
     let canRhs = context.canonicalType(rhsType)
     
     if expr.op.isAssign {
@@ -833,46 +890,7 @@ class Sema: ASTTransformer, Pass {
         return
       }
     }
-    if case .as = expr.op {
-      guard context.isValidType(expr.rhs.type!) else {
-        error(SemaError.unknownType(type: expr.rhs.type!),
-              loc: expr.rhs.startLoc,
-              highlights: [expr.rhs.sourceRange])
-        return
-      }
-      if !context.canCoerce(canLhs, to: canRhs) {
-        error(SemaError.cannotCoerce(type: lhsType, toType: rhsType),
-              loc: expr.opRange?.start,
-              highlights: [
-                expr.lhs.sourceRange,
-                expr.opRange,
-                expr.rhs.sourceRange
-          ])
-        return
-      }
-      expr.type = rhsType
-      return
-    }
-    if case .is = expr.op {
-      guard context.isValidType(expr.rhs.type!) else {
-        error(SemaError.unknownType(type: expr.rhs.type!),
-              loc: expr.rhs.startLoc,
-              highlights: [expr.rhs.sourceRange])
-        return
-      }
-      guard case .any? = expr.lhs.type else {
-        let matched = !matches(expr.lhs.type, expr.rhs.type)
-        error(SemaError.isCheckAlways(fails: matched),
-              loc: expr.opRange?.start,
-              highlights: [
-                expr.lhs.sourceRange,
-                expr.rhs.sourceRange
-          ])
-        return
-      }
-      expr.type = .bool
-      return
-    }
+
     let lookupOp = expr.op.associatedOp ?? expr.op
     if let decl = context.infixOperatorCandidate(lookupOp,
                                                  lhs: expr.lhs,

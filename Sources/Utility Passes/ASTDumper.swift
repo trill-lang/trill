@@ -310,4 +310,14 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
       super.visitPoundDiagnosticStmt(stmt)
     }
   }
+  override func visitIsExpr(_ expr: IsExpr) -> Void {
+    printNode(expr) {
+      super.visitIsExpr(expr)
+    }
+  }
+  override func visitCoercionExpr(_ expr: CoercionExpr) -> Void {
+    printNode(expr) {
+      super.visitCoercionExpr(expr)
+    }
+  }
 }
