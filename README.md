@@ -1,5 +1,7 @@
 # Trill
 
+[![CircleCI](https://circleci.com/gh/trill-lang/trill.svg?style=svg)](https://circleci.com/gh/trill-lang/trill)
+
 Trill is a simple, type-safe, compiled programming language. Partially inspired by Swift, Trill has most simple language features one would expect (functions, structures, pointers) and some more high-level language features, like types with methods, garbage collected types, overloading,  tuples/multiple returns, and closures.
 
 ## Why did you make this?
