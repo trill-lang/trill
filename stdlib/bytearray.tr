@@ -16,41 +16,41 @@ indirect type ByteArray {
   }
 
   init(_ string: *Int8) {
-    var length = strlen(string)
+    let length = strlen(string)
     self.capacity = ((length + 1) as Double * 1.5) as Int
     self.bytes = calloc(self.capacity, sizeof(Int8)) as *Int8
     self.length = length as Int
-    strncpy(self.bytes, string, length as UInt)
+    memcpy(self.bytes as *Void, string as *Void, length * sizeof(Int8) as UInt)
   }
 
   init(_ string: *Int8, length: Int) {
     self.capacity = ((length + 1) as Double * 1.5) as Int
     self.bytes = calloc(self.capacity, sizeof(Int8)) as *Int8
     self.length = length
-    strncpy(self.bytes, string, length as UInt)
+    memcpy(self.bytes as *Void, string as *Void, (length * sizeof(Int8)) as UInt)
   }
 
   mutating func _growIfNeeded() {
-    if self._load > 0.75 {
-      self.capacity *= 2
-      self.bytes = realloc(self.bytes as *Void, self.capacity * sizeof(Int8)) as *Int8
-    }
+    if self._load <= 0.75 { return }
+    self.capacity *= 2
+    self._reallocate()
   }
   mutating func _shrinkIfNeeded() {
-    if self._load < 0.5 {
-      self.capacity /= 2
-      self.bytes = realloc(self.bytes as *Void, self.capacity * sizeof(Int8)) as *Int8
-    }
+    if self._load >= 0.5 { return }
+    self.capacity /= 2
+    self._reallocate()
   }
   mutating func _reserveCapacity(_ capacity: Int) {
     if self.capacity >= capacity { return }
     self.capacity = capacity
+    self._reallocate()
+  }
+  mutating func _reallocate() {
     self.bytes = realloc(self.bytes as *Void, self.capacity * sizeof(Int8)) as *Int8
   }
   func _boundsCheck(_ index: Int) {
-    if index > self.length {
-      fatalError("index out of bounds")
-    }
+    if index <= self.length && index >= 0 { return }
+    fatalError("index \(index) out of bounds 0..\(self.length)")
   }
   mutating func append(_ element: Int8) {
     let index = self.length

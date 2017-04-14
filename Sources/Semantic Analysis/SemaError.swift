@@ -52,6 +52,7 @@ enum SemaError: Error, CustomStringConvertible {
   case missingImplementation(FuncDecl)
   case pointerPropertyAccess(lhs: DataType, property: Identifier)
   case tuplePropertyAccess(lhs: DataType, property: Identifier)
+  case stdlibRequired(String)
 
   var description: String {
     switch self {
@@ -163,6 +164,8 @@ enum SemaError: Error, CustomStringConvertible {
       return "cannot access property \(property) of pointer type \(lhs)"
     case .tuplePropertyAccess(let lhs, let property):
       return "cannot access property \(property) on tuple type \(lhs)"
+    case .stdlibRequired(let message):
+      return "the stdlib must be present to \(message)"
     }
   }
 }

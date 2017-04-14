@@ -163,6 +163,12 @@ class ASTDumper<StreamType: ColoredStream>: ASTTransformer {
     printNode(expr)
   }
   
+  override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+    printNode(expr) {
+      super.visitStringInterpolationExpr(expr)
+    }
+  }
+  
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {
     printNode(expr) {
       super.visitSubscriptExpr(expr)

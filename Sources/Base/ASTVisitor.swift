@@ -49,6 +49,8 @@ protocol ASTVisitor {
   @discardableResult
   func visitStringExpr(_ expr: StringExpr) -> Result
   @discardableResult
+  func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) -> Result
+  @discardableResult
   func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result
   @discardableResult
   func visitParamDecl(_ decl: ParamDecl) -> Result
@@ -203,6 +205,8 @@ extension ASTVisitor {
       return visitPoundFunctionExpr(expr)
     case let expr as StringExpr:
       return visitStringExpr(expr)
+    case let expr as StringInterpolationExpr:
+      return visitStringInterpolationExpr(expr)
     case let expr as VarExpr:
       return visitVarExpr(expr)
     case let expr as ParenExpr:

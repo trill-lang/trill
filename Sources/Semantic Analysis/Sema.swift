@@ -923,6 +923,17 @@ class Sema: ASTTransformer, Pass {
     }
   }
   
+  override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+    super.visitStringInterpolationExpr(expr)
+    if context.isValidType(.string) {
+      expr.type = .string
+    } else {
+      error(SemaError.stdlibRequired("use string interpolation"),
+            loc: expr.startLoc,
+            highlights: [expr.sourceRange])
+    }
+  }
+  
   override func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {
     super.visitPoundFunctionExpr(expr)
     guard let funcDecl = currentFunction else {

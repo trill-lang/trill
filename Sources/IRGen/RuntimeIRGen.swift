@@ -106,7 +106,7 @@ extension IRGenerator {
     }
     let size = byteSize(of: type)
     let ptr = builder.buildCall(alloc, args: [size], name: "ptr")
-    var res = ptr
+    var res: IRValue = ptr
     if type != .pointer(type: .int8) {
       res = builder.buildBitCast(res, type: irType, name: "alloc-cast")
     }

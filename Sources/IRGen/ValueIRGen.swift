@@ -166,6 +166,32 @@ extension IRGenerator {
     return builder.buildCall(function, args: [globalString.ptr, globalString.length], name: "string-init")
   }
   
+  func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) -> Result {
+    guard let stringInitializer = context.stdlib?.staticStringInterpolationSegmentsInitializer else {
+      fatalError("attempting to codegen String w/ interpolation segments without stdlib")
+    }
+    let function = codegenFunctionPrototype(stringInitializer)
+    
+    guard let arrayInitializer = context.stdlib?.anyArrayCapacityInitializer else {
+      fatalError()
+    }
+    let paramInitializer = codegenFunctionPrototype(arrayInitializer)
+    let segmentsParam = builder.buildCall(paramInitializer, args: [expr.segments.count + 1], name: "string-interpolation-segments-init")
+    guard let arrayAppend = context.stdlib?.anyArrayAppendElement else {
+      fatalError()
+    }
+    let alloca = self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
+                                             type: resolveLLVMType(arrayInitializer.parentType), name: "segments-param-ptr",
+                                             storage: .value)
+    self.builder.buildStore(segmentsParam, to: alloca.ref)
+    expr.segments.forEach { segment in
+      let arg = codegenPromoteToAny(value: visit(segment)!, type: segment.type!)
+      let _ = builder.buildCall(codegenFunctionPrototype(arrayAppend), args: [alloca.ref, arg])
+    }
+    
+    return builder.buildCall(function, args: [alloca.read()], name: "string-interpolation-init")
+  }
+  
   func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     if expr.decl == nil {
       let ptr = resolvePtr(expr)

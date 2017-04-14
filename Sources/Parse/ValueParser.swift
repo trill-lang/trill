@@ -111,6 +111,15 @@ extension Parser {
       consumeToken()
       valExpr = StringExpr(value: value,
                            sourceRange: tok.range)
+    case .stringInterpolationLiteral(let segments):
+      consumeToken()
+      let segmentExprs = try segments.map { tokens -> Expr in
+        let parser = Parser(tokens: tokens, filename: filename, context: context)
+        return try parser.parseValExpr()
+      }
+      valExpr = StringInterpolationExpr(
+        segments: segmentExprs,
+        sourceRange: tok.range)
     case .identifier:
       let name = try parseIdentifier()
       var genericParams = [GenericParam]()

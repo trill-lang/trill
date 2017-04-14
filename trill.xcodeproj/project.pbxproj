@@ -14,6 +14,8 @@
 		C019190E1E6E2B6800FDFB87 /* Mirror.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FE1E6E2AD700FDFB87 /* Mirror.tr */; };
 		C019190F1E6E2B6800FDFB87 /* print.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FF1E6E2AD700FDFB87 /* print.tr */; };
 		C01919101E6E2B6800FDFB87 /* String.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01919001E6E2AD700FDFB87 /* String.tr */; };
+		C0235FB81E89D9D300420815 /* Call.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0235FB71E89D9D300420815 /* Call.swift */; };
+		C0235FBA1E89D9DC00420815 /* ObjectFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0235FB91E89D9DC00420815 /* ObjectFile.swift */; };
 		C080EFD71E6914A300F34AA5 /* libLLVMAArch64AsmParser.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD01E6914A300F34AA5 /* libLLVMAArch64AsmParser.a */; };
 		C080EFD81E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD11E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a */; };
 		C080EFD91E6914A300F34AA5 /* libLLVMAArch64CodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C080EFD21E6914A300F34AA5 /* libLLVMAArch64CodeGen.a */; };
@@ -423,6 +425,8 @@
 		C01918FE1E6E2AD700FDFB87 /* Mirror.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Mirror.tr; sourceTree = "<group>"; };
 		C01918FF1E6E2AD700FDFB87 /* print.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = print.tr; sourceTree = "<group>"; };
 		C01919001E6E2AD700FDFB87 /* String.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = String.tr; sourceTree = "<group>"; };
+		C0235FB71E89D9D300420815 /* Call.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Call.swift; sourceTree = "<group>"; };
+		C0235FB91E89D9DC00420815 /* ObjectFile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectFile.swift; sourceTree = "<group>"; };
 		C080EFD01E6914A300F34AA5 /* libLLVMAArch64AsmParser.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64AsmParser.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64AsmParser.a; sourceTree = "<group>"; };
 		C080EFD11E6914A300F34AA5 /* libLLVMAArch64AsmPrinter.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64AsmPrinter.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64AsmPrinter.a; sourceTree = "<group>"; };
 		C080EFD21E6914A300F34AA5 /* libLLVMAArch64CodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMAArch64CodeGen.a; path = ../../../../../usr/local/Cellar/llvm/3.9.1/lib/libLLVMAArch64CodeGen.a; sourceTree = "<group>"; };
@@ -1213,6 +1217,7 @@
 				DC8EBB701E5FD06C00AE577C /* Alias.swift */,
 				DC8EBB711E5FD06C00AE577C /* ArrayType.swift */,
 				DC8EBB721E5FD06C00AE577C /* BasicBlock.swift */,
+				C0235FB71E89D9D300420815 /* Call.swift */,
 				DC8EBB731E5FD06C00AE577C /* Clause.swift */,
 				DC8EBB741E5FD06C00AE577C /* Constant.swift */,
 				DC8EBB751E5FD06C00AE577C /* FloatType.swift */,
@@ -1233,6 +1238,7 @@
 				DC8EBB841E5FD06C00AE577C /* MemoryBuffer.swift */,
 				DC8EBB851E5FD06C00AE577C /* MetadataType.swift */,
 				DC8EBB861E5FD06C00AE577C /* Module.swift */,
+				C0235FB91E89D9DC00420815 /* ObjectFile.swift */,
 				DC8EBB871E5FD06C00AE577C /* OpCode.swift */,
 				DC8EBB881E5FD06C00AE577C /* PassManager.swift */,
 				DC8EBB891E5FD06C00AE577C /* PhiNode.swift */,
@@ -1673,6 +1679,8 @@
 				DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */,
 				DC8EBAB81E5FCF6E00AE577C /* Protocols.swift in Sources */,
 				DC8EBAC81E5FCF6E00AE577C /* WitnessTable.swift in Sources */,
+				C0235FBA1E89D9DC00420815 /* ObjectFile.swift in Sources */,
+				C0235FB81E89D9D300420815 /* Call.swift in Sources */,
 				DC8EBBB41E5FD06C00AE577C /* TargetMachine.swift in Sources */,
 				DC8EBB9E1E5FD06C00AE577C /* Initialization.swift in Sources */,
 				DC8EBB3C1E5FCFD500AE577C /* Sema.swift in Sources */,
@@ -1931,7 +1939,6 @@
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path /usr/local/opt/llvm/lib";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";
@@ -1947,7 +1954,6 @@
 				HEADER_SEARCH_PATHS = /usr/local/opt/llvm/include;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path /usr/local/opt/llvm/lib";
 				LIBRARY_SEARCH_PATHS = /usr/local/opt/llvm/lib;
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = NO_SWIFTPM;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/Sources/trill/BridgingHeader.h";

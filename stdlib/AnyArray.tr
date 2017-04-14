@@ -3,7 +3,7 @@ type AnyArray {
   var count: Int
   var capacity: Int
   init(capacity: Int) {
-    // assert(capacity > 0, "Cannot initialize an array with 0 capacity")
+    assert(capacity > 0, "Cannot initialize an array with 0 capacity")
     self.elements = calloc(capacity, sizeof(Any)) as *Any
     self.capacity = capacity
     self.count = 0
@@ -33,7 +33,7 @@ type AnyArray {
   }
   func _boundsCheck(_ index: Int) {
     if index < 0 || index > self.count {
-      trill_fatalError("index out of bounds")
+      fatalError("index \(index) out of bounds \(0)..\(self.count)")
     }
   }
 
@@ -53,6 +53,7 @@ type AnyArray {
     }
   }
   mutating func append(_ element: Any) {
+    assert(self.count < self.capacity, "cannot append when at capacity")
     self.elements[self.count] = element
     self.count += 1
     self._growIfNeeded()
@@ -89,6 +90,20 @@ type AnyArray {
       }
     }
     putchar(']' as Int32)
+  }
+
+  var description: String {
+    var s = ""
+    s.append('[' as Int8)
+    for var i = 0; i < self.count; i += 1 {
+      let elem = self.elements[i]
+      s.append(String(describing: elem))
+      if i != self.count - 1 {
+        s.append(", ")
+      }
+    }
+    s.append(']' as Int8)
+    return s
   }
 
   func isEmpty() -> Bool {

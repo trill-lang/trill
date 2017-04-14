@@ -1,0 +1,27 @@
+type CustomType {
+  var x: String
+  var y: Int
+}
+
+func main() {
+  var s = "1 + 2 = \(1+2)"
+  var e = "1 + 2 = 3"
+  println(s)
+  assert(s == e, "wrong interpolation!")
+
+  var dict = AnyDictionary()
+  s = "\("this is a dictionary") => \(dict)!"
+  e = "this is a dictionary => {}!"
+  println(s)
+  assert(s == e, "wrong interpolation!")
+
+  s = "CustomType => \(CustomType(x: "s", y: 2017))"
+  e = "CustomType => CustomType(x: \"s\", y: 2017)"
+  println(s)
+  assert(s == e, "wrong interpolation!")
+
+  s = "CustomType.y => \(CustomType(x: "s", y: 2017).y)"
+  e = "CustomType.y => 2017"
+  println(s)
+  assert(s == e, "wrong interpolation!")
+}

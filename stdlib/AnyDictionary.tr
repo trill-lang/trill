@@ -126,4 +126,26 @@ type AnyDictionary {
     }
     print("}")
   }
+
+  var description: String {
+    let count = self.count
+    if count == 0 { return "{}" }
+    let capacity = self.capacity
+    var s = "{"
+    var seen = 0
+    for var i = 0; i < capacity; i += 1 {
+      let bucket = self.storage[i]
+      if bucket != nil {
+        seen += 1
+        s.append(String(describing: bucket.key))
+        s.append(": ")
+        s.append(String(describing: bucket.value))
+        if seen < count {
+          s.append(", ")
+        }
+      }
+    }
+    s.append("}")
+    return s
+  }
 }

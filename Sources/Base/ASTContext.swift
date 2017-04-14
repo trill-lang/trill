@@ -810,6 +810,13 @@ public class StdLibASTContext: ASTContext {
     }!
   }
   
+  var staticStringInterpolationSegmentsInitializer: InitializerDecl {
+    return string.initializers.first { initializer in
+      // TODO: find a way to do this that doesn't require string comparison
+      initializer.formattedParameterList == "(_interpolationSegments segments: AnyArray)"
+    }!
+  }
+  
   var mirror: TypeDecl {
     return type(named: "Mirror")!
   }
@@ -818,6 +825,24 @@ public class StdLibASTContext: ASTContext {
     return mirror.initializers.first { initializer in
       // TODO: find a way to do this that doesn't require string comparison
       initializer.formattedParameterList == "(reflectingType typeMeta: *Void)"
+    }!
+  }
+  
+  var anyArray: TypeDecl {
+    return type(named: "AnyArray")!
+  }
+  
+  var anyArrayCapacityInitializer: InitializerDecl {
+    return anyArray.initializers.first { initializer in
+      // TODO: find a way to do this that doesn't require string comparison
+      initializer.formattedParameterList == "(capacity: Int)"
+    }!
+  }
+  
+  var anyArrayAppendElement: FuncDecl {
+    return anyArray.methods(named: "append").first { method in
+      // TODO: find a way to do this that doesn't require string comparison
+      method.formattedParameterList == "(_ element: Any)"
     }!
   }
 }

@@ -173,6 +173,15 @@ class StringExpr: ConstantExpr {
   }
 }
 
+class StringInterpolationExpr: Expr {
+  let segments: [Expr]
+  
+  init(segments: [Expr], sourceRange: SourceRange? = nil) {
+    self.segments = segments
+    super.init(sourceRange: sourceRange)
+  }
+}
+
 class PoundFunctionExpr: StringExpr {
   init(sourceRange: SourceRange? = nil) {
     super.init(value: "", sourceRange: sourceRange)

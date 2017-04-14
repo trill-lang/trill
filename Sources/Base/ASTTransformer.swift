@@ -89,6 +89,9 @@ class ASTTransformer: ASTVisitor {
   func visitVoidExpr(_ expr: VoidExpr) {}
   func visitNilExpr(_ expr: NilExpr) {}
   func visitStringExpr(_ expr: StringExpr) {}
+  func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+    _ = expr.segments.map(visit)
+  }
   func visitTypeRefExpr(_ expr: TypeRefExpr) {}
   func visitParenExpr(_ expr: ParenExpr) {
     visit(expr.value)

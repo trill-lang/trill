@@ -102,6 +102,34 @@ type Mirror {
     fprintf(file, ")", self.value)
   }
 
+  func describe() -> String {
+    if trill_anyIsNil(self.value) != 0 {
+      return "nil"
+    }
+    if self.pointerLevel > 0 {
+      let punnedPointer = *(trill_getAnyValuePtr(self.value) as **Void)
+      return "\(punnedPointer) as \(self.typeName)"
+    }
+    var s = "\(self.typeName)("
+    for var i = 0; i < self.fieldCount; i += 1 {
+      let field = self.field(at: i)
+      if i != 0 { s.append(", ") }
+      let name = field.name
+      if name == nil { // tuple
+        s.append(".\(i): ")
+      } else {
+        s.append("\(name): ")
+      }
+      let child = self.child(i)
+      var shouldQuote = child is *Int8 || child is String
+      if shouldQuote { s.append("\"") }
+      s.append(String(describing: child))
+      if shouldQuote { s.append("\"") }
+    }
+    s.append(")")
+    return s
+  }
+
   func field(at index: Int) -> FieldMirror {
     return FieldMirror(reflecting: trill_getFieldMetadata(self._metadata, index as UInt))
   }

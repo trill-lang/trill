@@ -24,6 +24,14 @@ type String {
         }
         self._storage.append(0)
     }
+    init(_interpolationSegments segments: AnyArray) {
+      self._storage = ByteArray(capacity: 256)
+      self._storage.append(0)
+      for var i = 0; i < segments.count; i+= 1 {
+        let segmentString = String(describing: segments[i])
+        self.append(segmentString)
+      }
+    }
     init() {
         self._storage = ByteArray(capacity: 256)
         self._storage.append(0)
@@ -42,7 +50,8 @@ type String {
     mutating func append(_ string: String) {
         self._storage.remove(at: self.length) // Remove NUL terminator
         self._storage.append(string._storage)
-        self._storage.append(0)
+        // explicitly do not append 0, as the other string's storage already
+        // has the NUL terminator
     }
     mutating func append(_ cString: *Int8) {
         self._storage.remove(at: self.length) // Remove NUL terminator
@@ -124,6 +133,88 @@ type String {
     }
     var isEmpty: Bool {
         return self.length == 0
+    }
+
+
+
+    // TODO: Rewrite once we have generics -- the snprintf stuff is super
+    // repetitive
+    init(describing value: Any) {
+      if value is *Int8 {
+        let capacity = snprintf(nil, 0, "%s", value as *Int8) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%s" as *Int8, value as *Int8)
+        self._storage.length = capacity
+      } else if value is Int {
+        let capacity = snprintf(nil, 0, "%d" as *Int8, value as Int) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%d" as *Int8, value as Int)
+        self._storage.length = capacity
+      } else if value is Int8 {
+        let capacity = snprintf(nil, 0, "%c" as *Int8, value as Int8) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%c" as *Int8, value as Int8)
+        self._storage.length = capacity
+      } else if value is Int16 {
+        let capacity = snprintf(nil, 0, "%d" as *Int8, value as Int16) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%d" as *Int8, value as Int16)
+        self._storage.length = capacity
+      } else if value is Int32 {
+        let capacity = snprintf(nil, 0, "%d" as *Int8, value as Int32) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%d" as *Int8, value as Int32)
+        self._storage.length = capacity
+      } else if value is UInt {
+        let capacity = snprintf(nil, 0, "%u" as *Int8, value as UInt) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%u" as *Int8, value as UInt)
+        self._storage.length = capacity
+      } else if value is UInt8 {
+        let capacity = snprintf(nil, 0, "%u" as *Int8, value as UInt8) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%u" as *Int8, value as UInt8)
+        self._storage.length = capacity
+      } else if value is UInt16 {
+        let capacity = snprintf(nil, 0, "%u" as *Int8, value as UInt16) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%u" as *Int8, value as UInt16)
+        self._storage.length = capacity
+      } else if value is UInt32 {
+        let capacity = snprintf(nil, 0, "%u" as *Int8, value as UInt16) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%u" as *Int8, value as UInt16)
+        self._storage.length = capacity
+      } else if value is Float {
+        let capacity = snprintf(nil, 0, "%f" as *Int8, value as Float) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%f" as *Int8, value as Float)
+        self._storage.length = capacity
+      } else if value is Double {
+        let capacity = snprintf(nil, 0, "%f" as *Int8, value as Double) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%f" as *Int8, value as Double)
+        self._storage.length = capacity
+      } else if value is Bool {
+        if value as Bool {
+          self = "true"
+        } else {
+          self = "false"
+        }
+      } else if value is *Void {
+        let capacity = snprintf(nil, 0, "%p" as *Int8, value as *Void) as Int + 1
+        self._storage = ByteArray(capacity: capacity)
+        snprintf(self._storage.bytes, capacity as UInt, "%p" as *Int8, value as *Void)
+        self._storage.length = capacity
+      } else if value is String {
+        self._storage = (value as String)._storage.copy()
+      } else if value is AnyDictionary {
+        self = (value as AnyDictionary).description
+      } else if value is AnyArray {
+        self = (value as AnyArray).description
+      } else {
+        self = Mirror(reflecting: value).describe()
+      }
     }
 }
 
