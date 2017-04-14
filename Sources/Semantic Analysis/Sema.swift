@@ -908,7 +908,7 @@ class Sema: ASTTransformer, Pass {
         Argument(val: expr.rhs)
       ]), loc: expr.opRange?.start)
   }
-  
+
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     super.visitTernaryExpr(expr)
     expr.type = expr.trueCase.type
