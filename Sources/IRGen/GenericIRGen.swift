@@ -1,3 +1,5 @@
+import LLVM
+
 extension IRGenerator {
 
   func codegenWitnessTables(_ type: TypeDecl) -> [Global] {

@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import LLVM
 
 extension IRGenerator {
   @discardableResult

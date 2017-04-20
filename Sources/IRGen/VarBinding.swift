@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import LLVM
 
 /// Possible ways a binding should be accessed. Determines if a binding
 /// is a value or reference type, and

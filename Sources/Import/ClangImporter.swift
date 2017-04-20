@@ -4,43 +4,11 @@
 //
 
 import Foundation
-
-extension CXErrorCode: Error, CustomStringConvertible {
-  public var description: String {
-    switch self {
-    case CXError_Success:
-      return "CXErrorCode.success"
-    case CXError_Crashed:
-      return "CXErrorCode.crashed"
-    case CXError_Failure:
-      return "CXErrorCode.failure"
-    case CXError_ASTReadError:
-      return "CXErrorCode.astReadError"
-    case CXError_InvalidArguments:
-      return "CXErrorCode.invalidArguments"
-    default:
-      fatalError("unknown CXErrorCode: \(self.rawValue)")
-    }
-  }
-}
+import Clang
+import cclang
 
 enum ImportError: Error {
   case pastIntMax
-}
-
-extension CXCursor {
-  var isInvalid: Bool {
-    switch self.kind {
-    case CXCursor_InvalidCode: return true
-    case CXCursor_InvalidFile: return true
-    case CXCursor_LastInvalid: return true
-    case CXCursor_FirstInvalid: return true
-    case CXCursor_NotImplemented: return true
-    case CXCursor_NoDeclFound: return true
-    default: return false
-    }
-  }
-  var isValid: Bool { return !self.isInvalid }
 }
 
 extension Collection where Iterator.Element == String, IndexDistance == Int {
@@ -64,14 +32,6 @@ func freelist<T>(_ ptr: UnsafeMutablePointer<UnsafeMutablePointer<T>?>, count: I
   free(ptr)
 }
 
-extension CXString {
-  func asSwift() -> String {
-    guard self.data != nil else { return "<none>" }
-    defer { clang_disposeString(self) }
-    return String(cString: clang_getCString(self))
-  }
-}
-
 extension String {
   var lastWord: String? {
     return components(separatedBy: " ").last
@@ -79,23 +39,18 @@ extension String {
 }
 
 extension SourceLocation {
-  init(clangLocation: CXSourceLocation) {
-    var cxfile: CXFile?
-    var line: UInt32 = 0
-    var column: UInt32 = 0
-    var offset: UInt32 = 0
-    clang_getSpellingLocation(clangLocation, &cxfile, &line, &column, &offset)
-    self.init(line: Int(line), column: Int(column), file: clang_getFileName(cxfile).asSwift(),
-              charOffset: Int(offset))
+  init(clangLocation: Clang.SourceLocation) {
+    self.init(line: clangLocation.line,
+              column: clangLocation.column,
+              file: clangLocation.file.name,
+              charOffset: clangLocation.offset)
   }
 }
 
 extension SourceRange {
-  init(clangRange: CXSourceRange) {
-    let start = clang_getRangeStart(clangRange)
-    let end = clang_getRangeEnd(clangRange)
-    self.init(start: SourceLocation(clangLocation: start),
-              end: SourceLocation(clangLocation: end))
+  init(clangRange: Clang.SourceRange) {
+    self.init(start: SourceLocation(clangLocation: clangRange.start),
+              end: SourceLocation(clangLocation: clangRange.end))
   }
 }
 
@@ -152,43 +107,26 @@ class ClangImporter: Pass {
     return "Clang Importer"
   }
   
-  func translationUnit(for path: String) throws -> CXTranslationUnit {
-    let index = clang_createIndex(1, 1)
+  func translationUnit(for path: String) throws -> TranslationUnit {
+    let index = Index()
     var args = [
       "-I", "/usr/local/include/trill",
       "-std=gnu11", "-fsyntax-only",
       "-target", targetTriple
     ]
+
     #if os(macOS)
       if let sdkPath = ClangImporter.sdkPath {
         args.append("-isysroot")
         args.append(sdkPath)
       }
     #endif
-    defer {
-      clang_disposeIndex(index)
-    }
-    
-    let flags = [
-      CXTranslationUnit_SkipFunctionBodies,
-      CXTranslationUnit_DetailedPreprocessingRecord
-    ].reduce(0 as UInt32) { $0 | $1.rawValue }
-    
-    return try args.withCArrayOfCStrings { ptr in
-      var tu: CXTranslationUnit? = nil
-    
-      let err = clang_parseTranslationUnit2(index,
-                                            path,
-                                            ptr, Int32(args.count), nil,
-                                            0, flags, &tu)
-      guard err == CXError_Success else {
-        throw err
-      }
-      guard let _tu = tu else {
-        throw CXError_Failure
-      }
-      return _tu
-    }
+
+    return try TranslationUnit(index: index,
+                               filename: path,
+                               commandLineArgs: args,
+                               options: [.skipFunctionBodies,
+                                         .detailedPreprocessingRecord])
   }
   
   func synthesize(name: String, args: [DataType],
@@ -210,14 +148,14 @@ class ClangImporter: Pass {
   }
   
   @discardableResult
-  func importTypeDef(_ cursor: CXCursor, in context: ASTContext) -> TypeAliasDecl? {
-    let name = clang_getCursorSpelling(cursor).asSwift()
+  func importTypeDef(_ cursor: TypedefDecl, in context: ASTContext) -> TypeAliasDecl? {
+    let name = cursor.displayName
     guard ClangImporter.builtinTypeReplacements[name] == nil else { return nil }
-    let type = clang_getTypedefDeclUnderlyingType(cursor)
-    let decl = clang_getTypeDeclaration(type)
+    let type = cursor.type!
+    let decl = cursor.definition
     var trillType: DataType?
-    if decl.kind == CXCursor_StructDecl {
-      if let expr = importStruct(decl, in: context) {
+    if let structDecl = decl as? StructDecl {
+      if let expr = importStruct(structDecl, in: context) {
         trillType = expr.type
       } else {
         return nil
@@ -240,7 +178,7 @@ class ClangImporter: Pass {
       return nil
     }
 
-    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
+    let range = SourceRange(clangRange: cursor.range)
     let alias = TypeAliasDecl(name: Identifier(name: name),
                               bound: t.ref(range: range),
                               sourceRange: range)
@@ -249,9 +187,10 @@ class ClangImporter: Pass {
   }
   
   @discardableResult
-  func importStruct(_ cursor: CXCursor, in context: ASTContext) -> TypeDecl? {
-    let type = clang_getCursorType(cursor)
-    guard let typeName = clang_getTypeSpelling(type).asSwift().lastWord else {
+  func importStruct(_ cursor: StructDecl, in context: ASTContext) -> TypeDecl? {
+
+    guard let type = cursor.type,
+          let typeName = type.description.lastWord else {
         return nil
     }
     let name = Identifier(name: typeName)
@@ -259,21 +198,18 @@ class ClangImporter: Pass {
     if let e = importedTypes[name] { return e }
     
     var values = [PropertyDecl]()
-    
-    var childIdx = 0
-    let res = clang_visitChildrenWithBlock(cursor) { child, parent in
-      defer { childIdx += 1 }
-      var fieldName = clang_getCursorSpelling(child).asSwift()
+
+    for (idx, child) in cursor.children().enumerated() {
+      var fieldName = child.displayName
       if fieldName.isEmpty {
-        fieldName = "__unnamed_\(childIdx)"
+        fieldName = "__unnamed_\(idx)"
       }
       let fieldId = Identifier(name: fieldName,
                                range: nil)
-      let fieldTy = clang_getCursorType(child)
-      guard let trillTy = self.convertToTrillType(fieldTy) else {
-        return CXChildVisit_Break
+      guard let trillTy = convertToTrillType(child.type!) else {
+        return nil
       }
-      let range = SourceRange(clangRange: clang_getCursorExtent(child))
+      let range = SourceRange(clangRange: child.range)
       let expr = PropertyDecl(name: fieldId,
                               type: trillTy.ref(),
                               mutable: true,
@@ -283,13 +219,9 @@ class ClangImporter: Pass {
                               setter: nil,
                               sourceRange: range)
       values.append(expr)
-      return CXChildVisit_Continue
-    }
-    guard res == 0 else {
-      return nil
     }
     
-    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
+    let range = SourceRange(clangRange: cursor.range)
     let expr = TypeDecl(name: name, properties: values, modifiers: [.foreign, .implicit],
                         sourceRange: range)
     importedTypes[name] = expr
@@ -297,33 +229,29 @@ class ClangImporter: Pass {
     return expr
   }
   
-  func importFunction(_ cursor: CXCursor, in context: ASTContext)  {
-    let name = clang_getCursorSpelling(cursor).asSwift()
+  func importFunction(_ cursor: FunctionDecl, in context: ASTContext)  {
+    let name = cursor.displayName
     if importedFunctions[Identifier(name: name)] != nil { return }
-    let numArgs = clang_Cursor_getNumArguments(cursor)
-    guard numArgs != -1 else { return }
     var modifiers = [DeclModifier.foreign, DeclModifier.implicit]
-    if clang_isNoReturn(cursor) != 0 {
+
+    if clang_isNoReturn(cursor.asClang()) != 0 {
       modifiers.append(.noreturn)
     }
-    let hasVarArgs = clang_Cursor_isVariadic(cursor) != 0
-    let funcType = clang_getCursorType(cursor)
-    let returnTy = clang_getResultType(funcType)
+
+    let hasVarArgs = cursor.isVariadic
+    let funcType = cursor.type as! FunctionType
     
-    guard let trillRetTy = convertToTrillType(returnTy) else { return }
+    guard let trillRetTy = convertToTrillType(funcType.returnType!) else { return }
 
     var args = [DataType]()
     var argRanges = [SourceRange]()
-    for i in 0..<numArgs {
-      let type = clang_getArgType(funcType, UInt32(i))
-      let range = clang_getCursorExtent(clang_Cursor_getArgument(cursor, UInt32(i)))
-      
-      guard let trillType = convertToTrillType(type) else { return }
+    for param in cursor.parameters() {
+      guard let trillType = convertToTrillType(param.type!) else { return }
       args.append(trillType)
-      argRanges.append(SourceRange(clangRange: range))
+      argRanges.append(SourceRange(clangRange: param.range))
     }
     
-    let range = SourceRange(clangRange: clang_getCursorExtent(cursor))
+    let range = SourceRange(clangRange: cursor.range)
     let decl = synthesize(name: name,
                           args: args,
                           return: trillRetTy,
@@ -335,39 +263,39 @@ class ClangImporter: Pass {
     context.add(decl)
   }
   
-  func importEnum(_ cursor: CXCursor, in context: ASTContext) {
-    clang_visitChildrenWithBlock(cursor) { child, parent in
-      let name = Identifier(name: clang_getCursorSpelling(child).asSwift())
-      if context.global(named: name) != nil { return CXChildVisit_Continue }
+  func importEnum(_ cursor: EnumDecl, in context: ASTContext) {
+    for child in cursor.children() {
+      let name = Identifier(name: child.displayName)
+      if context.global(named: name) != nil { continue }
       
-      let range = SourceRange(clangRange: clang_getCursorExtent(child))
+      let range = SourceRange(clangRange: child.range)
       let varExpr = VarAssignDecl(name: name,
                                   typeRef: DataType.int32.ref(),
                                   modifiers: [.foreign, .implicit],
                                   mutable: false,
                                   sourceRange: range)!
       context.add(varExpr)
-      return CXChildVisit_Continue
     }
   }
   
-  func importUnion(_ cursor: CXCursor, context: ASTContext) {
-    let type = clang_getCursorType(cursor)
-    guard let typeName = clang_getTypeSpelling(type).asSwift().lastWord else {
+  func importUnion(_ cursor: UnionDecl, context: ASTContext) {
+
+    guard
+      let type = cursor.type,
+      let typeName = type.description.lastWord else {
       return
     }
-    var maxType: (CXType, Int)? = nil
-    clang_visitChildrenWithBlock(cursor) { child, parent in
-      let fieldType = clang_getCursorType(child)
-      let fieldSize = Int(clang_Type_getSizeOf(fieldType))
+    var maxType: (CType, Int)? = nil
+    for child in cursor.children() {
+      let fieldType = child.type!
+      let fieldSize = try! fieldType.sizeOf()
       guard let max = maxType else {
         maxType = (fieldType, fieldSize)
-        return CXChildVisit_Continue
+        continue
       }
       if fieldSize > max.1 {
         maxType = (fieldType, fieldSize)
       }
-      return CXChildVisit_Continue
     }
     guard let max = maxType?.0,
       let trillType = convertToTrillType(max) else {
@@ -377,32 +305,27 @@ class ClangImporter: Pass {
     context.add(alias)
   }
   
-  func importMacro(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
-    if clang_Cursor_isMacroFunctionLike(cursor) != 0 { return }
-    let range = clang_getCursorExtent(cursor)
+  func importMacro(_ cursor: MacroDefinition, in tu: TranslationUnit, context: ASTContext) {
+    if cursor.isFunctionLike { return }
+    let tokens = tu.tokens(in: cursor.range)
+    let range = cursor.range
     
-    var tokenCount: UInt32 = 0
-    var _tokens: UnsafeMutablePointer<CXToken>?
-    clang_tokenize(tu, range, &_tokens, &tokenCount)
+    guard tokens.count >= 2 else { return }
+
+    _ = tu.annotate(tokens: tokens)
     
-    guard let tokens = _tokens, tokenCount >= 2 else { return }
-    
-    defer {
-      clang_disposeTokens(tu, tokens, tokenCount)
-    }
-    
-    clang_annotateTokens(tu, tokens, tokenCount, nil)
-    
-    let name = clang_getTokenSpelling(tu, tokens[0]).asSwift()
+    let name = tokens[0].spelling(in: tu)
     guard context.global(named: Identifier(name: name)) == nil else { return }
-    switch clang_getTokenKind(tokens[1]) {
-    case CXToken_Literal:
-      guard let assign = parse(tu: tu, token: tokens[1], name: name) else { return }
+    let value = tokens[1]
+    switch value {
+    case is LiteralToken:
+      guard let assign = parse(tu: tu, token: value, name: name) else { return }
       context.add(assign)
-    case CXToken_Identifier:
-      let identifierName = clang_getTokenSpelling(tu, tokens[1]).asSwift()
+    case is IdentifierToken:
+      let identifierName = value.spelling(in: tu)
       guard let _ = context.global(named: identifierName) else { return }
-      let rhs = VarExpr(name: Identifier(name: identifierName, range: SourceRange(clangRange: clang_getTokenExtent(tu, tokens[1]))))
+      let rhs = VarExpr(name: Identifier(name: identifierName,
+                                         range: SourceRange(clangRange: value.range(in: tu))))
       let varDecl = VarAssignDecl(name: Identifier(name: name),
                                   typeRef: nil,
                                   kind: .global,
@@ -416,11 +339,13 @@ class ClangImporter: Pass {
     }
   }
   
-  func importVariableDeclation(_ cursor: CXCursor, in tu: CXTranslationUnit, context: ASTContext) {
-    guard let type = convertToTrillType(clang_getCursorType(cursor)) else { return }
-    let name = clang_getCursorSpelling(cursor).asSwift()
-    let identifier = Identifier(name: name, range: SourceRange(clangRange: clang_getCursorExtent(cursor)))
-    if let existing = context.global(named: name), existing.sourceRange == identifier.range { return }
+  func importVariableDeclation(_ cursor: VarDecl, in tu: TranslationUnit, context: ASTContext) {
+    guard let cType = cursor.type, let type = convertToTrillType(cType) else { return }
+    let name = cursor.displayName
+    let identifier = Identifier(name: name,
+                                range: SourceRange(clangRange: cursor.range))
+    if let existing = context.global(named: name),
+       existing.sourceRange == identifier.range { return }
     
     context.add(VarAssignDecl(name: identifier,
                               typeRef: type.ref(),
@@ -477,16 +402,18 @@ class ClangImporter: Pass {
     case .number(let value, let raw):
         return NumExpr(value: value, raw: raw, sourceRange: range)
     case .identifier(let name):
-        return try simpleParseIntegerLiteralToken(name) ?? VarExpr(name: Identifier(name: name, range: range), sourceRange: range)
+        return try simpleParseIntegerLiteralToken(name) ??
+          VarExpr(name: Identifier(name: name, range: range),
+                  sourceRange: range)
     default:
         return nil
     }
   }
 
-  func parse(tu: CXTranslationUnit, token: CXToken, name: String) -> VarAssignDecl? {
+  func parse(tu: TranslationUnit, token: Clang.Token, name: String) -> VarAssignDecl? {
     do {
-      let tok = clang_getTokenSpelling(tu, token).asSwift()
-      let range = SourceRange(clangRange: clang_getTokenExtent(tu, token))
+      let tok = token.spelling(in: tu)
+      let range = SourceRange(clangRange: token.range(in: tu))
       guard let expr = try simpleParseCToken(tok, range: range) else { return nil }
 
       return VarAssignDecl(name: Identifier(name: name),
@@ -512,37 +439,33 @@ class ClangImporter: Pass {
     } catch {
       // do nothing
     }
-    let tu: CXTranslationUnit
+    let tu: TranslationUnit
     do {
       tu = try translationUnit(for: path)
     } catch {
       context.error(error)
       return
     }
-    let cursor = clang_getTranslationUnitCursor(tu)
-    clang_visitChildrenWithBlock(cursor) { child, parent in
-      let kind = clang_getCursorKind(child)
-      switch kind {
-      case CXCursor_TypedefDecl:
-        self.importTypeDef(child, in: context)
-      case CXCursor_EnumDecl:
-        self.importEnum(child, in: context)
-      case CXCursor_StructDecl:
-        self.importStruct(child, in: context)
-      case CXCursor_FunctionDecl:
-        self.importFunction(child, in: context)
-      case CXCursor_MacroDefinition:
-        self.importMacro(child, in: tu, context: context)
-      case CXCursor_UnionDecl:
-        self.importUnion(child, context: context)
-      case CXCursor_VarDecl:
-        self.importVariableDeclation(child, in: tu, context: context)
+    for child in tu.cursor.children() {
+      switch child {
+      case let child as TypedefDecl:
+        importTypeDef(child, in: context)
+      case let child as EnumDecl:
+        importEnum(child, in: context)
+      case let child as StructDecl:
+        importStruct(child, in: context)
+      case let child as FunctionDecl:
+        importFunction(child, in: context)
+      case let child as MacroDefinition:
+        importMacro(child, in: tu, context: context)
+      case let child as UnionDecl:
+        importUnion(child, context: context)
+      case let child as VarDecl:
+        importVariableDeclation(child, in: tu, context: context)
       default:
         break
       }
-      return CXChildVisit_Continue
     }
-    clang_disposeTranslationUnit(tu)
   }
 
   static let runtimeHeaderPath: String = {
@@ -626,42 +549,42 @@ class ClangImporter: Pass {
     "TRILL_ANY": .any,
   ]
   
-  func convertToTrillType(_ type: CXType) -> DataType? {
-    switch type.kind {
-    case CXType_Void: return .void
-    case CXType_Int: return .int32
-    case CXType_Bool: return .bool
-    case CXType_Enum: return .int32
-    case CXType_Float: return .float
-    case CXType_Double: return .double
-    case CXType_LongDouble: return .float80
-    case CXType_Long: return .int64
-    case CXType_UInt: return .uint32
-    case CXType_LongLong: return .int64
-    case CXType_ULong: return .uint64
-    case CXType_ULongLong: return .uint64
-    case CXType_Short: return .int16
-    case CXType_UShort: return .uint16
-    case CXType_SChar: return .int8
-    case CXType_Char_S: return .int8
-    case CXType_Char16: return .int16
-    case CXType_Char32: return .int32
-    case CXType_UChar: return .uint8
-    case CXType_WChar: return .int16
-    case CXType_ObjCSel: return .pointer(type: .int8)
-    case CXType_ObjCId: return .pointer(type: .int8)
-    case CXType_NullPtr: return .pointer(type: .int8)
-    case CXType_Unexposed: return .pointer(type: .int8)
-    case CXType_ConstantArray:
-      let underlying = clang_getArrayElementType(type)
+  func convertToTrillType(_ type: CType) -> DataType? {
+    switch type {
+    case is VoidType: return .void
+    case is IntType: return .int32
+    case is BoolType: return .bool
+    case is EnumType: return .int32
+    case is FloatType: return .float
+    case is DoubleType: return .double
+    case is LongDoubleType: return .float80
+    case is LongType: return .int64
+    case is UIntType: return .uint32
+    case is LongLongType: return .int64
+    case is ULongType: return .uint64
+    case is ULongLongType: return .uint64
+    case is ShortType: return .int16
+    case is UShortType: return .uint16
+    case is SCharType: return .int8
+    case is Char_SType: return .int8
+    case is Char16Type: return .int16
+    case is Char32Type: return .int32
+    case is UCharType: return .uint8
+    case is WCharType: return .int16
+    case is ObjCSelType: return .pointer(type: .int8)
+    case is ObjCIdType: return .pointer(type: .int8)
+    case is NullPtrType: return .pointer(type: .int8)
+    case is UnexposedType: return .pointer(type: .int8)
+    case let type as ConstantArrayType:
+      guard let underlying = type.element else { return nil }
       guard let trillTy = convertToTrillType(underlying) else { return nil }
       return .pointer(type: trillTy)
-    case CXType_Pointer:
-      let pointee = clang_getPointeeType(type)
+    case let type as PointerType:
+      let pointee = type.pointee!
       // Check to see if the pointee is a function type:
-      if clang_getResultType(pointee).kind != CXType_Invalid {
+      if let funcTy = pointee as? FunctionProtoType {
         // function pointer type.
-        guard let t = convertFunctionType(pointee) else { return nil }
+        guard let t = convertFunctionType(funcTy) else { return nil }
         return t
       }
       let trillPointee = convertToTrillType(pointee)
@@ -669,39 +592,34 @@ class ClangImporter: Pass {
         return nil
       }
       return .pointer(type: p)
-    case CXType_FunctionProto:
+    case let type as FunctionProtoType:
       return convertFunctionType(type)
-    case CXType_FunctionNoProto:
-      let ret = clang_getResultType(type)
-      guard let trillRet = convertToTrillType(ret) else { return nil }
+    case let type as FunctionNoProtoType:
+      guard let trillRet = convertToTrillType(type.returnType!) else { return nil }
       return .function(args: [], returnType: trillRet)
-    case CXType_Typedef:
-      let typeDecl = clang_getTypeDeclaration(type)
-      let typeName = clang_getCursorSpelling(typeDecl).asSwift()
+    case let type as TypedefType:
+      let typeDecl = type.declaration!
+      let typeName = typeDecl.displayName
       if let replacement = ClangImporter.builtinTypeReplacements[typeName] {
         return replacement
       }
       return DataType(name: typeName)
-    case CXType_Record:
-      guard let name = clang_getTypeSpelling(type).asSwift().lastWord else {
+    case let type as RecordType:
+      guard let name = type.declaration!.displayName.lastWord else {
           return nil
       }
       return DataType(name: name)
-    case CXType_ConstantArray:
-      let element = clang_getArrayElementType(type)
-      let size = clang_getNumArgTypes(type)
-      guard let trillElType = convertToTrillType(element) else { return nil }
-      return .tuple(fields: [DataType](repeating: trillElType, count: Int(size)))
-    case CXType_Elaborated:
-      let element = clang_Type_getNamedType(type)
-      return convertToTrillType(element)
-    case CXType_IncompleteArray:
-      let element = clang_getArrayElementType(type)
-      guard let trillEltTy = convertToTrillType(element) else { return nil }
+    case let type as ConstantArrayType:
+      guard let trillElType = convertToTrillType(type.element!) else { return nil }
+      return .tuple(fields: [DataType](repeating: trillElType, count: type.count))
+    case let type as ElaboratedType:
+      return convertToTrillType(type.namedType!)
+    case let type as IncompleteArrayType:
+      guard let trillEltTy = convertToTrillType(type.element!) else { return nil }
       return .pointer(type: trillEltTy)
-    case CXType_Invalid:
+    case is InvalidType:
       return nil
-    case CXType_BlockPointer:
+    case is BlockPointerType:
       // C/Obj-C Blocks are unexposed, but are always pointers.
       return .pointer(type: .int8)
     default:
@@ -709,19 +627,9 @@ class ClangImporter: Pass {
     }
   }
   
-  func convertFunctionType(_ type: CXType) -> DataType? {
-    let ret = clang_getResultType(type)
-    let trillRet = convertToTrillType(ret) ?? .void
-    let numArgs = clang_getNumArgTypes(type)
-    
-    guard numArgs != -1 else { return nil }
-    
-    var args = [DataType]()
-    for i in 0..<UInt32(numArgs) {
-      let type = clang_getArgType(type, UInt32(i))
-      guard let trillArgTy = convertToTrillType(type) else { return nil }
-      args.append(trillArgTy)
-    }
+  func convertFunctionType(_ type: FunctionProtoType) -> DataType? {
+    let trillRet = convertToTrillType(type.returnType!) ?? .void
+    let args = type.argTypes.flatMap(convertToTrillType)
     return .function(args: args, returnType: trillRet)
   }
 }

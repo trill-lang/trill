@@ -1,3 +1,5 @@
+@testable import LLVM // HACK
+
 public class ORCJIT {
     internal let llvm: LLVMExecutionEngineRef
     

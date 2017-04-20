@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import LLVM
 
 private var fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
 
