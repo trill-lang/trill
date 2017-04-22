@@ -312,15 +312,28 @@ class ClangImporter: Pass {
     
     guard tokens.count >= 2 else { return }
 
-    _ = tu.annotate(tokens: tokens)
+    let cursors = tu.annotate(tokens: tokens)
     
     let name = tokens[0].spelling(in: tu)
     guard context.global(named: Identifier(name: name)) == nil else { return }
     let value = tokens[1]
     switch value {
     case is LiteralToken:
-      guard let assign = parse(tu: tu, token: value, name: name) else { return }
-      context.add(assign)
+      let rhs: Expr
+      let range = value.range(in: tu)
+      guard let result = cursors[1].evaluate() else { return }
+      switch result {
+      case let .int(value):
+        let spelling = value.spelling(in: tu)
+        return NumExpr(value: value, raw: spelling, sourceRange: range)
+      case let .float(value):
+        let spelling = value.spelling(in: tu)
+        return FloatExpr(value: value, raw: spelling, sourceRange: range)
+      case .objcStringLiteral(let str),
+           .stringLiteral(let str),
+           .cfStringLiteral(let str):
+        return StringExpr(value: str, sourceRange: range)
+      }
     case is IdentifierToken:
       let identifierName = value.spelling(in: tu)
       guard let _ = context.global(named: identifierName) else { return }
@@ -389,42 +402,7 @@ class ClangImporter: Pass {
     expr.type = type
     return expr
   }
-  
-    func simpleParseCToken(_ token: String, range: SourceRange) throws -> Expr? {
-    var lexer = Lexer(filename: "", input: token)
-    let toks = try lexer.lex()
-    guard let first = toks.first?.kind else { return nil }
-    switch first {
-    case .char(let value):
-        return CharExpr(value: value, sourceRange: range)
-    case .stringLiteral(let value):
-        return StringExpr(value: value, sourceRange: range)
-    case .number(let value, let raw):
-        return NumExpr(value: value, raw: raw, sourceRange: range)
-    case .identifier(let name):
-        return try simpleParseIntegerLiteralToken(name) ??
-          VarExpr(name: Identifier(name: name, range: range),
-                  sourceRange: range)
-    default:
-        return nil
-    }
-  }
 
-  func parse(tu: TranslationUnit, token: Clang.Token, name: String) -> VarAssignDecl? {
-    do {
-      let tok = token.spelling(in: tu)
-      let range = SourceRange(clangRange: token.range(in: tu))
-      guard let expr = try simpleParseCToken(tok, range: range) else { return nil }
-
-      return VarAssignDecl(name: Identifier(name: name),
-                           typeRef: expr.type?.ref(),
-                           rhs: expr,
-                           modifiers: [.implicit],
-                           mutable: false,
-                           sourceRange: range)
-    } catch { return nil }
-  }
-  
   func makeAlias(name: String, type: DataType, range: SourceRange? = nil) -> TypeAliasDecl {
     return TypeAliasDecl(name: Identifier(name: name),
                          bound: type.ref(),
