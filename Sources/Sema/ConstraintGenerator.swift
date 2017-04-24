@@ -11,7 +11,7 @@ import AST
 import Foundation
 
 final class ConstraintGenerator: ASTTransformer {
-  var goal: DataType = .error
+  var goal = DataType.error
   var env = ConstraintEnvironment()
   var system = ConstraintSystem()
 

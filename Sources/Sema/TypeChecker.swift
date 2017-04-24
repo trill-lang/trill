@@ -331,7 +331,7 @@ public class TypeChecker: ASTTransformer, Pass {
                            .solveSystem(csGen.system) else {
         return nil
     }
-    let goal = csGen.goal.substitute(solution)
+    let goal = csGen.goal.substitute(solution.substitutions)
     if case .typeVariable = goal {
       return nil
     }

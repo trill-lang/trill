@@ -10,8 +10,6 @@
 import AST
 
 struct ConstraintSolver {
-  typealias Solution = [String: DataType]
-
   let context: ASTContext
 
   /// Solves a full system of constraints, providing a full environment
@@ -20,9 +18,9 @@ struct ConstraintSolver {
   /// - returns: A full environment of concrete types to fill in the type
   ///            variables in the system.
   public func solveSystem(_ system: ConstraintSystem) -> Solution? {
-    var fullSolution: Solution = [:]
+    var fullSolution = ConstraintSolution(system: system)
     for constraint in system.constraints.reversed() {
-      let subst = constraint.substituting(fullSolution)
+      let subst = constraint.substituting(fullSolution.substitutions)
       guard let solution = self.solveSingle(subst) else { return nil }
       fullSolution.unionInPlace(solution)
     }
@@ -35,6 +33,7 @@ struct ConstraintSolver {
   /// - returns: A `Solution`, essentially a set of bindings that concretize
   ///            all type variables present in the constraint, if any.
   public func solveSingle(_ c: Constraint) -> Solution? {
+    var solution = ConstraintSolution(system: ConstraintSystem(constraints: [c]))
     switch c.kind {
     case let .conforms(_t1, _t2):
       // Canonicalize types before checking.
@@ -51,7 +50,7 @@ struct ConstraintSolver {
         return nil
       }
 
-      return solveSingle(c.withKind(.equal(t1, .any)))
+      return solution
 
     case let .equal(_t1, _t2):
 
@@ -61,7 +60,7 @@ struct ConstraintSolver {
 
       // If the two types are already equal there's nothing to be done.
       if t1 == t2 {
-        return [:]
+        return solution
       }
 
       switch (t1, t2) {
@@ -78,14 +77,18 @@ struct ConstraintSolver {
           fatalError("infinite type")
         }
         // Unify the type variable with the concrete type.
-        return [m: _t1]
+        solution.bind(m, to: _t1)
+        solution.punish(.genericPromotion)
+        return solution
       case let (.typeVariable(m), t):
         // Perform the occurs check
         if t.contains(m) {
           fatalError("infinite type")
         }
         // Unify the type variable with the concrete type.
-        return [m: _t2]
+        solution.bind(m, to: _t2)
+        solution.punish(.genericPromotion)
+        return solution
       case let (.function(args1, returnType1, hasVarArgs1),
                 .function(args2, returnType2, hasVarArgs2)):
 
@@ -102,12 +105,12 @@ struct ConstraintSolver {
                               node: c.node, caller: c.location)
 
         return solveSystem(system)
-      case (.pointer(_), .pointer(_)):
-        // Pointers may unify with any other kind of pointer.
-        return [:]
+      case let (.pointer(t1), .pointer(t2)):
+        return solveSingle(c.withKind(.equal(t1, t2)))
       case (_, .any), (.any, _):
         // Anything can unify to an existential
-        return [:]
+        solution.punish(.anyPromotion)
+        return solution
       default:
         break
       }
