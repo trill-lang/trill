@@ -155,7 +155,7 @@ public class ASTContext {
         ])
       return
     }
-    guard case .function(let args, let ret) = main.type else { fatalError() }
+    guard case .function(let args, let ret, false) = main.type else { fatalError() }
     var flags = MainFuncFlags()
     if ret == .int64 {
       _ = flags.insert(.exitCode)
@@ -204,12 +204,12 @@ public class ASTContext {
   }
   
   func infixOperatorCandidate(_ op: BuiltinOperator, lhs: Expr, rhs: Expr) -> OperatorDecl? {
-    let canLhs = canonicalType(lhs.type!)
+    let canLhs = canonicalType(lhs.type)
     if rhs is NilExpr && canBeNil(canLhs) && [.equalTo, .notEqualTo].contains(op) {
       return OperatorDecl(op: op,
                           args: [
-                            ParamDecl(name: "", type: lhs.type!.ref()),
-                            ParamDecl(name: "", type: lhs.type!.ref())
+                            ParamDecl(name: "", type: lhs.type.ref()),
+                            ParamDecl(name: "", type: lhs.type.ref())
                           ],
                           genericParams: [],
                           returnType: DataType.bool.ref(),
@@ -219,7 +219,7 @@ public class ASTContext {
     
     var bestCandidate: CandidateResult<OperatorDecl>?
     
-    let canRhs = canonicalType(rhs.type!)
+    let canRhs = canonicalType(rhs.type)
     let decls = operators(for: op)
     
     for decl in decls {
@@ -253,7 +253,8 @@ public class ASTContext {
         } else if exprArg.label != nil {
           continue search
         }
-        guard let valSugaredType = exprArg.val.type else {
+        let valSugaredType = exprArg.val.type
+        guard valSugaredType != .error else {
           continue search
         }
         var valType = canonicalType(valSugaredType)
@@ -281,7 +282,38 @@ public class ASTContext {
     }
     return bestCandidate?.candidate
   }
+
+  func conformsToProtocol(_ decl: TypeDecl, _ proto: ProtocolDecl) -> Bool {
+    return missingMethodsForConformance(decl, to: proto).isEmpty
+  }
+
+  func haveEqualSignatures(_ decl: FuncDecl, _ other: FuncDecl) -> Bool {
+    guard decl.args.count == other.args.count else { return false }
+    guard decl.hasVarArgs == other.hasVarArgs else { return false }
+    for (declArg, otherArg) in zip(decl.args, other.args) {
+      if declArg.isImplicitSelf && otherArg.isImplicitSelf { continue }
+      guard declArg.externalName == otherArg.externalName else { return false }
+      guard matches(declArg.type, otherArg.type) else { return false }
+    }
+    return true
+  }
   
+  func missingMethodsForConformance(_ decl: TypeDecl, to proto: ProtocolDecl) -> [MethodDecl] {
+    guard let methods = requiredMethods(for: proto) else { return [] }
+    var missing = [MethodDecl]()
+    for method in methods {
+      let impl = decl.methods(named: method.name.name).first {
+        haveEqualSignatures(method, $0)
+      }
+      if let impl = impl {
+        impl.satisfiedProtocols.insert(proto)
+      } else {
+        missing.append(method)
+      }
+    }
+    return missing
+  }
+
   /// - Returns: Whether the expression's type was changed
   @discardableResult
   func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
@@ -297,8 +329,8 @@ public class ASTContext {
         return true
       }
     case let expr as ArrayExpr:
-      guard case .array(_, let length)? = expr.type else { return false }
-      guard case .array(let ctx, _) = contextualType else {
+      guard case .array(_, let length) = expr.type else { return false }
+      guard case .array(let ctx, _) = canTy else {
         return false
       }
       var changed = false
@@ -312,8 +344,8 @@ public class ASTContext {
     case let expr as InfixOperatorExpr:
       if expr.lhs is NumExpr,
         expr.rhs is NumExpr {
-        var changed = propagateContextualType(contextualType, to: expr.lhs)
-        changed = changed || propagateContextualType(contextualType, to: expr.rhs)
+        var changed = propagateContextualType(canTy, to: expr.lhs)
+        changed = changed || propagateContextualType(canTy, to: expr.rhs)
         return changed
       }
     case let expr as NilExpr where canBeNil(canTy):
@@ -322,7 +354,7 @@ public class ASTContext {
     case let expr as TupleExpr:
       guard
         case .tuple(let contextualFields) = canTy,
-        case .tuple(let fields)? = expr.type,
+        case .tuple(let fields) = expr.type,
         contextualFields.count == fields.count else { return false }
       var changed = false
       for (ctxField, value) in zip(contextualFields, expr.values) {
@@ -345,6 +377,12 @@ public class ASTContext {
     case let expr as StringExpr:
       if [.string, .pointer(type: DataType.int8)].contains(canTy) {
         expr.type = contextualType
+        return true
+      }
+    case let expr as ClosureExpr:
+      if case let .function(_, retTy, _) = canTy {
+        expr.type = contextualType
+        expr.returnType = TypeRefExpr(type: retTy, name: Identifier(name: ""))
         return true
       }
     default:
@@ -429,7 +467,7 @@ public class ASTContext {
     guard typeAliasMap[alias.name.name] == nil else {
       return false
     }
-    if isCircularAlias(alias.bound.type!, visited: [alias.name.name]) {
+    if isCircularAlias(alias.bound.type, visited: [alias.name.name]) {
       error(ASTError.circularAlias(name: alias.name),
             loc: alias.name.range?.start,
             highlights: [
@@ -507,7 +545,7 @@ public class ASTContext {
       visited.insert(name)
       guard let bound = typeAliasMap[name]?.bound.type else { return false }
       return isCircularAlias(bound, visited: visited)
-    } else if case .function(let args, let ret) = type {
+    } else if case .function(let args, let ret, _) = type {
       for arg in args where isCircularAlias(arg, visited: visited) {
         return true
       }
@@ -533,35 +571,39 @@ public class ASTContext {
   func isCircularType(_ typeDecl: TypeDecl) -> Bool {
     return containsInLayout(type: typeDecl.type, typeDecl: typeDecl, base: true)
   }
-  
-  func matchRank(_ type1: DataType?, _ type2: DataType?) -> TypeRank? {
-    switch (type1, type2) {
-    case (nil, nil): return .equal
-    case (_, nil): return .equal
-    case (nil, _): return .equal
-    case (.tuple(let fields1)?, .tuple(let fields2)?):
+
+  /// Determines the ranking of the match between these two types.
+  /// This can either be `.equal` or `.any`, depending on the kind of match.
+  /// - parameter type1: The first type you're trying to match
+  /// - parameter type2: The second type you're trying to match
+  /// - returns: The rank of the match between these two types.
+  func matchRank(_ type1: DataType, _ type2: DataType) -> TypeRank? {
+    let t1Can = canonicalType(type1)
+    let t2Can = canonicalType(type2)
+    switch (t1Can, t2Can) {
+    case (.tuple(let fields1), .tuple(let fields2)):
         if fields1.count != fields2.count { return nil }
         for (type1, type2) in zip(fields1, fields2) {
             if matchRank(type1, type2) == nil { return nil }
         }
         return .equal
-    case (let t1?, let t2?):
-      let t1Can = canonicalType(t1)
-      let t2Can = canonicalType(t2)
-      
-      if case .any = t1Can {
+    case (let t1, let t2):
+      if case .any = t1 {
         return .any
       }
-      if case .any = t2Can {
+      if case .any = t2 {
         return .any
       }
       
-      return t1Can == t2Can ? .equal : nil
-    default:
-      return nil
+      return t1 == t2 ? .equal : nil
     }
   }
 
+  /// Determines if two types can be considered 'matching'.
+  /// - returns: True if the match rank between these two types is not `nil`.
+  func matches(_ t1: DataType, _ t2: DataType) -> Bool {
+    return matchRank(t1, t2) != nil
+  }
 
   /// Returns all overloaded functions with the given name at top-level scope.
   ///
@@ -711,15 +753,15 @@ public class ASTContext {
   func canonicalType(_ type: DataType) -> DataType {
     if case .custom(let name) = type {
       if let alias = typeAliasMap[name] {
-        return canonicalType(alias.bound.type!)
+        return canonicalType(alias.bound.type)
       }
     }
-    if case .function(let args, let returnType) = type {
+    if case .function(let args, let returnType, let hasVarArgs) = type {
       var newArgs = [DataType]()
       for argTy in args {
         newArgs.append(canonicalType(argTy))
       }
-      return .function(args: newArgs, returnType: canonicalType(returnType))
+      return .function(args: newArgs, returnType: canonicalType(returnType), hasVarArgs: hasVarArgs)
     }
     if case .pointer(let subtype) = type {
       return .pointer(type: canonicalType(subtype))
@@ -752,7 +794,7 @@ public class ASTContext {
         return true
       }
       return alias ? isValidType(can) : false
-    case .function(let args, let returnType):
+    case .function(let args, let returnType, _):
       for arg in args where !isValidType(arg) {
         return false
       }
@@ -782,7 +824,7 @@ public class ASTContext {
     return type.canCoerceTo(other)
   }
   
-  func implicitDecl(args: [DataType], ret: DataType) -> FuncDecl {
+  func implicitDecl(args: [DataType], ret: DataType, hasVarArgs: Bool = false) -> FuncDecl {
     let assigns: [ParamDecl] = args.map {
       let name = Identifier(name: "__implicit__")
       return ParamDecl(name: "", type: TypeRefExpr(type: $0, name: name))
@@ -794,7 +836,8 @@ public class ASTContext {
                     args: assigns,
                     body: nil,
                     modifiers: [.implicit],
-                    isPlaceholder: true)
+                    isPlaceholder: true,
+                    hasVarArgs: hasVarArgs)
   }
 }
 

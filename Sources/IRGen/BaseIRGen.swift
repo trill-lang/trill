@@ -396,7 +396,7 @@ class IRGenerator: ASTVisitor, Pass {
   /// - parameters:
   ///   - type: A TypeRefExpr from an expression.
   func resolveLLVMType(_ type: TypeRefExpr) -> IRType {
-    return resolveLLVMType(type.type!)
+    return resolveLLVMType(type.type)
   }
   
   /// Resolves the LLVM type for a given Trill type.
@@ -423,10 +423,12 @@ class IRGenerator: ASTVisitor, Pass {
     case .pointer(let subtype):
       let irType = resolveLLVMType(subtype)
       return PointerType(pointee: irType)
-    case .function(let args, let ret):
+    case .function(let args, let ret, let hasVarArgs):
       let argTypes = args.map(resolveLLVMType)
       let retTy = resolveLLVMType(ret)
-      return PointerType(pointee: FunctionType(argTypes: argTypes, returnType: retTy))
+      return PointerType(pointee: FunctionType(argTypes: argTypes,
+                                               returnType: retTy,
+                                               isVarArg: hasVarArgs))
     case .tuple:
       return codegenTupleType(type)
     case .custom:

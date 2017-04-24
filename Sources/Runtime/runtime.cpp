@@ -115,7 +115,9 @@ void trill_handleSignal(int signal) {
 void trill_init() {
   signal(SIGSEGV, trill_handleSignal);
   signal(SIGILL, trill_handleSignal);
+#if TRILL_ENABLE_GC
   GC_INIT();
+#endif
 }
 
 }

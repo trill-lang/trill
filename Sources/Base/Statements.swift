@@ -62,7 +62,7 @@ class VarAssignDecl: Decl {
   
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
-    superAttrs["type"] = typeRef?.type?.description
+    superAttrs["type"] = typeRef?.type.description
     superAttrs["name"] = name.name
     superAttrs["kind"] = {
       switch kind {
@@ -166,7 +166,7 @@ class ExtensionDecl: Decl {
     self.subscripts = subscripts
     self.staticMethods = staticMethods
     self.typeRef = type
-    super.init(type: type.type!, modifiers: [], sourceRange: sourceRange)
+    super.init(type: type.type, modifiers: [], sourceRange: sourceRange)
   }
 }
 

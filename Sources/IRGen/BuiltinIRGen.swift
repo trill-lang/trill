@@ -12,9 +12,10 @@ extension IRGenerator {
   func codegenTypeOfCall(_ expr: FuncCallExpr) -> Result {
     guard
       let arg = expr.args.first,
-      let type = arg.val.type else {
+      arg.val.type != .error else {
         return nil
     }
+    let type = arg.val.type
     if case .any = type {
         let getMetadata = codegenIntrinsic(named: "trill_getAnyTypeMetadata")
         return builder.buildCall(getMetadata, args: [visit(arg.val)!], name: "any-binding")

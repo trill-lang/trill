@@ -3,10 +3,10 @@ machine:
     version: 8.3
   environment:
     LC_CTYPE: en_US.UTF-8
-    
+
 checkout:
   post:
-    - git submodule update --init --recursive
+    - git submodule update --init --recursive --remote
 
 dependencies:
   override:

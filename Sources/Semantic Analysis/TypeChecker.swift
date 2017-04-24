@@ -21,7 +21,7 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case overflow(raw: String, type: DataType)
   case underflow(raw: String, type: DataType)
   case shiftPastBitWidth(type: DataType, shiftWidth: IntMax)
-  
+
   var description: String {
     switch self {
     case .arityMismatch(let name, let gotCount, let expectedCount):
@@ -60,6 +60,21 @@ enum TypeCheckError: Error, CustomStringConvertible {
 }
 
 class TypeChecker: ASTTransformer, Pass {
+  let csGen: ConstraintGenerator
+  var env: ConstraintEnvironment
+
+  func withScope(_ function: () -> Void) {
+    let oldTarget = env
+    function()
+    env = oldTarget
+  }
+
+  required init(context: ASTContext) {
+    env = ConstraintEnvironment()
+    csGen = ConstraintGenerator(context: context)
+    super.init(context: context)
+  }
+
   var title: String {
     return "Type Checking"
   }
@@ -102,10 +117,8 @@ class TypeChecker: ASTTransformer, Pass {
         error(TypeCheckError.extraArgumentLabel(got: label),
               loc: val.val.startLoc)
       }
+      let type = val.val.type
       var argType = arg.type
-      guard let type = val.val.type else {
-        fatalError("unable to resolve val type")
-      }
       if arg.isImplicitSelf {
         argType = argType.rootType
       }
@@ -139,10 +152,11 @@ class TypeChecker: ASTTransformer, Pass {
         return (lower, upper)
     }
 
-    guard let type = expr.type else { return }
+    let type = expr.type
+    guard type != .error else { return }
     let canTy = context.canonicalType(type)
     let reportUnderflow = {
-      self.error(TypeCheckError.underflow(raw: expr.raw, type: expr.type!),
+      self.error(TypeCheckError.underflow(raw: expr.raw, type: expr.type),
                  loc: expr.startLoc, highlights: [expr.sourceRange])
     }
     if case .int(let width, let signed) = canTy {
@@ -155,7 +169,7 @@ class TypeChecker: ASTTransformer, Pass {
       let (minimum, maximum) = bounds(width: width, signed: signed)
 
       if expr.value >= 0 && UIntMax(expr.value) > maximum {
-        error(TypeCheckError.overflow(raw: expr.raw, type: expr.type!),
+        error(TypeCheckError.overflow(raw: expr.raw, type: expr.type),
               loc: expr.startLoc, highlights: [expr.sourceRange])
         return
       }
@@ -168,38 +182,22 @@ class TypeChecker: ASTTransformer, Pass {
   
   override func visitSwitchStmt(_ stmt: SwitchStmt) {
     for c in stmt.cases where !matches(c.constant.type, stmt.value.type) {
-      error(TypeCheckError.typeMismatch(expected: stmt.value.type!, got: c.constant.type!),
+      error(TypeCheckError.typeMismatch(expected: stmt.value.type, got: c.constant.type),
             loc: c.constant.startLoc,
             highlights: [c.constant.sourceRange!])
     }
   }
-  
-  override func visitVarExpr(_ expr: VarExpr) -> Result {
-    if expr.isTypeVar { return } // since the decl purposefully doesn't match the type
-    guard let decl = expr.decl else { return }
-    guard let type = expr.type else { return }
-    if !matches(decl.type, type) {
-      error(TypeCheckError.typeMismatch(expected: decl.type, got: type),
-            loc: expr.startLoc, highlights: [expr.sourceRange])
-    }
-    super.visitVarExpr(expr)
-  }
-  
+
   override func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
-    if let rhs = decl.rhs {
-      guard let rhsType = rhs.type else { return }
-      if !matches(decl.type, rhsType) {
-        error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
-              loc: decl.startLoc)
-        return
-      }
+    if let type = solve(decl) {
+      decl.type = type
     }
-    super.visitVarAssignDecl(decl)
+    env[decl.name] = decl.type
   }
   
   override func visitIfStmt(_ stmt: IfStmt) {
     for (expr, _) in stmt.blocks {
-      guard case .bool? = expr.type else {
+      guard case .bool = expr.type else {
         self.error(TypeCheckError.nonBoolCondition(got: expr.type),
                    loc: expr.startLoc,
                    highlights: [
@@ -222,29 +220,41 @@ class TypeChecker: ASTTransformer, Pass {
     super.visitParamDecl(decl)
   }
   
-  override func visitReturnStmt(_ expr: ReturnStmt) -> Result {
-    guard let returnType = currentClosure?.returnType.type ?? currentFunction?.returnType.type else { return }
-    guard let valType = expr.value.type else { return }
+  override func visitReturnStmt(_ stmt: ReturnStmt) -> Result {
+    guard let returnType = currentClosure?.returnType?.type ??
+                           currentFunction?.returnType.type else { return }
+    let valType = stmt.value.type
     if !matches(valType, returnType) {
       error(TypeCheckError.typeMismatch(expected: returnType, got: valType),
-            loc: expr.startLoc,
+            loc: stmt.startLoc,
             highlights: [
-              expr.sourceRange
+              stmt.sourceRange
         ])
     }
-    super.visitReturnStmt(expr)
+    super.visitReturnStmt(stmt)
   }
-  
+
+  override func visitFuncDecl(_ decl: FuncDecl) {
+    self.withScope {
+      for pd in decl.args {
+        env[pd.name] = pd.type
+      }
+      super.visitFuncDecl(decl)
+    }
+  }
+
   override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
-    guard let decl = expr.decl else { return }
+    guard let decl = expr.decl,
+          let type = solve(expr) else { return }
+    expr.type = type
     ensureTypesAndLabelsMatch(expr, decl: decl)
-    super.visitFuncCallExpr(expr)
   }
   
   override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
-    guard let condType = expr.condition.type else { return }
-    guard let trueType = expr.trueCase.type else { return }
-    guard let falseType = expr.falseCase.type else { return }
+    let condType = expr.condition.type
+    let trueType = expr.trueCase.type
+    let falseType = expr.falseCase.type
+    guard condType != .error, trueType != .error, falseType != .error else { return }
     guard matches(condType, .bool) else {
       error(TypeCheckError.nonBooleanTernary(got: condType),
             loc: expr.startLoc,
@@ -253,39 +263,15 @@ class TypeChecker: ASTTransformer, Pass {
         ])
       return
     }
-    if let exprType = expr.type {
-      guard matches(exprType, trueType) else {
-        error(TypeCheckError.typeMismatch(expected: exprType, got: trueType),
-              loc: expr.startLoc,
-              highlights: [
-                expr.sourceRange
-          ])
-        return
-      }
-      guard matches(exprType, falseType) else {
-        error(TypeCheckError.typeMismatch(expected: exprType, got: falseType),
-              loc: expr.startLoc,
-              highlights: [
-                expr.sourceRange
-          ])
-        return
-      }
-    } else {
-      guard matches(trueType, falseType) else {
-        error(TypeCheckError.typeMismatch(expected: trueType, got: falseType),
-              loc: expr.startLoc,
-              highlights: [
-                expr.sourceRange
-          ])
-        return
-      }
-    }
+    guard let type = solve(expr) else { return }
+    expr.type = type
     super.visitTernaryExpr(expr)
   }
   
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
-    guard let lhsType = expr.lhs.type else { return }
-    guard let rhsType = expr.rhs.type else { return }
+    let lhsType = expr.lhs.type
+    let rhsType = expr.rhs.type
+    guard lhsType != .error, rhsType != .error else { return }
     if expr.op.isAssign {
       // thrown from sema
       if case .assign = expr.op {
@@ -309,20 +295,19 @@ class TypeChecker: ASTTransformer, Pass {
       return
     } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
       let num = expr.rhs as? NumExpr,
-      case .int(let width, _)? = expr.type,
+      case .int(let width, _) = expr.type,
       num.value >= IntMax(width) {
-      error(TypeCheckError.shiftPastBitWidth(type: expr.type!, shiftWidth: num.value),
+      error(TypeCheckError.shiftPastBitWidth(type: expr.type, shiftWidth: num.value),
             loc: num.startLoc,
             highlights: [
               num.sourceRange
         ])
       return
     }
-    super.visitInfixOperatorExpr(expr)
   }
   
   override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
-    switch expr.lhs.type! {
+    switch expr.lhs.type {
     case .pointer(let subtype):
       ensureTypesAndLabelsMatch(expr, decl: context.implicitDecl(args: [.int64], ret: subtype))
     case .array(let subtype, _):
@@ -332,5 +317,19 @@ class TypeChecker: ASTTransformer, Pass {
       ensureTypesAndLabelsMatch(expr, decl: decl)
     }
     super.visitSubscriptExpr(expr)
+  }
+
+  func solve(_ node: ASTNode) -> DataType? {
+    csGen.reset(with: env)
+    csGen.visit(node)
+    guard let solution = ConstraintSolver(context: context)
+                           .solveSystem(csGen.system) else {
+        return nil
+    }
+    let goal = csGen.goal.substitute(solution)
+    if case .typeVariable = goal {
+      return nil
+    }
+    return goal
   }
 }

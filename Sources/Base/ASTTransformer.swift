@@ -73,14 +73,14 @@ class ASTTransformer: ASTVisitor {
     context.extensions.forEach(visitExtensionDecl)
   }
   
-  func matchRank(_ t1: DataType?, _ t2: DataType?) -> TypeRank? {
+  func matchRank(_ t1: DataType, _ t2: DataType) -> TypeRank? {
     return context.matchRank(t1, t2)
   }
-  
-  func matches(_ t1: DataType?, _ t2: DataType?) -> Bool {
-    return matchRank(t1, t2) != nil
+
+  func matches(_ t1: DataType, _ t2: DataType) -> Bool {
+    return context.matches(t1, t2)
   }
-  
+
   func visitNumExpr(_ expr: NumExpr) {}
   func visitCharExpr(_ expr: CharExpr) {}
   func visitFloatExpr(_ expr: FloatExpr) {}

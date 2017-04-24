@@ -13,16 +13,17 @@ class GenericParamDecl: TypeDecl {
         return conformances
     }
     init(name: Identifier, constraints: [TypeRefExpr]) {
-        super.init(name: name,
-                   properties: [],
-                   methods: [],
-                   staticMethods: [],
-                   initializers: [],
-                   subscripts: [],
-                   modifiers: [],
-                   conformances: constraints,
-                   deinit: nil,
-                   sourceRange: name.range)
+      super.init(name: name,
+                 properties: [],
+                 methods: [],
+                 staticMethods: [],
+                 initializers: [],
+                 subscripts: [],
+                 modifiers: [],
+                 conformances: constraints,
+                 deinit: nil,
+                 sourceRange: name.range)
+      self.type = .typeVariable(name: name.name)
     }
 
     override func attributes() -> [String : Any] {

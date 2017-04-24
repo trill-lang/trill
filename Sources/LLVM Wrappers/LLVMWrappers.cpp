@@ -66,6 +66,8 @@ char *_Nullable LLVMAddArchive(LLVMExecutionEngineRef ref, const char *filename)
 
 LLVMExecutionEngineRef LLVMCreateOrcMCJITReplacement(LLVMModuleRef module, LLVMTargetMachineRef targetRef) {
   auto target = reinterpret_cast<TargetMachine *>(targetRef);
+  target->Options.DebuggerTuning = DebuggerKind::LLDB;
+  target->Options.MCOptions.SanitizeAddress = true;
   EngineBuilder builder(std::unique_ptr<Module>(unwrap(module)));
   builder.setMCJITMemoryManager(make_unique<SectionMemoryManager>());
   builder.setTargetOptions(target->Options);

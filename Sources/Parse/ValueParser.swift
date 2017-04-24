@@ -143,14 +143,32 @@ extension Parser {
       }
     case .leftBrace:
       consumeToken()
-      let (args, ret, _) = try parseFuncSignature()
-      try consume(.in)
-      let exprs = try parseStatements(terminators: [.rightBrace])
-      consumeToken()
-      valExpr = ClosureExpr(args: args,
-                            returnType: ret,
-                            body: CompoundStmt(stmts: exprs),
-                            sourceRange: range(start: startLoc))
+      if let args = try? attempt(try parseShorthandSignature())  {
+        // - { x, y, z, ... in <stmts> }
+        let exprs = try parseStatements(terminators: [.rightBrace])
+        consumeToken()
+        valExpr = ClosureExpr(args: args,
+                              returnType: nil,
+                              body: CompoundStmt(stmts: exprs),
+                              sourceRange: range(start: startLoc))
+      } else if let (args, retTy, _) = try? parseFuncSignature() {
+        // - { (x : T, y : U, ...) in <stmts> }
+        try consume(.in)
+        let exprs = try parseStatements(terminators: [.rightBrace])
+        consumeToken()
+        valExpr = ClosureExpr(args: args,
+                              returnType: retTy,
+                              body: CompoundStmt(stmts: exprs),
+                              sourceRange: range(start: startLoc))
+      } else {
+        // - { <stmts> }
+        let exprs = try parseStatements(terminators: [.rightBrace])
+        consumeToken()
+        valExpr = ClosureExpr(args: [],
+                              returnType: nil,
+                              body: CompoundStmt(stmts: exprs),
+                              sourceRange: range(start: startLoc))
+      }
     default:
       throw Diagnostic.error(ParseError.unexpectedExpression(expected: "value"),
                              loc: currentToken().range.start)

@@ -16,7 +16,12 @@ enum DataType: CustomStringConvertible, Hashable {
   case void
   case custom(name: String)
   case any
-  indirect case function(args: [DataType], returnType: DataType)
+  case typeVariable(name: String)
+
+  /// The default type. This should not survive past semantic analysis.
+  case error
+  
+  indirect case function(args: [DataType], returnType: DataType, hasVarArgs: Bool)
   indirect case pointer(type: DataType)
   indirect case array(field: DataType, length: Int?)
   indirect case tuple(fields: [DataType])
@@ -36,7 +41,7 @@ enum DataType: CustomStringConvertible, Hashable {
     return .array(field: field, length: nil)
   }
   static let string = DataType.custom(name: "String")
-  
+
   init(name: String) {
     switch name {
     case "Int8": self = .int8
@@ -67,7 +72,26 @@ enum DataType: CustomStringConvertible, Hashable {
       return self
     }
   }
-  
+
+  // Occurs
+  func contains(_ x: String) -> Bool {
+    switch self {
+    case let .function(args, returnType, _):
+      return args.reduce(false, { (acc, t) in acc || t.contains(x) })
+          || returnType.contains(x)
+    case let .tuple(fields):
+      return fields.reduce(false, { (acc, t) in acc || t.contains(x) })
+    case let .pointer(pointee):
+      return pointee.contains(x)
+    case let .array(field, _):
+      return field.contains(x)
+    case let .typeVariable(name):
+      return name == x
+    default:
+      return false
+    }
+  }
+
   var description: String {
     switch self {
     case .int(width: 64, let signed):
@@ -96,10 +120,16 @@ enum DataType: CustomStringConvertible, Hashable {
       }
     case .tuple(let fields):
       return "(\(fields.map { $0.description }.joined(separator: ", ")))"
-    case .function(let args, let ret):
-      let args = args.map { $0.description }.joined(separator: ", ")
+    case .function(let args, let ret, let hasVarArgs):
+      var argValues = args.map { $0.description }
+      if hasVarArgs {
+        argValues.append("...")
+      }
+      let args = argValues.joined(separator: ", ")
       return "(\(args)) -> \(ret)"
     case .any: return "Any"
+    case .typeVariable(let name): return "$\(name)"
+    case .error: return "<<error type>>"
     }
   }
   
@@ -129,6 +159,74 @@ enum DataType: CustomStringConvertible, Hashable {
     default: return false
     }
   }
+
+  var freeTypeVariables : [String] {
+    switch self {
+    case let .array(fields, _):
+      return fields.freeTypeVariables
+    case let .function(args, returnType, _):
+      return args.flatMap({ $0.freeTypeVariables }) + returnType.freeTypeVariables
+    case let .pointer(type):
+      return type.freeTypeVariables
+    case let .tuple(fields):
+      return fields.flatMap({ $0.freeTypeVariables })
+    case let .typeVariable(name):
+      return [name]
+    default:
+      return []
+    }
+  }
+
+  func substitute(_ s: [String: DataType]) -> DataType {
+    switch self {
+    case let .array(fields, l):
+      return .array(field: fields.substitute(s), length: l)
+    case let .function(args, returnType, hasVarArgs):
+      return .function(args: args.map { $0.substitute(s) },
+                       returnType: returnType.substitute(s),
+                       hasVarArgs: hasVarArgs)
+    case let .pointer(type):
+      return .pointer(type: type.substitute(s))
+    case let .tuple(fields):
+      return .tuple(fields: fields.map { $0.substitute(s) })
+    case let .typeVariable(n):
+      // If it's a type variable, look it up in the substitution map to
+      // find a replacement.
+      if let t = s[n] {
+        // If we get replaced with ourself we've reached the desired fixpoint.
+        if t == self {
+          return t
+        }
+        // Otherwise keep substituting.
+        return t.substitute(s)
+      }
+      return self
+    default:
+      return self
+    }
+  }
+
+  func substitute(_ name : String, for type: DataType) -> DataType {
+    switch self {
+    case let .array(fields, l):
+      return .array(field: fields.substitute(name, for: type), length: l)
+    case let .function(args, returnType, hasVarArgs):
+      return .function(args: args.map { $0.substitute(name, for: type) },
+                       returnType: returnType.substitute(name, for: type),
+                       hasVarArgs: hasVarArgs)
+    case let .pointer(type):
+      return .pointer(type: type.substitute(name, for: type))
+    case let .tuple(fields):
+      return .tuple(fields: fields.map { $0.substitute(name, for: type) })
+    case let .typeVariable(tvn):
+      if tvn == name {
+        return type
+      }
+      return self
+    default:
+      fatalError()
+    }
+  }
 }
 
 func ==(lhs: DataType, rhs: DataType) -> Bool {
@@ -146,16 +244,19 @@ func ==(lhs: DataType, rhs: DataType) -> Bool {
   case (.any, .any): return true
   case (.array(let field, _), .array(let field2, _)):
     return field == field2
-  case (.function(let args, let ret), .function(let args2, let ret2)):
-    return args == args2 && ret == ret2
+  case (.function(let args, let ret, let hasVarArgs),
+        .function(let args2, let ret2, let hasVarArgs2)):
+    return args == args2 && ret == ret2 && hasVarArgs == hasVarArgs2
   case (.tuple(let fields), .tuple(let fields2)):
     return fields == fields2
+  case (.typeVariable(let name1), .typeVariable(let name2)):
+    return name1 == name2
   default: return false
   }
 }
 
 class Decl: ASTNode {
-  var type: DataType
+  var type: DataType = .error
   let modifiers: Set<DeclModifier>
   func has(attribute: DeclModifier) -> Bool {
     return modifiers.contains(attribute)
@@ -232,7 +333,7 @@ class TypeDecl: Decl {
     return staticMethodDict[name] ?? []
   }
   
-  func property(named name: String) -> VarAssignDecl? {
+  func property(named name: String) -> PropertyDecl? {
     for property in properties where property.name.name == name {
       return property
     }
@@ -386,7 +487,7 @@ class TypeAliasDecl: Decl {
   init(name: Identifier, bound: TypeRefExpr, modifiers: [DeclModifier] = [], sourceRange: SourceRange? = nil) {
     self.name = name
     self.bound = bound
-    super.init(type: bound.type!, modifiers: modifiers, sourceRange: sourceRange)
+    super.init(type: bound.type, modifiers: modifiers, sourceRange: sourceRange)
   }
   override func attributes() -> [String : Any] {
     var superAttrs = super.attributes()
@@ -406,7 +507,11 @@ class TypeRefExpr: DeclRefExpr<TypeDecl> {
 
 extension DataType {
   func ref(range: SourceRange? = nil) -> TypeRefExpr {
-    return TypeRefExpr(type: self, name: Identifier(name: "\(self)", range: range), sourceRange: range)
+    let expr = TypeRefExpr(type: self,
+                           name: Identifier(name: "\(self)", range: range),
+                           sourceRange: range)
+    expr.type = self
+    return expr
   }
 }
 
@@ -416,14 +521,14 @@ class FuncTypeRefExpr: TypeRefExpr {
   init(argNames: [TypeRefExpr], retName: TypeRefExpr, sourceRange: SourceRange? = nil) {
     self.argNames = argNames
     self.retName = retName
-    let argTypes = argNames.map { $0.type! }
+    let argTypes = argNames.map { $0.type }
     let argStrings = argNames.map { $0.name.name }
     var fullName = "(" + argStrings.joined(separator: ", ") + ")"
     if retName != .void {
       fullName += " -> " + retName.name.name
     }
     let fullId = Identifier(name: fullName, range: sourceRange)
-    super.init(type: .function(args: argTypes, returnType: retName.type!), name: fullId, sourceRange: sourceRange)
+    super.init(type: .function(args: argTypes, returnType: retName.type, hasVarArgs: false), name: fullId, sourceRange: sourceRange)
   }
 }
 
@@ -433,7 +538,7 @@ class PointerTypeRefExpr: TypeRefExpr {
     self.pointed = pointedTo
     let fullName = String(repeating: "*", count: level) + pointedTo.name.name
     let fullId = Identifier(name: fullName, range: sourceRange)
-    var type = pointedTo.type!
+    var type = pointedTo.type
     for _ in 0..<level {
       type = .pointer(type: type)
     }
@@ -452,7 +557,7 @@ class GenericTypeRefExpr: TypeRefExpr {
                            .joined(separator: ", ")
     let fullName = Identifier(name: "\(unspecializedType.name)<\(commaSepArgs)>",
                               range: sourceRange)
-    super.init(type: unspecializedType.type!,
+    super.init(type: unspecializedType.type,
                name: fullName,
                sourceRange: sourceRange)
   }
@@ -464,7 +569,7 @@ class ArrayTypeRefExpr: TypeRefExpr {
     self.element = element
     let fullId = Identifier(name: "[\(element.name.name)]",
                             range: sourceRange)
-    super.init(type: .array(field: element.type!, length: length),
+    super.init(type: .array(field: element.type, length: length),
                name: fullId,
                sourceRange: sourceRange)
   }
@@ -474,7 +579,7 @@ class TupleTypeRefExpr: TypeRefExpr {
   let fieldNames: [TypeRefExpr]
   init(fieldNames: [TypeRefExpr], sourceRange: SourceRange? = nil) {
     self.fieldNames = fieldNames
-    let argTypes = fieldNames.map { $0.type! }
+    let argTypes = fieldNames.map { $0.type }
     let fullName = "(\(fieldNames.map { $0.name.name }.joined(separator: ", ")))"
     super.init(type: .tuple(fields: argTypes),
                name: Identifier(name: fullName, range: sourceRange),

@@ -10,7 +10,7 @@ enum Promotion {
 }
 
 class Expr: ASTNode {
-  var type: DataType? = nil
+  var type: DataType = .error
   var promotion: Promotion? = nil
 
   /// Looks through syntactic sugar expressions like `ParenExpr` to find the
@@ -21,7 +21,7 @@ class Expr: ASTNode {
 
   override func attributes() -> [String : Any] {
     var attrs = super.attributes()
-    if let type = type {
+    if type != .error {
       attrs["type"] = type.description
     }
     if let promotion = promotion {
@@ -102,7 +102,6 @@ class ArrayExpr: Expr {
 
 class TupleFieldLookupExpr: Expr {
   let lhs: Expr
-  var decl: Decl? = nil
   let field: Int
   let fieldRange: SourceRange
   init(lhs: Expr, field: Int, fieldRange: SourceRange, sourceRange: SourceRange? = nil) {
@@ -120,7 +119,7 @@ class TupleFieldLookupExpr: Expr {
 }
 
 class FloatExpr: ConstantExpr {
-  override var type: DataType? {
+  override var type: DataType {
     get { return .double } set { }
   }
   let value: Double
@@ -139,7 +138,7 @@ class FloatExpr: ConstantExpr {
 }
 
 class BoolExpr: ConstantExpr {
-  override var type: DataType? {
+  override var type: DataType {
     get { return .bool } set { }
   }
   let value: Bool
@@ -196,7 +195,7 @@ class PoundFunctionExpr: StringExpr {
 class PoundFileExpr: StringExpr {}
 
 class CharExpr: ConstantExpr {
-  override var type: DataType? {
+  override var type: DataType {
     get { return .int8 } set { }
   }
   let value: UInt8

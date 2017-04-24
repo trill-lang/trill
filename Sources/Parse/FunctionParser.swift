@@ -148,6 +148,26 @@ extension Parser {
                       sourceRange: range(start: startLoc))
     }
   }
+
+  func parseShorthandSignature() throws -> [ParamDecl] {
+    var args = [ParamDecl]()
+    while true {
+      let startLoc = sourceLoc
+      let name = try parseIdentifier()
+      let arg = ParamDecl(name: name,
+                          type: nil,
+                          sourceRange: range(start: startLoc))
+
+      args.append(arg)
+      if case .in = peek() {
+        consumeToken()
+        break
+      }
+      try consume(.comma)
+    }
+
+    return args
+  }
   
   func parseFuncSignature() throws -> (args: [ParamDecl], ret: TypeRefExpr, hasVarArgs: Bool) {
     try consume(.leftParen)

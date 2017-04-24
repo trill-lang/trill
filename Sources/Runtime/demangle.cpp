@@ -42,18 +42,22 @@ bool readType(std::string &str, std::string &out) {
     str.erase(0, 1);
     out += '(';
     std::vector<std::string> argNames;
-    while (str.front() != 'R') {
+    while (str.front() != 'R' && str.front() != 'V') {
       std::string name;
       if (!readType(str, name)) { return false; }
       argNames.push_back(name);
     }
-    str.erase(0, 1);
     for (auto i = 0; i < argNames.size(); ++i) {
       out += argNames[i];
       if (i < argNames.size() - 1) {
         out += ", ";
       }
     }
+    if (str.front() == 'V') {
+      str.erase(0, 1);
+      out += ", ...";
+    }
+    str.erase(0, 1);
     out += ") -> ";
     if (!readType(str, out)) { return false; }
   } else if (str.front() == 'A') {

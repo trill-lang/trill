@@ -52,7 +52,7 @@ enum Mangler {
     case let d as PropertyGetterDecl:
       s += "g" + mangle(d.parentType, root: false)
       s += d.propertyName.name.withCount
-      s += mangle(d.returnType.type!, root: false)
+      s += mangle(d.returnType.type, root: false)
       return s
     case let d as PropertySetterDecl:
       s += "s" + mangle(d.parentType, root: false)
@@ -105,7 +105,7 @@ enum Mangler {
       s += arg.name.name.withCount
       s += mangle(arg.type, root: false)
     }
-    let returnType = d.returnType.type ?? .void
+    let returnType = d.returnType.type 
     if returnType != .void && !(d is InitializerDecl) {
       s += "R" + mangle(returnType, root: false)
     }
@@ -119,10 +119,13 @@ enum Mangler {
   static func mangle(_ t: DataType, root: Bool = true) -> String {
     var s = root ? "_WT" : ""
     switch t {
-    case .function(let args, let ret):
+    case .function(let args, let ret, let hasVarArgs):
       s += "F"
       for arg in args {
         s += mangle(arg, root: false)
+      }
+      if hasVarArgs {
+        s += "V"
       }
       s += "R" + mangle(ret, root: false)
     case .tuple(let fields):

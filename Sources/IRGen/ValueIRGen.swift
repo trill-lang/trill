@@ -22,7 +22,7 @@ extension IRGenerator {
   }
   
   func visitNumExpr(_ expr: NumExpr) -> Result {
-    let llvmTy = resolveLLVMType(expr.type!)
+    let llvmTy = resolveLLVMType(expr.type)
     switch llvmTy {
     case let type as FloatType:
       return type.constant(Double(expr.value))
@@ -38,7 +38,7 @@ extension IRGenerator {
   }
   
   func visitFloatExpr(_ expr: FloatExpr) -> Result {
-    guard let type = resolveLLVMType(expr.type!) as? FloatType else {
+    guard let type = resolveLLVMType(expr.type) as? FloatType else {
       fatalError("non-float floatexpr?")
     }
     return type.constant(expr.value)
@@ -49,16 +49,16 @@ extension IRGenerator {
   }
   
   func visitArrayExpr(_ expr: ArrayExpr) -> Result {
-    guard case .array(let fieldTy, _)? = expr.type else {
+    guard case .array(let fieldTy, _) = expr.type else {
       fatalError("invalid array type")
     }
-    let irType = resolveLLVMType(expr.type!)
+    let irType = resolveLLVMType(expr.type)
     var initial = irType.null()
     for (idx, value) in expr.values.enumerated() {
       var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
       if case .any = context.canonicalType(fieldTy) {
-        irValue = codegenPromoteToAny(value: irValue, type: value.type!)
+        irValue = codegenPromoteToAny(value: irValue, type: value.type)
       }
       initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
@@ -66,8 +66,8 @@ extension IRGenerator {
   }
   
   func visitTupleExpr(_ expr: TupleExpr) -> Result {
-    let type = resolveLLVMType(expr.type!)
-    guard case .tuple(let tupleTypes)? = expr.type else {
+    let type = resolveLLVMType(expr.type)
+    guard case .tuple(let tupleTypes) = expr.type else {
       fatalError("invalid tuple type")
     }
     var initial = type.null()
@@ -75,7 +75,7 @@ extension IRGenerator {
       var val = visit(field)!
       let canTupleTy = context.canonicalType(tupleTypes[idx])
       if case .any = canTupleTy {
-        val = codegenPromoteToAny(value: val, type: field.type!)
+        val = codegenPromoteToAny(value: val, type: field.type)
       }
       initial = builder.buildInsertValue(aggregate: initial,
                                          element: val,
@@ -115,7 +115,7 @@ extension IRGenerator {
   }
   
   func visitNilExpr(_ expr: NilExpr) -> Result {
-    let type = resolveLLVMType(expr.type!)
+    let type = resolveLLVMType(expr.type)
     return type.null()
   }
   
@@ -154,7 +154,7 @@ extension IRGenerator {
   
   func visitStringExpr(_ expr: StringExpr) -> Result {
     let globalString = codegenGlobalStringPtr(expr.value)
-    if let type = expr.type, case .pointer(type: DataType.int8) = type {
+    if case .pointer(type: DataType.int8) = expr.type {
       return globalString.ptr
     }
 
@@ -185,7 +185,7 @@ extension IRGenerator {
                                              storage: .value)
     self.builder.buildStore(segmentsParam, to: alloca.ref)
     expr.segments.forEach { segment in
-      let arg = codegenPromoteToAny(value: visit(segment)!, type: segment.type!)
+      let arg = codegenPromoteToAny(value: visit(segment)!, type: segment.type)
       let _ = builder.buildCall(codegenFunctionPrototype(arrayAppend), args: [alloca.ref, arg])
     }
     
@@ -323,12 +323,12 @@ extension IRGenerator {
 
   func visitIsExpr(_ expr: IsExpr) -> Result {
     let lhs = visit(expr.lhs)!
-    return codegenTypeCheck(lhs, type: expr.rhs.type!)
+    return codegenTypeCheck(lhs, type: expr.rhs.type)
   }
 
   func visitCoercionExpr(_ expr: CoercionExpr) -> Result {
     let lhs = visit(expr.lhs)!
-    return coerce(lhs, from: expr.lhs.type!, to: expr.type!)
+    return coerce(lhs, from: expr.lhs.type, to: expr.type)
   }
   
   func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
@@ -339,8 +339,8 @@ extension IRGenerator {
     var rhs = visit(expr.rhs)!
     
     if case .assign = expr.op {
-      if case .any? = expr.lhs.type {
-        rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type!)
+      if case .any = context.canonicalType(expr.lhs.type) {
+        rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type)
       }
       if let propRef = expr.lhs as? PropertyRefExpr,
          let propDecl = propRef.decl as? PropertyDecl,
@@ -351,7 +351,7 @@ extension IRGenerator {
       }
       let ptr = resolvePtr(expr.lhs)
       return builder.buildStore(rhs, to: ptr)
-    } else if context.canBeNil(expr.lhs.type!) && expr.rhs is NilExpr {
+    } else if context.canBeNil(expr.lhs.type) && expr.rhs is NilExpr {
       let lhs = visit(expr.lhs)!
       if case .equalTo = expr.op {
         return builder.buildIsNull(lhs)
@@ -361,12 +361,12 @@ extension IRGenerator {
     } else if expr.op.associatedOp != nil {
       let ptr = resolvePtr(expr.lhs)
       let lhsVal = builder.buildLoad(ptr, name: "cmpassignload")
-      let performed = codegen(expr.decl!, lhs: lhsVal, rhs: rhs, type: expr.lhs.type!)!
+      let performed = codegen(expr.decl!, lhs: lhsVal, rhs: rhs, type: expr.lhs.type)!
       return builder.buildStore(performed, to: ptr)
     }
     
     let lhs = visit(expr.lhs)!
-    return codegen(expr.decl!, lhs: lhs, rhs: rhs, type: expr.lhs.type!)
+    return codegen(expr.decl!, lhs: lhs, rhs: rhs, type: expr.lhs.type)
   }
   
   func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {
@@ -396,8 +396,7 @@ extension IRGenerator {
   
   func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     guard let function = currentFunction?.functionRef else { fatalError("no function") }
-    guard let type = expr.type else { fatalError("no ternary type") }
-    let irType = resolveLLVMType(type)
+    let irType = resolveLLVMType(expr.type)
     let cond = visit(expr.condition)!
     let result = createEntryBlockAlloca(function, type: irType,
                                         name: "ternary-result", storage: .value)
@@ -406,11 +405,11 @@ extension IRGenerator {
     let endbb = function.appendBasicBlock(named: "ternary-end", in: llvmContext)
     builder.buildCondBr(condition: cond, then: truebb, else: falsebb)
     builder.positionAtEnd(of: truebb)
-    let trueVal = coerce(visit(expr.trueCase)!, from: expr.trueCase.type!, to: type)!
+    let trueVal = coerce(visit(expr.trueCase)!, from: expr.trueCase.type, to: expr.type)!
     result.write(trueVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: falsebb)
-    let falseVal = coerce(visit(expr.falseCase)!, from: expr.falseCase.type!, to: type)!
+    let falseVal = coerce(visit(expr.falseCase)!, from: expr.falseCase.type, to: expr.type)!
     result.write(falseVal)
     builder.buildBr(endbb)
     builder.positionAtEnd(of: endbb)

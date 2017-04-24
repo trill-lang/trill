@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		82D6E13A1E78E6CA00C791DE /* ConstraintSolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82D6E1391E78E6CA00C791DE /* ConstraintSolver.swift */; };
 		C019190A1E6E2B6800FDFB87 /* AnyArray.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FA1E6E2AD700FDFB87 /* AnyArray.tr */; };
 		C019190B1E6E2B6800FDFB87 /* AnyDictionary.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FB1E6E2AD700FDFB87 /* AnyDictionary.tr */; };
 		C019190C1E6E2B6800FDFB87 /* bytearray.tr in CopyFiles */ = {isa = PBXBuildFile; fileRef = C01918FC1E6E2AD700FDFB87 /* bytearray.tr */; };
@@ -92,6 +93,8 @@
 		DC072ADC1E7758E100927232 /* libLLVMRISCVCodeGen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */; };
 		DC072ADD1E7758E100927232 /* libLLVMRISCVDesc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */; };
 		DC072ADE1E7758E100927232 /* libLLVMRISCVInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */; };
+		DC69E70E1E9D92E100C33956 /* ConstraintGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC69E70D1E9D92E100C33956 /* ConstraintGenerator.swift */; };
+		DC69E7101E9D933700C33956 /* Constraint.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC69E70F1E9D933700C33956 /* Constraint.swift */; };
 		DC6BE9851E63968300E9964E /* trillRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = DC6BE9841E63968300E9964E /* trillRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
 		DC8EBAA71E5FCF6E00AE577C /* ASTBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBA941E5FCF6E00AE577C /* ASTBase.swift */; };
@@ -359,8 +362,12 @@
 		DC8EBCB41E5FD42A00AE577C /* javaxfc.h in Headers */ = {isa = PBXBuildFile; fileRef = DC8EBCA81E5FD42A00AE577C /* javaxfc.h */; };
 		DC8EBCB71E5FD42A00AE577C /* tinygc.c in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBCAB1E5FD42A00AE577C /* tinygc.c */; };
 		DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC8EBAEF1E5FCFB200AE577C /* Builtins.swift */; };
+		DCA8C39B1EA018C30002208D /* ConstraintError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA8C39A1EA018C30002208D /* ConstraintError.swift */; };
 		DCAE21ED1E63970A00645143 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCAE21EC1E63970A00645143 /* main.swift */; };
+		DCBA99B51EAD12B9007AD2E3 /* ConstraintSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBA99B41EAD12B9007AD2E3 /* ConstraintSystem.swift */; };
+		DCBA99B61EAD12B9007AD2E3 /* ConstraintSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBA99B41EAD12B9007AD2E3 /* ConstraintSystem.swift */; };
 		DCBFE9381E6FD31700573329 /* metadata_private.cpp in Sources */ = {isa = PBXBuildFile; fileRef = DCBFE9371E6FD31700573329 /* metadata_private.cpp */; };
+		DCD1E4B91E9F10340000440A /* ConstraintEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCD1E4B81E9F10340000440A /* ConstraintEnvironment.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -418,6 +425,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		82D6E1391E78E6CA00C791DE /* ConstraintSolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintSolver.swift; sourceTree = "<group>"; };
 		C01918FA1E6E2AD700FDFB87 /* AnyArray.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AnyArray.tr; sourceTree = "<group>"; };
 		C01918FB1E6E2AD700FDFB87 /* AnyDictionary.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AnyDictionary.tr; sourceTree = "<group>"; };
 		C01918FC1E6E2AD700FDFB87 /* bytearray.tr */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = bytearray.tr; sourceTree = "<group>"; };
@@ -503,6 +511,8 @@
 		DC072AD91E7758E100927232 /* libLLVMRISCVCodeGen.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVCodeGen.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVCodeGen.a"; sourceTree = "<group>"; };
 		DC072ADA1E7758E100927232 /* libLLVMRISCVDesc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVDesc.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVDesc.a"; sourceTree = "<group>"; };
 		DC072ADB1E7758E100927232 /* libLLVMRISCVInfo.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libLLVMRISCVInfo.a; path = "../../../../Downloads/clang+llvm-4.0.0-x86_64-apple-darwin/lib/libLLVMRISCVInfo.a"; sourceTree = "<group>"; };
+		DC69E70D1E9D92E100C33956 /* ConstraintGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintGenerator.swift; sourceTree = "<group>"; };
+		DC69E70F1E9D933700C33956 /* Constraint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraint.swift; sourceTree = "<group>"; };
 		DC6BE9841E63968300E9964E /* trillRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = trillRuntime.h; path = trillRuntime/trillRuntime.h; sourceTree = "<group>"; };
 		DC8EBA5A1E5FCEF800AE577C /* trill */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = trill; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC8EBA691E5FCF0100AE577C /* trillRuntime.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = trillRuntime.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -750,9 +760,12 @@
 		DC8EBCA91E5FD42A00AE577C /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		DC8EBCAA1E5FD42A00AE577C /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		DC8EBCAB1E5FD42A00AE577C /* tinygc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = tinygc.c; sourceTree = "<group>"; };
+		DCA8C39A1EA018C30002208D /* ConstraintError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintError.swift; sourceTree = "<group>"; };
 		DCAE21EB1E63970A00645143 /* DemangleBridgingHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemangleBridgingHeader.h; sourceTree = "<group>"; };
 		DCAE21EC1E63970A00645143 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		DCBA99B41EAD12B9007AD2E3 /* ConstraintSystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintSystem.swift; sourceTree = "<group>"; };
 		DCBFE9371E6FD31700573329 /* metadata_private.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = metadata_private.cpp; path = Sources/Runtime/metadata_private.cpp; sourceTree = "<group>"; };
+		DCD1E4B81E9F10340000440A /* ConstraintEnvironment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConstraintEnvironment.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -988,6 +1001,19 @@
 			path = stdlib;
 			sourceTree = "<group>";
 		};
+		DC69E70C1E9D92C500C33956 /* Constraint System */ = {
+			isa = PBXGroup;
+			children = (
+				DCBA99B41EAD12B9007AD2E3 /* ConstraintSystem.swift */,
+				82D6E1391E78E6CA00C791DE /* ConstraintSolver.swift */,
+				DC69E70D1E9D92E100C33956 /* ConstraintGenerator.swift */,
+				DC69E70F1E9D933700C33956 /* Constraint.swift */,
+				DCD1E4B81E9F10340000440A /* ConstraintEnvironment.swift */,
+				DCA8C39A1EA018C30002208D /* ConstraintError.swift */,
+			);
+			name = "Constraint System";
+			sourceTree = "<group>";
+		};
 		DC6BE9861E63968A00E9964E /* trillRuntime */ = {
 			isa = PBXGroup;
 			children = (
@@ -1156,6 +1182,7 @@
 				DC8EBB371E5FCFD500AE577C /* Sema.swift */,
 				DC8EBB381E5FCFD500AE577C /* SemaError.swift */,
 				DC8EBB391E5FCFD500AE577C /* TypeChecker.swift */,
+				DC69E70C1E9D92C500C33956 /* Constraint System */,
 			);
 			name = "Semantic Analysis";
 			path = "Sources/Semantic Analysis";
@@ -1616,7 +1643,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */;
+			buildConfigurationList = DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1653,6 +1680,7 @@
 				DC8EBB021E5FCFB200AE577C /* VarBinding.swift in Sources */,
 				DC8EBAC21E5FCF6E00AE577C /* Types.swift in Sources */,
 				DC8EBB061E5FCFBC00AE577C /* LLVMWrappers.cpp in Sources */,
+				DCBA99B51EAD12B9007AD2E3 /* ConstraintSystem.swift in Sources */,
 				DC8EBB3E1E5FCFD500AE577C /* SemaError.swift in Sources */,
 				DC8EBBAA1E5FD06C00AE577C /* MetadataType.swift in Sources */,
 				DC8EBBB51E5FD06C00AE577C /* TokenType.swift in Sources */,
@@ -1666,6 +1694,7 @@
 				DC8EBB451E5FCFDD00AE577C /* main.swift in Sources */,
 				DC8EBBA11E5FD06C00AE577C /* IRBuilder.swift in Sources */,
 				DC8EBAE61E5FCFA500AE577C /* StreamConsumer.swift in Sources */,
+				DC69E7101E9D933700C33956 /* Constraint.swift in Sources */,
 				DC8EBB141E5FCFC500AE577C /* StatementParser.swift in Sources */,
 				DC8EBAB21E5FCF6E00AE577C /* Generic.swift in Sources */,
 				DC8EBAFF1E5FCFB200AE577C /* StatementIRGen.swift in Sources */,
@@ -1675,6 +1704,7 @@
 				DC8EBBA51E5FD06C00AE577C /* IRValue.swift in Sources */,
 				DC8EBAF81E5FCFB200AE577C /* BaseIRGen.swift in Sources */,
 				DC8EBAAE1E5FCF6E00AE577C /* Decl.swift in Sources */,
+				DCD1E4B91E9F10340000440A /* ConstraintEnvironment.swift in Sources */,
 				DC8EBAEA1E5FCFA500AE577C /* Utilities.swift in Sources */,
 				DC8EBAA61E5FCF6E00AE577C /* ASTBase.swift in Sources */,
 				DC8EBAB81E5FCF6E00AE577C /* Protocols.swift in Sources */,
@@ -1700,8 +1730,10 @@
 				DC8EBB3A1E5FCFD500AE577C /* Mangler.swift in Sources */,
 				DC8EBB401E5FCFD500AE577C /* TypeChecker.swift in Sources */,
 				DC8EBAFE1E5FCFB200AE577C /* RuntimeIRGen.swift in Sources */,
+				82D6E13A1E78E6CA00C791DE /* ConstraintSolver.swift in Sources */,
 				DC8EBB971E5FD06C00AE577C /* BasicBlock.swift in Sources */,
 				DC8EBBB61E5FD06C00AE577C /* Use.swift in Sources */,
+				DCA8C39B1EA018C30002208D /* ConstraintError.swift in Sources */,
 				DC8EBBA61E5FD06C00AE577C /* JIT.swift in Sources */,
 				DC8EBBA01E5FD06C00AE577C /* IntType.swift in Sources */,
 				DC8EBAFB1E5FCFB200AE577C /* FunctionIRGen.swift in Sources */,
@@ -1733,6 +1765,7 @@
 				DC8EBAF91E5FCFB200AE577C /* BuiltinIRGen.swift in Sources */,
 				DC8EBAB61E5FCF6E00AE577C /* Operators.swift in Sources */,
 				DC8EBB4E1E5FCFE400AE577C /* JavaScriptGen.swift in Sources */,
+				DC69E70E1E9D92E100C33956 /* ConstraintGenerator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1754,6 +1787,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC8EBABB1E5FCF6E00AE577C /* SourceFile.swift in Sources */,
+				DCBA99B61EAD12B9007AD2E3 /* ConstraintSystem.swift in Sources */,
 				DC8EBAA91E5FCF6E00AE577C /* ASTContext.swift in Sources */,
 				DC8EBAEB1E5FCFA500AE577C /* Utilities.swift in Sources */,
 				DC8EBCB81E5FD52800AE577C /* Builtins.swift in Sources */,
@@ -2091,7 +2125,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "Trill" */ = {
+		DC8EBA551E5FCEF800AE577C /* Build configuration list for PBXProject "trill" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC8EBA5F1E5FCEF800AE577C /* Debug */,

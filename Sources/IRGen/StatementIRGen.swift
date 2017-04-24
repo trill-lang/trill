@@ -90,9 +90,9 @@ extension IRGenerator {
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
       if case .any = type {
-        value = codegenPromoteToAny(value: value, type: rhs.type!)
-      } else if rhs.type! != type {
-        value = coerce(value, from: rhs.type!, to: type)!
+        value = codegenPromoteToAny(value: value, type: rhs.type)
+      } else if rhs.type != type {
+        value = coerce(value, from: rhs.type, to: type)!
       }
     } else {
       value = irType.null()

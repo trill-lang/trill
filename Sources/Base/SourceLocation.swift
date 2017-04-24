@@ -3,6 +3,8 @@
 //  Trill
 //
 
+import Foundation
+
 struct SourceLocation: CustomStringConvertible {
   let file: String?
   var line: Int
@@ -15,7 +17,13 @@ struct SourceLocation: CustomStringConvertible {
     self.charOffset = charOffset
   }
   var description: String {
-    return "<file: \(file ?? "<none>") line: \(line), col: \(column)>"
+    let basename: String
+    if let file = file {
+      basename = URL(fileURLWithPath: file).lastPathComponent
+    } else {
+      basename = "<none>"
+    }
+    return "<\(basename):\(line):\(column)>"
   }
   static let zero = SourceLocation(line: 0, column: 0)
 }

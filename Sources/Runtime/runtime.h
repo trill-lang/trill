@@ -20,7 +20,7 @@ extern "C" {
 
 void trill_init();
 
-void trill_once(uint64_t *NONNULL predicate, void (*NONNULL initializer)());
+void trill_once(uint64_t *NONNULL predicate, void (*NONNULL initializer)(void));
     
 void trill_printStackTrace();
   
