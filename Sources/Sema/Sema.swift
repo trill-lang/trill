@@ -313,21 +313,21 @@ public class Sema: ASTTransformer, Pass {
       if let call = call {
         let resolver = OverloadResolver(context: context,
                                         environment: ConstraintEnvironment())
-        let solution = resolver.resolve(call, candidates: candidateMethods)
-        switch solution {
-        case .resolved(let funcDecl):
-          expr.decl = funcDecl
-          let types = funcDecl.args.map { $0.type }
-          expr.type = .function(args: types,
-                                returnType: funcDecl.returnType.type,
-                                hasVarArgs: funcDecl.hasVarArgs)
-        default:
+        let solution = resolver.resolve(call, candidates: candidateMethods,
+                                        isMethodCall: true)
+        guard case .resolved(let funcDecl) = solution else {
           diagnoseOverloadFailure(name: expr.name, args: call.args,
                                   resolution: solution,
                                   loc: expr.startLoc, highlights: [
                                     expr.name.range
-                                  ])
+          ])
+          return .method
         }
+        expr.decl = funcDecl
+        let types = funcDecl.args.map { $0.type }
+        expr.type = .function(args: types,
+                              returnType: funcDecl.returnType.type,
+                              hasVarArgs: funcDecl.hasVarArgs)
         return .method
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
@@ -444,7 +444,8 @@ public class Sema: ASTTransformer, Pass {
       }
       let resolver = OverloadResolver(context: context,
                                       environment: ConstraintEnvironment())
-      let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts)
+      let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts,
+                                        isMethodCall: true)
       guard case .resolved(let decl) = resolution else {
         diagnose()
         return
@@ -688,34 +689,34 @@ public class Sema: ASTTransformer, Pass {
     }
     let resolver = OverloadResolver(context: context,
                                     environment: ConstraintEnvironment())
-    let resolution = resolver.resolve(expr, candidates: candidates)
+    let resolution = resolver.resolve(expr, candidates: candidates,
+                                      isMethodCall: false)
 
-    switch resolution {
-    case .resolved(let decl):
-      setLHSDecl(decl)
-      expr.decl = decl
-      expr.type = decl.returnType.type
-
-      if let lhs = expr.lhs as? PropertyRefExpr {
-        if case .immutable(let culprit) = context.mutability(of: lhs),
-          decl.has(attribute: .mutating), decl is MethodDecl {
-          error(SemaError.assignToConstant(name: culprit),
-                loc: name.range?.start,
-                highlights: [
-                  name.range
-            ])
-          return
-        }
-      }
-    default:
+    guard case .resolved(let decl) = resolution else {
       diagnoseOverloadFailure(name: name,
                               args: expr.args,
                               resolution: resolution,
                               loc: name.range?.start,
                               highlights: [name.range])
+      return
+    }
+    setLHSDecl(decl)
+    expr.decl = decl
+    expr.type = decl.returnType.type
+
+    if let lhs = expr.lhs as? PropertyRefExpr {
+      if case .immutable(let culprit) = context.mutability(of: lhs),
+        decl.has(attribute: .mutating), decl is MethodDecl {
+        error(SemaError.assignToConstant(name: culprit),
+              loc: name.range?.start,
+              highlights: [
+                name.range
+          ])
+        return
+      }
     }
   }
-  
+
   public override func visitCompoundStmt(_ stmt: CompoundStmt) {
     for (idx, e) in stmt.stmts.enumerated() {
       visit(e)

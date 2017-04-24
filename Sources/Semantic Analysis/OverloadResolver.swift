@@ -56,22 +56,20 @@ struct OverloadResolver {
     // Search through the "associated op" of the operator, to handle
     // custom implementations of `+=` and the like.
     let candidates = context.operators(for: infix.op.associatedOp ?? infix.op)
-    return resolve(fakeCall, candidates: candidates)
+    return resolve(fakeCall, candidates: candidates, isMethodCall: false)
   }
 
   /// Resolves the appropriate overload for the given function call.
   ///
   /// - Parameters:
-  ///   - call: The call being resolved
+  ///   - call: The function call being resolved
   ///   - candidates: The candidates through which to search.
   /// - Returns: A resolution decision explaining exactly what was chosen by
   ///            the overload system.
-  func resolve<DeclType: FuncDecl>(_ call: FuncCallExpr, candidates: [DeclType]) -> OverloadResolution<DeclType> {
+  func resolve<DeclType: FuncDecl>(_ call: FuncCallExpr, candidates: [DeclType], isMethodCall: Bool) -> OverloadResolution<DeclType> {
     guard !candidates.isEmpty else {
       return .noCandidates
     }
-
-    let isMethodCall = call.lhs.semanticsProvidingExpr is PropertyRefExpr
     var solutions = [OverloadSolution<DeclType>]()
 
     candidateSearch: for candidate in candidates {
