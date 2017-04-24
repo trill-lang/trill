@@ -241,12 +241,12 @@ public class Sema: ASTTransformer, Pass {
   }
   
   public override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
-    _ = visitPropertyRefExpr(expr, callArgs: nil)
+    _ = visitPropertyRefExpr(expr, call: nil)
   }
   
   /// - returns: true if the resulting decl is a field of function type,
   ///            instead of a method
-  func visitPropertyRefExpr(_ expr: PropertyRefExpr, callArgs: [Argument]?) -> FieldKind {
+  func visitPropertyRefExpr(_ expr: PropertyRefExpr, call: FuncCallExpr?) -> FieldKind {
     super.visitPropertyRefExpr(expr)
     let type = expr.lhs.type
     guard type != .error else {
@@ -293,12 +293,12 @@ public class Sema: ASTTransformer, Pass {
       return .staticMethod
     }
     let candidateMethods = typeDecl.methods(named: expr.name.name)
-    if let callArgs = callArgs,
+    if let call = call,
        let index = typeDecl.indexOfProperty(named: expr.name) {
       let property = typeDecl.properties[index]
       if case .function(let args, _, _) = property.type {
-        let types = callArgs.flatMap { $0.val.type }
-        if types.count == callArgs.count && args == types {
+        let types = call.args.flatMap { $0.val.type }
+        if types.count == call.args.count && args == types {
           expr.decl = property
           expr.type = property.type
           return .property
@@ -310,13 +310,24 @@ public class Sema: ASTTransformer, Pass {
       expr.type = decl.type
       return .property
     } else if !candidateMethods.isEmpty {
-      if let args = callArgs,
-         let funcDecl = context.candidate(forArgs: args, candidates: candidateMethods) {
-        expr.decl = funcDecl
-        let types = funcDecl.args.map { $0.type }
-        expr.type = .function(args: types,
-                              returnType: funcDecl.returnType.type,
-                              hasVarArgs: funcDecl.hasVarArgs)
+      if let call = call {
+        let resolver = OverloadResolver(context: context,
+                                        environment: ConstraintEnvironment())
+        let solution = resolver.resolve(call, candidates: candidateMethods)
+        switch solution {
+        case .resolved(let funcDecl):
+          expr.decl = funcDecl
+          let types = funcDecl.args.map { $0.type }
+          expr.type = .function(args: types,
+                                returnType: funcDecl.returnType.type,
+                                hasVarArgs: funcDecl.hasVarArgs)
+        default:
+          diagnoseOverloadFailure(name: expr.name, args: call.args,
+                                  resolution: solution,
+                                  loc: expr.startLoc, highlights: [
+                                    expr.name.range
+                                  ])
+        }
         return .method
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
@@ -331,6 +342,26 @@ public class Sema: ASTTransformer, Pass {
             loc: expr.startLoc,
             highlights: [ expr.name.range ])
       return .property
+    }
+  }
+
+  func diagnoseOverloadFailure<DeclType: FuncDecl>(
+    name: Identifier, args: [Argument],
+    resolution: OverloadResolution<DeclType>, loc: SourceLocation? = nil,
+    highlights: [SourceRange?] = []) {
+    switch resolution {
+    case .resolved:
+      return
+    case .noCandidates:
+      error(SemaError.unknownFunction(name: name),
+            loc: loc, highlights: highlights)
+    case .ambiguity(let decls):
+      error(SemaError.ambiguousReference(name: name),
+            loc: loc, highlights: highlights)
+      note(SemaError.candidates(decls))
+    case .noMatchingCandidates:
+      error(SemaError.noViableOverload(name: name, args: args),
+            loc: loc, highlights: highlights)
     }
   }
   
@@ -406,16 +437,20 @@ public class Sema: ASTTransformer, Pass {
     case .array(let element, _):
       elementType = element
     default:
-      guard let decl = context.decl(for: type), !decl.subscripts.isEmpty else {
+      guard let typeDecl = context.decl(for: type),
+            !typeDecl.subscripts.isEmpty else {
         diagnose()
         return
       }
-      guard let candidate = context.candidate(forArgs: expr.args, candidates: decl.subscripts) as? SubscriptDecl else {
+      let resolver = OverloadResolver(context: context,
+                                      environment: ConstraintEnvironment())
+      let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts)
+      guard case .resolved(let decl) = resolution else {
         diagnose()
         return
       }
-      elementType = candidate.returnType.type
-      expr.decl = candidate
+      elementType = decl.returnType.type
+      expr.decl = decl
     }
     guard elementType != .void else {
       error(SemaError.incompleteTypeAccess(type: elementType, operation: "subscript"),
@@ -582,14 +617,14 @@ public class Sema: ASTTransformer, Pass {
       guard arg.val.type != .error else { return }
     }
     var candidates = [FuncDecl]()
-    var name: Identifier? = nil
+    let name: Identifier
     
     var setLHSDecl: (Decl) -> Void = {_ in }
     
     switch expr.lhs.semanticsProvidingExpr {
     case let lhs as PropertyRefExpr:
       name = lhs.name
-      let propertyKind = visitPropertyRefExpr(lhs, callArgs: expr.args)
+      let propertyKind = visitPropertyRefExpr(lhs, call: expr)
       guard let typeDecl = lhs.typeDecl else {
         return
       }
@@ -642,38 +677,42 @@ public class Sema: ASTTransformer, Pass {
           ])
         return
       }
+      name = "<<implicit>>"
     }
     
     guard !candidates.isEmpty else {
-      error(SemaError.unknownFunction(name: name!),
-            loc: name?.range?.start,
-            highlights: [ name?.range ])
+      error(SemaError.unknownFunction(name: name),
+            loc: name.range?.start,
+            highlights: [ name.range ])
       return
     }
-    guard let decl = context.candidate(forArgs: expr.args, candidates: candidates) else {
-      error(SemaError.noViableOverload(name: name!,
-                                       args: expr.args),
-            loc: name?.range?.start,
-            highlights: [
-              name?.range
-        ])
-      note(SemaError.candidates(candidates))
-      return
-    }
-    setLHSDecl(decl)
-    expr.decl = decl
-    expr.type = decl.returnType.type
-    
-    if let lhs = expr.lhs as? PropertyRefExpr {
-      if case .immutable(let culprit) = context.mutability(of: lhs),
-        decl.has(attribute: .mutating), decl is MethodDecl {
-        error(SemaError.assignToConstant(name: culprit),
-              loc: name?.range?.start,
-              highlights: [
-                name?.range
-          ])
-        return
+    let resolver = OverloadResolver(context: context,
+                                    environment: ConstraintEnvironment())
+    let resolution = resolver.resolve(expr, candidates: candidates)
+
+    switch resolution {
+    case .resolved(let decl):
+      setLHSDecl(decl)
+      expr.decl = decl
+      expr.type = decl.returnType.type
+
+      if let lhs = expr.lhs as? PropertyRefExpr {
+        if case .immutable(let culprit) = context.mutability(of: lhs),
+          decl.has(attribute: .mutating), decl is MethodDecl {
+          error(SemaError.assignToConstant(name: culprit),
+                loc: name.range?.start,
+                highlights: [
+                  name.range
+            ])
+          return
+        }
       }
+    default:
+      diagnoseOverloadFailure(name: name,
+                              args: expr.args,
+                              resolution: resolution,
+                              loc: name.range?.start,
+                              highlights: [name.range])
     }
   }
   
@@ -740,9 +779,13 @@ public class Sema: ASTTransformer, Pass {
               highlights: [c.constant.sourceRange])
         return
       }
-      guard let decl = context.infixOperatorCandidate(.equalTo,
-                                                      lhs: stmt.value,
-                                                      rhs: c.constant),
+      let resolver = OverloadResolver(context: context,
+                                      environment: ConstraintEnvironment())
+      let fakeInfix = InfixOperatorExpr(op: .equalTo,
+                                        lhs: stmt.value,
+                                        rhs: c.constant)
+      let resolution = resolver.resolve(fakeInfix)
+      guard case .resolved(let decl) = resolution,
                !decl.returnType.type.isPointer else {
         error(SemaError.cannotSwitch(type: valueType),
               loc: stmt.value.startLoc,
@@ -885,22 +928,25 @@ public class Sema: ASTTransformer, Pass {
       }
     }
     
-    let lookupOp = expr.op.associatedOp ?? expr.op
-    if let decl = context.infixOperatorCandidate(lookupOp,
-                                                 lhs: expr.lhs,
-                                                 rhs: expr.rhs) {
-      expr.decl = decl
-      if expr.op.isAssign {
-        expr.type = .void
-      } else {
-        expr.type = decl.returnType.type
-      }
-      return
-    }
-    error(SemaError.noViableOverload(name: Identifier(name: "\(expr.op)"), args: [
+    let resolver = OverloadResolver(context: context,
+                                    environment: ConstraintEnvironment())
+    let resolution = resolver.resolve(expr)
+    let name = Identifier(name: "\(expr.op)")
+    guard case .resolved(let decl) = resolution else {
+      diagnoseOverloadFailure(name: name, args: [
         Argument(val: expr.lhs),
         Argument(val: expr.rhs)
-      ]), loc: expr.opRange?.start)
+      ], resolution: resolution, loc: expr.opRange?.start, highlights: [
+        expr.opRange, expr.lhs.sourceRange, expr.rhs.sourceRange
+      ])
+      return
+    }
+    expr.decl = decl
+    if expr.op.isAssign {
+      expr.type = .void
+    } else {
+      expr.type = decl.returnType.type
+    }
   }
 
   public override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {

@@ -47,16 +47,6 @@ public enum Mutability {
   case mutable
 }
 
-public enum TypeRank: Int {
-  case equal = 999
-  case any = 1
-}
-
-public struct CandidateResult<DeclTy: Decl> {
-  public let candidate: DeclTy
-  public let rank: Int
-}
-
 public struct MainFuncFlags: OptionSet {
   public var rawValue: Int8
   public static let args = MainFuncFlags(rawValue: 1 << 0)
@@ -212,6 +202,7 @@ public class ASTContext {
     sourceFiles.append(sourceFile)
     sourceFileMap[sourceFile.path.filename] = sourceFile
   }
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
 
   public func infixOperatorCandidate(_ op: BuiltinOperator, lhs: Expr, rhs: Expr) -> OperatorDecl? {
     let canLhs = canonicalType(lhs.type)
@@ -292,6 +283,8 @@ public class ASTContext {
     }
     return bestCandidate?.candidate
   }
+=======
+>>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
 
   public func conformsToProtocol(_ decl: TypeDecl, _ proto: ProtocolDecl) -> Bool {
     return missingMethodsForConformance(decl, to: proto).isEmpty
@@ -563,9 +556,15 @@ public class ASTContext {
     }
     return false
   }
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
 
   public func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
     if !base && matchRank(typeDecl.type, type) != nil { return true }
+=======
+  
+  func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
+    if !base && matches(typeDecl.type, type) { return true }
+>>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
     for property in typeDecl.properties {
       if case .pointer = property.type { continue }
       if property.isComputed { continue }
@@ -582,28 +581,33 @@ public class ASTContext {
     return containsInLayout(type: typeDecl.type, typeDecl: typeDecl, base: true)
   }
 
-  /// Determines the ranking of the match between these two types.
-  /// This can either be `.equal` or `.any`, depending on the kind of match.
+  /// Determines if these two types match exactly.
   /// - parameter type1: The first type you're trying to match
   /// - parameter type2: The second type you're trying to match
   /// - returns: The rank of the match between these two types.
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
   public func matchRank(_ type1: DataType, _ type2: DataType) -> TypeRank? {
+=======
+  func matches(_ type1: DataType, _ type2: DataType) -> Bool {
+>>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
     let t1Can = canonicalType(type1)
     let t2Can = canonicalType(type2)
     switch (t1Can, t2Can) {
     case (.tuple(let fields1), .tuple(let fields2)):
-        if fields1.count != fields2.count { return nil }
+        if fields1.count != fields2.count { return false }
         for (type1, type2) in zip(fields1, fields2) {
-            if matchRank(type1, type2) == nil { return nil }
+            if !matches(type1, type2) { return false }
         }
-        return .equal
+        return true
     case (let t1, let t2):
       if case .any = t1 {
-        return .any
+        return true
       }
+
       if case .any = t2 {
-        return .any
+        return true
       }
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
 
       return t1 == t2 ? .equal : nil
     }
@@ -615,6 +619,13 @@ public class ASTContext {
     return matchRank(t1, t2) != nil
   }
 
+=======
+      
+      return t1 == t2
+    }
+  }
+
+>>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
   /// Returns all overloaded functions with the given name at top-level scope.
   ///
   /// - Parameter name: The function's base name.

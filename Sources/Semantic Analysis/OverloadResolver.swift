@@ -8,16 +8,16 @@
 
 import Foundation
 
-struct OverloadSolution {
+struct OverloadSolution<DeclType: FuncDecl> {
   let constraintSolution: ConstraintSolution
   let chosenDecl: FuncDecl
 }
 
-enum OverloadResolution {
-  case resolved(FuncDecl)
+enum OverloadResolution<DeclType: FuncDecl> {
+  case resolved(DeclType)
   case noCandidates
   case noMatchingCandidates
-  case ambiguity([FuncDecl])
+  case ambiguity([DeclType])
 }
 
 /// Resolves overloads by choosing the overload for which the constraint system
@@ -40,6 +40,25 @@ struct OverloadResolver {
     self.csGen = ConstraintGenerator(context: context)
   }
 
+  /// Resolves the appropriate overload for the given infix operator expression.
+  ///
+  /// - Parameters:
+  ///   - infix: The operator being resolved
+  ///   - candidates: The candidates through which to search.
+  /// - Returns: A resolution decision explaining exactly what was chosen by
+  ///            the overload system.
+  func resolve(_ infix: InfixOperatorExpr) -> OverloadResolution<OperatorDecl> {
+    let fakeCall = FuncCallExpr(lhs: VoidExpr(),
+                                args: [
+                                  Argument(val: infix.lhs, label: nil),
+                                  Argument(val: infix.rhs, label: nil)
+                                ])
+    // Search through the "associated op" of the operator, to handle
+    // custom implementations of `+=` and the like.
+    let candidates = context.operators(for: infix.op.associatedOp ?? infix.op)
+    return resolve(fakeCall, candidates: candidates)
+  }
+
   /// Resolves the appropriate overload for the given function call.
   ///
   /// - Parameters:
@@ -47,13 +66,13 @@ struct OverloadResolver {
   ///   - candidates: The candidates through which to search.
   /// - Returns: A resolution decision explaining exactly what was chosen by
   ///            the overload system.
-  func resolve(call: FuncCallExpr, candidates: [FuncDecl]) -> OverloadResolution {
+  func resolve<DeclType: FuncDecl>(_ call: FuncCallExpr, candidates: [DeclType]) -> OverloadResolution<DeclType> {
     guard !candidates.isEmpty else {
       return .noCandidates
     }
 
     let isMethodCall = call.lhs.semanticsProvidingExpr is PropertyRefExpr
-    var solutions = [OverloadSolution]()
+    var solutions = [OverloadSolution<DeclType>]()
 
     candidateSearch: for candidate in candidates {
       var declArgs = candidate.args
@@ -99,11 +118,11 @@ struct OverloadResolver {
       // If that all passed, solve the types of the function and add it to the
       // list of solutions.
       call.decl = candidate
-      csGen.reset(with: ConstraintEnvironment())
+      csGen.reset(with: env)
       csGen.visitFuncCallExpr(call)
+      call.decl = nil
       guard let solution = ConstraintSolver(context: context)
                             .solveSystem(csGen.system) else {
-        call.decl = nil
         continue
       }
       solutions.append(OverloadSolution(constraintSolution: solution,
@@ -116,7 +135,7 @@ struct OverloadResolver {
 
     // Keep a list of all scores that we've seen
     var minScore = Int.max
-    var minScoreCandidates = [OverloadSolution]()
+    var minScoreCandidates = [OverloadSolution<DeclType>]()
 
     // Go through each generated solution and look for
     // the candidate(s) with the lowest score.
@@ -135,10 +154,10 @@ struct OverloadResolver {
 
     // If we found a single candidate with the lowest score, it's our decl!
     if minScoreCandidates.count == 1 {
-      return .resolved(minScoreCandidates[0].chosenDecl)
+      return .resolved(minScoreCandidates[0].chosenDecl as! DeclType)
     }
 
     // Otherwise, we have to flag an ambiguity.
-    return .ambiguity(minScoreCandidates.map { $0.chosenDecl })
+    return .ambiguity(minScoreCandidates.map { $0.chosenDecl as! DeclType })
   }
 }

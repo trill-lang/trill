@@ -127,7 +127,7 @@ public class TypeChecker: ASTTransformer, Pass {
       if arg.isImplicitSelf {
         argType = argType.rootType
       }
-      if matchRank(argType, .any) == nil && matchRank(type, argType) == nil {
+      if !matches(argType, .any) && !matches(type, argType) {
         error(TypeCheckError.typeMismatch(expected: argType, got: type),
               loc: val.val.startLoc,
               highlights: [
@@ -215,7 +215,7 @@ public class TypeChecker: ASTTransformer, Pass {
   }
   
   public override func visitParamDecl(_ decl: ParamDecl) -> Result {
-    if let rhsType = decl.rhs?.type, matchRank(decl.type, rhsType) == nil {
+    if let rhsType = decl.rhs?.type, !matches(decl.type, rhsType) {
       error(TypeCheckError.typeMismatch(expected: decl.type, got: rhsType),
             loc: decl.startLoc,
             highlights: [

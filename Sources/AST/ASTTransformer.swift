@@ -78,10 +78,6 @@ open class ASTTransformer: ASTVisitor {
     context.extensions.forEach(visitExtensionDecl)
   }
 
-  public func matchRank(_ t1: DataType, _ t2: DataType) -> TypeRank? {
-    return context.matchRank(t1, t2)
-  }
-
   public func matches(_ t1: DataType, _ t2: DataType) -> Bool {
     return context.matches(t1, t2)
   }
