@@ -313,8 +313,7 @@ public class Sema: ASTTransformer, Pass {
       if let call = call {
         let resolver = OverloadResolver(context: context,
                                         environment: ConstraintEnvironment())
-        let solution = resolver.resolve(call, candidates: candidateMethods,
-                                        isMethodCall: true)
+        let solution = resolver.resolve(call, candidates: candidateMethods)
         guard case .resolved(let funcDecl) = solution else {
           diagnoseOverloadFailure(name: expr.name, args: call.args,
                                   resolution: solution,
@@ -359,9 +358,10 @@ public class Sema: ASTTransformer, Pass {
       error(SemaError.ambiguousReference(name: name),
             loc: loc, highlights: highlights)
       note(SemaError.candidates(decls))
-    case .noMatchingCandidates:
+    case .noMatchingCandidates(let decls):
       error(SemaError.noViableOverload(name: name, args: args),
             loc: loc, highlights: highlights)
+      note(SemaError.candidates(decls))
     }
   }
   
@@ -444,8 +444,7 @@ public class Sema: ASTTransformer, Pass {
       }
       let resolver = OverloadResolver(context: context,
                                       environment: ConstraintEnvironment())
-      let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts,
-                                        isMethodCall: true)
+      let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts)
       guard case .resolved(let decl) = resolution else {
         diagnose()
         return
@@ -483,7 +482,9 @@ public class Sema: ASTTransformer, Pass {
       let fn = currentFunction,
       fn is InitializerDecl,
       expr.name == "self" {
-      expr.decl = VarAssignDecl(name: "self", typeRef: fn.returnType, kind: .implicitSelf(fn, currentType!))
+      expr.decl = VarAssignDecl(name: "self",
+                                typeRef: fn.returnType,
+                                kind: .implicitSelf(fn, currentType!))
       expr.isSelf = true
       expr.type = fn.returnType.type
       return
@@ -689,8 +690,7 @@ public class Sema: ASTTransformer, Pass {
     }
     let resolver = OverloadResolver(context: context,
                                     environment: ConstraintEnvironment())
-    let resolution = resolver.resolve(expr, candidates: candidates,
-                                      isMethodCall: false)
+    let resolution = resolver.resolve(expr, candidates: candidates)
 
     guard case .resolved(let decl) = resolution else {
       diagnoseOverloadFailure(name: name,

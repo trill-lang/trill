@@ -6,26 +6,27 @@
 import Foundation
 
 /// Defines the kinds of automatic coercions performed by the compiler during
-/// overload resolution.
-enum CoercionKind {
+/// overload resolution. These are declared in order of severity.
+enum CoercionKind: Int {
   /// A value has been promoted to `Any`.
   case anyPromotion
-
-  /// A numeric literal has been promoted to another Integer or Floating Point
-  /// type.
-  case numericLiteral
 
   /// An explicit type variable has been reified to a concrete type.
   case genericPromotion
 
-  /// Defines the punishment that will be applied to a constraint
-  /// solution if the type provided has to be resolved this way.
-  var punishment: Int {
-    switch self {
-    case .anyPromotion: return 100
-    case .genericPromotion: return 50
-    case .numericLiteral: return 10
-    }
+  /// A numeric literal has been promoted to another Integer or Floating Point
+  /// type.
+  case numericLiteralPromotion
+
+  /// The severity of this specific coercion kind, used for comparing two
+  /// overload resolution solutions.
+  var severity: Int {
+    return rawValue
+  }
+
+  /// The severities of each coercion kind, in order.
+  static var rankedSeverities: [CoercionKind] {
+    return [.anyPromotion, .genericPromotion, .numericLiteralPromotion]
   }
 }
 
@@ -44,20 +45,19 @@ struct ConstraintSolution {
   /// The map of type variable names to concrete data types.
   private(set) var substitutions = [String: DataType]()
 
-  /// A score for this solution (lower is better) which will be "punished"
-  /// whenever the constraint solver has to perform coercions to solve the
-  /// system.
-  private(set) var score = 0
+  /// A map to keep track of the number of each kind of punishment applied
+  /// to this solution.
+  private(set) var punishments = Counter<CoercionKind>()
 
   /// Punish this solution with the value from the provided coercion kind.
   mutating func punish(_ coercion: CoercionKind) {
-    score += coercion.punishment
+    punishments.count(coercion)
   }
 
   /// Adds the score and substitions from the provided solution to this
   /// solution.
   mutating func unionInPlace(_ solution: ConstraintSolution) {
-    score += solution.score
+    punishments.addCounts(from: solution.punishments)
     substitutions.unionInPlace(solution.substitutions)
   }
 

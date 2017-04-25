@@ -96,7 +96,7 @@ extension Parser {
     switch kind {
     case .operator(let op):
       return OperatorDecl(op: op,
-                          args: args,
+                          args: args.map { $0.withoutExternalName },
                           genericParams: genericArgs,
                           returnType: returnType,
                           body: body,

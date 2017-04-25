@@ -235,6 +235,14 @@ public class ParamDecl: VarAssignDecl {
     self.externalName = externalName
     super.init(name: name, typeRef: type, kind: .global, rhs: rhs, mutable: false, sourceRange: sourceRange)!
   }
+
+  var withoutExternalName: ParamDecl {
+    return ParamDecl(name: name,
+                     type: typeRef,
+                     externalName: nil,
+                     rhs: rhs,
+                     sourceRange: sourceRange)
+  }
 }
 
 public class ClosureExpr: Expr {

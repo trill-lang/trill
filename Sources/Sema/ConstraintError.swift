@@ -10,7 +10,7 @@
 import AST
 import Foundation
 
-enum ConstraintError: Error, CustomStringConvertible {
+enum ConstraintErrorKind: CustomStringConvertible {
   case ambiguousExpressionType
   case cannotConvert(DataType, to: DataType)
 
@@ -22,4 +22,9 @@ enum ConstraintError: Error, CustomStringConvertible {
       return "cannot convert value of type \(t1) to \(t2)"
     }
   }
+}
+
+struct ConstraintError: Error {
+  let constraint: Constraint
+  let kind: ConstraintErrorKind
 }

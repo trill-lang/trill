@@ -21,7 +21,7 @@ struct ConstraintSolver {
     var fullSolution = ConstraintSolution(system: system)
     for constraint in system.constraints.reversed() {
       let subst = constraint.substituting(fullSolution.substitutions)
-      guard let solution = self.solveSingle(subst) else { return nil }
+      let solution = try self.solveSingle(subst)
       fullSolution.unionInPlace(solution)
     }
     return fullSolution
@@ -32,6 +32,7 @@ struct ConstraintSolver {
   /// - parameter c: The constraint to solve.
   /// - returns: A `Solution`, essentially a set of bindings that concretize
   ///            all type variables present in the constraint, if any.
+  /// - throws ConstraintError if the constraint is unsatisfiable.
   public func solveSingle(_ c: Constraint) -> Solution? {
     var solution = ConstraintSolution(system: ConstraintSystem(constraints: [c]))
     switch c.kind {
@@ -40,14 +41,16 @@ struct ConstraintSolver {
       let t1 = context.canonicalType(_t1)
       let t2 = context.canonicalType(_t2)
 
-      guard
-        let typeDecl = context.decl(for: t1),
-        let protocolDecl = context.protocolDecl(for: t2) else {
-        return nil
+      guard let typeDecl = context.decl(for: t1) else {
+        throw SemaError.unknownType(type: _t1)
+      }
+
+      guard let protocolDecl = context.protocolDecl(for: t2) else {
+        throw SemaError.unknownProtocol(name: Identifier(name: _t2.description))
       }
 
       guard context.conformsToProtocol(typeDecl, protocolDecl) else {
-        return nil
+        throw SemaError.typeDoesNotConform(_t1, protocol: _t2)
       }
 
       return solution
@@ -65,12 +68,8 @@ struct ConstraintSolver {
 
       switch (t1, t2) {
       case (.typeVariable, .typeVariable):
-        context.diag.error(ConstraintError.ambiguousExpressionType,
-                           loc: c.node?.startLoc,
-                           highlights: [
-                              c.node?.sourceRange
-                           ])
-        return nil
+        throw ConstraintError(constraint: c,
+                              kind: .ambiguousExpressionType)
       case let (t, .typeVariable(m)):
         // Perform the occurs check
         if t.contains(m) {
@@ -78,16 +77,23 @@ struct ConstraintSolver {
         }
         // Unify the type variable with the concrete type.
         solution.bind(m, to: _t1)
-        solution.punish(.genericPromotion)
+
+        if c.isExplicitTypeVariable {
+          solution.punish(.genericPromotion)
+        }
         return solution
       case let (.typeVariable(m), t):
         // Perform the occurs check
         if t.contains(m) {
           fatalError("infinite type")
         }
+
         // Unify the type variable with the concrete type.
         solution.bind(m, to: _t2)
-        solution.punish(.genericPromotion)
+
+        if c.isExplicitTypeVariable {
+          solution.punish(.genericPromotion)
+        }
         return solution
       case let (.function(args1, returnType1, hasVarArgs1),
                 .function(args2, returnType2, hasVarArgs2)):
@@ -99,14 +105,16 @@ struct ConstraintSolver {
         var system = ConstraintSystem()
         for (arg1, arg2) in zip(args1, args2) {
           system.constrainEqual(arg1, arg2,
-                                node: c.node, caller: c.location)
+                                node: c.attachedNode,
+                                caller: c.location)
         }
         system.constrainEqual(returnType1, returnType2,
-                              node: c.node, caller: c.location)
+                              node: c.attachedNode,
+                              caller: c.location)
 
-        return solveSystem(system)
+        return try solveSystem(system)
       case let (.pointer(t1), .pointer(t2)):
-        return solveSingle(c.withKind(.equal(t1, t2)))
+        return try solveSingle(c.withKind(.equal(t1, t2)))
       case (_, .any), (.any, _):
         // Anything can unify to an existential
         solution.punish(.anyPromotion)
@@ -114,12 +122,8 @@ struct ConstraintSolver {
       default:
         break
       }
-      context.diag.error(ConstraintError.cannotConvert(_t1, to: _t2),
-                         loc: c.node?.startLoc,
-                         highlights: [
-                           c.node?.sourceRange
-                         ])
-      return nil
+      throw ConstraintError(constraint: c,
+                            kind: .cannotConvert(_t1, to: _t2))
     }
   }
 }

@@ -327,14 +327,24 @@ public class TypeChecker: ASTTransformer, Pass {
   func solve(_ node: ASTNode) -> DataType? {
     csGen.reset(with: env)
     csGen.visit(node)
-    guard let solution = ConstraintSolver(context: context)
-                           .solveSystem(csGen.system) else {
+    do {
+      let solution = try ConstraintSolver(context: context)
+                            .solveSystem(csGen.system)
+      let goal = csGen.goal.substitute(solution.substitutions)
+      if case .typeVariable = goal {
         return nil
+      }
+      return goal
+    } catch let err as ConstraintError {
+      error(err, loc: err.constraint.attachedNode?.startLoc,
+            highlights: [
+              err.constraint.attachedNode?.sourceRange
+            ])
+    } catch let err {
+      error(err, loc: node.startLoc, highlights: [
+        node.sourceRange
+      ])
     }
-    let goal = csGen.goal.substitute(solution.substitutions)
-    if case .typeVariable = goal {
-      return nil
-    }
-    return goal
+    return nil
   }
 }

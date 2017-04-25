@@ -19,7 +19,8 @@ struct Constraint {
 
   let kind: Kind
   let location: StaticString
-  let node: ASTNode?
+  let attachedNode: ASTNode?
+  let isExplicitTypeVariable: Bool
 
   func substituting(_ solution: [String: DataType]) -> Constraint {
     switch kind {
@@ -35,6 +36,8 @@ struct Constraint {
   /// Returns a new constraint based on the provided constraint, but by updating
   /// the kind of constraint.
   func withKind(_ kind: Kind) -> Constraint {
-    return Constraint(kind: kind, location: location, node: node)
+    return Constraint(kind: kind, location: location,
+                      attachedNode: attachedNode,
+                      isExplicitTypeVariable: isExplicitTypeVariable)
   }
 }

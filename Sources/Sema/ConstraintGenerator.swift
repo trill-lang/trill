@@ -69,10 +69,14 @@ final class ConstraintGenerator: ASTTransformer {
       visit(expr.lhs)
     }
 
-    system.constrainEqual(goal, expr.typeDecl!.type, node: expr)
+    if let typeDecl = expr.typeDecl {
+      system.constrainEqual(goal, typeDecl.type, node: expr)
+    }
 
     let tau = env.freshTypeVariable()
-    system.constrainEqual(expr.decl!, tau)
+    if let decl = expr.decl {
+      system.constrainEqual(decl, tau)
+    }
 
     self.goal = tau
   }
@@ -132,7 +136,7 @@ final class ConstraintGenerator: ASTTransformer {
     system.constrainEqual(lhsGoal,
                           .function(args: goals,
                                     returnType: tau,
-                                    hasVarArgs: expr.decl!.hasVarArgs),
+                                    hasVarArgs: expr.decl?.hasVarArgs ?? false),
                           node: expr.lhs)
     goal = tau
   }
@@ -165,7 +169,7 @@ final class ConstraintGenerator: ASTTransformer {
       return
     }
 
-    let lhsGoal = expr.decl!.type
+    let lhsGoal = expr.decl?.type ?? env.freshTypeVariable()
     var goals = [DataType]()
     visit(expr.lhs)
     goals.append(goal)
@@ -248,7 +252,8 @@ final class ConstraintGenerator: ASTTransformer {
       system.constrainEqual(rhsGoal, .bool, node: expr.rhs)
     case .star:
       guard case .pointer(let element) = expr.rhs.type else {
-        fatalError("invalid dereference?")
+        goal = .error
+        return
       }
       goal = element
     default:

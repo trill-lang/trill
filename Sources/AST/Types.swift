@@ -421,11 +421,8 @@ public class TypeDecl: Decl {
   }
 }
 
-public class DeclRefExpr<DeclType: Decl>: Expr {
-  public weak var decl: DeclType? = nil
-  public override init(sourceRange: SourceRange?) {
-    super.init(sourceRange: sourceRange)
-  }
+public protocol DeclRef {
+  weak var decl: Decl? { get set }
 }
 
 public class PropertyDecl: VarAssignDecl {
@@ -508,7 +505,8 @@ public class TypeAliasDecl: Decl {
   }
 }
 
-public class TypeRefExpr: DeclRefExpr<TypeDecl> {
+public class TypeRefExpr: Expr, DeclRef {
+  public var decl: Decl?
   public let name: Identifier
   public init(type: DataType, name: Identifier, sourceRange: SourceRange? = nil) {
     self.name = name
