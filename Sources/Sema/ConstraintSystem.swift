@@ -17,6 +17,22 @@ struct ConstraintSystem {
     self.constraints = constraints
   }
 
+  var sortedConstraints: [Constraint] {
+    // Ensures that all the bidirectional equality constraints
+    // are solved before coercions and conformances.
+    return constraints.sorted { (c1, c2) in
+      switch (c1.kind, c2.kind) {
+      case (.equal, .equal):
+        return false
+      case (.equal, _):
+        return true
+      default:
+        return false
+      }
+
+    }
+  }
+
   mutating func constrainConforms(_ d: Decl, _ t: DataType,
                                   isExplicitTypeVariable: Bool = false,
                                   caller: StaticString = #function) {
@@ -58,6 +74,23 @@ struct ConstraintSystem {
                    caller: caller)
   }
 
+  mutating func constrainCoercion(_ e: Expr, _ t: DataType,
+                                  isExplicitTypeVariable: Bool = false,
+                                  caller: StaticString = #function) {
+    constrainCoercion(e.type, t, node: e,
+                      isExplicitTypeVariable: isExplicitTypeVariable,
+                      caller: caller)
+  }
+
+  mutating func constrainCoercion(_ t1: DataType, _ t2: DataType,
+                                  node: ASTNode? = nil,
+                                  isExplicitTypeVariable: Bool = false,
+                                  caller: StaticString = #function) {
+    constraints.append(Constraint(kind: .coercion(t1, t2),
+                                  location: caller, attachedNode: node,
+                                  isExplicitTypeVariable: isExplicitTypeVariable))
+  }
+
   mutating func constrainEqual(_ t1: DataType, _ t2: DataType,
                                node: ASTNode? = nil,
                                isExplicitTypeVariable: Bool = false,
@@ -79,7 +112,9 @@ struct ConstraintSystem {
       case let .equal(t1, t2):
         print("\(t1) == \(t2)")
       case let .conforms(t1, t2):
-        print("\(t1): \(t2)")
+        print("\(t1) :  \(t2)")
+      case let .coercion(t1, t2):
+        print("\(t1) :≈ \(t2)")
       }
       print("  declared in: \(constraint.location)")
       if let node = constraint.attachedNode {

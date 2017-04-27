@@ -125,7 +125,7 @@ public class TypeChecker: ASTTransformer, Pass {
       let type = val.val.type
       var argType = arg.type
       if arg.isImplicitSelf {
-        argType = argType.rootType
+        argType = argType.elementType
       }
       if !matches(argType, .any) && !matches(type, argType) {
         error(TypeCheckError.typeMismatch(expected: argType, got: type),
@@ -199,7 +199,7 @@ public class TypeChecker: ASTTransformer, Pass {
     }
     env[decl.name] = decl.type
   }
-  
+
   public override func visitIfStmt(_ stmt: IfStmt) {
     for (expr, _) in stmt.blocks {
       guard case .bool = expr.type else {
@@ -239,6 +239,7 @@ public class TypeChecker: ASTTransformer, Pass {
     super.visitReturnStmt(stmt)
   }
 
+<<<<<<< HEAD:Sources/Sema/TypeChecker.swift
   public override func visitFuncDecl(_ decl: FuncDecl) {
     self.withScope {
       for pd in decl.args {
@@ -252,6 +253,10 @@ public class TypeChecker: ASTTransformer, Pass {
     guard let decl = expr.decl,
           let type = solve(expr) else { return }
     expr.type = type
+=======
+  override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
+    guard let decl = expr.decl else { return }
+>>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/TypeChecker.swift
     ensureTypesAndLabelsMatch(expr, decl: decl)
   }
   
@@ -268,8 +273,6 @@ public class TypeChecker: ASTTransformer, Pass {
         ])
       return
     }
-    guard let type = solve(expr) else { return }
-    expr.type = type
     super.visitTernaryExpr(expr)
   }
   
@@ -322,29 +325,5 @@ public class TypeChecker: ASTTransformer, Pass {
       ensureTypesAndLabelsMatch(expr, decl: decl)
     }
     super.visitSubscriptExpr(expr)
-  }
-
-  func solve(_ node: ASTNode) -> DataType? {
-    csGen.reset(with: env)
-    csGen.visit(node)
-    do {
-      let solution = try ConstraintSolver(context: context)
-                            .solveSystem(csGen.system)
-      let goal = csGen.goal.substitute(solution.substitutions)
-      if case .typeVariable = goal {
-        return nil
-      }
-      return goal
-    } catch let err as ConstraintError {
-      error(err, loc: err.constraint.attachedNode?.startLoc,
-            highlights: [
-              err.constraint.attachedNode?.sourceRange
-            ])
-    } catch let err {
-      error(err, loc: node.startLoc, highlights: [
-        node.sourceRange
-      ])
-    }
-    return nil
   }
 }

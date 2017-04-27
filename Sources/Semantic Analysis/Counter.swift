@@ -22,8 +22,8 @@ struct Counter<Element>: Sequence where Element: Hashable {
   /// Finds the number of times the element occurs in the counter.
   /// - parameter element: The element you're looking up.
   /// - returns: The number of times that element occurs in the counter.
-  subscript(_ element: Element) -> Int? {
-    return storage[element]
+  subscript(_ element: Element) -> Int {
+    return storage[element] ?? 0
   }
 
   /// Adds all the counts from a given counter to this counter.
@@ -31,6 +31,11 @@ struct Counter<Element>: Sequence where Element: Hashable {
     for (element, count) in counter {
       self.count(element, times: count)
     }
+  }
+
+  /// Whether or not this counter has registered any values.
+  var isEmpty: Bool {
+    return storage.isEmpty
   }
 
   /// Makes an iterator for looping over these elements.

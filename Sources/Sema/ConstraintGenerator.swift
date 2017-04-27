@@ -84,18 +84,31 @@ final class ConstraintGenerator: ASTTransformer {
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
     let goalType: DataType
 
-    // let <ident>: <Type> = <expr>
+    // let <ident>[: <Type>] = <expr>
     if let e = decl.rhs {
-      if let typeRef = decl.typeRef {
-        goalType = typeRef.type
-      } else {
-        goalType = e.type
-      }
 
       visit(e)
 
+      switch goal {
+      case .integerLiteral:
+        goal = .int64
+      case .floatingLiteral:
+        goal = .double
+      case .stringLiteral:
+        goal = .string
+      default:
+        goal = e.type
+      }
+
       // Bind the given type to the goal type the initializer generated.
-      system.constrainEqual(goal, goalType, node: e)
+      system.constrainEqual(e, goal)
+
+      if let typeRef = decl.typeRef {
+        goalType = typeRef.type
+        system.constrainEqual(goal, goalType, node: e)
+      } else {
+        goalType = goal
+      }
     } else {
       // let <ident>: <Type>
       // Take the type binding as fact and move on.
@@ -136,7 +149,7 @@ final class ConstraintGenerator: ASTTransformer {
     system.constrainEqual(lhsGoal,
                           .function(args: goals,
                                     returnType: tau,
-                                    hasVarArgs: expr.decl?.hasVarArgs ?? false),
+                                    hasVarArgs: false),
                           node: expr.lhs)
     goal = tau
   }
@@ -145,7 +158,7 @@ final class ConstraintGenerator: ASTTransformer {
     let tau = env.freshTypeVariable()
 
     visit(expr.rhs)
-    system.constrainEqual(goal, tau)
+    system.constrainEqual(goal, tau, node: expr.rhs)
 
     system.constrainEqual(expr, .bool)
     goal = .bool
@@ -155,21 +168,23 @@ final class ConstraintGenerator: ASTTransformer {
     let tau = env.freshTypeVariable()
 
     visit(expr.rhs)
-    system.constrainEqual(goal, tau)
+    system.constrainEqual(tau, goal, node: expr.rhs)
 
-    system.constrainEqual(expr, tau)
+    visit(expr.lhs)
+    system.constrainCoercion(goal, tau, node: expr.lhs)
+
     goal = tau
   }
 
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     let tau = env.freshTypeVariable()
 
-    if expr.op.isAssign {
+    if case .assign = expr.op {
       goal = .void
       return
     }
 
-    let lhsGoal = expr.decl?.type ?? env.freshTypeVariable()
+    let lhsGoal = expr.decl!.type
     var goals = [DataType]()
     visit(expr.lhs)
     goals.append(goal)
@@ -184,19 +199,28 @@ final class ConstraintGenerator: ASTTransformer {
   }
 
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {
+    var goals = [DataType]()
     visit(expr.lhs)
-    var goals: [DataType] = [ self.goal ]
-    expr.args.forEach { a in
-      visit(a.val)
-      goals.append(self.goal)
+    goals.append(goal)
+
+    for arg in expr.args {
+      visit(arg.val)
+      goals.append(goal)
     }
     let tau = env.freshTypeVariable()
+
+    /// Custom subscripts have a decl, and need to have their arguments
+    /// checked. Builtin subscripts do not have a decl, and only need their
+    /// return type declared.
     if let decl = expr.decl {
-      system.constrainEqual(decl, .function(args: goals,
-                                            returnType: tau,
-                                            hasVarArgs: false))
+      system.constrainEqual(decl,
+                            .function(args: goals,
+                                      returnType: tau,
+                                      hasVarArgs: false))
+    } else {
+      system.constrainEqual(expr, tau)
     }
-    self.goal = tau
+    goal = tau
   }
 
   override func visitArrayExpr(_ expr: ArrayExpr) {

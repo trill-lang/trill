@@ -19,7 +19,7 @@ struct ConstraintSolver {
   ///            variables in the system.
   public func solveSystem(_ system: ConstraintSystem) -> Solution? {
     var fullSolution = ConstraintSolution(system: system)
-    for constraint in system.constraints.reversed() {
+    for constraint in system.sortedConstraints {
       let subst = constraint.substituting(fullSolution.substitutions)
       let solution = try self.solveSingle(subst)
       fullSolution.unionInPlace(solution)
@@ -53,6 +53,15 @@ struct ConstraintSolver {
         throw SemaError.typeDoesNotConform(_t1, protocol: _t2)
       }
 
+      return solution
+
+    case let .coercion(t1, t2):
+      if let solution = try? solveSingle(c.withKind(.equal(t1, t2))) {
+        return solution
+      }
+      guard context.canCoerce(t1, to: t2) else {
+        throw SemaError.cannotCoerce(type: t1, toType: t2)
+      }
       return solution
 
     case let .equal(_t1, _t2):
@@ -112,9 +121,46 @@ struct ConstraintSolver {
                               node: c.attachedNode,
                               caller: c.location)
 
-        return try solveSystem(system)
+        do {
+          return try solveSystem(system)
+        } catch {
+          break
+        }
       case let (.pointer(t1), .pointer(t2)):
         return try solveSingle(c.withKind(.equal(t1, t2)))
+      case (.stringLiteral, .pointer(type: DataType.int8)),
+           (.pointer(type: DataType.int8), .stringLiteral):
+
+        // Punish promotions from String to *Int8
+        solution.punish(.stringLiteralPromotion)
+        return solution
+
+      case (.stringLiteral, DataType.string),
+           (DataType.string, .stringLiteral):
+        return solution
+      case let (.integerLiteral, t),
+           let (t, .integerLiteral):
+        switch t {
+        case .int, .floating:
+          // If we're promoting to anything but `Int`, then punish the solution.
+          if t != .int64 {
+            solution.punish(.numericLiteralPromotion)
+          }
+          return solution
+        default: break
+        }
+      case let (.floatingLiteral, t),
+           let (t, .floatingLiteral):
+        guard case .floating = t else { break }
+        // If we're promoting to anything but `Double`, then punish the solution.
+        if t != .double {
+          solution.punish(.numericLiteralPromotion)
+        }
+        return solution
+      case let (.nilLiteral, t),
+           let (t, .nilLiteral):
+        guard context.canBeNil(t) else { break }
+        return solution
       case (_, .any), (.any, _):
         // Anything can unify to an existential
         solution.punish(.anyPromotion)

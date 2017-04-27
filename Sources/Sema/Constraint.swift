@@ -14,6 +14,7 @@ import Foundation
 struct Constraint {
   enum Kind {
     case equal(DataType, DataType)
+    case coercion(DataType, DataType)
     case conforms(DataType, DataType)
   }
 
@@ -29,6 +30,9 @@ struct Constraint {
                              t2.substitute(solution)))
     case let .conforms(t1, t2):
       return withKind(.conforms(t1.substitute(solution),
+                                t2.substitute(solution)))
+    case let .coercion(t1, t2):
+      return withKind(.coercion(t1.substitute(solution),
                                 t2.substitute(solution)))
     }
   }

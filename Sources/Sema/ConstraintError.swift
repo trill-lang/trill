@@ -24,7 +24,11 @@ enum ConstraintErrorKind: CustomStringConvertible {
   }
 }
 
-struct ConstraintError: Error {
+struct ConstraintError: Error, CustomStringConvertible {
   let constraint: Constraint
   let kind: ConstraintErrorKind
+
+  var description: String {
+    return kind.description
+  }
 }

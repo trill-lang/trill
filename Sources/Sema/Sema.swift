@@ -14,8 +14,21 @@ enum FieldKind {
   case method, staticMethod, property
 }
 
+<<<<<<< HEAD:Sources/Sema/Sema.swift
 public class Sema: ASTTransformer, Pass {
   var varBindings = [String: VarAssignDecl]()
+=======
+class Sema: ASTTransformer, Pass {
+  var varBindings = [Identifier: VarAssignDecl]()
+  let csGen: ConstraintGenerator
+  var env: ConstraintEnvironment
+
+  required init(context: ASTContext) {
+    self.env = ConstraintEnvironment()
+    self.csGen = ConstraintGenerator(context: context)
+    super.init(context: context)
+  }
+>>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
   
   public var title: String {
     return "Semantic Analysis"
@@ -24,6 +37,11 @@ public class Sema: ASTTransformer, Pass {
   public override func run(in context: ASTContext) {
     registerTopLevelDecls(in: context)
     super.run(in: context)
+  }
+
+  func bind(_ name: Identifier, to decl: VarAssignDecl) {
+    varBindings[name] = decl
+    env[name] = decl.type
   }
   
   func registerTopLevelDecls(in context: ASTContext) {
@@ -41,39 +59,45 @@ public class Sema: ASTTransformer, Pass {
         typeDecl.addSubscript(subscriptDecl)
       }
     }
-    for expr in context.types {
-      let oldBindings = varBindings
-      defer { varBindings = oldBindings }
-      var propertyNames = Set<String>()
-      for property in expr.properties {
-        property.kind = .property(expr)
-        if propertyNames.contains(property.name.name) {
-          error(SemaError.duplicateField(name: property.name,
-                                         type: expr.type),
-                loc: property.startLoc,
-                highlights: [ expr.name.range ])
-          continue
+    for decl in context.types {
+      if decl.isIndirect {
+        for op in [BuiltinOperator.equalTo, .notEqualTo] {
+          context.add(OperatorDecl(op, decl.type, decl.type,
+                                   .bool, modifiers: [.implicit]))
         }
-        propertyNames.insert(property.name.name)
       }
-      var methodNames = Set<String>()
-      for method in expr.methods + expr.staticMethods {
-        let mangled = Mangler.mangle(method)
-        if methodNames.contains(mangled) {
-          error(SemaError.duplicateMethod(name: method.name,
-                                          type: expr.type),
-                loc: method.startLoc,
-                highlights: [ expr.name.range ])
-          continue
+      withScope(CompoundStmt(stmts: [])) {
+        var propertyNames = Set<String>()
+        for property in decl.properties {
+          property.kind = .property(decl)
+          if propertyNames.contains(property.name.name) {
+            error(SemaError.duplicateField(name: property.name,
+                                           type: decl.type),
+                  loc: property.startLoc,
+                  highlights: [ decl.name.range ])
+            continue
+          }
+          propertyNames.insert(property.name.name)
         }
-        methodNames.insert(mangled)
-      }
-      if context.isCircularType(expr) {
-        error(SemaError.referenceSelfInProp(name: expr.name),
-              loc: expr.startLoc,
-              highlights: [
-                expr.name.range
-          ])
+        var methodNames = Set<String>()
+        for method in decl.methods + decl.staticMethods {
+          let mangled = Mangler.mangle(method)
+          if methodNames.contains(mangled) {
+            error(SemaError.duplicateMethod(name: method.name,
+                                            type: decl.type),
+                  loc: method.startLoc,
+                  highlights: [ decl.name.range ])
+            continue
+          }
+          methodNames.insert(mangled)
+        }
+        if context.isCircularType(decl) {
+          error(SemaError.referenceSelfInProp(name: decl.name),
+                loc: decl.startLoc,
+                highlights: [
+                  decl.name.range
+                ])
+        }
       }
     }
   }
@@ -139,12 +163,15 @@ public class Sema: ASTTransformer, Pass {
   
   public override func withScope(_ e: CompoundStmt, _ f: () -> Void) {
     let oldVarBindings = varBindings
+    let oldEnv = env
     super.withScope(e, f)
+    env = oldEnv
     varBindings = oldVarBindings
   }
   
   public override func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
     super.visitVarAssignDecl(decl)
+
     if let rhs = decl.rhs, decl.has(attribute: .foreign) {
       error(SemaError.foreignVarWithRHS(name: decl.name),
             loc: decl.startLoc,
@@ -152,17 +179,14 @@ public class Sema: ASTTransformer, Pass {
       return
     }
     guard !decl.has(attribute: .foreign) else { return }
-    if let rhs = decl.rhs { context.propagateContextualType(decl.type, to: rhs) }
-    if let type = decl.typeRef?.type {
-      if !context.isValidType(type) {
-        error(SemaError.unknownType(type: type),
-              loc: decl.typeRef!.startLoc,
-              highlights: [
-                decl.typeRef!.sourceRange
-          ])
-        return
-      }
+
+    if let type = solve(decl) {
+      decl.type = type
+      TypePropagator(context: context).visitVarAssignDecl(decl)
+    } else {
+      decl.type = .error
     }
+
     if let fn = currentFunction {
       decl.kind = .local(fn)
     } else if let type = currentType {
@@ -173,26 +197,21 @@ public class Sema: ASTTransformer, Pass {
     
     switch decl.kind {
     case .local, .global:
-      varBindings[decl.name.name] = decl
+      bind(decl.name, to: decl)
     default: break
     }
     
-    if let rhs = decl.rhs, decl.typeRef == nil {
-      let type = rhs.type
-      guard rhs.type != .error else { return }
-      let canRhs = context.canonicalType(type)
+    if let rhs = decl.rhs {
+      let canRhs = context.canonicalType(rhs.type)
       if case .void = canRhs {
-        error(SemaError.incompleteTypeAccess(type: type, operation: "assign value from"),
+        error(SemaError.incompleteTypeAccess(type: canRhs,
+                                             operation: "assign value from"),
               loc: rhs.startLoc,
               highlights: [
                 rhs.sourceRange
           ])
         return
       }
-      
-      decl.type = type
-      decl.typeRef = type.ref()
-      
     }
   }
   
@@ -237,7 +256,7 @@ public class Sema: ASTTransformer, Pass {
       typeDecl.isIndirect {
       decl.mutable = true
     }
-    varBindings[decl.name.name] = decl
+    bind(decl.name, to: decl)
   }
   
   public override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
@@ -278,7 +297,7 @@ public class Sema: ASTTransformer, Pass {
       return .property
     }
     guard let typeDecl = context.decl(for: type) else {
-      error(SemaError.unknownType(type: type.rootType),
+      error(SemaError.unknownType(type: type.elementType),
             loc: expr.startLoc,
             highlights: [
               expr.sourceRange
@@ -312,7 +331,7 @@ public class Sema: ASTTransformer, Pass {
     } else if !candidateMethods.isEmpty {
       if let call = call {
         let resolver = OverloadResolver(context: context,
-                                        environment: ConstraintEnvironment())
+                                        environment: env)
         let solution = resolver.resolve(call, candidates: candidateMethods)
         guard case .resolved(let funcDecl) = solution else {
           diagnoseOverloadFailure(name: expr.name, args: call.args,
@@ -327,6 +346,7 @@ public class Sema: ASTTransformer, Pass {
         expr.type = .function(args: types,
                               returnType: funcDecl.returnType.type,
                               hasVarArgs: funcDecl.hasVarArgs)
+        TypePropagator(context: context).visitFuncCallExpr(call)
         return .method
       } else {
         error(SemaError.ambiguousReference(name: expr.name),
@@ -424,7 +444,9 @@ public class Sema: ASTTransformer, Pass {
   public override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     super.visitSubscriptExpr(expr)
     let type = expr.lhs.type
-    guard type != .error else { return }
+    guard type != .error else {
+      return
+    }
     let diagnose: () -> Void = {
       self.error(SemaError.cannotSubscript(type: type),
                  loc: expr.startLoc,
@@ -432,9 +454,7 @@ public class Sema: ASTTransformer, Pass {
     }
     let elementType: DataType
     switch type {
-    case .pointer(let subtype):
-      elementType = subtype
-    case .array(let element, _):
+    case .pointer(let element), .array(let element, _):
       elementType = element
     default:
       guard let typeDecl = context.decl(for: type),
@@ -443,14 +463,21 @@ public class Sema: ASTTransformer, Pass {
         return
       }
       let resolver = OverloadResolver(context: context,
-                                      environment: ConstraintEnvironment())
+                                      environment: env)
       let resolution = resolver.resolve(expr, candidates: typeDecl.subscripts)
       guard case .resolved(let decl) = resolution else {
-        diagnose()
+        diagnoseOverloadFailure(name: "subscript",
+                                args: expr.args,
+                                resolution: resolution,
+                                loc: expr.startLoc,
+                                highlights: [
+                                  expr.lhs.sourceRange
+                                ])
         return
       }
       elementType = decl.returnType.type
       expr.decl = decl
+      TypePropagator(context: context).visitSubscriptExpr(expr)
     }
     guard elementType != .void else {
       error(SemaError.incompleteTypeAccess(type: elementType, operation: "subscript"),
@@ -490,7 +517,7 @@ public class Sema: ASTTransformer, Pass {
       return
     }
     let candidates = context.functions(named: expr.name)
-    if let decl = varBindings[expr.name.name] ?? context.global(named: expr.name) {
+    if let decl = varBindings[expr.name] ?? context.global(named: expr.name) {
       expr.decl = decl
       expr.type = decl.type
       if let d = decl as? ParamDecl, d.isImplicitSelf {
@@ -610,11 +637,16 @@ public class Sema: ASTTransformer, Pass {
     }
   }
   
+<<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     expr.args.forEach {
       visit($0.val)
+=======
+  override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
+    for arg in expr.args {
+      visit(arg.val)
+>>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
     }
-    
     for arg in expr.args {
       guard arg.val.type != .error else { return }
     }
@@ -648,7 +680,7 @@ public class Sema: ASTTransformer, Pass {
       name = lhs.name
       if let typeDecl = context.decl(for: DataType(name: lhs.name.name)) {
         candidates += typeDecl.initializers as [FuncDecl]
-      } else if let varDecl = varBindings[lhs.name.name] {
+      } else if let varDecl = varBindings[lhs.name] {
         setLHSDecl = { _ in } // override the decl if this is a function variable
         lhs.decl = varDecl
         let type = context.canonicalType(varDecl.type)
@@ -689,7 +721,7 @@ public class Sema: ASTTransformer, Pass {
       return
     }
     let resolver = OverloadResolver(context: context,
-                                    environment: ConstraintEnvironment())
+                                    environment: env)
     let resolution = resolver.resolve(expr, candidates: candidates)
 
     guard case .resolved(let decl) = resolution else {
@@ -703,6 +735,7 @@ public class Sema: ASTTransformer, Pass {
     setLHSDecl(decl)
     expr.decl = decl
     expr.type = decl.returnType.type
+    TypePropagator(context: context).visitFuncCallExpr(expr)
 
     if let lhs = expr.lhs as? PropertyRefExpr {
       if case .immutable(let culprit) = context.mutability(of: lhs),
@@ -781,7 +814,7 @@ public class Sema: ASTTransformer, Pass {
         return
       }
       let resolver = OverloadResolver(context: context,
-                                      environment: ConstraintEnvironment())
+                                      environment: env)
       let fakeInfix = InfixOperatorExpr(op: .equalTo,
                                         lhs: stmt.value,
                                         rhs: c.constant)
@@ -817,36 +850,21 @@ public class Sema: ASTTransformer, Pass {
     super.visitOperatorDecl(decl)
   }
 
+<<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitCoercionExpr(_ expr: CoercionExpr) {
     super.visitCoercionExpr(expr)
+=======
+  override func visitCoercionExpr(_ expr: CoercionExpr) {
+    visit(expr.lhs)
+    visit(expr.rhs)
+>>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
 
-    var lhsType = expr.lhs.type
-    let rhsType = expr.rhs.type
-    guard lhsType != .error, rhsType != .error else { return }
-
-    if context.propagateContextualType(rhsType, to: expr.lhs) {
-      lhsType = rhsType
-    }
-
-    guard context.isValidType(rhsType) else {
-      error(SemaError.unknownType(type: rhsType),
-            loc: expr.rhs.startLoc,
-            highlights: [expr.rhs.sourceRange])
+    guard let solution = solve(expr) else {
       return
     }
-    if !context.canCoerce(lhsType, to: rhsType) {
-      error(SemaError.cannotCoerce(type: lhsType,
-                                   toType: rhsType),
-            loc: expr.asRange?.start,
-            highlights: [
-              expr.lhs.sourceRange,
-              expr.asRange,
-              expr.rhs.sourceRange
-            ])
-      return
-    }
-    expr.type = rhsType
-    return
+
+    expr.type = solution
+    TypePropagator(context: context).visitCoercionExpr(expr)
   }
 
   public override func visitIsExpr(_ expr: IsExpr)  {
@@ -880,22 +898,17 @@ public class Sema: ASTTransformer, Pass {
 
   public override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     super.visitInfixOperatorExpr(expr)
-    var lhsType = expr.lhs.type
-    var rhsType = expr.rhs.type
+    let lhsType = expr.lhs.type
+    let rhsType = expr.rhs.type
     guard lhsType != .error, rhsType != .error else { return }
-    
-    if context.propagateContextualType(rhsType, to: expr.lhs) {
-      lhsType = rhsType
-    } else if context.propagateContextualType(lhsType, to: expr.rhs) {
-      rhsType = lhsType
-    }
 
     let canRhs = context.canonicalType(rhsType)
     
     if expr.op.isAssign {
       expr.type = .void
       if case .void = canRhs {
-        error(SemaError.incompleteTypeAccess(type: canRhs, operation: "assign value from"),
+        error(SemaError.incompleteTypeAccess(type: canRhs,
+                                             operation: "assign value from"),
               loc: expr.rhs.startLoc,
               highlights: [
                 expr.rhs.sourceRange
@@ -912,25 +925,13 @@ public class Sema: ASTTransformer, Pass {
           return
         }
       }
-      let lhsType = expr.lhs.type
-      if expr.rhs is NilExpr, lhsType != .error {
-        guard context.canBeNil(lhsType) else {
-          error(SemaError.nonPointerNil(type: lhsType),
-                loc: expr.lhs.startLoc,
-                highlights: [
-                  expr.lhs.sourceRange,
-                  expr.rhs.sourceRange
-            ])
-          return
-        }
-      }
       if case .assign = expr.op {
         return
       }
     }
     
     let resolver = OverloadResolver(context: context,
-                                    environment: ConstraintEnvironment())
+                                    environment: env)
     let resolution = resolver.resolve(expr)
     let name = Identifier(name: "\(expr.op)")
     guard case .resolved(let decl) = resolution else {
@@ -943,6 +944,8 @@ public class Sema: ASTTransformer, Pass {
       return
     }
     expr.decl = decl
+    TypePropagator(context: context).visitInfixOperatorExpr(expr)
+
     if expr.op.isAssign {
       expr.type = .void
     } else {
@@ -955,6 +958,7 @@ public class Sema: ASTTransformer, Pass {
     expr.type = expr.trueCase.type
   }
   
+<<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitStringExpr(_ expr: StringExpr) {
     super.visitStringExpr(expr)
     if context.isValidType(.string) {
@@ -965,6 +969,9 @@ public class Sema: ASTTransformer, Pass {
   }
   
   public override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+=======
+  override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+>>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
     super.visitStringInterpolationExpr(expr)
     if context.isValidType(.string) {
       expr.type = .string
@@ -999,8 +1006,13 @@ public class Sema: ASTTransformer, Pass {
   
   public override func visitReturnStmt(_ stmt: ReturnStmt) {
     guard let returnType = currentClosure?.returnType!.type ?? currentFunction?.returnType.type else { return }
-    context.propagateContextualType(returnType, to: stmt.value)
     super.visitReturnStmt(stmt)
+    stmt.value.type = returnType
+    guard let solution = solve(stmt) else {
+      return
+    }
+    stmt.value.type = solution
+    TypePropagator(context: context).visit(stmt.value)
   }
   
   public override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
@@ -1047,5 +1059,37 @@ public class Sema: ASTTransformer, Pass {
         return
       }
     }
+  }
+
+  func solve(_ node: ASTNode) -> DataType? {
+    csGen.reset(with: env)
+    csGen.visit(node)
+    do {
+      let solution = try ConstraintSolver(context: context)
+                            .solveSystem(csGen.system)
+      let goal = csGen.goal.substitute(solution.substitutions)
+      if case .typeVariable = goal {
+        return nil
+      }
+      if !context.isValidType(goal) {
+        error(SemaError.unknownType(type: goal),
+              loc: node.startLoc,
+              highlights: [
+                node.sourceRange
+          ])
+        return nil
+      }
+      return goal
+    } catch let err as ConstraintError {
+      error(err, loc: err.constraint.attachedNode?.startLoc,
+            highlights: [
+              err.constraint.attachedNode?.sourceRange
+        ])
+    } catch let err {
+      error(err, loc: node.startLoc, highlights: [
+        node.sourceRange
+        ])
+    }
+    return nil
   }
 }

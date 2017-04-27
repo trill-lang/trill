@@ -166,7 +166,7 @@ public enum Mangler {
       let level = t.pointerLevel()
       if level > 0 {
         s += "P\(level)T"
-        s += mangle(t.rootType, root: false)
+        s += mangle(t.elementType, root: false)
       }
     default:
       s += t.description.withCount

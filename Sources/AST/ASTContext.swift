@@ -317,6 +317,7 @@ public class ASTContext {
     return missing
   }
 
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
   /// - Returns: Whether the expression's type was changed
   @discardableResult
   public func propagateContextualType(_ contextualType: DataType, to expr: Expr) -> Bool {
@@ -395,6 +396,9 @@ public class ASTContext {
   }
 
   public func add(_ funcDecl: FuncDecl) {
+=======
+  func add(_ funcDecl: FuncDecl) {
+>>>>>>> Almost finished overload resolution algorithm:Sources/Base/ASTContext.swift
     functions.append(funcDecl)
 
     if funcDecl.name == "main" {
@@ -916,7 +920,11 @@ fileprivate func makeHomogenousOps(_ op: BuiltinOperator, _ types: [DataType]) -
   return types.map { type in OperatorDecl(op, type, type, type) }
 }
 
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
 fileprivate func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
+=======
+func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
+>>>>>>> Almost finished overload resolution algorithm:Sources/Base/ASTContext.swift
   return types.map { type in OperatorDecl(op, type, type, .bool) }
 }
 

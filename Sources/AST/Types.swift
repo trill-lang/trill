@@ -15,38 +15,100 @@ public enum FloatingPointType {
 }
 
 public enum DataType: CustomStringConvertible, Hashable {
+  /// A signed or unsigned integer type of an arbitrary width.
   case int(width: Int, signed: Bool)
+
+  /// A floating-point type of one of the types specified in `FloatingPointType`
   case floating(type: FloatingPointType)
+
+  /// A boolean value, either true or false.
   case bool
+
+  /// A type representing nothing
   case void
+
+  /// A named structure type.
   case custom(name: String)
+
+  /// A special type that can encompass any value.
   case any
+
+  /// A type variable that must be reified to a concrete type.
   case typeVariable(name: String)
 
   /// The default type. This should not survive past semantic analysis.
   case error
 
+  /// A data type representing a floating-point literal that hasn't been
+  /// resolved to a concrete floating-point type.
+  case floatingLiteral
+
+  /// A data type representing a string literal that hasn't been resolved to
+  /// a concrete String or *Int8 type.
+  case stringLiteral
+
+  /// A data type representing an integer literal that hasn't been resolved to
+  /// a concrete integer type.
+  case integerLiteral
+
+  /// A data type representing a `nil` literal that hasn't been resolved to
+  /// a concrete pointer type.
+  case nilLiteral
+
+  /// A function from <params> -> <returnType>
   indirect case function(args: [DataType], returnType: DataType, hasVarArgs: Bool)
+
+  /// A pointer to a specified type.
   indirect case pointer(type: DataType)
+
+  /// An explicitly-sized array of a given type.
   indirect case array(field: DataType, length: Int?)
+
+  /// A tuple of arbitrary fields.
   indirect case tuple(fields: [DataType])
 
+  /// A 64-bit signed integer type.
   public static let int64 = DataType.int(width: 64, signed: true)
+
+  /// A 32-bit signed integer type.
   public static let int32 = DataType.int(width: 32, signed: true)
+
+  /// A 16-bit signed integer type.
   public static let int16 = DataType.int(width: 16, signed: true)
+
+  /// An 8-bit signed integer type.
   public static let int8 = DataType.int(width: 8, signed: true)
+
+  /// A 64-bit unsigned integer type.
   public static let uint64 = DataType.int(width: 64, signed: false)
+
+  /// A 32-bit unsigned integer type.
   public static let uint32 = DataType.int(width: 32, signed: false)
+
+  /// A 16-bit unsigned integer type.
   public static let uint16 = DataType.int(width: 16, signed: false)
+
+  /// An 8-bit unsigned integer type.
   public static let uint8 = DataType.int(width: 8, signed: false)
+
+  /// A 32-bit floating-point type.
   public static let float = DataType.floating(type: .float)
+
+  /// A 64-bit floating-point type.
   public static let double = DataType.floating(type: .double)
+
+  /// An 80-bit floating-point type.
   public static let float80 = DataType.floating(type: .float80)
+
+  /// An array type with no explicit length.
   public static func incompleteArray(field: DataType) -> DataType {
     return .array(field: field, length: nil)
   }
+
+  /// The standard-library String type.
   public static let string = DataType.custom(name: "String")
 
+  /// Creates a type from a parsed identifier.
   public init(name: String) {
     switch name {
     case "Int8": self = .int8
@@ -67,18 +129,20 @@ public enum DataType: CustomStringConvertible, Hashable {
     }
   }
 
-  public var rootType: DataType {
+  /// If this is a container type of one other type, this returns the
+  /// contained type.
+  public var elementType: DataType {
     switch self {
     case .array(let field, _):
       return field
     case .pointer(let type):
-      return type.rootType
+      return type.elementType
     default:
       return self
     }
   }
 
-  // Occurs
+  /// Determine if a type is cyclically dependent on itself.
   public func contains(_ x: String) -> Bool {
     switch self {
     case let .function(args, returnType, _):
@@ -97,8 +161,13 @@ public enum DataType: CustomStringConvertible, Hashable {
     }
   }
 
+  /// Pretty-prints the receiver.
   public var description: String {
     switch self {
+    case .integerLiteral: return "IntegerLiteral"
+    case .floatingLiteral: return "FloatingLiteral"
+    case .stringLiteral: return "StringLiteral"
+    case .nilLiteral: return "NilLiteral"
     case .int(width: 64, let signed):
       return "\(signed ? "" : "U")Int"
     case .int(let width, let signed):
@@ -232,31 +301,34 @@ public enum DataType: CustomStringConvertible, Hashable {
       fatalError()
     }
   }
-}
 
-public func ==(lhs: DataType, rhs: DataType) -> Bool {
-  switch (lhs, rhs) {
-  case (.int(let width, let signed), .int(let otherWidth, let otherSigned)):
-    return width == otherWidth && signed == otherSigned
-  case (.bool, .bool): return true
-  case (.void, .void): return true
-  case (.custom(let lhsName), .custom(let rhsName)):
-    return lhsName == rhsName
-  case (.pointer(let lhsType), .pointer(let rhsType)):
-    return lhsType == rhsType
-  case (.floating(let double), .floating(let rhsDouble)):
-    return double == rhsDouble
-  case (.any, .any): return true
-  case (.array(let field, _), .array(let field2, _)):
-    return field == field2
-  case (.function(let args, let ret, let hasVarArgs),
-        .function(let args2, let ret2, let hasVarArgs2)):
-    return args == args2 && ret == ret2 && hasVarArgs == hasVarArgs2
-  case (.tuple(let fields), .tuple(let fields2)):
-    return fields == fields2
-  case (.typeVariable(let name1), .typeVariable(let name2)):
-    return name1 == name2
-  default: return false
+  public static func ==(lhs: DataType, rhs: DataType) -> Bool {
+    switch (lhs, rhs) {
+    case (.integerLiteral, .integerLiteral): return true
+    case (.floatingLiteral, .floatingLiteral): return true
+    case (.stringLiteral, .stringLiteral): return true
+    case (.int(let width, let signed), .int(let otherWidth, let otherSigned)):
+      return width == otherWidth && signed == otherSigned
+    case (.bool, .bool): return true
+    case (.void, .void): return true
+    case (.custom(let lhsName), .custom(let rhsName)):
+      return lhsName == rhsName
+    case (.pointer(let lhsType), .pointer(let rhsType)):
+      return lhsType == rhsType
+    case (.floating(let double), .floating(let rhsDouble)):
+      return double == rhsDouble
+    case (.any, .any): return true
+    case (.array(let field, _), .array(let field2, _)):
+      return field == field2
+    case (.function(let args, let ret, let hasVarArgs),
+          .function(let args2, let ret2, let hasVarArgs2)):
+      return args == args2 && ret == ret2 && hasVarArgs == hasVarArgs2
+    case (.tuple(let fields), .tuple(let fields2)):
+      return fields == fields2
+    case (.typeVariable(let name1), .typeVariable(let name2)):
+      return name1 == name2
+    default: return false
+    }
   }
 }
 

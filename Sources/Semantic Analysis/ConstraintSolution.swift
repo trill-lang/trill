@@ -14,6 +14,9 @@ enum CoercionKind: Int {
   /// An explicit type variable has been reified to a concrete type.
   case genericPromotion
 
+  /// A stirng literal has been promoted to *Int8.
+  case stringLiteralPromotion
+
   /// A numeric literal has been promoted to another Integer or Floating Point
   /// type.
   case numericLiteralPromotion
@@ -26,7 +29,8 @@ enum CoercionKind: Int {
 
   /// The severities of each coercion kind, in order.
   static var rankedSeverities: [CoercionKind] {
-    return [.anyPromotion, .genericPromotion, .numericLiteralPromotion]
+    return [.anyPromotion, .genericPromotion,
+            .stringLiteralPromotion, .numericLiteralPromotion]
   }
 }
 
@@ -64,5 +68,21 @@ struct ConstraintSolution {
   /// Binds the type variable name provided to the concrete type provided.
   mutating func bind(_ name: String, to type: DataType) {
     substitutions[name] = type
+  }
+
+  func dump() {
+    print("\n|======= Constraint Solution =======")
+    print("|  =====     Constraints     =====")
+    system.dump()
+
+    print("|  =====    Substitutions    =====")
+    for (variable, substitution) in substitutions {
+      print("|    $\(variable) : \(substitution)")
+    }
+    print("|  =====     Punishments     =====")
+    for (kind, count) in punishments {
+      print("|    \(kind) x \(count)")
+    }
+    print("|===== End Constraint Solution =====\n")
   }
 }

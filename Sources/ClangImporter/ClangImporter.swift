@@ -451,7 +451,9 @@ public final class ClangImporter: Pass {
       stringExpr.type = .pointer(type: .int8)
       return stringExpr
     case .number(let value, let raw):
-      return NumExpr(value: value, raw: raw, sourceRange: range)
+      let expr = NumExpr(value: value, raw: raw, sourceRange: range)
+      expr.type = .int64
+      return expr
     case .identifier(let name):
       return try simpleParseIntegerLiteralToken(name) ?? VarExpr(name: Identifier(name: name, range: range), sourceRange: range)
     default:
