@@ -52,7 +52,7 @@ public enum DataType: CustomStringConvertible, Hashable {
   case integerLiteral
 
   /// A data type representing a `nil` literal that hasn't been resolved to
-  /// a concrete pointer type.
+  /// an `indirect` or reference type.
   case nilLiteral
 
   /// A function from <params> -> <returnType>

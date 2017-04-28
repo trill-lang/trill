@@ -142,6 +142,10 @@ struct ConstraintSolver {
         // Punish promotions from String to *Int8
         solution.punish(.stringLiteralPromotion)
         return solution
+      case (.nilLiteral, .nilLiteral):
+        // Assigning `nil` without context is ambiguous, always.
+        throw ConstraintError(constraint: c,
+                              kind: .ambiguousExpressionType)
 
       case (.stringLiteral, DataType.string),
            (DataType.string, .stringLiteral):

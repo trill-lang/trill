@@ -132,9 +132,10 @@ struct OverloadResolver {
     }
 
     return resolve(args, candidates: candidates) { candidate in
-      infix.decl = candidate
+      infix.decl = candidate; defer {
+        infix.decl = nil
+      }
       csGen.visitInfixOperatorExpr(infix)
-      infix.decl = nil
     }
   }
 
@@ -152,9 +153,10 @@ struct OverloadResolver {
     let candidates = context.operators(for: associated)
 
     return resolve(args, candidates: candidates) { candidate in
-      assign.decl = candidate
+      assign.decl = candidate; defer {
+        assign.decl = nil
+      }
       csGen.visitAssignStmt(assign)
-      assign.decl = nil
     }
   }
 
