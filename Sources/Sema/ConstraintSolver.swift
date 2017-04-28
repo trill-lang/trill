@@ -121,13 +121,21 @@ struct ConstraintSolver {
                               node: c.attachedNode,
                               caller: c.location)
 
+        // Don't propagate the error from the sub-solution directly, because
+        // that makes the error needlessly specific. Generate a new error.
         do {
           return try solveSystem(system)
         } catch {
           break
         }
       case let (.pointer(t1), .pointer(t2)):
-        return try solveSingle(c.withKind(.equal(t1, t2)))
+        // Don't propagate the error from the sub-solution directly, because
+        // that makes the error needlessly specific. Generate a new error.
+        do {
+          return try solveSingle(c.withKind(.equal(t1, t2)))
+        } catch {
+          break
+        }
       case (.stringLiteral, .pointer(type: DataType.int8)),
            (.pointer(type: DataType.int8), .stringLiteral):
 

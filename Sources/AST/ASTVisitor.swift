@@ -96,6 +96,8 @@ public protocol ASTVisitor {
   @discardableResult
   func visitCaseStmt(_ expr: CaseStmt) -> Result
   @discardableResult
+  func visitAssignStmt(_ stmt: AssignStmt) -> Result
+  @discardableResult
   func visitExprStmt(_ expr: ExprStmt) -> Result
   @discardableResult
   func visitDeclStmt(_ expr: DeclStmt) -> Result
@@ -167,6 +169,8 @@ extension ASTVisitor {
       return visitContinueStmt(stmt)
     case let stmt as CompoundStmt:
       return visitCompoundStmt(stmt)
+    case let stmt as AssignStmt:
+      return visitAssignStmt(stmt)
     case let stmt as WhileStmt:
       return visitWhileStmt(stmt)
     case let stmt as ForStmt:

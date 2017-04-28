@@ -247,6 +247,11 @@ open class ASTTransformer: ASTVisitor {
     _ = stmt.elseBody.map(visit)
   }
 
+  open func visitAssignStmt(_ stmt: AssignStmt) {
+    visit(stmt.lhs)
+    visit(stmt.rhs)
+  }
+
   open func visitTernaryExpr(_ expr: TernaryExpr) {
     visit(expr.condition)
     visit(expr.trueCase)

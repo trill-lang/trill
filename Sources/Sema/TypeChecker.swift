@@ -83,62 +83,31 @@ public class TypeChecker: ASTTransformer, Pass {
   public var title: String {
     return "Type Checking"
   }
-  
-  func ensureTypesAndLabelsMatch(_ expr: FuncCallExpr, decl: FuncDecl) {
-    let precondition: Bool
-    var declArgs = decl.args
-    
-    if let first = declArgs.first, first.isImplicitSelf {
-      declArgs.removeFirst()
+
+  override func visitFloatExpr(_ expr: FloatExpr) {
+    // If a FloatingLiteral has survived this far, reify it.
+    if case .floatingLiteral = expr.type {
+      expr.type = expr.type.literalFallback
     }
-    if decl.hasVarArgs {
-      precondition = declArgs.count <= expr.args.count
-    } else {
-      precondition = declArgs.count == expr.args.count
-    }
-    if !precondition {
-      let name = Identifier(name: "\(expr)")
-      error(TypeCheckError.arityMismatch(name: name,
-                                         gotCount: expr.args.count,
-                                         expectedCount: declArgs.count),
-            loc: expr.startLoc)
-      return
-    }
-    for (arg, val) in zip(declArgs, expr.args) {
-      if let externalName = arg.externalName {
-        guard let label = val.label else {
-          error(TypeCheckError.missingArgumentLabel(expected: externalName),
-                loc: val.val.startLoc)
-          continue
-        }
-        if label.name != externalName.name {
-          error(TypeCheckError.incorrectArgumentLabel(got: label, expected: externalName),
-                loc: val.val.startLoc,
-                highlights: [
-                  val.val.sourceRange
-            ])
-        }
-      } else if let label = val.label {
-        error(TypeCheckError.extraArgumentLabel(got: label),
-              loc: val.val.startLoc)
-      }
-      let type = val.val.type
-      var argType = arg.type
-      if arg.isImplicitSelf {
-        argType = argType.elementType
-      }
-      if !matches(argType, .any) && !matches(type, argType) {
-        error(TypeCheckError.typeMismatch(expected: argType, got: type),
-              loc: val.val.startLoc,
-              highlights: [
-                val.val.sourceRange
-          ])
-      }
+  }
+
+  override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
+    super.visitStringInterpolationExpr(expr)
+  }
+
+  override func visitStringExpr(_ expr: StringExpr) {
+    // If a StringLiteral has survived this far, reify it.
+    if case .stringLiteral = expr.type {
+      expr.type = expr.type.literalFallback
     }
   }
   
   public override func visitNumExpr(_ expr: NumExpr) {
-    func bounds(width: Int, signed: Bool) -> (lower: Int64, upper: UInt64) {
+    // If an IntegerLiteral has survived this far, reify it.
+    if case .integerLiteral = expr.type {
+      expr.type = expr.type.literalFallback
+    }
+    func bounds(width: Int, signed: Bool) -> (lower: IntMax, upper: UIntMax) {
         assert(width % 2 == 0, "width must be an even number")
         assert(width <= 64, "the maximum width is 64 bits")
         assert(width > 0, "width cannot be negative")
@@ -239,7 +208,6 @@ public class TypeChecker: ASTTransformer, Pass {
     super.visitReturnStmt(stmt)
   }
 
-<<<<<<< HEAD:Sources/Sema/TypeChecker.swift
   public override func visitFuncDecl(_ decl: FuncDecl) {
     self.withScope {
       for pd in decl.args {
@@ -250,16 +218,10 @@ public class TypeChecker: ASTTransformer, Pass {
   }
 
   public override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
-    guard let decl = expr.decl,
-          let type = solve(expr) else { return }
-    expr.type = type
-=======
-  override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     guard let decl = expr.decl else { return }
->>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/TypeChecker.swift
     ensureTypesAndLabelsMatch(expr, decl: decl)
   }
-  
+
   public override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     let condType = expr.condition.type
     let trueType = expr.trueCase.type
@@ -275,55 +237,44 @@ public class TypeChecker: ASTTransformer, Pass {
     }
     super.visitTernaryExpr(expr)
   }
-  
-  public override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
-    let lhsType = expr.lhs.type
-    let rhsType = expr.rhs.type
+
+  override func visitAssignStmt(_ stmt: AssignStmt) {
+    super.visitAssignStmt(stmt)
+    let lhsType = stmt.lhs.type
+    let rhsType = stmt.rhs.type
     guard lhsType != .error, rhsType != .error else { return }
-    if expr.op.isAssign {
-      // thrown from sema
-      if case .assign = expr.op {
-        if case .any = context.canonicalType(rhsType),
-           context.canonicalType(lhsType) != .any {
-          error(TypeCheckError.cannotDowncastFromAny(type: lhsType),
-                loc: expr.opRange?.start,
-                highlights: [
-                  expr.lhs.sourceRange,
-                  expr.rhs.sourceRange
-            ])
-          note(TypeCheckError.addExplicitCast(to: lhsType))
-        }
+    // thrown from sema
+    if let associated = stmt.associatedOp {
+      if stmt.decl == nil {
+        error(TypeCheckError.invalidBinOpArgs(op: associated, lhs: lhsType, rhs: rhsType),
+              loc: stmt.startLoc,
+              highlights: [
+                stmt.lhs.sourceRange
+          ])
+        return
       }
-    } else if expr.decl == nil  {
-      error(TypeCheckError.invalidBinOpArgs(op: expr.op, lhs: lhsType, rhs: rhsType),
-            loc: expr.startLoc,
-            highlights: [
-              expr.lhs.sourceRange
-        ])
-      return
-    } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
-      let num = expr.rhs as? NumExpr,
-      case .int(let width, _) = expr.type,
-      num.value >= Int64(width) {
-      error(TypeCheckError.shiftPastBitWidth(type: expr.type, shiftWidth: num.value),
-            loc: num.startLoc,
-            highlights: [
-              num.sourceRange
-        ])
-      return
+      if [.leftShift, .rightShift].contains(associated),
+        let num = stmt.rhs.semanticsProvidingExpr as? NumExpr,
+        case .int(let width, _) = context.canonicalType(stmt.lhs.type),
+        num.value >= IntMax(width) {
+        error(TypeCheckError.shiftPastBitWidth(type: stmt.lhs.type, shiftWidth: num.value),
+              loc: num.startLoc,
+              highlights: [
+                num.sourceRange
+          ])
+        return
+      }
+    } else {
+      if case .any = context.canonicalType(rhsType),
+        context.canonicalType(lhsType) != .any {
+        error(TypeCheckError.cannotDowncastFromAny(type: lhsType),
+              loc: stmt.rhs.startLoc,
+              highlights: [
+                stmt.lhs.sourceRange,
+                stmt.rhs.sourceRange
+          ])
+        note(TypeCheckError.addExplicitCast(to: lhsType))
+      }
     }
-  }
-  
-  public override func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
-    switch expr.lhs.type {
-    case .pointer(let subtype):
-      ensureTypesAndLabelsMatch(expr, decl: context.implicitDecl(args: [.int64], ret: subtype))
-    case .array(let subtype, _):
-      ensureTypesAndLabelsMatch(expr, decl: context.implicitDecl(args: [.int64], ret: subtype))
-    default:
-      guard let decl = expr.decl else { return }
-      ensureTypesAndLabelsMatch(expr, decl: decl)
-    }
-    super.visitSubscriptExpr(expr)
   }
 }

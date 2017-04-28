@@ -47,3 +47,44 @@ public enum DeclModifier: String {
     }
   }
 }
+
+class VarAssignDecl: Decl {
+  let rhs: Expr?
+  let name: Identifier
+  var typeRef: TypeRefExpr?
+  var kind: VarKind
+  var mutable: Bool
+  init?(name: Identifier,
+        typeRef: TypeRefExpr?,
+        kind: VarKind = .global,
+        rhs: Expr? = nil,
+        modifiers: [DeclModifier] = [],
+        mutable: Bool = true,
+        sourceRange: SourceRange? = nil) {
+    guard rhs != nil || typeRef != nil else { return nil }
+    self.rhs = rhs
+    self.typeRef = typeRef
+    self.mutable = mutable
+    self.name = name
+    self.kind = kind
+    super.init(type: typeRef?.type ?? .void,
+               modifiers: modifiers,
+               sourceRange: sourceRange)
+  }
+
+  override func attributes() -> [String : Any] {
+    var superAttrs = super.attributes()
+    superAttrs["type"] = typeRef?.type.description
+    superAttrs["name"] = name.name
+    superAttrs["kind"] = {
+      switch kind {
+      case .local: return "local"
+      case .global: return "global"
+      case .implicitSelf: return "implicit_self"
+      case .property: return "property"
+      }
+    }()
+    superAttrs["mutable"] = mutable
+    return superAttrs
+  }
+}

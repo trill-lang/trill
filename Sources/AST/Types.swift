@@ -161,6 +161,21 @@ public enum DataType: CustomStringConvertible, Hashable {
     }
   }
 
+  /// The type that a Literal type should fall back to if it doesn't
+  /// get replaced by context.
+  var literalFallback: DataType {
+    switch self {
+    case .integerLiteral:
+      return .int64
+    case .floatingLiteral:
+      return .double
+    case .stringLiteral:
+      return .string
+    default:
+      return self
+    }
+  }
+
   /// Pretty-prints the receiver.
   public var description: String {
     switch self {
@@ -213,6 +228,11 @@ public enum DataType: CustomStringConvertible, Hashable {
 
   public var isPointer: Bool {
     if case .pointer = self { return true }
+    return false
+  }
+
+  public var isFunction: Bool {
+    if case .function = self { return true }
     return false
   }
 

@@ -14,13 +14,46 @@ public enum Associativity {
   case left, right, none
 }
 
+public enum AssignOperator: String, CustomStringConvertible {
+  case assign = "="
+  case plusAssign = "+="
+  case minusAssign = "-="
+  case timesAssign = "*="
+  case divideAssign = "/="
+  case modAssign = "%="
+  case andAssign = "&="
+  case orAssign = "|="
+  case xorAssign = "^="
+  case rightShiftAssign = ">>="
+  case leftShiftAssign = "<<="
+
+  /// The operator associated with this assignment.
+  /// For example, the `+=` operator is associated with `+`.
+  public var associatedOp: BuiltinOperator? {
+    switch self {
+    case .modAssign: return .mod
+    case .plusAssign: return .plus
+    case .timesAssign: return .star
+    case .divideAssign: return .divide
+    case .minusAssign: return .minus
+    case .leftShiftAssign: return .leftShift
+    case .rightShiftAssign: return .rightShift
+    case .andAssign: return .and
+    case .orAssign: return .or
+    case .xorAssign: return .xor
+    default: return nil
+    }
+  }
+
+  public var description: String { return self.rawValue }
+}
+
 public enum BuiltinOperator: String, CustomStringConvertible {
   case plus = "+"
   case minus = "-"
   case star = "*"
   case divide = "/"
   case mod = "%"
-  case assign = "="
   case equalTo = "=="
   case notEqualTo = "!="
   case lessThan = "<"
@@ -36,16 +69,6 @@ public enum BuiltinOperator: String, CustomStringConvertible {
   case bitwiseNot = "~"
   case leftShift = "<<"
   case rightShift = ">>"
-  case plusAssign = "+="
-  case minusAssign = "-="
-  case timesAssign = "*="
-  case divideAssign = "/="
-  case modAssign = "%="
-  case andAssign = "&="
-  case orAssign = "|="
-  case xorAssign = "^="
-  case rightShiftAssign = ">>="
-  case leftShiftAssign = "<<="
 
   public var isPrefix: Bool {
     return self == .bitwiseNot || self == .not ||
@@ -55,30 +78,6 @@ public enum BuiltinOperator: String, CustomStringConvertible {
 
   public var isInfix: Bool {
     return self != .bitwiseNot && self != .not
-  }
-
-  public var isCompoundAssign: Bool {
-    return self.associatedOp != nil
-  }
-
-  public var isAssign: Bool {
-    return self.isCompoundAssign || self == .assign
-  }
-
-  public var associatedOp: BuiltinOperator? {
-    switch self {
-    case .modAssign: return .mod
-    case .plusAssign: return .plus
-    case .timesAssign: return .star
-    case .divideAssign: return .divide
-    case .minusAssign: return .minus
-    case .leftShiftAssign: return .leftShift
-    case .rightShiftAssign: return .rightShift
-    case .andAssign: return .and
-    case .orAssign: return .or
-    case .xorAssign: return .xor
-    default: return nil
-    }
   }
 
   public var infixPrecedence: Int {
@@ -106,18 +105,6 @@ public enum BuiltinOperator: String, CustomStringConvertible {
 
     case .and: return 120
     case .or: return 110
-
-    case .assign: return 90
-    case .plusAssign: return 90
-    case .minusAssign: return 90
-    case .timesAssign: return 90
-    case .divideAssign: return 90
-    case .modAssign: return 90
-    case .andAssign: return 90
-    case .orAssign: return 90
-    case .xorAssign: return 90
-    case .rightShiftAssign: return 90
-    case .leftShiftAssign: return 90
 
     // prefix-only
     case .not: return 999

@@ -14,11 +14,11 @@ import Foundation
 extension Parser {
   /// While Expression
   ///
-  /// while <val-expr> <braced-expr-block>
+  /// while <expr> <braced-expr-block>
   func parseWhileExpr() throws -> WhileStmt {
     try consume(.while)
     let startLoc = sourceLoc
-    let condition = try parseValExpr()
+    let condition = try parseExpr()
     let body = try parseCompoundStmt()
     return WhileStmt(condition: condition, body: body,
                      sourceRange: range(start: startLoc))
@@ -38,7 +38,7 @@ extension Parser {
     if case .semicolon = peek() {
       consumeToken()
     } else  {
-      condition = try parseValExpr()
+      condition = try parseExpr()
       try consumeAtLeastOneLineSeparator()
     }
     var incrementer: Stmt? = nil
@@ -58,7 +58,7 @@ extension Parser {
   func parseSwitchExpr() throws -> SwitchStmt {
     let startLoc = sourceLoc
     try consume(.switch)
-    let comparator = try parseValExpr()
+    let comparator = try parseExpr()
     let terminators: [TokenKind] = [.default, .case, .rightBrace]
     try consume(.leftBrace)
     var cases = [CaseStmt]()
@@ -66,7 +66,7 @@ extension Parser {
     while true {
       if case .case = peek() {
         let tok = consumeToken()
-        let expr = try parseValExpr()
+        let expr = try parseExpr()
         let caseRange = range(start: tok.range.start)
         try consume(.colon)
         let bodyStmts = try parseStatements(terminators: terminators)
@@ -121,11 +121,11 @@ extension Parser {
   
   /// If Expression
   ///
-  /// if <val-expr> <braced-expr-block>
+  /// if <expr> <braced-expr-block>
   func parseIfExpr() throws -> IfStmt {
     let startLoc = sourceLoc
     try consume(.if)
-    var blocks = [(try parseValExpr(), try parseCompoundStmt())]
+    var blocks = [(try parseExpr(), try parseCompoundStmt())]
     let elseBody: CompoundStmt?
     if case .else = peek() {
       consumeToken()
@@ -145,7 +145,7 @@ extension Parser {
   
   /// Return Expression
   ///
-  /// return <val-expr>
+  /// return <expr>
   func parseReturnStmt() throws -> ReturnStmt {
     let startLoc = sourceLoc
     guard case .return = peek() else {
@@ -159,7 +159,7 @@ extension Parser {
     if isAtEndOfBlock || comesAfterLineSeparator() {
       val = VoidExpr()
     } else {
-      val = try parseValExpr()
+      val = try parseExpr()
     }
     return ReturnStmt(value: val, sourceRange: range(start: startLoc))
   }
@@ -190,8 +190,8 @@ extension Parser {
   
   /// Var Assign Decl
   ///
-  /// <var-assign-expr> ::= var <identifier> = <val-expr>
-  ///                     | let <identifier> = <val-expr>
+  /// <var-assign-expr> ::= var <identifier> = <expr>
+  ///                     | let <identifier> = <expr>
   func parseVarAssignDecl(modifiers: [DeclModifier] = []) throws -> VarAssignDecl {
     let startLoc = sourceLoc
     let mutable: Bool
@@ -210,9 +210,9 @@ extension Parser {
       consumeToken()
       type = try parseType()
     }
-    if case .operator(op: .assign) = peek() {
+    if case .assignOperator(op: .assign) = peek() {
       consumeToken()
-      rhs = try parseValExpr()
+      rhs = try parseExpr()
     }
     guard rhs != nil || type != nil else {
       throw unexpectedToken()

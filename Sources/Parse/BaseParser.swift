@@ -383,7 +383,12 @@ public class Parser {
     case .poundError, .poundWarning:
       return try parsePoundDiagnosticExpr()
     default:
-      return ExprStmt(expr: try parseValExpr())
+      switch try parseExprOrAssign() {
+      case .left(let expr):
+        return ExprStmt(expr: expr)
+      case .right(let assign):
+        return assign
+      }
     }
   }
 }

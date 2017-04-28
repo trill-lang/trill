@@ -14,11 +14,8 @@ enum FieldKind {
   case method, staticMethod, property
 }
 
-<<<<<<< HEAD:Sources/Sema/Sema.swift
 public class Sema: ASTTransformer, Pass {
   var varBindings = [String: VarAssignDecl]()
-=======
-class Sema: ASTTransformer, Pass {
   var varBindings = [Identifier: VarAssignDecl]()
   let csGen: ConstraintGenerator
   var env: ConstraintEnvironment
@@ -28,7 +25,6 @@ class Sema: ASTTransformer, Pass {
     self.csGen = ConstraintGenerator(context: context)
     super.init(context: context)
   }
->>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
   
   public var title: String {
     return "Semantic Analysis"
@@ -377,12 +373,18 @@ class Sema: ASTTransformer, Pass {
     case .ambiguity(let decls):
       error(SemaError.ambiguousReference(name: name),
             loc: loc, highlights: highlights)
-      note(SemaError.candidates(decls))
+      addNotesForRejections(decls)
     case .noMatchingCandidates(let decls):
       error(SemaError.noViableOverload(name: name, args: args),
             loc: loc, highlights: highlights)
-      note(SemaError.candidates(decls))
+      addNotesForRejections(decls)
     }
+  }
+
+  func addNotesForRejections<DeclType: FuncDecl>(_ rejections: [OverloadRejection<DeclType>]) {
+    // FIXME: Be more intelligent when generating errors and
+    //        include the reasons passed in.
+    note(SemaError.candidates(rejections.map { $0.candidate }))
   }
   
   public override func visitArrayExpr(_ expr: ArrayExpr) {
@@ -476,6 +478,7 @@ class Sema: ASTTransformer, Pass {
         return
       }
       elementType = decl.returnType.type
+      expr.type = elementType
       expr.decl = decl
       TypePropagator(context: context).visitSubscriptExpr(expr)
     }
@@ -513,7 +516,7 @@ class Sema: ASTTransformer, Pass {
                                 typeRef: fn.returnType,
                                 kind: .implicitSelf(fn, currentType!))
       expr.isSelf = true
-      expr.type = fn.returnType.type
+      expr.type = currentType!.type
       return
     }
     let candidates = context.functions(named: expr.name)
@@ -639,13 +642,8 @@ class Sema: ASTTransformer, Pass {
   
 <<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
-    expr.args.forEach {
-      visit($0.val)
-=======
-  override func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     for arg in expr.args {
       visit(arg.val)
->>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
     }
     for arg in expr.args {
       guard arg.val.type != .error else { return }
@@ -838,26 +836,11 @@ class Sema: ASTTransformer, Pass {
             ])
       return
     }
-    guard !decl.op.isAssign else {
-      let type = decl.op.isCompoundAssign ? "compound-assignment" : "assignment"
-      error(SemaError.cannotOverloadOperator(op: decl.op, type: type),
-            loc: decl.opRange?.start,
-            highlights: [
-              decl.opRange
-            ])
-      return
-    }
     super.visitOperatorDecl(decl)
   }
 
-<<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitCoercionExpr(_ expr: CoercionExpr) {
     super.visitCoercionExpr(expr)
-=======
-  override func visitCoercionExpr(_ expr: CoercionExpr) {
-    visit(expr.lhs)
-    visit(expr.rhs)
->>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
 
     guard let solution = solve(expr) else {
       return
@@ -896,26 +879,35 @@ class Sema: ASTTransformer, Pass {
     return
   }
 
-  public override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
-    super.visitInfixOperatorExpr(expr)
-    let lhsType = expr.lhs.type
-    let rhsType = expr.rhs.type
-    guard lhsType != .error, rhsType != .error else { return }
+  override func visitAssignStmt(_ stmt: AssignStmt) {
+    super.visitAssignStmt(stmt)
+    if let associated = stmt.associatedOp {
+      let resolver = OverloadResolver(context: context, environment: env)
+      let resolution = resolver.resolve(stmt)
+      let name = Identifier(name: "\(associated)")
+      guard case .resolved(let decl) = resolution else {
+        diagnoseOverloadFailure(name: name, args: [
+          Argument(val: stmt.lhs),
+          Argument(val: stmt.rhs)
+        ], resolution: resolution, loc: stmt.opRange?.start, highlights: [
+            stmt.opRange, stmt.lhs.sourceRange, stmt.rhs.sourceRange
+        ])
+        return
+      }
+      stmt.decl = decl
+    } else {
+      let canRhs = context.canonicalType(stmt.rhs.type)
 
-    let canRhs = context.canonicalType(rhsType)
-    
-    if expr.op.isAssign {
-      expr.type = .void
       if case .void = canRhs {
         error(SemaError.incompleteTypeAccess(type: canRhs,
                                              operation: "assign value from"),
-              loc: expr.rhs.startLoc,
+              loc: stmt.rhs.startLoc,
               highlights: [
-                expr.rhs.sourceRange
-              ])
+                stmt.rhs.sourceRange
+          ])
         return
       }
-      if case .immutable(let name) = context.mutability(of: expr.lhs) {
+      if case .immutable(let name) = context.mutability(of: stmt.lhs) {
         if currentFunction == nil || !(currentFunction! is InitializerDecl) {
           error(SemaError.assignToConstant(name: name),
                 loc: name?.range?.start,
@@ -925,10 +917,16 @@ class Sema: ASTTransformer, Pass {
           return
         }
       }
-      if case .assign = expr.op {
-        return
-      }
     }
+
+    TypePropagator(context: context).visitAssignStmt(stmt)
+  }
+
+  override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
+    super.visitInfixOperatorExpr(expr)
+    let lhsType = expr.lhs.type
+    let rhsType = expr.rhs.type
+    guard lhsType != .error, rhsType != .error else { return }
     
     let resolver = OverloadResolver(context: context,
                                     environment: env)
@@ -944,13 +942,8 @@ class Sema: ASTTransformer, Pass {
       return
     }
     expr.decl = decl
+    expr.type = decl.returnType.type
     TypePropagator(context: context).visitInfixOperatorExpr(expr)
-
-    if expr.op.isAssign {
-      expr.type = .void
-    } else {
-      expr.type = decl.returnType.type
-    }
   }
 
   public override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
@@ -958,7 +951,6 @@ class Sema: ASTTransformer, Pass {
     expr.type = expr.trueCase.type
   }
   
-<<<<<<< HEAD:Sources/Sema/Sema.swift
   public override func visitStringExpr(_ expr: StringExpr) {
     super.visitStringExpr(expr)
     if context.isValidType(.string) {
@@ -969,9 +961,6 @@ class Sema: ASTTransformer, Pass {
   }
   
   public override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
-=======
-  override func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) {
->>>>>>> Almost finished overload resolution algorithm:Sources/Semantic Analysis/Sema.swift
     super.visitStringInterpolationExpr(expr)
     if context.isValidType(.string) {
       expr.type = .string
@@ -1017,18 +1006,10 @@ class Sema: ASTTransformer, Pass {
   
   public override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
     super.visitPrefixOperatorExpr(expr)
-    let rhsType = expr.rhs.type
-    guard rhsType != .error else { return }
-    guard let exprType = expr.typeForArgType(context.canonicalType(rhsType)) else {
-      error(SemaError.invalidOperands(op: expr.op, invalid: rhsType),
-            loc: expr.opRange?.start,
-            highlights: [
-              expr.opRange,
-              expr.rhs.sourceRange
-            ])
-      return
-    }
-    expr.type = exprType
+    guard let solution = solve(expr) else { return }
+    expr.type = solution
+    TypePropagator(context: context).visitPrefixOperatorExpr(expr)
+    let rhsType = context.canonicalType(expr.rhs.type)
     if expr.op == .star {
       guard case .pointer(let subtype) = rhsType else {
         error(SemaError.dereferenceNonPointer(type: rhsType),
@@ -1049,7 +1030,7 @@ class Sema: ASTTransformer, Pass {
       }
     }
     if expr.op == .ampersand {
-      guard expr.rhs is LValue else {
+      guard expr.rhs.semanticsProvidingExpr is LValue else {
         error(SemaError.addressOfRValue,
               loc: expr.opRange?.start,
               highlights: [

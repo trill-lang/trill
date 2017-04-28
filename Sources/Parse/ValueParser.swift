@@ -13,15 +13,24 @@ import Foundation
 import Source
 
 extension Parser {
+
+  func parseExprOrAssign() throws -> Either<Expr, AssignStmt> {
+    let startLoc = sourceLoc
+    let expr = try parseExpr()
+    if case .assignOperator(let op) = peek() {
+      let opToken = consumeToken()
+      let rhs = try parseExpr()
+      return .right(AssignStmt(lhs: expr,
+                               rhs: rhs,
+                               associatedOp: op.associatedOp,
+                               opRange: opToken.range,
+                               sourceRange: range(start: startLoc)))
+    }
+    return .left(expr)
+  }
   
-  /// Value Expression
-  ///
-  /// val-expr ::= <identifier>[. <identifier>]
-  ///            | <val-expr><func-call-args>
-  ///            | <op><val-expr> | <val-expr> <op> <val-expr>
-  ///            | <val-expr> [ <num> ]
-  ///            |
-  func parseValExpr() throws -> Expr {
+  /// Parses one of the kinds of expressions or assignment statements.
+  func parseExpr() throws -> Expr {
     var valExpr: Expr? = nil
     let startLoc = sourceLoc
     
@@ -30,7 +39,7 @@ extension Parser {
     case .operator(let op) where op.isPrefix:
       let opRange = currentToken().range
       consumeToken()
-      let val = try parseValExpr()
+      let val = try parseExpr()
       if let num = val as? NumExpr, op == .minus {
         return NumExpr(value: -num.value,
                        raw: "-" + num.raw,
@@ -50,7 +59,7 @@ extension Parser {
                                 sourceRange: range(start: startLoc))
     case .leftParen:
       consumeToken()
-      let val = try parseValExpr()
+      let val = try parseExpr()
       switch peek() {
       case .rightParen:
         consumeToken()
@@ -59,7 +68,7 @@ extension Parser {
         var fields = [val]
         consumeToken()
         while true {
-          fields.append(try parseValExpr())
+          fields.append(try parseExpr())
           if case .rightParen = peek() { break }
           try consume(.comma)
         }
@@ -72,7 +81,7 @@ extension Parser {
       consumeToken()
       var values = [Expr]()
       while peek() != .rightBracket {
-        values.append(try parseValExpr())
+        values.append(try parseExpr())
         if peek() != .rightBracket {
           try consume(.comma)
         }
@@ -121,8 +130,8 @@ extension Parser {
     case .stringInterpolationLiteral(let segments):
       consumeToken()
       let segmentExprs = try segments.map { tokens -> Expr in
-        let parser = Parser(tokens: tokens, file: file, context: context)
-        return try parser.parseValExpr()
+        let parser = Parser(tokens: tokens, filename: filename, context: context)
+        return try parser.parseExpr()
       }
       valExpr = StringInterpolationExpr(
         segments: segmentExprs,
@@ -143,7 +152,7 @@ extension Parser {
         expectRightParen = true
         consumeToken()
       }
-      valExpr = SizeofExpr(value: try parseValExpr(),
+      valExpr = SizeofExpr(value: try parseExpr(),
                            sourceRange: range(start: startLoc))
       if expectRightParen {
         try consume(.rightParen)
@@ -221,9 +230,9 @@ extension Parser {
                              sourceRange: range(start: startLoc))
       case .questionMark:
         consumeToken()
-        let trueVal = try parseValExpr()
+        let trueVal = try parseExpr()
         try consume(.colon)
-        let falseVal = try parseValExpr()
+        let falseVal = try parseExpr()
         expr = TernaryExpr(condition: expr, trueCase: trueVal, falseCase: falseVal,
                            sourceRange: range(start: startLoc))
       case .as:
@@ -243,7 +252,7 @@ extension Parser {
 
         let opRange = currentToken().range
         consumeToken()
-        let val = try parseValExpr()
+        let val = try parseExpr()
         if let infix = val as? InfixOperatorExpr, infix.op.infixPrecedence < op.infixPrecedence {
           let r: SourceRange?
           if let exprRange = expr.sourceRange, let lhsRange = infix.lhs.sourceRange {

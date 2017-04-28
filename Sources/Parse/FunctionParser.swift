@@ -278,7 +278,7 @@ extension Parser {
  
   /// Function Call Args
   ///
-  /// func-call-args ::= ([<label>:] <val-expr>,*)
+  /// func-call-args ::= ([<label>:] <expr>,*)
   func parseFunCallArgs(open: TokenKind, close: TokenKind) throws -> [Argument] {
     try consume(open)
     var args = [Argument]()
@@ -297,7 +297,7 @@ extension Parser {
           backtrack()
         }
       }
-      let expr = try parseValExpr()
+      let expr = try parseExpr()
       args.append(Argument(val: expr, label: label))
       
       if peek() == close {

@@ -28,7 +28,7 @@ extension Parser {
       genericParams = try parseGenericParamDecls()
     }
     
-    if case .operator(op: .assign) = peek() {
+    if case .assignOperator(op: .assign) = peek() {
       consumeToken()
       let bound = try parseType()
       return TypeAliasDecl(name: name,
@@ -111,9 +111,9 @@ extension Parser {
     try consume(.colon)
     let propType = try parseType()
     switch peek() {
-    case .operator(op: .assign):
+    case .assignOperator(op: .assign):
       consumeToken()
-      rhs = try parseValExpr()
+      rhs = try parseExpr()
     case .leftBrace:
       guard mutable else {
         throw Diagnostic.error(ParseError.computedPropertyMustBeMutable,

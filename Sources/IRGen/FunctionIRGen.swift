@@ -112,7 +112,8 @@ extension IRGenerator {
     if decl === context.mainFunction {
       mainFunction = function
     }
-    
+
+    guard let body = decl.body else { return function }
     if decl.has(attribute: .foreign) { return function }
     
     if let initializer = decl as? InitializerDecl, let body = decl.body, body.stmts.isEmpty {
@@ -179,7 +180,8 @@ extension IRGenerator {
         returnBlock: retbb,
         resultAlloca: res?.ref
       )
-      _ = visit(decl.body!)
+
+      _ = visit(body)
       let insertBlock = builder.insertBlock!
       
       // break to the return block

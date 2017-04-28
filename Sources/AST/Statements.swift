@@ -41,6 +41,7 @@ public enum VarKind: Equatable {
   }
 }
 
+<<<<<<< HEAD:Sources/AST/Statements.swift
 public class VarAssignDecl: Decl {
   public let rhs: Expr?
   public let name: Identifier
@@ -86,15 +87,44 @@ public class CompoundStmt: Stmt {
   public let stmts: [Stmt]
   public var hasReturn = false
   public init(stmts: [Stmt], sourceRange: SourceRange? = nil) {
+=======
+class CompoundStmt: Stmt {
+  let stmts: [Stmt]
+  var hasReturn = false
+  init(stmts: [Stmt], sourceRange: SourceRange? = nil) {
+>>>>>>> Overload resolution now works!:Sources/Base/Statements.swift
     self.stmts = stmts
     super.init(sourceRange: sourceRange)
   }
 }
 
+<<<<<<< HEAD:Sources/AST/Statements.swift
 public class BranchStmt: Stmt {
   public let condition: Expr
   public let body: CompoundStmt
   public init(condition: Expr, body: CompoundStmt, sourceRange: SourceRange? = nil) {
+=======
+class AssignStmt: Stmt {
+  let associatedOp: BuiltinOperator?
+  let lhs: Expr
+  let rhs: Expr
+  let opRange: SourceRange?
+  var decl: OperatorDecl?
+
+  init(lhs: Expr, rhs: Expr, associatedOp: BuiltinOperator?, opRange: SourceRange?, sourceRange: SourceRange?) {
+    self.lhs = lhs
+    self.rhs = rhs
+    self.opRange = opRange
+    self.associatedOp = associatedOp
+    super.init(sourceRange: sourceRange)
+  }
+}
+
+class BranchStmt: Stmt {
+  let condition: Expr
+  let body: CompoundStmt
+  init(condition: Expr, body: CompoundStmt, sourceRange: SourceRange? = nil) {
+>>>>>>> Overload resolution now works!:Sources/Base/Statements.swift
     self.condition = condition
     self.body = body
     super.init(sourceRange: sourceRange)

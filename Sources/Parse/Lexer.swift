@@ -19,6 +19,7 @@ public enum TokenKind: Equatable {
   case unknown(String)
   case char(UInt8)
   case `operator`(BuiltinOperator)
+  case assignOperator(AssignOperator)
   case stringLiteral(String)
   case stringInterpolationLiteral([[Token]])
   case semicolon
@@ -142,6 +143,7 @@ public enum TokenKind: Equatable {
     case .char(let value): return String(UnicodeScalar(value))
     case .stringInterpolationLiteral(_): return "literal w/ interp"
     case .operator(let op): return "\(op)"
+    case .assignOperator(let op): return "\(op)"
     case .stringLiteral(let value): return value.escaped()
     case .semicolon: return ";"
     case .newline: return "\\n"
@@ -247,6 +249,8 @@ public func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   case (.char(let v), .char(let v2)):
     return v == v2
   case (.operator(let v), .operator(let v2)):
+    return v == v2
+  case (.assignOperator(let v), .assignOperator(let v2)):
     return v == v2
   case (.stringLiteral(let v), .stringLiteral(let v2)):
     return v == v2
@@ -592,6 +596,8 @@ public struct Lexer {
       let opStr = collectWhile { $0.isOperator }
       if let op = BuiltinOperator(rawValue: opStr) {
         return Token(kind: .operator(op), range: range(start: startLoc))
+      } else if let op = AssignOperator(rawValue: opStr) {
+        return Token(kind: .assignOperator(op), range: range(start: startLoc))
       } else {
         return Token(kind: TokenKind(op: opStr), range: range(start: startLoc))
       }

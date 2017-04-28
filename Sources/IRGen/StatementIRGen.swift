@@ -88,7 +88,32 @@ extension IRGenerator {
     return nil
   }
 
-  public func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
+  func visitAssignStmt(_ stmt: AssignStmt) -> IRValue? {
+    var rhs = visit(stmt.rhs)!
+    if let decl = stmt.decl {
+      let ptr = resolvePtr(stmt.lhs)
+      let lhsVal = builder.buildLoad(ptr)
+      let performed = codegen(decl, lhs: lhsVal,
+                              rhs: rhs, type: stmt.lhs.type)!
+      return builder.buildStore(performed, to: ptr)
+    } else {
+      if case .any = context.canonicalType(stmt.lhs.type) {
+        rhs = codegenPromoteToAny(value: rhs, type: stmt.rhs.type)
+      }
+      if let propRef = stmt.lhs.semanticsProvidingExpr as? PropertyRefExpr,
+        let propDecl = propRef.decl as? PropertyDecl,
+        let propSetter = propDecl.setter {
+        let setterFn = codegenFunctionPrototype(propSetter)
+        let implicitSelf = resolvePtr(propRef.lhs)
+        return builder.buildCall(setterFn, args: [implicitSelf, rhs])
+      }
+      let ptr = resolvePtr(stmt.lhs)
+      return builder.buildStore(rhs, to: ptr)
+    }
+
+  }
+  
+  func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
     let function = currentFunction!.functionRef!
     let type = decl.type
     let irType = resolveLLVMType(type)

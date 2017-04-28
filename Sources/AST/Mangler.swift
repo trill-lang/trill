@@ -91,7 +91,6 @@ public enum Mangler {
       case .bitwiseNot: s += "B"
       case .leftShift: s += "s"
       case .rightShift: s += "S"
-      default: s += "\(d.op)" // this will get caught by Sema
       }
     case let d as SubscriptDecl:
       s += "S" + mangle(d.parentType, root: false)

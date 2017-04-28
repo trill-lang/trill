@@ -341,37 +341,19 @@ extension IRGenerator {
     if [.and, .or].contains(expr.op) {
       return codegenShortCircuit(expr)
     }
-    
-    var rhs = visit(expr.rhs)!
-    
-    if case .assign = expr.op {
-      if case .any = context.canonicalType(expr.lhs.type) {
-        rhs = codegenPromoteToAny(value: rhs, type: expr.rhs.type)
-      }
-      if let propRef = expr.lhs as? PropertyRefExpr,
-         let propDecl = propRef.decl as? PropertyDecl,
-         let propSetter = propDecl.setter {
-        let setterFn = codegenFunctionPrototype(propSetter)
-        let implicitSelf = resolvePtr(propRef.lhs)
-        return builder.buildCall(setterFn, args: [implicitSelf, rhs])
-      }
-      let ptr = resolvePtr(expr.lhs)
-      return builder.buildStore(rhs, to: ptr)
-    } else if context.canBeNil(expr.lhs.type) && expr.rhs is NilExpr {
-      let lhs = visit(expr.lhs)!
+
+    let lhs = visit(expr.lhs)!
+    let rhs = visit(expr.rhs)!
+
+    if context.canBeNil(expr.lhs.type) &&
+       expr.rhs.semanticsProvidingExpr is NilExpr {
       if case .equalTo = expr.op {
         return builder.buildIsNull(lhs)
       } else if case .notEqualTo = expr.op {
         return builder.buildIsNotNull(lhs)
       }
-    } else if expr.op.associatedOp != nil {
-      let ptr = resolvePtr(expr.lhs)
-      let lhsVal = builder.buildLoad(ptr, name: "cmpassignload")
-      let performed = codegen(expr.decl!, lhs: lhsVal, rhs: rhs, type: expr.lhs.type)!
-      return builder.buildStore(performed, to: ptr)
     }
-    
-    let lhs = visit(expr.lhs)!
+
     return codegen(expr.decl!, lhs: lhs, rhs: rhs, type: expr.lhs.type)
   }
   

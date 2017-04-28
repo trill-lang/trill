@@ -56,11 +56,23 @@ struct OverloadSolution<DeclType: FuncDecl> {
   }
 }
 
+struct OverloadRejection<DeclType: FuncDecl> {
+  enum Reason {
+    case incorrectArity(expected: Int, got: Int)
+    case incorrectLabel(Int, expected: Identifier, got: Identifier)
+    case labelProvided(Int, Identifier)
+    case labelRequired(Int, Identifier)
+    case invalidConstraints(ConstraintError)
+  }
+  let candidate: DeclType
+  let reasons: [Reason]
+}
+
 enum OverloadResolution<DeclType: FuncDecl> {
   case resolved(DeclType)
   case noCandidates
-  case noMatchingCandidates([DeclType])
-  case ambiguity([DeclType])
+  case noMatchingCandidates([OverloadRejection<DeclType>])
+  case ambiguity([OverloadRejection<DeclType>])
 }
 
 /// Resolves overloads by choosing the overload for which the constraint system
@@ -96,9 +108,7 @@ struct OverloadResolver {
       Argument(val: infix.rhs, label: nil)
     ]
 
-    // Search through the "associated op" of the operator, to handle
-    // custom implementations of `+=` and the like.
-    var candidates = context.operators(for: infix.op.associatedOp ?? infix.op)
+    var candidates = context.operators(for: infix.op)
 
     // HACK: Until we have generic declarations solvable, make an explicit
     //       OperatorDecl for pointer comparison operators.
@@ -125,6 +135,26 @@ struct OverloadResolver {
       infix.decl = candidate
       csGen.visitInfixOperatorExpr(infix)
       infix.decl = nil
+    }
+  }
+
+  func resolve(_ assign: AssignStmt) -> OverloadResolution<OperatorDecl> {
+    guard let associated = assign.associatedOp else {
+      fatalError("Cannot resolve overloads for a standard assignment")
+    }
+    let args = [
+      Argument(val: assign.lhs, label: nil),
+      Argument(val: assign.rhs, label: nil)
+    ]
+
+    // Search through the "associated op" of the assign, to handle
+    // custom implementations of `+=` and the like.
+    let candidates = context.operators(for: associated)
+
+    return resolve(args, candidates: candidates) { candidate in
+      assign.decl = candidate
+      csGen.visitAssignStmt(assign)
+      assign.decl = nil
     }
   }
 
@@ -182,6 +212,16 @@ struct OverloadResolver {
     }
     var solutions = [OverloadSolution<DeclType>]()
 
+    // Build an in-flight mapping of rejection reasons for this decl.
+    var rejections: [DeclType: [OverloadRejection<DeclType>.Reason]] = [:]
+
+    func reject(_ decl: DeclType, _ reason: OverloadRejection<DeclType>.Reason) {
+      if rejections[decl] == nil {
+        rejections[decl] = []
+      }
+      rejections[decl]?.append(reason)
+    }
+
     candidateSearch: for candidate in candidates {
       var declArgs = candidate.args
 
@@ -193,11 +233,15 @@ struct OverloadResolver {
       if candidate.hasVarArgs {
         // Ensure the call has at least as many arguments as the candidate.
         guard args.count >= declArgs.count else {
+          reject(candidate, .incorrectArity(expected: declArgs.count,
+                                            got: args.count))
           continue
         }
       } else {
         // Ensure the call has exactly as many arguments as the candidate.
         guard args.count == declArgs.count else {
+          reject(candidate, .incorrectArity(expected: declArgs.count,
+                                            got: args.count))
           continue
         }
       }
@@ -209,8 +253,16 @@ struct OverloadResolver {
         let declArg = declArgs[index]
 
         // Make sure the labels match for each argument
-        guard callArg.label == declArg.externalName else {
-          continue candidateSearch
+        switch (callArg.label, declArg.externalName) {
+        case let (nil, name?):
+          reject(candidate, .labelRequired(index, name))
+        case let (name?, nil):
+          reject(candidate, .labelProvided(index, name))
+        case let (argName?, declArgName?) where argName != declArgName:
+          reject(candidate, .incorrectLabel(index,
+                                            expected: declArgName,
+                                            got: argName))
+        default: break
         }
         index += 1
       }
@@ -218,11 +270,14 @@ struct OverloadResolver {
       // For all the extra arguments in a varargs call, make sure they don't
       // have a label.
       while index < args.count {
-        guard args[index].label == nil else {
-          continue candidateSearch
+        if let label = args[index].label {
+          reject(candidate, .labelProvided(index, label))
         }
         index += 1
       }
+
+      // If we've already rejected this, don't generate constraints.
+      if rejections[candidate] != nil { continue }
 
       // If that all passed, solve the types of the function and add it to the
       // list of solutions.
@@ -234,14 +289,17 @@ struct OverloadResolver {
         solutions.append(OverloadSolution(constraintSolution: solution,
                                           chosenDecl: candidate))
       } catch let error as ConstraintError {
-        print("Overload not accepted for candidate \(candidate.name): \(error.kind)")
+//        print("Overload not accepted for candidate \(candidate.name): \(error.kind)")
+        reject(candidate, .invalidConstraints(error))
       } catch {
-        print("Overload not accepted for candidate \(candidate.name): \(error)")
+//        print("Overload not accepted for candidate \(candidate.name): \(error)")
       }
     }
 
     if solutions.isEmpty {
-      return .noMatchingCandidates(candidates)
+      return .noMatchingCandidates(rejections.map {
+        OverloadRejection(candidate: $0, reasons: $1)
+      })
     }
 
     if solutions.count == 1 {
@@ -284,6 +342,10 @@ struct OverloadResolver {
     }
 
     // Otherwise, we have to flag an ambiguity.
-    return .ambiguity(minSolutionCandidates.map { $0.chosenDecl as! DeclType })
+    return .ambiguity(minSolutionCandidates.map {
+      let decl = $0.chosenDecl as! DeclType
+      return OverloadRejection(candidate: decl,
+                               reasons: rejections[decl] ?? [])
+    })
   }
 }

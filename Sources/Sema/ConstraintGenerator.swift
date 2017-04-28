@@ -89,16 +89,7 @@ final class ConstraintGenerator: ASTTransformer {
 
       visit(e)
 
-      switch goal {
-      case .integerLiteral:
-        goal = .int64
-      case .floatingLiteral:
-        goal = .double
-      case .stringLiteral:
-        goal = .string
-      default:
-        goal = e.type
-      }
+      goal = e.type.literalFallback
 
       // Bind the given type to the goal type the initializer generated.
       system.constrainEqual(e, goal)
@@ -176,32 +167,49 @@ final class ConstraintGenerator: ASTTransformer {
     goal = tau
   }
 
-  override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
+  override func visitAssignStmt(_ stmt: AssignStmt) -> Void {
+    if let decl = stmt.decl {
+      visitBinaryOp(stmt, lhs: stmt.lhs, rhs: stmt.rhs, decl: decl)
+    } else {
+      visit(stmt.rhs)
+
+      goal = stmt.rhs.type.literalFallback
+
+      system.constrainEqual(stmt.rhs, goal)
+
+      goal = .void
+    }
+  }
+
+  func visitBinaryOp(_ node: ASTNode, lhs: Expr, rhs: Expr, decl: Decl) {
     let tau = env.freshTypeVariable()
 
-    if case .assign = expr.op {
-      goal = .void
-      return
-    }
-
-    let lhsGoal = expr.decl!.type
+    let lhsGoal = decl.type
     var goals = [DataType]()
-    visit(expr.lhs)
+    visit(lhs)
     goals.append(goal)
-    visit(expr.rhs)
+    visit(rhs)
+
     goals.append(goal)
 
     system.constrainEqual(lhsGoal,
                           .function(args: goals, returnType: tau,
                                     hasVarArgs: false),
-                          node: expr)
+                          node: node)
     goal = tau
+  }
+
+  override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
+    visitBinaryOp(expr, lhs: expr.lhs, rhs: expr.rhs, decl: expr.decl!)
   }
 
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {
     var goals = [DataType]()
     visit(expr.lhs)
     goals.append(goal)
+    if case .function = goal {
+
+    }
 
     for arg in expr.args {
       visit(arg.val)
@@ -213,10 +221,11 @@ final class ConstraintGenerator: ASTTransformer {
     /// checked. Builtin subscripts do not have a decl, and only need their
     /// return type declared.
     if let decl = expr.decl {
-      system.constrainEqual(decl,
-                            .function(args: goals,
+      system.constrainEqual(.function(args: goals,
                                       returnType: tau,
-                                      hasVarArgs: false))
+                                      hasVarArgs: false),
+                            decl.type,
+                            node: decl)
     } else {
       system.constrainEqual(expr, tau)
     }
@@ -275,7 +284,7 @@ final class ConstraintGenerator: ASTTransformer {
       goal = .bool
       system.constrainEqual(rhsGoal, .bool, node: expr.rhs)
     case .star:
-      guard case .pointer(let element) = expr.rhs.type else {
+      guard case .pointer(let element) = context.canonicalType(expr.rhs.type) else {
         goal = .error
         return
       }
@@ -283,7 +292,6 @@ final class ConstraintGenerator: ASTTransformer {
     default:
       fatalError("invalid prefix operator: \(expr.op)")
     }
-    system.constrainEqual(expr, goal)
   }
 
   override func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) {
