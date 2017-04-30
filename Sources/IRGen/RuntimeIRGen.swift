@@ -35,7 +35,7 @@ extension IRGenerator {
   }
 
   func codegenPromoteToAny(value: IRValue, type: DataType) -> IRValue {
-    if case .any = type {
+    if type == .any {
       if storage(for: type) == .reference {
         // If we're promoting an existing Any value of a reference type, just
         // thread it through.
@@ -113,7 +113,7 @@ extension IRGenerator {
     let size = byteSize(of: type)
     let ptr = builder.buildCall(alloc, args: [size], name: "ptr")
     var res: IRValue = ptr
-    if type != .pointer(type: .int8) {
+    if type != .pointer(.int8) {
       res = builder.buildBitCast(res, type: irType, name: "alloc-cast")
     }
 

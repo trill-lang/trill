@@ -173,9 +173,14 @@ struct ConstraintSolver {
            let (t, .nilLiteral):
         guard context.canBeNil(t) else { break }
         return solution
-      case (_, .any), (.any, _):
-        // Anything can unify to an existential
-        solution.punish(.anyPromotion)
+      case let (_, .protocolComposition(types)),
+           let (.protocolComposition(types), _):
+        if types.isEmpty {
+          // Anything can unify to an existential
+          solution.punish(.anyPromotion)
+        } else {
+          solution.punish(.existentialPromotion)
+        }
         return solution
       default:
         break

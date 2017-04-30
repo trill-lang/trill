@@ -15,7 +15,7 @@ import Foundation
 /// (1, true, 3) --> default type (IntegerLiteral, Bool, IntegerLiteral)
 /// let x: (Int, Bool, Int8) = (1, true, 3) --> resolved type (Int, Bool, Int8)
 /// TypePropagator will ensure that each of the literals inside the tuple
-/// is assogined the resolved subepxression type.
+/// is assigned the resolved subepxression type.
 final class TypePropagator: ASTTransformer {
 
   required init(context: ASTContext) {
@@ -35,7 +35,9 @@ final class TypePropagator: ASTTransformer {
   }
 
   override func visitCoercionExpr(_ expr: CoercionExpr) {
-    update(expr.lhs, type: expr.type)
+    if expr.kind == .promotion {
+      update(expr.lhs, type: expr.type)
+    }
     update(expr.rhs, type: expr.type)
   }
 
@@ -111,7 +113,7 @@ final class TypePropagator: ASTTransformer {
     case let (.ampersand, .pointer(elt)):
       update(expr.rhs, type: elt)
     case let (.star, elt):
-      update(expr.rhs, type: .pointer(type: elt))
+      update(expr.rhs, type: .pointer(elt))
     default:
       break
     }

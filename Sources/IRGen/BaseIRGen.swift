@@ -402,7 +402,7 @@ public class IRGenerator: ASTVisitor, Pass {
       return storage(for: type) == .value ? binding : PointerType(pointee: binding)
     }
     switch type {
-    case .any:
+    case .protocolComposition:
       fallthrough
     case .pointer(.void):
       return PointerType(pointee: IntType.int8)

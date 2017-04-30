@@ -97,7 +97,7 @@ extension IRGenerator {
                               rhs: rhs, type: stmt.lhs.type)!
       return builder.buildStore(performed, to: ptr)
     } else {
-      if case .any = context.canonicalType(stmt.lhs.type) {
+      if context.canonicalType(stmt.lhs.type) == .any {
         rhs = codegenPromoteToAny(value: rhs, type: stmt.rhs.type)
       }
       if let propRef = stmt.lhs.semanticsProvidingExpr as? PropertyRefExpr,
@@ -120,7 +120,7 @@ extension IRGenerator {
     var value: IRValue
     if let rhs = decl.rhs, let val = visit(rhs) {
       value = val
-      if case .any = type {
+      if type == .any {
         value = codegenPromoteToAny(value: value, type: rhs.type)
       } else if rhs.type != type {
         value = coerce(value, from: rhs.type, to: type)!

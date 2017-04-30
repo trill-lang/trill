@@ -159,8 +159,13 @@ public enum Mangler {
       s += "sb"
     case .void:
       s += "sv"
-    case .any:
-      s += "sa"
+    case .protocolComposition(let types):
+      if types.isEmpty { s += "sa" }
+      else {
+        s += types.map { $0.description }
+                  .joined(separator: "_")
+                  .withCount
+      }
     case .pointer:
       let level = t.pointerLevel()
       if level > 0 {

@@ -604,11 +604,7 @@ public class ASTContext {
         }
         return true
     case (let t1, let t2):
-      if case .any = t1 {
-        return true
-      }
-
-      if case .any = t2 {
+      if [t1, t2].contains(.any) {
         return true
       }
 <<<<<<< HEAD:Sources/AST/ASTContext.swift
@@ -789,7 +785,7 @@ public class ASTContext {
       return .function(args: newArgs, returnType: canonicalType(returnType), hasVarArgs: hasVarArgs)
     }
     if case .pointer(let subtype) = type {
-      return .pointer(type: canonicalType(subtype))
+      return .pointer(canonicalType(subtype))
     }
     return type
   }
@@ -840,11 +836,8 @@ public class ASTContext {
     if isIndirect(type), case .pointer = other {
       return true
     }
-    if case .any = other {
-        return true
-    }
-    if case .any = type {
-        return true
+    if [type, other].contains(.any) {
+      return true
     }
     return type.canCoerceTo(other)
   }

@@ -448,7 +448,7 @@ public final class ClangImporter: Pass {
       return CharExpr(value: value, sourceRange: range)
     case .stringLiteral(let value):
       let stringExpr = StringExpr(value: value, sourceRange: range)
-      stringExpr.type = .pointer(type: .int8)
+      stringExpr.type = .pointer(.int8)
       return stringExpr
     case .number(let value, let raw):
       let expr = NumExpr(value: value, raw: raw, sourceRange: range)
@@ -525,9 +525,9 @@ public final class ClangImporter: Pass {
 
   func importBuiltinAliases(into context: ASTContext) {
     context.add(makeAlias(name: "__builtin_va_list",
-                          type: .pointer(type: .void)))
+                          type: .pointer(.void)))
     context.add(makeAlias(name: "__va_list_tag",
-                          type: .pointer(type: .void)))
+                          type: .pointer(.void)))
   }
 
   func importBuiltinFunctions(into context: ASTContext) {
@@ -537,7 +537,7 @@ public final class ClangImporter: Pass {
     }
 
     add(synthesize(name: "trill_fatalError",
-                   args: [.pointer(type: .int8)],
+                   args: [.pointer(.int8)],
                    return: .void,
                    hasVarArgs: false,
                    modifiers: [.foreign, .noreturn],
@@ -547,19 +547,19 @@ public final class ClangImporter: Pass {
     // I need to override them with .int64 for their arguments.
     add(synthesize(name: "malloc",
                    args: [.int64],
-                   return: .pointer(type: .void),
+                   return: .pointer(.void),
                    hasVarArgs: false,
                    modifiers: [.foreign],
                    range: nil))
     add(synthesize(name: "calloc",
                    args: [.int64, .int64],
-                   return: .pointer(type: .void),
+                   return: .pointer(.void),
                    hasVarArgs: false,
                    modifiers: [.foreign],
                    range: nil))
     add(synthesize(name: "realloc",
-                   args: [.pointer(type: .void), .int64],
-                   return: .pointer(type: .void),
+                   args: [.pointer(.void), .int64],
+                   return: .pointer(.void),
                    hasVarArgs: false,
                    modifiers: [.foreign],
                    range: nil))
@@ -614,14 +614,14 @@ public final class ClangImporter: Pass {
     case CXType_Char32: return .int32
     case CXType_UChar: return .uint8
     case CXType_WChar: return .int16
-    case CXType_ObjCSel: return .pointer(type: .int8)
-    case CXType_ObjCId: return .pointer(type: .int8)
-    case CXType_NullPtr: return .pointer(type: .int8)
-    case CXType_Unexposed: return .pointer(type: .int8)
+    case CXType_ObjCSel: return .pointer(.int8)
+    case CXType_ObjCId: return .pointer(.int8)
+    case CXType_NullPtr: return .pointer(.int8)
+    case CXType_Unexposed: return .pointer(.int8)
     case CXType_ConstantArray:
       let underlying = clang_getArrayElementType(type)
       guard let trillTy = convertToTrillType(underlying) else { return nil }
-      return .pointer(type: trillTy)
+      return .pointer(trillTy)
     case CXType_Pointer:
       let pointee = clang_getPointeeType(type)
       // Check to see if the pointee is a function type:
@@ -634,7 +634,7 @@ public final class ClangImporter: Pass {
       guard let p = trillPointee else {
         return nil
       }
-      return .pointer(type: p)
+      return .pointer(p)
     case CXType_FunctionProto:
       return convertFunctionType(type)
     case CXType_FunctionNoProto:
@@ -657,19 +657,19 @@ public final class ClangImporter: Pass {
       let element = clang_getArrayElementType(type)
       let size = clang_getNumArgTypes(type)
       guard let trillElType = convertToTrillType(element) else { return nil }
-      return .tuple(fields: [DataType](repeating: trillElType, count: Int(size)))
+      return .tuple([DataType](repeating: trillElType, count: Int(size)))
     case CXType_Elaborated:
       let element = clang_Type_getNamedType(type)
       return convertToTrillType(element)
     case CXType_IncompleteArray:
       let element = clang_getArrayElementType(type)
       guard let trillEltTy = convertToTrillType(element) else { return nil }
-      return .pointer(type: trillEltTy)
+      return .pointer(trillEltTy)
     case CXType_Invalid:
       return nil
     case CXType_BlockPointer:
       // C/Obj-C Blocks are unexposed, but are always pointers.
-      return .pointer(type: .int8)
+      return .pointer(.int8)
     default:
       return nil
     }

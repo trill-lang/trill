@@ -63,7 +63,7 @@ extension IRGenerator {
     for (idx, value) in expr.values.enumerated() {
       var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
-      if case .any = context.canonicalType(fieldTy) {
+      if context.canonicalType(fieldTy) == .any {
         irValue = codegenPromoteToAny(value: irValue, type: value.type)
       }
       initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
@@ -80,7 +80,7 @@ extension IRGenerator {
     for (idx, field) in expr.values.enumerated() {
       var val = visit(field)!
       let canTupleTy = context.canonicalType(tupleTypes[idx])
-      if case .any = canTupleTy {
+      if canTupleTy == .any {
         val = codegenPromoteToAny(value: val, type: field.type)
       }
       initial = builder.buildInsertValue(aggregate: initial,
@@ -149,9 +149,15 @@ extension IRGenerator {
                                    name: "inttoptr-coerce")
     case (.pointer, .pointer):
       return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
-    case (.any, let other):
+    case (.protocolComposition(let types), let other):
+      guard types.isEmpty else {
+        fatalError("protocol compositions other than Any are not supported yet")
+      }
       return codegenCheckedCast(binding: value, type: other)
-    case (_, .any):
+    case (_, .protocolComposition(let types)):
+      guard types.isEmpty else {
+        fatalError("protocol compositions other than Any are not supported yet")
+      }
       return codegenPromoteToAny(value: value, type: fromType)
     default:
       return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")

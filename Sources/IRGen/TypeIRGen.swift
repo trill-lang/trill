@@ -240,8 +240,8 @@ extension IRGenerator {
       let type = expr.type
       guard type != .error else { fatalError("error type in resolvePtr") }
       let value = self.visit(expr)!
-      if case .any = self.context.canonicalType(type) {
-        return self.codegenAnyValuePtr(value, type: .pointer(type: .int8))
+      if self.context.canonicalType(type) == .any {
+        return self.codegenAnyValuePtr(value, type: .pointer(.int8))
       }
       let irType = self.resolveLLVMType(type)
       let alloca =  self.createEntryBlockAlloca(self.currentFunction!.functionRef!,
@@ -269,7 +269,7 @@ extension IRGenerator {
       let lhs = resolvePtr(expr.lhs)
       return builder.buildStructGEP(lhs, index: expr.field, name: "tuple-ptr")
     case let expr as CoercionExpr:
-      if case .any = context.canonicalType(expr.type) {
+      if context.canonicalType(expr.type) == .any {
         return codegenAnyValuePtr(visit(expr)!, type: expr.rhs.type)
       }
       return createTmpPointer(expr)

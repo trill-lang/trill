@@ -200,7 +200,8 @@ final class ConstraintGenerator: ASTTransformer {
   }
 
   override func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
-    visitBinaryOp(expr, lhs: expr.lhs, rhs: expr.rhs, decl: expr.decl!)
+    guard let decl = expr.decl else { return }
+    visitBinaryOp(expr, lhs: expr.lhs, rhs: expr.rhs, decl: decl)
   }
 
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {
@@ -249,7 +250,7 @@ final class ConstraintGenerator: ASTTransformer {
       visit(element)
       goals.append(self.goal)
     }
-    system.constrainEqual(expr, .tuple(fields: goals))
+    system.constrainEqual(expr, .tuple(goals))
     self.goal = expr.type
   }
 
@@ -275,7 +276,7 @@ final class ConstraintGenerator: ASTTransformer {
     let rhsGoal = self.goal
     switch expr.op {
     case .ampersand:
-      goal = .pointer(type: rhsGoal)
+      goal = .pointer(rhsGoal)
     case .bitwiseNot:
       goal = rhsGoal
     case .minus:

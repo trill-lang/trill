@@ -239,7 +239,7 @@ extension IRGenerator {
     /// expr.
     let createAddressOf: (Expr, DataType) -> Expr = {
       let operatorExpr = PrefixOperatorExpr(op: .ampersand, rhs: $0)
-      operatorExpr.type = .pointer(type: $1)
+      operatorExpr.type = .pointer($1)
       return operatorExpr
     }
 
@@ -281,7 +281,7 @@ extension IRGenerator {
                                             name: "",
                                             storage: .value,
                                             initial: val)
-        type = .pointer(type: field)
+        type = .pointer(field)
         val = builder.buildBitCast(alloca.ref, type: PointerType(pointee: resolveLLVMType(field)))
       }
       if let declArg = decl.args[safe: idx], declArg.type == .any {
@@ -311,7 +311,7 @@ extension IRGenerator {
       var val = visit(expr.value)!
       let type = expr.value.type
       if type != .error,
-         case .any = context.canonicalType(currentDecl.returnType.type) {
+         context.canonicalType(currentDecl.returnType.type) == .any {
         val = codegenPromoteToAny(value: val, type: type)
       }
       if !(currentDecl is InitializerDecl) {

@@ -19,7 +19,7 @@ public enum DataType: CustomStringConvertible, Hashable {
   case int(width: Int, signed: Bool)
 
   /// A floating-point type of one of the types specified in `FloatingPointType`
-  case floating(type: FloatingPointType)
+  case floating(FloatingPointType)
 
   /// A boolean value, either true or false.
   case bool
@@ -28,13 +28,10 @@ public enum DataType: CustomStringConvertible, Hashable {
   case void
 
   /// A named structure type.
-  case custom(name: String)
-
-  /// A special type that can encompass any value.
-  case any
+  case custom(String)
 
   /// A type variable that must be reified to a concrete type.
-  case typeVariable(name: String)
+  case typeVariable(String)
 
   /// The default type. This should not survive past semantic analysis.
   case error
@@ -59,13 +56,19 @@ public enum DataType: CustomStringConvertible, Hashable {
   indirect case function(args: [DataType], returnType: DataType, hasVarArgs: Bool)
 
   /// A pointer to a specified type.
-  indirect case pointer(type: DataType)
+  indirect case pointer(DataType)
 
   /// An explicitly-sized array of a given type.
-  indirect case array(field: DataType, length: Int?)
+  indirect case array(DataType, length: Int?)
 
   /// A tuple of arbitrary fields.
-  indirect case tuple(fields: [DataType])
+  indirect case tuple([DataType])
+
+  indirect case protocolComposition([DataType])
+
+  /// A special type that can encompass any value. Represented as the
+  /// composition of 0 protocols.
+  static let any = DataType.protocolComposition([])
 
   /// A 64-bit signed integer type.
   public static let int64 = DataType.int(width: 64, signed: true)
@@ -125,7 +128,7 @@ public enum DataType: CustomStringConvertible, Hashable {
     case "Double": self = .double
     case "Float80": self = .float80
     case "Any": self = .any
-    default: self = .custom(name: name)
+    default: self = .custom(name)
     }
   }
 
@@ -156,6 +159,8 @@ public enum DataType: CustomStringConvertible, Hashable {
       return field.contains(x)
     case let .typeVariable(name):
       return name == x
+    case let .protocolComposition(types):
+      return types.contains { $0.contains(x) }
     default:
       return false
     }
@@ -216,8 +221,10 @@ public enum DataType: CustomStringConvertible, Hashable {
       }
       let args = argValues.joined(separator: ", ")
       return "(\(args)) -> \(ret)"
-    case .any: return "Any"
-    case .typeVariable(let name): return "$\(name)"
+    case .protocolComposition(let types):
+      if types.isEmpty { return "Any" }
+      return types.map { $0.description }.joined(separator: " & ")
+    case .typeVariable(let name): return name
     case .error: return "<<error type>>"
     }
   }
@@ -254,6 +261,7 @@ public enum DataType: CustomStringConvertible, Hashable {
     }
   }
 
+<<<<<<< HEAD:Sources/AST/Types.swift
   public var freeTypeVariables : [String] {
     switch self {
     case let .array(fields, _):
@@ -266,6 +274,8 @@ public enum DataType: CustomStringConvertible, Hashable {
       return fields.flatMap({ $0.freeTypeVariables })
     case let .typeVariable(name):
       return [name]
+    case let .protocolComposition(types):
+      return types.flatMap { $0.freeTypeVariables }
     default:
       return []
     }
@@ -274,15 +284,15 @@ public enum DataType: CustomStringConvertible, Hashable {
   public func substitute(_ s: [String: DataType]) -> DataType {
     switch self {
     case let .array(fields, l):
-      return .array(field: fields.substitute(s), length: l)
+      return .array(fields.substitute(s), length: l)
     case let .function(args, returnType, hasVarArgs):
       return .function(args: args.map { $0.substitute(s) },
                        returnType: returnType.substitute(s),
                        hasVarArgs: hasVarArgs)
     case let .pointer(type):
-      return .pointer(type: type.substitute(s))
+      return .pointer(type.substitute(s))
     case let .tuple(fields):
-      return .tuple(fields: fields.map { $0.substitute(s) })
+      return .tuple(fields.map { $0.substitute(s) })
     case let .typeVariable(n):
       // If it's a type variable, look it up in the substitution map to
       // find a replacement.
@@ -295,6 +305,8 @@ public enum DataType: CustomStringConvertible, Hashable {
         return t.substitute(s)
       }
       return self
+    case let .protocolComposition(types):
+      return .protocolComposition(types.map { $0.substitute(s) })
     default:
       return self
     }
@@ -303,20 +315,22 @@ public enum DataType: CustomStringConvertible, Hashable {
   public func substitute(_ name : String, for type: DataType) -> DataType {
     switch self {
     case let .array(fields, l):
-      return .array(field: fields.substitute(name, for: type), length: l)
+      return .array(fields.substitute(name, for: type), length: l)
     case let .function(args, returnType, hasVarArgs):
       return .function(args: args.map { $0.substitute(name, for: type) },
                        returnType: returnType.substitute(name, for: type),
                        hasVarArgs: hasVarArgs)
     case let .pointer(type):
-      return .pointer(type: type.substitute(name, for: type))
+      return .pointer(type.substitute(name, for: type))
     case let .tuple(fields):
-      return .tuple(fields: fields.map { $0.substitute(name, for: type) })
+      return .tuple(fields.map { $0.substitute(name, for: type) })
     case let .typeVariable(tvn):
       if tvn == name {
         return type
       }
       return self
+    case let .protocolComposition(types):
+      return .protocolComposition(types.map { $0.substitute(name, for: type) })
     default:
       fatalError()
     }
@@ -337,7 +351,6 @@ public enum DataType: CustomStringConvertible, Hashable {
       return lhsType == rhsType
     case (.floating(let double), .floating(let rhsDouble)):
       return double == rhsDouble
-    case (.any, .any): return true
     case (.array(let field, _), .array(let field2, _)):
       return field == field2
     case (.function(let args, let ret, let hasVarArgs),
@@ -347,6 +360,8 @@ public enum DataType: CustomStringConvertible, Hashable {
       return fields == fields2
     case (.typeVariable(let name1), .typeVariable(let name2)):
       return name1 == name2
+    case let (.protocolComposition(types1), .protocolComposition(types2)):
+      return types1 == types2
     default: return false
     }
   }
@@ -644,7 +659,7 @@ public class PointerTypeRefExpr: TypeRefExpr {
     let fullId = Identifier(name: fullName, range: sourceRange)
     var type = pointedTo.type
     for _ in 0..<level {
-      type = .pointer(type: type)
+      type = .pointer(type)
     }
     super.init(type: type, name: fullId, sourceRange: sourceRange)
   }
@@ -673,7 +688,7 @@ public class ArrayTypeRefExpr: TypeRefExpr {
     self.element = element
     let fullId = Identifier(name: "[\(element.name.name)]",
                             range: sourceRange)
-    super.init(type: .array(field: element.type, length: length),
+    super.init(type: .array(element.type, length: length),
                name: fullId,
                sourceRange: sourceRange)
   }
@@ -685,7 +700,7 @@ public class TupleTypeRefExpr: TypeRefExpr {
     self.fieldNames = fieldNames
     let argTypes = fieldNames.map { $0.type }
     let fullName = "(\(fieldNames.map { $0.name.name }.joined(separator: ", ")))"
-    super.init(type: .tuple(fields: argTypes),
+    super.init(type: .tuple(argTypes),
                name: Identifier(name: fullName, range: sourceRange),
                sourceRange: sourceRange)
   }

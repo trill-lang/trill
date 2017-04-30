@@ -11,10 +11,13 @@ enum CoercionKind: Int {
   /// A value has been promoted to `Any`.
   case anyPromotion
 
+  /// A value has been promoted to an existential that isn't `Any`.
+  case existentialPromotion
+
   /// An explicit type variable has been reified to a concrete type.
   case genericPromotion
 
-  /// A stirng literal has been promoted to *Int8.
+  /// A string literal has been promoted to *Int8.
   case stringLiteralPromotion
 
   /// A numeric literal has been promoted to another Integer or Floating Point
@@ -29,7 +32,7 @@ enum CoercionKind: Int {
 
   /// The severities of each coercion kind, in order.
   static var rankedSeverities: [CoercionKind] {
-    return [.anyPromotion, .genericPromotion,
+    return [.anyPromotion, .existentialPromotion, .genericPromotion,
             .stringLiteralPromotion, .numericLiteralPromotion]
   }
 }
@@ -56,6 +59,21 @@ struct ConstraintSolution {
   /// Punish this solution with the value from the provided coercion kind.
   mutating func punish(_ coercion: CoercionKind) {
     punishments.count(coercion)
+  }
+
+  /// Whether this solution has been punished with the given punishment.
+  func has(punishment: CoercionKind) -> Bool {
+    return punishments[punishment] != 0
+  }
+
+  func hasAny(_ punishments: CoercionKind...) -> Bool {
+    for kind in punishments where has(punishment: kind) { return true }
+    return false
+  }
+
+  /// Whether this solution has been punished by any punishments.
+  var isPunished: Bool {
+    return !punishments.isEmpty
   }
 
   /// Adds the score and substitions from the provided solution to this

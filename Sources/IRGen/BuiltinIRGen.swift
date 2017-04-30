@@ -19,7 +19,7 @@ extension IRGenerator {
         return nil
     }
     let type = arg.val.type
-    if case .any = type {
+    if type == .any {
         let getMetadata = codegenIntrinsic(named: "trill_getAnyTypeMetadata")
         return builder.buildCall(getMetadata, args: [visit(arg.val)!], name: "any-binding")
     }

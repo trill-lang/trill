@@ -21,6 +21,6 @@ struct ConstraintEnvironment {
 
   mutating func freshTypeVariable() -> DataType {
     defer { typeVariablePool += 1 }
-    return .typeVariable(name: "T\(typeVariablePool)")
+    return .typeVariable("$T\(typeVariablePool)")
   }
 }

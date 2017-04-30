@@ -132,7 +132,7 @@ public class PrefixOperatorExpr: Expr {
     case (.minus, .floating): return argType
     case (.star, .pointer(let type)): return type
     case (.not, .bool): return .bool
-    case (.ampersand, let type): return .pointer(type: type)
+    case (.ampersand, let type): return .pointer(type)
     case (.bitwiseNot, .int): return argType
     default: return nil
     }

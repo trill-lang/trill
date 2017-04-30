@@ -265,7 +265,7 @@ public class TypeChecker: ASTTransformer, Pass {
         return
       }
     } else {
-      if case .any = context.canonicalType(rhsType),
+      if context.canonicalType(rhsType) == .any,
         context.canonicalType(lhsType) != .any {
         error(TypeCheckError.cannotDowncastFromAny(type: lhsType),
               loc: stmt.rhs.startLoc,

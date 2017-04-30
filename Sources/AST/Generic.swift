@@ -25,7 +25,7 @@ public class GenericParamDecl: TypeDecl {
                  conformances: constraints,
                  deinit: nil,
                  sourceRange: name.range)
-      self.type = .typeVariable(name: name.name)
+      self.type = .typeVariable(name.name)
     }
 
     public override func attributes() -> [String : Any] {

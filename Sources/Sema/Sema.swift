@@ -409,7 +409,7 @@ public class Sema: ASTTransformer, Pass {
         return
       }
     }
-    expr.type = .array(field: first, length: expr.values.count)
+    expr.type = .array(first, length: expr.values.count)
   }
   
   public override func visitTupleExpr(_ expr: TupleExpr) {
@@ -418,7 +418,7 @@ public class Sema: ASTTransformer, Pass {
     for expr in expr.values {
       types.append(expr.type)
     }
-    expr.type = .tuple(fields: types)
+    expr.type = .tuple(types)
   }
   
   public override func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
@@ -840,13 +840,28 @@ public class Sema: ASTTransformer, Pass {
   }
 
   public override func visitCoercionExpr(_ expr: CoercionExpr) {
-    super.visitCoercionExpr(expr)
+    visit(expr.lhs)
+    visit(expr.rhs)
+    let lhsPreType = expr.lhs.type
+    guard lhsPreType != .error else { return }
 
     guard let solution = solve(expr) else {
       return
     }
 
     expr.type = solution
+
+    // determine if this is a promotion or explicit conversion
+    let constraint = Constraint(kind: .coercion(expr.type, lhsPreType),
+                                location: #function,
+                                attachedNode: expr,
+                                isExplicitTypeVariable: false)
+
+    let soln = try! ConstraintSolver(context: context)
+                      .solveSingle(constraint)
+
+    expr.kind = soln.isPunished ? .promotion : .conversion
+
     TypePropagator(context: context).visitCoercionExpr(expr)
   }
 
@@ -864,7 +879,9 @@ public class Sema: ASTTransformer, Pass {
       return
     }
 
-    guard case .any = expr.lhs.type else {
+    let canTy = context.canonicalType(expr.lhs.type)
+
+    guard canTy == .any else {
       let matched = !matches(lhsType, rhsType)
       error(SemaError.isCheckAlways(fails: matched),
             loc: expr.isRange?.start,
