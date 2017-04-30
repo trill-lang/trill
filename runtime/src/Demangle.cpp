@@ -70,6 +70,20 @@ bool readType(std::string &str, std::string &out) {
     std::string underlying;
     if (!readType(str, underlying)) { return false; }
     out += "[" + underlying + "]";
+  } else if (str.front() == 'C') {
+    // protocol composition (X & Y & Z)
+    // mangling: C3_1X1Y1Z
+    str.erase(0, 1);
+    int count;
+    if (!readNum(str, count)) { return false; }
+    if (str.front() != '_') { return false; }
+    str.erase(0, 1);
+    for (int i = 0; i < count; i += 1) {
+      if (!readName(str, out)) { return false; }
+      if (i < count - 1) {
+        out += " & ";
+      }
+    }
   } else if (str.front() == 't') {
     str.erase(0, 1);
     out += '(';

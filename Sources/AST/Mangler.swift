@@ -141,6 +141,13 @@ public enum Mangler {
     case .array(let field, _):
       s += "A"
       s += mangle(field, root: false)
+    case .protocolComposition(let types):
+      if types.isEmpty { s += "sa" }
+      else {
+        let eachType = types.map { $0.description.withCount }
+                            .joined(separator: "")
+        s += "C\(types.count)_\(eachType)"
+      }
     case .int(let width, let signed):
       s += "s"
       if width == 64 {
@@ -159,13 +166,6 @@ public enum Mangler {
       s += "sb"
     case .void:
       s += "sv"
-    case .protocolComposition(let types):
-      if types.isEmpty { s += "sa" }
-      else {
-        s += types.map { $0.description }
-                  .joined(separator: "_")
-                  .withCount
-      }
     case .pointer:
       let level = t.pointerLevel()
       if level > 0 {

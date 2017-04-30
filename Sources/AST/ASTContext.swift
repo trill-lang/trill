@@ -820,6 +820,11 @@ public class ASTContext {
         return false
       }
       return isValidType(returnType)
+    case let .protocolComposition(types):
+      for type in types where protocolDecl(for: type) == nil {
+        return false
+      }
+      return true
     default:
       return true
     }

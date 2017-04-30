@@ -173,13 +173,24 @@ struct ConstraintSolver {
            let (t, .nilLiteral):
         guard context.canBeNil(t) else { break }
         return solution
-      case let (_, .protocolComposition(types)),
-           let (.protocolComposition(types), _):
+      case let (t, .protocolComposition(types)),
+           let (.protocolComposition(types), t):
         if types.isEmpty {
           // Anything can unify to an existential
           solution.punish(.anyPromotion)
         } else {
-          solution.punish(.existentialPromotion)
+          // Try to solve each protocol in the list.
+          do {
+            var system = ConstraintSystem()
+            for type in types {
+              system.constrainConforms(t, type, node: c.attachedNode)
+            }
+            var solution = try solveSystem(system)
+            solution.punish(.existentialPromotion)
+            return solution
+          } catch {
+            break
+          }
         }
         return solution
       default:
