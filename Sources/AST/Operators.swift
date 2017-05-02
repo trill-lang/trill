@@ -118,7 +118,7 @@ public enum BuiltinOperator: String, CustomStringConvertible {
 public class PrefixOperatorExpr: Expr {
   public let op: BuiltinOperator
   public let opRange: SourceRange?
-  public let rhs: Expr
+  public var rhs: Expr
   public init(op: BuiltinOperator, rhs: Expr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {
     self.rhs = rhs
     self.op = op
@@ -149,7 +149,7 @@ public class InfixOperatorExpr: Expr {
   public let op: BuiltinOperator
   public let opRange: SourceRange?
   public let lhs: Expr
-  public let rhs: Expr
+  public var rhs: Expr
   public var decl: OperatorDecl? = nil
 
   public init(op: BuiltinOperator, lhs: Expr, rhs: Expr, opRange: SourceRange? = nil, sourceRange: SourceRange? = nil) {

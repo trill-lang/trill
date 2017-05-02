@@ -842,7 +842,7 @@ public class Sema: ASTTransformer, Pass {
   public override func visitCoercionExpr(_ expr: CoercionExpr) {
     visit(expr.lhs)
     visit(expr.rhs)
-    let lhsPreType = expr.lhs.type
+    let lhsPreType = context.canonicalType(expr.lhs.type)
     guard lhsPreType != .error else { return }
 
     guard let solution = solve(expr) else {
@@ -851,16 +851,19 @@ public class Sema: ASTTransformer, Pass {
 
     expr.type = solution
 
-    // determine if this is a promotion or explicit conversion
-    let constraint = Constraint(kind: .coercion(expr.type, lhsPreType),
+    // Determine if this necessitates a promotion or conversion.
+    let constraint = Constraint(kind: .coercion(lhsPreType, solution),
                                 location: #function,
                                 attachedNode: expr,
                                 isExplicitTypeVariable: false)
-
-    let soln = try! ConstraintSolver(context: context)
-                      .solveSingle(constraint)
-
-    expr.kind = soln.isPunished ? .promotion : .conversion
+    do {
+      let soln = try ConstraintSolver(context: context)
+                          .solveSingle(constraint)
+      expr.kind = soln.isPunished && !context.isProtocolType(lhsPreType)
+                      ? .promotion : .conversion
+    } catch {
+      // Don't reset the kind
+    }
 
     TypePropagator(context: context).visitCoercionExpr(expr)
   }

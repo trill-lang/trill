@@ -55,17 +55,14 @@ extension IRGenerator {
   }
   
   public func visitArrayExpr(_ expr: ArrayExpr) -> Result {
-    guard case .array(let fieldTy, _) = expr.type else {
+    guard case .array = expr.type else {
       fatalError("invalid array type")
     }
     let irType = resolveLLVMType(expr.type)
     var initial = irType.null()
     for (idx, value) in expr.values.enumerated() {
-      var irValue = visit(value)!
+      let irValue = visit(value)!
       let index = IntType.int64.constant(idx)
-      if context.canonicalType(fieldTy) == .any {
-        irValue = codegenPromoteToAny(value: irValue, type: value.type)
-      }
       initial = builder.buildInsertElement(vector: initial, element: irValue, index: index)
     }
     return initial
@@ -73,16 +70,12 @@ extension IRGenerator {
   
   public func visitTupleExpr(_ expr: TupleExpr) -> Result {
     let type = resolveLLVMType(expr.type)
-    guard case .tuple(let tupleTypes) = expr.type else {
+    guard case .tuple = context.canonicalType(expr.type) else {
       fatalError("invalid tuple type")
     }
     var initial = type.null()
     for (idx, field) in expr.values.enumerated() {
-      var val = visit(field)!
-      let canTupleTy = context.canonicalType(tupleTypes[idx])
-      if canTupleTy == .any {
-        val = codegenPromoteToAny(value: val, type: field.type)
-      }
+      let val = visit(field)!
       initial = builder.buildInsertValue(aggregate: initial,
                                          element: val,
                                          index: idx,
@@ -124,6 +117,10 @@ extension IRGenerator {
     let type = resolveLLVMType(expr.type)
     return type.null()
   }
+
+  func visitExistentialCoercionExpr(_ expr: ExistentialCoercionExpr) -> Result {
+    return codegenPromoteToAny(value: visit(expr.expr)!, type: expr.expr.type)
+  }
   
   func coerce(_ value: IRValue, from fromType: DataType, to type: DataType) -> Result {
     let irType = resolveLLVMType(type)
@@ -148,17 +145,12 @@ extension IRGenerator {
       return builder.buildIntToPtr(value, type: irType as! PointerType,
                                    name: "inttoptr-coerce")
     case (.pointer, .pointer):
-      return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
+      return builder.buildBitCast(value, type: irType, name: "pointer-cast-coerce")
     case (.protocolComposition(let types), let other):
       guard types.isEmpty else {
         fatalError("protocol compositions other than Any are not supported yet")
       }
       return codegenCheckedCast(binding: value, type: other)
-    case (_, .protocolComposition(let types)):
-      guard types.isEmpty else {
-        fatalError("protocol compositions other than Any are not supported yet")
-      }
-      return codegenPromoteToAny(value: value, type: fromType)
     default:
       return builder.buildBitCast(value, type: irType, name: "bitcast-coerce")
     }

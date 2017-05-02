@@ -298,6 +298,10 @@ open class ASTTransformer: ASTVisitor {
     visit(expr.rhs)
   }
 
+  open func visitExistentialCoercionExpr(_ expr: ExistentialCoercionExpr) {
+    visit(expr.expr)
+  }
+
   open func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) {
     visit(expr.lhs)
     visit(expr.rhs)

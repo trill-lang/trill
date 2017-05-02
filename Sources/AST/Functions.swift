@@ -12,7 +12,7 @@ import Source
 
 public struct Argument {
   public let label: Identifier?
-  public let val: Expr
+  public var val: Expr
   public init(val: Expr,
               label: Identifier? = nil) {
     self.val = val
@@ -21,8 +21,8 @@ public struct Argument {
 }
 
 public class FuncCallExpr: Expr {
-  public let lhs: Expr
-  public let args: [Argument]
+  public var lhs: Expr
+  public var args: [Argument]
   public var decl: FuncDecl? = nil
   public init(lhs: Expr,
               args: [Argument],

@@ -23,32 +23,46 @@ final class TypePropagator: ASTTransformer {
   }
 
   /// Sets the type of the expression and updates its subexpressions.
-  func update(_ expr: Expr, type: DataType) {
+  func update(_ expr: inout Expr, type: DataType) {
+    let canExprTy = context.canonicalType(expr.type)
+    let canTy = context.canonicalType(type)
+    // If the type already matches, then we're fine.
+    guard canExprTy != canTy else { return }
+
+    if !(expr is ExistentialCoercionExpr) && context.isProtocolType(type) {
+      expr.type = expr.type.literalFallback
+      expr = ExistentialCoercionExpr(expr: expr, protocol: type)
+    }
+
+    retype(expr, type: type)
+  }
+
+  func retype(_ expr: Expr, type: DataType) {
     expr.type = type
     visit(expr)
   }
 
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
     if let typeRef = decl.typeRef {
-      update(typeRef, type: decl.type)
+      retype(typeRef, type: decl.type)
     }
   }
 
   override func visitCoercionExpr(_ expr: CoercionExpr) {
-    if expr.kind == .promotion {
-      update(expr.lhs, type: expr.type)
+    if case .promotion = expr.kind {
+      update(&expr.lhs, type: expr.type)
     }
-    update(expr.rhs, type: expr.type)
+    retype(expr.rhs, type: expr.type)
   }
 
   override func visitAssignStmt(_ stmt: AssignStmt) {
     if let decl = stmt.decl {
       guard case .function(let args, _, _) =
         context.canonicalType(decl.type) else { return }
-      update(stmt.lhs, type: args[0])
-      update(stmt.rhs, type: args[1])
+      retype(stmt.lhs, type: args[0])
+      update(&stmt.rhs, type: args[1])
     } else {
-      update(stmt.rhs, type: stmt.lhs.type)
+      update(&stmt.rhs, type: stmt.lhs.type)
     }
   }
 
@@ -56,16 +70,16 @@ final class TypePropagator: ASTTransformer {
     guard let decl = expr.decl else { return }
     guard case .function(let args, let ret, _) =
       context.canonicalType(decl.type) else { return }
-    update(expr.lhs, type: args[0])
-    update(expr.rhs, type: args[1])
+    update(&expr.lhs, type: args[0])
+    update(&expr.rhs, type: args[1])
     expr.type = ret
   }
 
   override func visitTupleExpr(_ expr: TupleExpr) {
     guard case .tuple(let fields) =
       context.canonicalType(expr.type) else { return }
-    for (type, child) in zip(fields, expr.values) {
-      update(child, type: type)
+    for (type, childIdx) in zip(fields, expr.values.indices) {
+      update(&expr.values[childIdx], type: type)
     }
   }
 
@@ -79,23 +93,27 @@ final class TypePropagator: ASTTransformer {
       args.remove(at: 0)
     }
 
-    for (type, child) in zip(args, expr.args) {
-      update(child.val, type: type)
+    for (type, childIdx) in zip(args, expr.args.indices) {
+      update(&expr.args[childIdx].val, type: type)
     }
     
     if expr is SubscriptExpr {
-      update(expr.lhs, type: decl.args[0].type)
+      update(&expr.lhs, type: decl.args[0].type)
     } else {
-      update(expr.lhs, type: decl.type)
+      update(&expr.lhs, type: decl.type)
     }
     expr.type = ret
+  }
+
+  override func visitParenExpr(_ expr: ParenExpr) {
+    update(&expr.value, type: expr.type)
   }
 
   override func visitArrayExpr(_ expr: ArrayExpr) {
     guard case .array(let element, _) =
       context.canonicalType(expr.type) else { return }
-    for child in expr.values {
-      update(child, type: element)
+    for childIdx in expr.values.indices {
+      update(&expr.values[childIdx], type: element)
     }
   }
 
@@ -104,16 +122,16 @@ final class TypePropagator: ASTTransformer {
   }
 
   override func visitTernaryExpr(_ expr: TernaryExpr) {
-    update(expr.trueCase, type: expr.type)
-    update(expr.falseCase, type: expr.type)
+    update(&expr.trueCase, type: expr.type)
+    update(&expr.falseCase, type: expr.type)
   }
 
   override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
     switch (expr.op, expr.type) {
     case let (.ampersand, .pointer(elt)):
-      update(expr.rhs, type: elt)
+      update(&expr.rhs, type: elt)
     case let (.star, elt):
-      update(expr.rhs, type: .pointer(elt))
+      update(&expr.rhs, type: .pointer(elt))
     default:
       break
     }

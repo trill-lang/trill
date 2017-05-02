@@ -272,7 +272,7 @@ extension IRGenerator {
     }
     
     var argVals = [IRValue]()
-    for (idx, arg) in args.enumerated() {
+    for arg in args {
       var val = visit(arg.val)!
       var type = arg.val.type
       if case .array(let field, _) = type {
@@ -283,9 +283,6 @@ extension IRGenerator {
                                             initial: val)
         type = .pointer(field)
         val = builder.buildBitCast(alloca.ref, type: PointerType(pointee: resolveLLVMType(field)))
-      }
-      if let declArg = decl.args[safe: idx], declArg.type == .any {
-        val = codegenPromoteToAny(value: val, type: type)
       }
       argVals.append(val)
     }
@@ -310,10 +307,6 @@ extension IRGenerator {
     if !(expr.value is VoidExpr) {
       var val = visit(expr.value)!
       let type = expr.value.type
-      if type != .error,
-         context.canonicalType(currentDecl.returnType.type) == .any {
-        val = codegenPromoteToAny(value: val, type: type)
-      }
       if !(currentDecl is InitializerDecl) {
         store = builder.buildStore(val, to: currentFunction.resultAlloca!)
       }

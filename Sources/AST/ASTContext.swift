@@ -202,89 +202,6 @@ public class ASTContext {
     sourceFiles.append(sourceFile)
     sourceFileMap[sourceFile.path.filename] = sourceFile
   }
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
-
-  public func infixOperatorCandidate(_ op: BuiltinOperator, lhs: Expr, rhs: Expr) -> OperatorDecl? {
-    let canLhs = canonicalType(lhs.type)
-    if rhs is NilExpr && canBeNil(canLhs) && [.equalTo, .notEqualTo].contains(op) {
-      return OperatorDecl(op: op,
-                          args: [
-                            ParamDecl(name: "", type: lhs.type.ref()),
-                            ParamDecl(name: "", type: lhs.type.ref())
-                          ],
-                          genericParams: [],
-                          returnType: DataType.bool.ref(),
-                          body: nil,
-                          modifiers: [.implicit])
-    }
-
-    var bestCandidate: CandidateResult<OperatorDecl>?
-
-    let canRhs = canonicalType(rhs.type)
-    let decls = operators(for: op)
-
-    for decl in decls {
-      let (lhs, rhs) = (decl.args[0], decl.args[1])
-      if let lhsRank = matchRank(lhs.type, canLhs),
-         let rhsRank = matchRank(rhs.type, canRhs) {
-        let totalRank = lhsRank.rawValue + rhsRank.rawValue
-        if bestCandidate == nil || bestCandidate!.rank <= totalRank {
-          bestCandidate = CandidateResult(candidate: decl, rank: totalRank)
-        }
-      }
-    }
-    return bestCandidate?.candidate
-  }
-
-
-  public func candidate(forArgs args: [Argument], candidates: [FuncDecl]) -> FuncDecl? {
-    var bestCandidate: CandidateResult<FuncDecl>?
-    search: for candidate in candidates {
-      var candArgs = candidate.args
-      if let first = candArgs.first, first.isImplicitSelf {
-        candArgs.remove(at: 0)
-      }
-      if !candidate.hasVarArgs && candArgs.count != args.count { continue }
-      var totalRank = 0
-      for (candArg, exprArg) in zip(candArgs, args) {
-        if let externalName = candArg.externalName {
-          if exprArg.label != externalName {
-            continue search
-          }
-        } else if exprArg.label != nil {
-          continue search
-        }
-        let valSugaredType = exprArg.val.type
-        guard valSugaredType != .error else {
-          continue search
-        }
-        var valType = canonicalType(valSugaredType)
-        let candType = canonicalType(candArg.type)
-        // automatically coerce number literals.
-        if propagateContextualType(candType, to: exprArg.val) {
-          valType = candType
-        }
-
-        // Even though they 'match', we don't want to demote an any to a specific
-        // type without being asked.
-        if candType != .any && valType == .any {
-          continue search
-        }
-        guard let rank = matchRank(candType, valType) else {
-          continue search
-        }
-        totalRank += rank.rawValue
-      }
-      let newCand = CandidateResult(candidate: candidate, rank: totalRank)
-
-      if bestCandidate == nil || bestCandidate!.rank <= totalRank {
-        bestCandidate = newCand
-      }
-    }
-    return bestCandidate?.candidate
-  }
-=======
->>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
 
   public func conformsToProtocol(_ decl: TypeDecl, _ proto: ProtocolDecl) -> Bool {
     return missingMethodsForConformance(decl, to: proto).isEmpty
@@ -801,7 +718,22 @@ public class ASTContext {
     return false
   }
 
+<<<<<<< HEAD:Sources/AST/ASTContext.swift
   public func isValidType(_ type: DataType) -> Bool {
+=======
+  func isProtocolType(_ type: DataType) -> Bool {
+    switch type {
+    case .protocolComposition:
+      return true
+    case .custom:
+      return protocolDecl(for: type) != nil
+    default:
+      return false
+    }
+  }
+  
+  func isValidType(_ type: DataType) -> Bool {
+>>>>>>> Properly handle existential downcasts.:Sources/Base/ASTContext.swift
     switch type {
     case .pointer(let subtype):
       return isValidType(subtype)
