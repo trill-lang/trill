@@ -38,7 +38,7 @@ final class TypePropagator: ASTTransformer {
   }
 
   func retype(_ expr: Expr, type: DataType) {
-    expr.type = type
+    expr.type = type.literalFallback
     visit(expr)
   }
 
@@ -53,6 +53,12 @@ final class TypePropagator: ASTTransformer {
       update(&expr.lhs, type: expr.type)
     }
     retype(expr.rhs, type: expr.type)
+  }
+
+  override func visitPropertyRefExpr(_ expr: PropertyRefExpr) {
+    if let typeDecl = expr.typeDecl {
+      update(&expr.lhs, type: typeDecl.type)
+    }
   }
 
   override func visitAssignStmt(_ stmt: AssignStmt) {

@@ -197,11 +197,17 @@ func performCompile(diag: DiagnosticEngine, options: Options) {
   }
 }
 
+let trillVersion = (0, 0, 1)
+
 func main() -> Int32 {
   let diag = DiagnosticEngine()
 
   do {
     let options = try Options.parseCommandLine()
+    if case .version = options.mode {
+      print("trill compiler version \(trillVersion.0).\(trillVersion.1).\(trillVersion.2)")
+      return 0
+    }
     performCompile(diag: diag, options: options)
   } catch {
     diag.error(error)

@@ -773,8 +773,13 @@ public class ASTContext {
     if isIndirect(type), case .pointer = other {
       return true
     }
-    if [type, other].contains(.any) {
+    switch (type, other) {
+    case (.protocolComposition, _), (_, .protocolComposition):
       return true
+    case (.integerLiteral, .pointer), (.pointer, .integerLiteral):
+      return true
+    default:
+      break
     }
     return type.canCoerceTo(other)
   }

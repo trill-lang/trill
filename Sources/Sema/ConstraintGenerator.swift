@@ -260,13 +260,13 @@ final class ConstraintGenerator: ASTTransformer {
     visit(expr.condition)
     system.constrainEqual(expr.condition, .bool)
 
+    system.constrainEqual(expr, tau)
+
     visit(expr.trueCase)
     system.constrainEqual(expr.trueCase, tau)
 
     visit(expr.falseCase)
     system.constrainEqual(expr.falseCase, tau)
-
-    system.constrainEqual(expr, tau)
 
     self.goal = tau
   }

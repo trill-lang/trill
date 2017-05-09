@@ -95,7 +95,7 @@ struct ConstraintSolution {
 
     print("|  =====    Substitutions    =====")
     for (variable, substitution) in substitutions {
-      print("|    $\(variable) : \(substitution)")
+      print("|    \(variable) : \(substitution)")
     }
     print("|  =====     Punishments     =====")
     for (kind, count) in punishments {
