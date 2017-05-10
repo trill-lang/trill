@@ -282,7 +282,7 @@ public enum DataType: CustomStringConvertible, Hashable {
   }
 
   public func substitute(_ s: [String: DataType]) -> DataType {
-    switch self {
+    switch self.literalFallback {
     case let .array(fields, l):
       return .array(fields.substitute(s), length: l)
     case let .function(args, returnType, hasVarArgs):

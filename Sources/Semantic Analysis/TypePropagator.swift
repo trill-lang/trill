@@ -26,11 +26,11 @@ final class TypePropagator: ASTTransformer {
   func update(_ expr: inout Expr, type: DataType) {
     let canExprTy = context.canonicalType(expr.type)
     let canTy = context.canonicalType(type)
+
     // If the type already matches, then we're fine.
     guard canExprTy != canTy else { return }
 
     if !(expr is ExistentialCoercionExpr) && context.isProtocolType(type) {
-      expr.type = expr.type.literalFallback
       expr = ExistentialCoercionExpr(expr: expr, protocol: type)
     }
 
@@ -45,6 +45,11 @@ final class TypePropagator: ASTTransformer {
   override func visitVarAssignDecl(_ decl: VarAssignDecl) {
     if let typeRef = decl.typeRef {
       retype(typeRef, type: decl.type)
+    }
+    if let rhs = decl.rhs {
+      var newRHS = rhs
+      update(&newRHS, type: decl.type)
+      decl.rhs = newRHS
     }
   }
 
@@ -121,6 +126,10 @@ final class TypePropagator: ASTTransformer {
     for childIdx in expr.values.indices {
       update(&expr.values[childIdx], type: element)
     }
+  }
+
+  override func visitReturnStmt(_ stmt: ReturnStmt) {
+    update(&stmt.value, type: stmt.type)
   }
 
   override func visitSubscriptExpr(_ expr: SubscriptExpr) {

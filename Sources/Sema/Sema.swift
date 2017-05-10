@@ -969,7 +969,10 @@ public class Sema: ASTTransformer, Pass {
 
   public override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     super.visitTernaryExpr(expr)
-    expr.type = expr.trueCase.type
+    
+    guard let type = solve(expr) else { return }
+    expr.type = type
+    TypePropagator(context: context).visitTernaryExpr(expr)
   }
   
   public override func visitStringExpr(_ expr: StringExpr) {
@@ -1017,12 +1020,10 @@ public class Sema: ASTTransformer, Pass {
   public override func visitReturnStmt(_ stmt: ReturnStmt) {
     guard let returnType = currentClosure?.returnType!.type ?? currentFunction?.returnType.type else { return }
     super.visitReturnStmt(stmt)
-    stmt.value.type = returnType
-    guard let solution = solve(stmt) else {
-      return
-    }
-    stmt.value.type = solution
-    TypePropagator(context: context).visit(stmt.value)
+    stmt.type = returnType
+    guard let solution = solve(stmt) else { return }
+    stmt.type = solution
+    TypePropagator(context: context).visitReturnStmt(stmt)
   }
   
   public override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {
@@ -1069,7 +1070,7 @@ public class Sema: ASTTransformer, Pass {
     do {
       let solution = try ConstraintSolver(context: context)
                             .solveSystem(csGen.system)
-      let goal = csGen.goal.substitute(solution.substitutions)
+      let goal = csGen.goal.substitute(solution.substitutions).literalFallback
       if case .typeVariable = goal {
         return nil
       }

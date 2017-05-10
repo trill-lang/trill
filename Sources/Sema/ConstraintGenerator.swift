@@ -260,13 +260,22 @@ final class ConstraintGenerator: ASTTransformer {
     visit(expr.condition)
     system.constrainEqual(expr.condition, .bool)
 
-    system.constrainEqual(expr, tau)
-
     visit(expr.trueCase)
     system.constrainEqual(expr.trueCase, tau)
 
     visit(expr.falseCase)
     system.constrainEqual(expr.falseCase, tau)
+
+    self.goal = tau
+  }
+
+  override func visitReturnStmt(_ stmt: ReturnStmt) {
+    let tau = env.freshTypeVariable()
+
+    visit(stmt.value)
+    system.constrainEqual(stmt.value, tau)
+
+    system.constrainEqual(stmt.type, tau, node: stmt)
 
     self.goal = tau
   }

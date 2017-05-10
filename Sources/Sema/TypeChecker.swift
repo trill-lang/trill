@@ -194,6 +194,7 @@ public class TypeChecker: ASTTransformer, Pass {
     super.visitParamDecl(decl)
   }
   
+<<<<<<< HEAD:Sources/Sema/TypeChecker.swift
   public override func visitReturnStmt(_ stmt: ReturnStmt) -> Result {
     guard let returnType = currentClosure?.returnType?.type ??
                            currentFunction?.returnType.type else { return }
@@ -223,6 +224,9 @@ public class TypeChecker: ASTTransformer, Pass {
   }
 
   public override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
+=======
+  override func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
+>>>>>>> Fix propagation for return statements and actually solve ternary express:Sources/Semantic Analysis/TypeChecker.swift
     let condType = expr.condition.type
     let trueType = expr.trueCase.type
     let falseType = expr.falseCase.type

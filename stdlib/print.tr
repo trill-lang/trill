@@ -7,18 +7,3 @@ func println(_ value: Any) {
   print(value)
   putchar('\n' as Int32)
 }
-
-struct File {
-  let handle: *FILE
-
-  init(path: String, mode: String) {
-    self.handle = fopen(path.cString, mode.cString)
-  }
-
-  func close() {
-    fclose(self.handle)
-  }
-}
-
-let file = File(path: "hello.txt", mode: "rw")
-file.close()

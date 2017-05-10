@@ -104,6 +104,26 @@ struct ConstraintSolver {
           solution.punish(.genericPromotion)
         }
         return solution
+      case let (t, .protocolComposition(types)),
+           let (.protocolComposition(types), t):
+        if types.isEmpty {
+          // Anything can unify to an existential
+          solution.punish(.anyPromotion)
+        } else {
+          // Try to solve each protocol in the list.
+          do {
+            var system = ConstraintSystem()
+            for type in types {
+              system.constrainConforms(t, type, node: c.attachedNode)
+            }
+            var solution = try solveSystem(system)
+            solution.punish(.existentialPromotion)
+            return solution
+          } catch {
+            break
+          }
+        }
+        return solution
       case let (.function(args1, returnType1, hasVarArgs1),
                 .function(args2, returnType2, hasVarArgs2)):
 
@@ -172,26 +192,6 @@ struct ConstraintSolver {
       case let (.nilLiteral, t),
            let (t, .nilLiteral):
         guard context.canBeNil(t) else { break }
-        return solution
-      case let (t, .protocolComposition(types)),
-           let (.protocolComposition(types), t):
-        if types.isEmpty {
-          // Anything can unify to an existential
-          solution.punish(.anyPromotion)
-        } else {
-          // Try to solve each protocol in the list.
-          do {
-            var system = ConstraintSystem()
-            for type in types {
-              system.constrainConforms(t, type, node: c.attachedNode)
-            }
-            var solution = try solveSystem(system)
-            solution.punish(.existentialPromotion)
-            return solution
-          } catch {
-            break
-          }
-        }
         return solution
       default:
         break

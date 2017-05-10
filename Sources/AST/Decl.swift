@@ -49,7 +49,7 @@ public enum DeclModifier: String {
 }
 
 class VarAssignDecl: Decl {
-  let rhs: Expr?
+  var rhs: Expr?
   let name: Identifier
   var typeRef: TypeRefExpr?
   var kind: VarKind
