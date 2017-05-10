@@ -156,8 +156,8 @@ struct ConstraintSolver {
         } catch {
           break
         }
-      case (.stringLiteral, .pointer(type: DataType.int8)),
-           (.pointer(type: DataType.int8), .stringLiteral):
+      case (.stringLiteral, .pointer(DataType.int8)),
+           (.pointer(DataType.int8), .stringLiteral):
 
         // Punish promotions from String to *Int8
         solution.punish(.stringLiteralPromotion)

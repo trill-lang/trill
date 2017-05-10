@@ -341,6 +341,7 @@ public enum DataType: CustomStringConvertible, Hashable {
     case (.integerLiteral, .integerLiteral): return true
     case (.floatingLiteral, .floatingLiteral): return true
     case (.stringLiteral, .stringLiteral): return true
+    case (.nilLiteral, .nilLiteral): return true
     case (.int(let width, let signed), .int(let otherWidth, let otherSigned)):
       return width == otherWidth && signed == otherSigned
     case (.bool, .bool): return true

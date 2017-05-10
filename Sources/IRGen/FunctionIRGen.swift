@@ -304,7 +304,7 @@ extension IRGenerator {
       fatalError("return outside function?")
     }
     var store: IRValue? = nil
-    if !(expr.value is VoidExpr) {
+    if !(expr.value.semanticsProvidingExpr is VoidExpr) {
       var val = visit(expr.value)!
       let type = expr.value.type
       if !(currentDecl is InitializerDecl) {

@@ -313,9 +313,6 @@ public class ASTContext {
   }
 
   public func add(_ funcDecl: FuncDecl) {
-=======
-  func add(_ funcDecl: FuncDecl) {
->>>>>>> Almost finished overload resolution algorithm:Sources/Base/ASTContext.swift
     functions.append(funcDecl)
 
     if funcDecl.name == "main" {
@@ -477,15 +474,9 @@ public class ASTContext {
     }
     return false
   }
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
 
   public func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
-    if !base && matchRank(typeDecl.type, type) != nil { return true }
-=======
-  
-  func containsInLayout(type: DataType, typeDecl: TypeDecl, base: Bool = false) -> Bool {
     if !base && matches(typeDecl.type, type) { return true }
->>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
     for property in typeDecl.properties {
       if case .pointer = property.type { continue }
       if property.isComputed { continue }
@@ -506,11 +497,7 @@ public class ASTContext {
   /// - parameter type1: The first type you're trying to match
   /// - parameter type2: The second type you're trying to match
   /// - returns: The rank of the match between these two types.
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
-  public func matchRank(_ type1: DataType, _ type2: DataType) -> TypeRank? {
-=======
   func matches(_ type1: DataType, _ type2: DataType) -> Bool {
->>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
     let t1Can = canonicalType(type1)
     let t2Can = canonicalType(type2)
     switch (t1Can, t2Can) {
@@ -524,25 +511,11 @@ public class ASTContext {
       if [t1, t2].contains(.any) {
         return true
       }
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
 
-      return t1 == t2 ? .equal : nil
-    }
-  }
-
-  /// Determines if two types can be considered 'matching'.
-  /// - returns: True if the match rank between these two types is not `nil`.
-  public func matches(_ t1: DataType, _ t2: DataType) -> Bool {
-    return matchRank(t1, t2) != nil
-  }
-
-=======
-      
       return t1 == t2
     }
   }
 
->>>>>>> Reworked existing overload resolution code in terms of OverloadResolver.:Sources/Base/ASTContext.swift
   /// Returns all overloaded functions with the given name at top-level scope.
   ///
   /// - Parameter name: The function's base name.
@@ -718,10 +691,7 @@ public class ASTContext {
     return false
   }
 
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
-  public func isValidType(_ type: DataType) -> Bool {
-=======
-  func isProtocolType(_ type: DataType) -> Bool {
+  public func isProtocolType(_ type: DataType) -> Bool {
     switch type {
     case .protocolComposition:
       return true
@@ -731,9 +701,8 @@ public class ASTContext {
       return false
     }
   }
-  
-  func isValidType(_ type: DataType) -> Bool {
->>>>>>> Properly handle existential downcasts.:Sources/Base/ASTContext.swift
+
+  public func isValidType(_ type: DataType) -> Bool {
     switch type {
     case .pointer(let subtype):
       return isValidType(subtype)
@@ -855,11 +824,16 @@ fileprivate func makeHomogenousOps(_ op: BuiltinOperator, _ types: [DataType]) -
   return types.map { type in OperatorDecl(op, type, type, type) }
 }
 
-<<<<<<< HEAD:Sources/AST/ASTContext.swift
+/// Makes a set of operator declarations of the form:
+/// ```
+/// <op>(lhs: <type>, rhs: <type>) -> Bool
+/// ```
+/// for each of the types passed in.
+/// - parameter op: The operator in the decl
+/// - parameter types: Each of the types you're making a bool operator for
+/// - returns: An array of implicit, foreign operator declarations for these
+///            types
 fileprivate func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
-=======
-func makeBoolOps(_ op: BuiltinOperator, _ types: [DataType]) -> [OperatorDecl] {
->>>>>>> Almost finished overload resolution algorithm:Sources/Base/ASTContext.swift
   return types.map { type in OperatorDecl(op, type, type, .bool) }
 }
 

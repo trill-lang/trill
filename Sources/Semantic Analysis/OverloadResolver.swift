@@ -1,4 +1,4 @@
-//
+///
 //  OverloadResolver.swift
 //  trill
 //
@@ -119,14 +119,16 @@ struct OverloadResolver {
     if [.equalTo, .notEqualTo].contains(infix.op) {
       let canLhs = context.canonicalType(infix.lhs.type)
       let canRhs = context.canonicalType(infix.rhs.type)
-      let makePointerEqualityOps = {
-          candidates += makeBoolOps(infix.op, [canLhs, canRhs])
+      let makePointerEqualityOps = { (elt: DataType) in
+          candidates += makeBoolOps(infix.op, [.pointer(elt)])
       }
       switch (canLhs, canRhs) {
-      case (.pointer(let elt1), .pointer(let elt2)) where elt1 == elt2:
-        makePointerEqualityOps()
-      case (.pointer, .nilLiteral), (.nilLiteral, .pointer):
-        makePointerEqualityOps()
+      case let (.pointer(elt1), .pointer(elt2)) where elt1 == elt2:
+        makePointerEqualityOps(elt1)
+      case let (.pointer(elt), .nilLiteral):
+        makePointerEqualityOps(elt)
+      case let (.nilLiteral, .pointer(elt)):
+        makePointerEqualityOps(elt)
       default: break
       }
     }
