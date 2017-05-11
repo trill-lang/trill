@@ -107,7 +107,6 @@ extension IRGenerator {
       let ptr = resolvePtr(stmt.lhs)
       return builder.buildStore(rhs, to: ptr)
     }
-
   }
   
   func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {

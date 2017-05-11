@@ -234,14 +234,12 @@ final class ConstraintGenerator: ASTTransformer {
   }
 
   override func visitArrayExpr(_ expr: ArrayExpr) {
-    guard case .array(let field, _) = expr.type else {
-      fatalError("invalid array type")
-    }
+    let tau = env.freshTypeVariable()
     for value in expr.values {
       visit(value)
-      system.constrainEqual(goal, field, node: value)
+      system.constrainEqual(goal, tau, node: value)
     }
-    goal = expr.type
+    goal = .array(tau, length: expr.values.count)
   }
 
   override func visitTupleExpr(_ expr: TupleExpr) {
@@ -250,8 +248,7 @@ final class ConstraintGenerator: ASTTransformer {
       visit(element)
       goals.append(self.goal)
     }
-    system.constrainEqual(expr, .tuple(goals))
-    self.goal = expr.type
+    goal = .tuple(goals)
   }
 
   override func visitTernaryExpr(_ expr: TernaryExpr) {
@@ -270,14 +267,9 @@ final class ConstraintGenerator: ASTTransformer {
   }
 
   override func visitReturnStmt(_ stmt: ReturnStmt) {
-    let tau = env.freshTypeVariable()
-
     visit(stmt.value)
-    system.constrainEqual(stmt.value, tau)
-
-    system.constrainEqual(stmt.type, tau, node: stmt)
-
-    self.goal = tau
+    system.constrainEqual(stmt.value, stmt.type)
+    goal = stmt.type
   }
 
   override func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) {

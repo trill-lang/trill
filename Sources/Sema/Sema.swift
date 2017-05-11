@@ -390,36 +390,18 @@ public class Sema: ASTTransformer, Pass {
   
   public override func visitArrayExpr(_ expr: ArrayExpr) {
     super.visitArrayExpr(expr)
-    guard let first = expr.values.first?.type else {
-      error(SemaError.ambiguousType,
-            loc: expr.startLoc,
-            highlights: [
-              expr.sourceRange
-            ])
-      return
-    }
-    for value in expr.values {
-      let type = value.type
-      guard type != .error else { return }
-      guard matches(type, first) else {
-        error(SemaError.nonMatchingArrayType(first, type),
-              loc: value.startLoc,
-              highlights: [
-                value.sourceRange
-              ])
-        return
-      }
-    }
-    expr.type = .array(first, length: expr.values.count)
+    guard let solution = solve(expr) else { return }
+    guard case let .array(elt, length) = solution else { return }
+    expr.type = .array(elt.literalFallback, length: length)
+    TypePropagator(context: context).visitArrayExpr(expr)
   }
   
   public override func visitTupleExpr(_ expr: TupleExpr) {
     super.visitTupleExpr(expr)
-    var types = [DataType]()
-    for expr in expr.values {
-      types.append(expr.type)
-    }
-    expr.type = .tuple(types)
+    guard let solution = solve(expr) else { return }
+    guard case let .tuple(elts) = solution else { return }
+    expr.type = .tuple(elts.map { $0.literalFallback })
+    TypePropagator(context: context).visitTupleExpr(expr)
   }
   
   public override func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {

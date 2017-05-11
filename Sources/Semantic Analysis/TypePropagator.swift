@@ -31,6 +31,11 @@ final class TypePropagator: ASTTransformer {
     guard canExprTy != canTy else { return }
 
     if !(expr is ExistentialCoercionExpr) && context.isProtocolType(type) {
+      if expr.type == .nilLiteral {
+        expr.type = type
+      } else {
+        expr.type = expr.type.literalFallback
+      }
       expr = ExistentialCoercionExpr(expr: expr, protocol: type)
     }
 
