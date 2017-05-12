@@ -208,9 +208,6 @@ final class ConstraintGenerator: ASTTransformer {
     var goals = [DataType]()
     visit(expr.lhs)
     goals.append(goal)
-    if case .function = goal {
-
-    }
 
     for arg in expr.args {
       visit(arg.val)
@@ -263,7 +260,7 @@ final class ConstraintGenerator: ASTTransformer {
     visit(expr.falseCase)
     system.constrainEqual(expr.falseCase, tau)
 
-    self.goal = tau
+    goal = tau
   }
 
   override func visitReturnStmt(_ stmt: ReturnStmt) {

@@ -193,6 +193,18 @@ struct ConstraintSolver {
            let (t, .nilLiteral):
         guard context.canBeNil(t) else { break }
         return solution
+      case let (.tuple(elts1), .tuple(elts2)) where elts1.count == elts2.count:
+        var system = ConstraintSystem()
+        for (elt1, elt2) in zip(elts1, elts2) {
+          system.constrainEqual(elt1, elt2,
+                                node: c.attachedNode,
+                                caller: c.location)
+        }
+        do {
+          return try solveSystem(system)
+        } catch {
+          break
+        }
       default:
         break
       }

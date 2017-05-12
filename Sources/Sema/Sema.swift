@@ -953,7 +953,7 @@ public class Sema: ASTTransformer, Pass {
     super.visitTernaryExpr(expr)
     
     guard let type = solve(expr) else { return }
-    expr.type = type
+    expr.type = type.literalFallback
     TypePropagator(context: context).visitTernaryExpr(expr)
   }
   
@@ -1003,7 +1003,12 @@ public class Sema: ASTTransformer, Pass {
     guard let returnType = currentClosure?.returnType!.type ?? currentFunction?.returnType.type else { return }
     super.visitReturnStmt(stmt)
     stmt.type = returnType
-    guard let solution = solve(stmt) else { return }
+    if case .tuple = returnType {
+
+    }
+    guard let solution = solve(stmt) else {
+      return
+    }
     stmt.type = solution
     TypePropagator(context: context).visitReturnStmt(stmt)
   }

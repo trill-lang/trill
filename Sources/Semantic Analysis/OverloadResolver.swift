@@ -63,6 +63,7 @@ struct OverloadRejection<DeclType: FuncDecl> {
     case labelProvided(Int, Identifier)
     case labelRequired(Int, Identifier)
     case invalidConstraints(ConstraintError)
+    case unknown(Error)
   }
   let candidate: DeclType
   let reasons: [Reason]
@@ -297,6 +298,7 @@ struct OverloadResolver {
         reject(candidate, .invalidConstraints(error))
       } catch {
 //        print("Overload not accepted for candidate \(candidate.name): \(error)")
+        reject(candidate, .unknown(error))
       }
     }
 

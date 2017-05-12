@@ -1,9 +1,6 @@
 //
-//  ConstraintApplier.swift
+//  TypePropagator.swift
 //  trill
-//
-//  Created by Harlan Haskins on 4/26/17.
-//  Copyright © 2017 Harlan. All rights reserved.
 //
 
 import Foundation
