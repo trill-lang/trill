@@ -263,7 +263,9 @@ public class Sema: ASTTransformer, Pass {
   ///            instead of a method
   func visitPropertyRefExpr(_ expr: PropertyRefExpr, call: FuncCallExpr?) -> FieldKind {
     super.visitPropertyRefExpr(expr)
+
     expr.lhs.type = expr.lhs.type.literalFallback
+
     let type = expr.lhs.type
     guard type != .error else {
       // An error will already have been thrown from here

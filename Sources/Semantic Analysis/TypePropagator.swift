@@ -34,6 +34,7 @@ final class TypePropagator: ASTTransformer {
         expr.type = expr.type.literalFallback
       }
       expr = ExistentialCoercionExpr(expr: expr, protocol: type)
+      return
     }
 
     retype(expr, type: type)
