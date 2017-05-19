@@ -837,7 +837,7 @@ public class Sema: ASTTransformer, Pass {
     expr.type = solution
 
     // Determine if this necessitates a promotion or conversion.
-    let constraint = Constraint(kind: .coercion(lhsPreType, solution),
+    let constraint = Constraint(kind: .conversion(lhsPreType, solution),
                                 location: #function,
                                 attachedNode: expr,
                                 isExplicitTypeVariable: false)

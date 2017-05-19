@@ -55,7 +55,7 @@ struct ConstraintSolver {
 
       return solution
 
-    case let .coercion(t1, t2):
+    case let .conversion(t1, t2):
       if let solution = try? solveSingle(c.withKind(.equal(t1, t2))) {
         return solution
       }

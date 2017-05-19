@@ -74,19 +74,19 @@ struct ConstraintSystem {
                    caller: caller)
   }
 
-  mutating func constrainCoercion(_ e: Expr, _ t: DataType,
+  mutating func constrainConversion(_ e: Expr, _ t: DataType,
                                   isExplicitTypeVariable: Bool = false,
                                   caller: StaticString = #function) {
-    constrainCoercion(e.type, t, node: e,
+    constrainConversion(e.type, t, node: e,
                       isExplicitTypeVariable: isExplicitTypeVariable,
                       caller: caller)
   }
 
-  mutating func constrainCoercion(_ t1: DataType, _ t2: DataType,
+  mutating func constrainConversion(_ t1: DataType, _ t2: DataType,
                                   node: ASTNode? = nil,
                                   isExplicitTypeVariable: Bool = false,
                                   caller: StaticString = #function) {
-    constraints.append(Constraint(kind: .coercion(t1, t2),
+    constraints.append(Constraint(kind: .conversion(t1, t2),
                                   location: caller, attachedNode: node,
                                   isExplicitTypeVariable: isExplicitTypeVariable))
   }
@@ -113,7 +113,7 @@ struct ConstraintSystem {
         print("\(t1) == \(t2)")
       case let .conforms(t1, t2):
         print("\(t1) :  \(t2)")
-      case let .coercion(t1, t2):
+      case let .conversion(t1, t2):
         print("\(t1) :≈ \(t2)")
       }
       print("  declared in: \(constraint.location)")

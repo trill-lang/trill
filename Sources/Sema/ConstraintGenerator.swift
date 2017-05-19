@@ -162,7 +162,7 @@ final class ConstraintGenerator: ASTTransformer {
     system.constrainEqual(tau, goal, node: expr.rhs)
 
     visit(expr.lhs)
-    system.constrainCoercion(goal, tau, node: expr.lhs)
+    system.constrainConversion(goal, tau, node: expr.lhs)
 
     goal = tau
   }
