@@ -1,0 +1,359 @@
+#!/usr/bin/env python
+#
+# build
+#
+# Copyright 2016-2017 the Trill project authors.
+# Licensed under the MIT License.
+#
+# Full license text available at https://github.com/trill-lang/trill
+#
+"""
+A script to build trill and invoke SwiftPM.
+"""
+from __future__ import print_function
+import argparse
+import os
+import os.path as path
+import pkgconfig
+import shutil
+from subprocess import call, Popen, PIPE
+import sys
+from contextlib import contextmanager
+from distutils.spawn import find_executable
+from glob import glob
+from pbxproj import XcodeProject
+from pbxproj.pbxsections import PBXBuildFile
+from pbxproj.pbxextensions import FileOptions
+
+class PBXNoCommentBuildFile(PBXBuildFile):
+    def parse(self, value):
+        v = super(PBXBuildFile, self).parse(value)
+        self['isa'] = 'PBXBuildFile'
+        return v
+    def _get_comment(self):
+        return ''
+
+def call_or_panic(*args, **kwargs):
+    return_code = call(*args, **kwargs)
+    if return_code != 0:
+        print("command failed: %s" % ' '.join(*args))
+        sys.exit(return_code)
+
+def error(msg):
+    """
+    Prints an error message and exits with a non-zero exit code.
+    """
+    print("error: " + str(msg))
+    sys.exit(-1)
+
+
+@contextmanager
+def pushd(new_dir):
+    """
+    Pushes the provided directory onto the directory stack while the context
+    manager is active.
+    """
+    previous_dir = os.getcwd()
+    os.chdir(new_dir)
+    yield
+    os.chdir(previous_dir)
+
+
+def log(msg):
+    """
+    Logs the provided message to the console.
+    """
+    print("[build]: " + str(msg))
+
+
+class LinkDependency(object):
+    """
+    Represents a linked dependency for a project.
+    """
+    def __init__(self, cflags, ldflags):
+        self.cflags = cflags
+        self.ldflags = ldflags
+
+    @staticmethod
+    def find_from_pkgconfig(name, repo_name):
+        """
+        Finds the CFLAGS and LDFLAGS from the provided pkgconfig file, erroring
+        if they couldn't be found.
+        """
+        if not pkgconfig.exists(name):
+            error(("You must install the pkg-config file for %s before " +
+                   "building trill. Run `utils/make-pkgconfig.swift` in the " +
+                   "%sSwift repo.") % (repo_name, repo_name))
+        return LinkDependency(pkgconfig.cflags(name).split(),
+                              pkgconfig.libs(name).split())
+
+    def include_dirs(self):
+        """
+        Gets just the include directories out of the cflags.
+        """
+        return [flag.strip('-I') for flag in self.cflags
+                if flag.startswith('-I')]
+
+    def runpath_search_paths(self):
+        return [flag.strip('-L') for flag in self.ldflags
+                 if flag.startswith('-L')]
+
+class Build(object):
+    """
+    Represents a full build configuration for the project.
+    """
+    def __init__(self, args):
+        self.xcodeproj = args.xcodeproj
+        self.is_release = args.release
+        self.should_reconfigure = args.reconfigure
+        self.run_tests = args.test
+        self.make_pkgconfig = args.pkgconfig
+
+        dir_pieces = []
+        if args.xcodeproj:
+            if args.test:
+                error("cannot test with an xcode project")
+            if sys.platform != 'darwin':
+                error("xcode project generation requires macOS")
+            dir_pieces.append('Xcode')
+
+        dir_pieces.append('Release' if self.is_release else 'Debug')
+        self.build_config = '-'.join(dir_pieces)
+        self.source_dir = os.path.abspath(path.join(path.split(__file__)[0],
+                                                    os.pardir))
+
+        self.build_dir = path.join(self.source_dir, '.build', self.build_config)
+        self.swiftpm_dir = path.join(self.build_dir, 'swiftpm')
+        self.bin_dir = path.join(self.build_dir, 'bin')
+        self.trill_exec = path.join(self.bin_dir, 'trill')
+        self.trill_demangle_exec = path.join(self.bin_dir, 'trill-demangle')
+
+        if args.swift:
+            self.swift = args.swift
+        else:
+            self.swift = 'swift'
+
+    def find_executable(self, name):
+        """
+        Finds the executable for the provided name or errors if it could not
+        be found in the PATH.
+        """
+        executable = find_executable(name)
+        if not executable:
+            error('could not find executable for %s; ' +
+                  'make sure it is in your PATH')
+        log('using %s: %s' % (name, executable))
+        return executable
+
+    def try_make_dir(self, dir):
+        """
+        Tries to make the given directory, but does not raise
+        if the directory already exists
+        """
+        try:
+            os.makedirs(dir)
+        except OSError:
+            # If the directory exists already, we'll get this.
+            pass
+
+    def link_stdlib(self):
+        """
+        Links the stdlib into the build dir's stdlib directory
+        """
+        stdlib_src_dir = path.join(self.source_dir, 'stdlib')
+        new_stdlib_dir = path.join(self.build_dir, 'stdlib')
+        if path.exists(new_stdlib_dir):
+            os.remove(new_stdlib_dir)
+
+        os.symlink(stdlib_src_dir, new_stdlib_dir)
+
+    def swift_build_args(self):
+        swift_args = [
+            "--build-path", self.swiftpm_dir,
+            '-Xcxx', '-std=c++14'
+        ]
+        if self.is_release:
+            swift_args += ['--configuration', 'release']
+
+        if sys.platform == 'darwin':
+            swift_args += [
+                '-Xswiftc', '-target', '-Xswiftc', 'x86_64-apple-macosx10.12'
+            ]
+
+        llvm = LinkDependency.find_from_pkgconfig('cllvm', 'LLVM')
+        clang = LinkDependency.find_from_pkgconfig('cclang', 'Clang')
+
+        for flag in llvm.cflags + clang.cflags:
+            swift_args += ['-Xcxx', flag]
+
+        for flag in llvm.ldflags + clang.ldflags:
+            swift_args += ['-Xlinker', flag]
+
+        for flag in llvm.runpath_search_paths() + clang.runpath_search_paths():
+            swift_args += ['-Xlinker', '-rpath', '-Xlinker', flag]
+
+        return swift_args
+
+    def run_swift_build(self):
+        """
+        Runs `swift build` with the appropriate command-line flags.
+        """
+        bin_dir = path.join(self.build_dir, 'bin')
+        swiftpm_config_dir = path.join(self.swiftpm_dir,
+                                       'release' if self.is_release else 'debug')
+        swiftpm_bin = path.join(swiftpm_config_dir, 'trill')
+        swiftpm_demangle_bin = path.join(swiftpm_config_dir, 'trill-demangle')
+
+        self.try_make_dir(bin_dir)
+
+        call_or_panic([self.swift, 'build'] + self.swift_build_args())
+
+        if not path.exists(swiftpm_bin):
+            error('could not find trill executable in %s' % swiftpm_bin)
+
+        log('moving built trill into ./bin')
+        shutil.copy(swiftpm_bin, self.trill_exec)
+        shutil.copy(swiftpm_demangle_bin, self.trill_demangle_exec)
+
+        log('copying runtime')
+        runtime_build_dir = path.join(self.build_dir, 'runtime')
+        runtime_lib_dir = path.join(self.build_dir, 'lib')
+        runtime_build_include_dir = path.join(self.build_dir, 'include')
+        runtime_include_dir = path.join(self.source_dir, 'runtime', 'include')
+        swiftpm_runtime_archive = path.join(swiftpm_config_dir, 'libtrillRuntime.a')
+
+        shutil.rmtree(runtime_build_include_dir, ignore_errors=True)
+        shutil.copytree(runtime_include_dir, runtime_build_include_dir)
+        self.try_make_dir(runtime_lib_dir)
+        shutil.copy(swiftpm_runtime_archive, runtime_lib_dir)
+
+    def run_swift_test(self):
+        """
+        Runs `swift test` with the appropriate command-line flags.
+        """
+        call_or_panic([self.swift, 'test'] + self.swift_build_args())
+
+    def run_swift_xcodeproj(self):
+        """
+        Runs `swift package generate-xcpodeproj`, creating an `xcconfig` file
+        with the appropriate source directories.
+        """
+        bin_dir = path.join(self.build_dir, 'bin')
+
+        llvm = LinkDependency.find_from_pkgconfig('cllvm', 'LLVM')
+        clang = LinkDependency.find_from_pkgconfig('cclang', 'Clang')
+
+        xcconfig_path = path.join(self.build_dir, 'trill.xcconfig')
+        xcconfig_contents = \
+"""
+MACOSX_DEPLOYMENT_TARGET = 10.12
+SWIFT_VERSION = 4.0
+HEADER_SEARCH_PATHS = $(inherited) {include_dirs}
+OTHER_LDFLAGS = $(inherited) {ldflags}
+CLANG_CXX_LANGUAGE_STANDARD = c++14
+BUILD_DIR = {bin_dir}
+LD_RUNPATH_SEARCH_PATHS = {runpath_search_paths} $(inherited)
+""".format(include_dirs=' '.join(llvm.include_dirs() + clang.include_dirs()),
+           ldflags=' '.join(llvm.ldflags + clang.ldflags),
+           bin_dir=bin_dir,
+           runpath_search_paths=' '.join(llvm.runpath_search_paths() + clang.runpath_search_paths()))
+
+        with open(xcconfig_path, 'w+') as xcconfig_file:
+            log('writing trill.xcconfig')
+            xcconfig_file.write(xcconfig_contents)
+
+        call_or_panic([
+            self.swift, 'package', 'generate-xcodeproj',
+            '--output', self.build_dir,
+            '--xcconfig-overrides', xcconfig_path
+        ])
+
+        pbxproj = XcodeProject.load(path.join(self.build_dir, 'trill.xcodeproj', 'project.pbxproj'))
+        for build_config in pbxproj.objects.get_objects_in_section('XCBuildConfiguration'):
+            runpath_search_paths = 'LD_RUNPATH_SEARCH_PATHS'
+            if build_config.buildSettings[runpath_search_paths] is not None:
+                build_config.add_search_paths(runpath_search_paths, '$(inherited)')
+        for target in pbxproj.objects.get_objects_in_section('PBXNativeTarget'):
+            if target.name == 'trillRuntime':
+                target.productType = 'com.apple.product-type.library.static'
+            if target.name == 'trill':
+                def add_copy_phase(target, name, files, path = ''):
+                    build_phases = target.get_or_create_build_phase('PBXCopyFilesBuildPhase', search_parameters={'name':name}, create_parameters=(name, [], path))
+                    for build_phase in build_phases:
+                        for file in files:
+                            build_file = PBXNoCommentBuildFile.create(file, None)
+                            pbxproj.objects[build_file.get_id()] = build_file
+                            build_phase.add_build_file(build_file)
+
+                for file in pbxproj.objects.get_objects_in_section('PBXFileReference'):
+                    if file.path == 'stdlib' and file.sourceTree == 'SOURCE_ROOT':
+                        add_copy_phase(target, 'Copy Standard Library', [file], path = '../..')
+                    if file.path == 'trillRuntime.framework' and file.sourceTree == 'BUILT_PRODUCTS_DIR':
+                        file.path = 'libtrillRuntime.a'
+                        add_copy_phase(target, 'Copy Runtime', [file], path = '../../lib')
+                target.get_or_create_build_phase('PBXShellScriptBuildPhase', create_parameters=('rm -fr "$BUILT_PRODUCTS_DIR/../../include"; cp -r "$SRCROOT/runtime/include" "$BUILT_PRODUCTS_DIR/../../include"',))[0]['name'] = 'Copy Runtime Headers'
+
+        pbxproj.save()
+
+    def test(self):
+        """
+        Runs the run-examples test suite.
+        """
+        run_examples_script = path.join(self.source_dir, 'utils',
+                                        'run-examples.swift')
+        examples_dir = path.join(self.source_dir, 'examples')
+        call_or_panic([self.swift, run_examples_script,
+                       self.trill_exec, examples_dir])
+
+    def run(self):
+        """
+        Runs the full build with the arguments provided
+        """
+        if self.should_reconfigure:
+            shutil.rmtree(self.build_dir, ignore_errors=True)
+
+        if self.make_pkgconfig:
+            call_or_panic([self.swift, "package", "resolve"])
+            call_or_panic([self.swift] + glob(".build/checkouts/LLVMSwift*/utils/make-pkgconfig.swift"))
+            call_or_panic([self.swift] + glob(".build/checkouts/ClangSwift*/utils/make-pkgconfig.swift"))
+            return
+
+        self.try_make_dir(self.build_dir)
+
+        os.chdir(self.build_dir)
+
+        self.link_stdlib()
+
+        if self.xcodeproj:
+            self.run_swift_xcodeproj()
+        else:
+            self.run_swift_build()
+
+        if self.run_tests:
+            self.test()
+
+def main():
+    """
+    Runs the build script and invokes CMake.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--swift', help='Path to custom swift executable.')
+    parser.add_argument('-r', '--release', action='store_true',
+                        help='Build the executable in the Release ' +
+                        'configuration')
+    parser.add_argument('-x', '--xcodeproj', action='store_true',
+                        help='Build an Xcode project for the trill compiler.')
+    parser.add_argument('-t', '--test', help='Run the trill test suite.',
+                        action='store_true')
+    parser.add_argument('--reconfigure', action='store_true',
+                        help='Delete the existing CMake files and start over')
+    parser.add_argument('--pkgconfig', action='store_true',
+                        help='Make pkgconfig files for trill\'s dependencies')
+
+    args = parser.parse_args()
+
+    build = Build(args)
+    build.run()
+
+if __name__ == "__main__":
+    main()

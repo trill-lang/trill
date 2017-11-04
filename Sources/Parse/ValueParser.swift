@@ -1,9 +1,16 @@
-//
-//  ValueParser.swift
-//  Trill
-//
+///
+/// ValueParser.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import Diagnostics
 import Foundation
+import Source
 
 extension Parser {
   
@@ -98,7 +105,7 @@ extension Parser {
                               sourceRange: tok.range)
     case .poundLine:
       consumeToken()
-      valExpr = NumExpr(value: IntMax(sourceLoc.line),
+      valExpr = NumExpr(value: Int64(sourceLoc.line),
                         raw: "\(sourceLoc.line)",
                         sourceRange: tok.range)
     case .poundFunction:
@@ -114,7 +121,7 @@ extension Parser {
     case .stringInterpolationLiteral(let segments):
       consumeToken()
       let segmentExprs = try segments.map { tokens -> Expr in
-        let parser = Parser(tokens: tokens, filename: filename, context: context)
+        let parser = Parser(tokens: tokens, file: file, context: context)
         return try parser.parseValExpr()
       }
       valExpr = StringInterpolationExpr(
@@ -353,8 +360,7 @@ extension Parser {
     guard [.leftParen, .leftBracket, .dot, .comma].contains(peek()) else {
       return false
     }
-    let newTokDesc = tokDesc.substring(from:
-      tokDesc.index(after: tokDesc.startIndex))
+    let newTokDesc = String(tokDesc[tokDesc.index(after: tokDesc.startIndex)...])
     if newTokDesc.characters.count > 0 {
       var newStart = tok.range.start
       newStart.charOffset += 1

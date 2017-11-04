@@ -1,9 +1,15 @@
-//
-//  StatementIRGen.swift
-//  Trill
-//
+///
+/// StatementIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
 import Foundation
+import LLVM
 
 extension IRGenerator {
   @discardableResult
@@ -21,7 +27,7 @@ extension IRGenerator {
     globalVarIRBindings[decl.name] = binding
     return binding
   }
-  
+
   func storage(for type: DataType) -> Storage {
     if let decl = context.decl(for: context.canonicalType(type)),
       decl.isIndirect {
@@ -29,8 +35,8 @@ extension IRGenerator {
     }
     return .value
   }
-  
-  func visitGlobal(_ decl: VarAssignDecl) -> VarBinding {
+
+ func visitGlobal(_ decl: VarAssignDecl) -> VarBinding {
     let binding = codegenGlobalPrototype(decl)
     guard var global = binding.ref as? Global else {
       fatalError("global binding is not a Global?")
@@ -52,7 +58,7 @@ extension IRGenerator {
     } else {
       global.initializer = irType.null()
       let currentBlock = builder.insertBlock
-      
+
       let initFn = builder.addFunction(Mangler.mangle(global: decl,
                                                       kind: .initializer),
                                        type: FunctionType(argTypes: [],
@@ -60,7 +66,7 @@ extension IRGenerator {
       builder.positionAtEnd(of: initFn.appendBasicBlock(named: "entry"))
       builder.buildStore(visit(rhs)!, to: binding.ref)
       builder.buildRetVoid()
-      
+
       let lazyInit = builder.addFunction(Mangler.mangle(global: decl,
                                                         kind: .accessor),
                                          type: FunctionType(argTypes: [],
@@ -68,7 +74,7 @@ extension IRGenerator {
       builder.positionAtEnd(of: lazyInit.appendBasicBlock(named: "entry", in: llvmContext))
       codegenOnceCall(function: initFn)
       builder.buildRet(builder.buildLoad(binding.ref, name: "global-res"))
-      
+
       if let block = currentBlock {
         builder.positionAtEnd(of: block)
       }
@@ -77,12 +83,12 @@ extension IRGenerator {
                         write: { self.builder.buildStore($0, to: binding.ref) })
     }
   }
-  
-  func visitGlobalVarAssignExpr(_ decl: VarAssignDecl) -> Result {
+
+  public func visitGlobalVarAssignExpr(_ decl: VarAssignDecl) -> Result {
     return nil
   }
-  
-  func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
+
+  public func visitVarAssignDecl(_ decl: VarAssignDecl) -> Result {
     let function = currentFunction!.functionRef!
     let type = decl.type
     let irType = resolveLLVMType(type)
@@ -105,8 +111,8 @@ extension IRGenerator {
     builder.buildStore(value, to: binding.ref)
     return binding.ref
   }
-  
-  func visitIfStmt(_ stmt: IfStmt) -> Result {
+
+  public func visitIfStmt(_ stmt: IfStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("if outside function?")
     }
@@ -141,7 +147,7 @@ extension IRGenerator {
       withScope {
         visitCompoundStmt(elseBody)
       }
-      
+
       if let lastInst = elsebb.lastInstruction {
         if !lastInst.isATerminatorInst {
           builder.buildBr(mergebb)
@@ -156,8 +162,8 @@ extension IRGenerator {
     builder.positionAtEnd(of: mergebb)
     return nil
   }
-  
-  func visitWhileStmt(_ stmt: WhileStmt) -> Result {
+
+  public func visitWhileStmt(_ stmt: WhileStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("while loop outside function?")
     }
@@ -181,8 +187,8 @@ extension IRGenerator {
     builder.positionAtEnd(of: endbb)
     return nil
   }
-  
-  func visitForStmt(_ stmt: ForStmt) -> Result {
+
+  public func visitForStmt(_ stmt: ForStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("for loop outside function")
     }
@@ -217,19 +223,19 @@ extension IRGenerator {
     return nil
   }
 
-  func visitDeclStmt(_ stmt: DeclStmt) -> Result {
+  public func visitDeclStmt(_ stmt: DeclStmt) -> Result {
     return visit(stmt.decl)
   }
 
-  func visitExprStmt(_ stmt: ExprStmt) -> Result {
+  public func visitExprStmt(_ stmt: ExprStmt) -> Result {
     return visit(stmt.expr)
   }
-  
-  func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> Result {
+
+  public func visitPoundDiagnosticStmt(_ stmt: PoundDiagnosticStmt) -> Result {
     return nil
   }
-  
-  func visitSwitchStmt(_ stmt: SwitchStmt) -> Result {
+
+  public func visitSwitchStmt(_ stmt: SwitchStmt) -> Result {
     guard let function = currentFunction?.functionRef else {
       fatalError("switch outside function")
     }
@@ -265,8 +271,8 @@ extension IRGenerator {
     builder.positionAtEnd(of: endbb)
     return nil
   }
-  
-  func visitCaseStmt(_ stmt: CaseStmt) -> Result {
+
+  public func visitCaseStmt(_ stmt: CaseStmt) -> Result {
     // never called directly
     return nil
   }

@@ -1,12 +1,19 @@
-//
-//  Lexer.swift
-//  Trill
-//
+///
+/// Lexer.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import Diagnostics
 import Foundation
+import Source
 
-enum TokenKind: Equatable {
-  case number(value: IntMax, raw: String)
+public enum TokenKind: Equatable {
+  case number(value: Int64, raw: String)
   case float(value: Double)
   case identifier(String)
   case unknown(String)
@@ -63,10 +70,10 @@ enum TokenKind: Equatable {
   case eof
   case underscore
 
-  static let leftAngle: TokenKind = .operator(.lessThan)
-  static let rightAngle: TokenKind = .operator(.greaterThan)
+  public static let leftAngle: TokenKind = .operator(.lessThan)
+  public static let rightAngle: TokenKind = .operator(.greaterThan)
   
-  init(op: String) {
+  public init(op: String) {
     switch op {
     case ":": self = .colon
     case ";": self = .semicolon
@@ -87,7 +94,7 @@ enum TokenKind: Equatable {
     }
   }
   
-  init(identifier: String) {
+  public init(identifier: String) {
     switch identifier {
     case "func": self = .func
     case "init": self = .Init
@@ -126,7 +133,7 @@ enum TokenKind: Equatable {
     }
   }
   
-  var text: String {
+  public var text: String {
     switch self {
     case .number(_, let raw): return raw
     case .float(let value): return "\(value)"
@@ -187,7 +194,7 @@ enum TokenKind: Equatable {
     }
   }
   
-  var isKeyword: Bool {
+  public var isKeyword: Bool {
     switch self {
     case .func, .while, .if, .in, .as, .is, .else, .for, .nil, .break, .case,
          .switch, .default, .continue, .return, .underscore, .extension, .where,
@@ -201,7 +208,7 @@ enum TokenKind: Equatable {
     }
   }
   
-  var isLiteral: Bool {
+  public var isLiteral: Bool {
     switch self {
     case .number: return true
     case .float: return true
@@ -210,24 +217,24 @@ enum TokenKind: Equatable {
     }
   }
   
-  var isString: Bool {
+  public var isString: Bool {
     if case .stringLiteral = self { return true }
     return false
   }
   
-  var isEOF: Bool {
+  public var isEOF: Bool {
     if case .eof = self { return true }
     return false
   }
   
-  var isLineSeparator: Bool {
+  public var isLineSeparator: Bool {
     if case .newline = self { return true }
     if case .semicolon = self { return true }
     return false
   }
 }
 
-func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
+public func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   switch (lhs, rhs) {
   case (.number(let value, let raw), .number(let otherValue, let otherRaw)):
     return value == otherValue && raw == otherRaw
@@ -295,19 +302,19 @@ func ==(lhs: TokenKind, rhs: TokenKind) -> Bool {
   }
 }
 
-struct Token {
-  let kind: TokenKind
-  let range: SourceRange
+public struct Token {
+  public let kind: TokenKind
+  public let range: SourceRange
   
-  var length: Int {
-    return range.end.charOffset - range.start.charOffset
+  public var length: Int {
+    return range.length
   }
   
-  var isKeyword: Bool { return kind.isKeyword }
-  var isLiteral: Bool { return kind.isLiteral }
-  var isString: Bool { return kind.isString }
-  var isLineSeparator: Bool { return kind.isLineSeparator }
-  var isEOF: Bool { return kind.isEOF }
+  public var isKeyword: Bool { return kind.isKeyword }
+  public var isLiteral: Bool { return kind.isLiteral }
+  public var isString: Bool { return kind.isString }
+  public var isLineSeparator: Bool { return kind.isLineSeparator }
+  public var isEOF: Bool { return kind.isEOF }
 }
 
 extension UnicodeScalar {
@@ -351,21 +358,21 @@ enum LexError: Error, CustomStringConvertible {
   }
 }
 
-struct Lexer {
-  var sourceLoc: SourceLocation
-  var characters = [UnicodeScalar]()
-  var tokenIndex = 0
+public struct Lexer {
+  public var sourceLoc: SourceLocation
+  public var characters = [UnicodeScalar]()
+  public var tokenIndex = 0
   
-  func range(start: SourceLocation) -> SourceRange {
+  public func range(start: SourceLocation) -> SourceRange {
     return SourceRange(start: start, end: sourceLoc)
   }
   
-  init(filename: String, input: String) {
+  public init(file: SourceFile, input: String) {
     characters = Array(input.unicodeScalars)
-    sourceLoc = SourceLocation(line: 1, column: 1, file: filename)
+    sourceLoc = file.start
   }
   
-  mutating func lex() throws -> [Token] {
+  public mutating func lex() throws -> [Token] {
     var tokens = [Token]()
     while true {
       do {
@@ -390,6 +397,7 @@ struct Lexer {
       } else {
         sourceLoc.column += 1
       }
+
       sourceLoc.charOffset += 1
       tokenIndex += 1
     }
@@ -413,24 +421,23 @@ struct Lexer {
     return s
   }
   
-  mutating func advanceIf(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) -> Bool {
-    guard let c = currentChar() else { return false }
+  mutating func advanceIf(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) -> UnicodeScalar? {
+    guard let c = currentChar() else { return nil }
     if f(c) {
       perform()
       advance()
-      return true
+      return c
     }
-    return false
+    return nil
   }
   
   mutating func advanceWhile(_ f: (UnicodeScalar) -> Bool, perform: () -> Void = {}) {
-    while advanceIf(f, perform: perform) {}
+    while advanceIf(f) != nil {}
   }
   
   mutating func collectWhile(_ f: (UnicodeScalar) -> Bool) -> String {
     var s = ""
-    advanceWhile(f) {
-      guard let c = currentChar() else { return }
+    while let c = advanceIf(f) {
       s.append(String(c))
     }
     return s
@@ -495,17 +502,18 @@ struct Lexer {
     
     // skip comments
     if c == "/" {
-      if charAt(1) == "/" {
+      let next = charAt(1)
+      if next == "/" {
         advanceWhile({
           return $0 != "\n"
         })
         return try advanceToNextToken()
-      } else if charAt(1) == "*" {
-        advanceWhile({ _ in
-          return currentSubstring(2) != "*/"
-        })
-        advance()
-        advance()
+      } else if next == "*" {
+        advance(2)
+        while charAt(0) != "*" || charAt(1) != "/" {
+          advance()
+        }
+        advance(2)
         return try advanceToNextToken()
       }
     }
@@ -598,52 +606,16 @@ extension String {
     return self.replacingOccurrences(of: string, with: "")
   }
   
-  func asNumber() -> IntMax? {
+  public func asNumber() -> Int64? {
     let prefixMap = ["0x": 16, "0b": 2, "0o": 8]
     if characters.count <= 2 {
-      return IntMax(self, radix: 10)
+      return Int64(self, radix: 10)
     }
-    let prefix = substring(to: characters.index(startIndex, offsetBy: 2))
+    let prefix = String(self[..<characters.index(startIndex, offsetBy: 2)])
     guard let radix = prefixMap[prefix] else {
-      return IntMax(removing("_"), radix: 10)
+      return Int64(removing("_"), radix: 10)
     }
-    let suffix = removing("_").substring(from: characters.index(startIndex, offsetBy: 2))
-    return IntMax(suffix, radix: radix)
-  }
-  
-  func escaped() -> String {
-    var s = ""
-    for c in characters {
-      switch c {
-      case "\n": s += "\\n"
-      case "\t": s += "\\t"
-      case "\"": s += "\\\""
-      default: s.append(c)
-      }
-    }
-    return s
-  }
-  
-  func unescaped() -> String {
-    var s = ""
-    var nextCharIsEscaped = false
-    for c in characters {
-      if c == "\\" {
-        nextCharIsEscaped = true
-        continue
-      }
-      if nextCharIsEscaped {
-        switch c {
-        case "n": s.append("\n")
-        case "t": s.append("\t")
-        case "\"": s.append("\"")
-        default: s.append(c)
-        }
-      } else {
-        s.append(c)
-      }
-      nextCharIsEscaped = false
-    }
-    return s
+    let suffix = String(removing("_")[characters.index(startIndex, offsetBy: 2)...])
+    return Int64(suffix, radix: radix)
   }
 }

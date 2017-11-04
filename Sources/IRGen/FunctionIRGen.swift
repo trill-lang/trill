@@ -1,8 +1,14 @@
-//
-//  FunctionIRGen.swift
-//  Trill
-//
+///
+/// FunctionIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import LLVM
 import Foundation
 
 extension IRGenerator {
@@ -49,14 +55,14 @@ extension IRGenerator {
     return builder.addFunction(mangled, type: fType)
   }
   
-  func visitBreakStmt(_ expr: BreakStmt) -> Result {
+  public func visitBreakStmt(_ expr: BreakStmt) -> Result {
     guard let target = currentBreakTarget else {
       fatalError("break outside loop")
     }
     return builder.buildBr(target)
   }
   
-  func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
+  public func visitContinueStmt(_ stmt: ContinueStmt) -> Result {
     guard let target = currentContinueTarget else {
       fatalError("continue outside loop")
     }
@@ -96,11 +102,11 @@ extension IRGenerator {
     return function
   }
   
-  func visitOperatorDecl(_ decl: OperatorDecl) -> Result {
+  public func visitOperatorDecl(_ decl: OperatorDecl) -> Result {
     return visitFuncDecl(decl)
   }
   
-  func visitFuncDecl(_ decl: FuncDecl) -> Result {
+  public func visitFuncDecl(_ decl: FuncDecl) -> Result {
     let function = codegenFunctionPrototype(decl)
     
     if decl === context.mainFunction {
@@ -203,7 +209,7 @@ extension IRGenerator {
     return function
   }
   
-  func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
+  public func visitFuncCallExpr(_ expr: FuncCallExpr) -> Result {
     guard let decl = expr.decl else { fatalError("no decl on funccall") }
     
     if decl === IntrinsicFunctions.typeOf {
@@ -289,11 +295,11 @@ extension IRGenerator {
     return call
   }
   
-  func visitParamDecl(_ decl: ParamDecl) -> Result {
+  public func visitParamDecl(_ decl: ParamDecl) -> Result {
     fatalError("handled while generating function")
   }
   
-  func visitReturnStmt(_ expr: ReturnStmt) -> Result {
+  public func visitReturnStmt(_ expr: ReturnStmt) -> Result {
     guard let currentFunction = currentFunction,
           let currentDecl = currentFunction.function else {
       fatalError("return outside function?")
@@ -314,12 +320,5 @@ extension IRGenerator {
       builder.buildBr(currentFunction.returnBlock!)
     }
     return store
-  }
-}
-
-extension Array {
-  subscript(safe index: Int) -> Element? {
-    guard index < count, index >= 0 else { return nil }
-    return self[index]
   }
 }

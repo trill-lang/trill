@@ -1,0 +1,19 @@
+//
+//  SpecialTypes.def
+//  Trill
+//
+
+#ifndef SPECIAL_TYPE
+  #error Must define SPECIAL_TYPE before including SpecialTypes.def
+#endif
+
+SPECIAL_TYPE('I', "Int")
+SPECIAL_TYPE('U', "UInt")
+SPECIAL_TYPE('f', "Float")
+SPECIAL_TYPE('d', "Double")
+SPECIAL_TYPE('F', "Float80")
+SPECIAL_TYPE('b', "Bool")
+SPECIAL_TYPE('v', "Void")
+SPECIAL_TYPE('a', "Any")
+
+#undef SPECIAL_TYPE

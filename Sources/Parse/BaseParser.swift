@@ -1,9 +1,16 @@
-//
-//  Parser.swift
-//  Trill
-//
+///
+/// BaseParser.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import Diagnostics
 import Foundation
+import Source
 
 enum ParseError: Error, CustomStringConvertible {
   case unexpectedToken(token: TokenKind)
@@ -49,16 +56,33 @@ enum ParseError: Error, CustomStringConvertible {
   }
 }
 
-class Parser {
+public class Parser {
   var tokenIndex = 0
   var tokens: [Token]
-  let filename: String
+  let file: SourceFile
+  var filename: String { return file.path.filename }
   let context: ASTContext
   
-  init(tokens: [Token], filename: String, context: ASTContext) {
+  init(tokens: [Token], file: SourceFile, context: ASTContext) {
     self.tokens = tokens
-    self.filename = filename
+    self.file = file
     self.context = context
+  }
+
+  public static func parse(_ file: SourceFile, into context: ASTContext) {
+    do {
+      let fileContents = try context.sourceFileManager.contents(of: file)
+      var lexer = Lexer(file: file, input: fileContents)
+      let tokens = try lexer.lex()
+      let parser = Parser(tokens: tokens,
+                          file: file,
+                          context: context)
+      try parser.parseTopLevel(into: context)
+    } catch let diag as Diagnostic {
+      context.diag.add(diag)
+    } catch {
+      context.error(error)
+    }
   }
   
   func adjustedEnd() -> SourceLocation {
@@ -66,7 +90,7 @@ class Parser {
       let t = tokens[tokenIndex - 1]
       return t.range.end
     } else {
-      return SourceLocation(line: 1, column: 1)
+      return SourceLocation(line: 1, column: 1, file: file)
     }
   }
   
@@ -149,8 +173,9 @@ class Parser {
   
   func currentToken() -> Token {
     guard tokens.indices.contains(tokenIndex) else {
+      let range = SourceRange(start: file.start, end: file.start)
       return Token(kind: .eof,
-                   range: .zero)
+                   range: range)
     }
     return tokens[tokenIndex]
   }

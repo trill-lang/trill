@@ -1,16 +1,27 @@
-//
-//  main.swift
-//  Trill
-//
+///
+/// main.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import ClangImporter
+import Diagnostics
+import Driver
 import Foundation
+import IRGen
+import Options
 
-extension FileHandle: TextOutputStream {
-  public func write(_ string: String) {
-    write(string.data(using: .utf8)!)
-  }
-}
+// FIXME: Don't rely on LLVM's argument parser
+import LLVMWrappers
 
+import Parse
+import Runtime
+import Sema
+import Source
 
 var stderr = FileHandle.standardError
 var stdout = FileHandle.standardOutput
@@ -19,39 +30,37 @@ func populate(driver: Driver, options: Options,
               sourceFiles: [SourceFile],
               isATTY: Bool,
               context: ASTContext) throws {
-  var gen: IRGenerator? = nil
+  let runtimeLocation = try RuntimeLocator.findRuntime(forAddress: #dsohandle)
+  var stderrStream = ColoredANSIStream(&stderr, colored: isATTY)
+  let fatalErrorConsumer = StreamConsumer(stream: &stderrStream)
+  let gen = try IRGenerator(context: context, options: options,
+                            runtimeLocation: runtimeLocation,
+                            fatalErrorConsumer: fatalErrorConsumer)
   driver.add("Lexing and Parsing") { context in
     lexAndParse(sourceFiles: sourceFiles, into: context)
   }
-  
+
   if options.importC {
-    let irgen = try IRGenerator(context: context,
-                                options: options)
     driver.add("Clang Importer") { context in
       return ClangImporter(context: context,
-                           target: irgen.targetMachine.triple).run(in: context)
+                           target: gen.targetMachine.triple,
+                           runtimeLocation: runtimeLocation).run(in: context)
     }
-    gen = irgen
   }
-  
+
   if options.includeStdlib {
     driver.add("Parsing Standard Library") { context in
       let stdlibContext = StdLibASTContext(diagnosticEngine: context.diag)
-      guard let stdlibPath = runtimeFramework?.path(forResource: "stdlib", ofType: nil), FileManager.default.fileExists(atPath: stdlibPath) else {
-        context.diag.error("Unable to find the stdlib in the trill runtime")
-        return
-      }
-      guard let stdlibFiles = FileManager.default.recursiveChildren(of: stdlibPath)?.filter({ f in f.hasSuffix(".tr") }) else {
-        context.diag.error("Unable to enumerate stdlib at \(stdlibPath)")
-        return
-      }
-      let stdlibSourceFiles = try _sourceFiles(from: stdlibFiles, diag: context.diag)
+      let stdlibPath = runtimeLocation.stdlib.path
+      let allStdlibFiles = FileManager.default.recursiveChildren(of: stdlibPath)!
+      let stdlibFiles = allStdlibFiles.filter {  $0.hasSuffix(".tr") }
+      let stdlibSourceFiles = try _sourceFiles(from: stdlibFiles, context: context)
       lexAndParse(sourceFiles: stdlibSourceFiles, into: stdlibContext)
       context.stdlib = stdlibContext
-      context.merge(context: stdlibContext)
+      context.merge(stdlibContext)
     }
   }
-  
+
   let addASTPass: () -> Bool = {
     if case .emit(.ast) = options.mode {
       driver.add("Dumping the AST") { context in
@@ -65,40 +74,33 @@ func populate(driver: Driver, options: Options,
     }
     return false
   }
-  
+
   if options.parseOnly && addASTPass() {
     return
   }
-  
+
   driver.add(pass: Sema.self)
   driver.add(pass: TypeChecker.self)
-  
+
   if !options.parseOnly && addASTPass() {
     return
   }
-  
+
   if case .onlyDiagnostics = options.mode { return }
-  
-  if case .emit(.javaScript) = options.mode {
-    driver.add("Generating JavaScript") { context in
-      return JavaScriptGen(stream: &stdout, context: context).run(in: context)
-    }
-    return
-  }
-  
-  driver.add("LLVM IR Generation", pass: gen!.run)
-  
+
+  driver.add("LLVM IR Generation", pass: gen.run)
+
   switch options.mode {
   case .emit(let outputType):
     driver.add("Serializing \(outputType)") { context in
-      try gen!.emit(outputType, output: options.outputFilename)
+      try gen.emit(outputType, output: options.outputFilename)
     }
     break
   case .jit:
     driver.add("Executing the JIT") { context in
       var args = options.jitArgs
       args.insert("\(options.filenames.first ?? "<>")", at: 0)
-      let ret = try gen!.execute(args)
+      let ret = try gen.execute(args)
       if ret != 0 {
         context.diag.error("program exited with non-zero exit code \(ret)")
       }
@@ -107,56 +109,73 @@ func populate(driver: Driver, options: Options,
   }
 }
 
-func sourceFiles(options: Options, diag: DiagnosticEngine) throws -> [SourceFile] {
+func sourceFiles(options: Options, context: ASTContext) throws -> [SourceFile] {
   if options.isStdin {
-    let context = ASTContext(diagnosticEngine: diag)
-    let file = try SourceFile(path: .stdin,
-                              context: context)
-    context.add(file)
+    let file = try SourceFile(path: .stdin, sourceFileManager: context.sourceFileManager)
     return [file]
   } else {
-    return try _sourceFiles(from: options.filenames, diag: diag)
+    return try _sourceFiles(from: options.filenames, context: context)
   }
 }
 
-func _sourceFiles(from filenames: [String], diag: DiagnosticEngine) throws -> [SourceFile] {
+func _sourceFiles(from filenames: [String], context: ASTContext) throws -> [SourceFile] {
   return try filenames.map { path in
-    let context = ASTContext(diagnosticEngine: diag)
     let url = URL(fileURLWithPath: path)
-    let file = try SourceFile(path: .file(url), context: context)
-    context.add(file)
-    return file
+    return try SourceFile(path: .file(url), sourceFileManager: context.sourceFileManager)
   }
 }
 
 func lexAndParse(sourceFiles: [SourceFile], into context: ASTContext) {
   if sourceFiles.count == 1 {
-    sourceFiles[0].parse()
-    context.merge(context: sourceFiles[0].context)
+    context.add(sourceFiles[0])
+    Parser.parse(sourceFiles[0], into: context)
     return
+  }
+
+  let mergeQueue = DispatchQueue(label: "source-file-merge")
+  var contexts = [ASTContext]()
+  func add(_ context: ASTContext) {
+    mergeQueue.sync {
+      contexts.append(context)
+    }
   }
   let group = DispatchGroup()
   for file in sourceFiles {
     DispatchQueue.global().async(group: group) {
-      file.parse()
+      let newCtx = ASTContext(diagnosticEngine: context.diag)
+      newCtx.add(file)
+      Parser.parse(file, into: context)
+      add(newCtx)
     }
   }
   group.wait()
-  for file in sourceFiles {
-    context.merge(context: file.context)
+  for newContext in contexts {
+    context.merge(newContext)
   }
 }
 
-func main() -> Int32 {
-  let options = Options(ParseArguments(CommandLine.argc, CommandLine.unsafeArgv))
-  
-  let diag = DiagnosticEngine()
+func performCompile(diag: DiagnosticEngine, options: Options) {
   let context = ASTContext(diagnosticEngine: diag)
   let driver = Driver(context: context)
+
+  if options.jsonDiagnostics {
+    let consumer = JSONDiagnosticConsumer(stream: &stderr)
+    diag.register(consumer)
+  } else {
+    var stream = ColoredANSIStream(&stderr, colored: ansiEscapeSupportedOnStdErr)
+    let consumer = StreamConsumer(stream: &stream)
+    diag.register(consumer)
+  }
+
+  if options.filenames.isEmpty {
+    diag.error("no input files provided")
+    return
+  }
+
   var files = [SourceFile]()
   do {
-    files = try sourceFiles(options: options, diag: diag)
-    
+    files = try sourceFiles(options: options, context: context)
+
     try populate(driver: driver,
                  options: options,
                  sourceFiles: files,
@@ -166,16 +185,7 @@ func main() -> Int32 {
   } catch {
     diag.error(error)
   }
-  if options.jsonDiagnostics {
-    let consumer = JSONDiagnosticConsumer(stream: &stderr)
-    diag.register(consumer)
-  } else {
-    var stream = ColoredANSIStream(&stderr, colored: ansiEscapeSupportedOnStdErr)
-    let consumer = StreamConsumer(context: context, stream: &stream)
-    diag.register(consumer)
-  }
-  diag.consumeDiagnostics()
-  
+
   if options.emitTiming {
     var passColumn = Column(title: "Pass Title")
     var timeColumn = Column(title: "Time")
@@ -185,6 +195,20 @@ func main() -> Int32 {
     }
     TableFormatter(columns: [passColumn, timeColumn]).write(to: &stderr)
   }
+}
+
+func main() -> Int32 {
+  let diag = DiagnosticEngine()
+
+  do {
+    let options = try Options.parseCommandLine()
+    performCompile(diag: diag, options: options)
+  } catch {
+    diag.error(error)
+  }
+
+  diag.consumeDiagnostics()
+
   return diag.hasErrors ? -1 : 0
 }
 

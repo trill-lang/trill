@@ -4,6 +4,9 @@
 # Xcode
 build/
 
+# VS Code
+.vscode/
+
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -24,6 +27,8 @@ DerivedData
 # SwiftPM
 .build/
 Packages/
+*.xcodeproj/
+Package.resolved
 
 # trill build
 examples/build/

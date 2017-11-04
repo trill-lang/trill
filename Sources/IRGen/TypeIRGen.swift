@@ -1,8 +1,14 @@
-//
-//  TypeIRGen.swift
-//  Trill
-//
+///
+/// TypeIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import LLVM
 import Foundation
 
 extension IRGenerator {
@@ -183,7 +189,7 @@ extension IRGenerator {
   }
   
   @discardableResult
-  func visitTypeDecl(_ expr: TypeDecl) -> Result {
+  public func visitTypeDecl(_ expr: TypeDecl) -> Result {
     codegenTypePrototype(expr)
 
     // Visit the synthesized initializers of a type
@@ -203,7 +209,7 @@ extension IRGenerator {
   }
   
   @discardableResult
-  func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
+  public func visitExtensionDecl(_ expr: ExtensionDecl) -> Result {
     for method in expr.methods + expr.staticMethods {
       _ = visit(method)
     }
@@ -297,7 +303,7 @@ extension IRGenerator {
     return builder.buildStructGEP(ptr, index: idx, name: "\(expr.name)-gep")
   }
   
-  func visitPropertyRefExpr(_ expr: PropertyRefExpr) -> Result {
+  public func visitPropertyRefExpr(_ expr: PropertyRefExpr) -> Result {
     if let propDecl = expr.decl as? PropertyDecl,
        let getterDecl = propDecl.getter {
       let implicitSelf = resolvePtr(expr.lhs)

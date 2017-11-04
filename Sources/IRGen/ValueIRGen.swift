@@ -1,8 +1,14 @@
-//
-//  ValueIRGen.swift
-//  Trill
-//
+///
+/// ValueIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
+import LLVM
 import Foundation
 
 extension IRGenerator {
@@ -21,7 +27,7 @@ extension IRGenerator {
     return builder.createStruct(name: name, types: fields.map(resolveLLVMType))
   }
   
-  func visitNumExpr(_ expr: NumExpr) -> Result {
+  public func visitNumExpr(_ expr: NumExpr) -> Result {
     let llvmTy = resolveLLVMType(expr.type)
     switch llvmTy {
     case let type as FloatType:
@@ -33,22 +39,22 @@ extension IRGenerator {
     }
   }
   
-  func visitCharExpr(_ expr: CharExpr) -> Result {
+  public func visitCharExpr(_ expr: CharExpr) -> Result {
     return IntType.int8.constant(expr.value, signExtend: true)
   }
   
-  func visitFloatExpr(_ expr: FloatExpr) -> Result {
+  public func visitFloatExpr(_ expr: FloatExpr) -> Result {
     guard let type = resolveLLVMType(expr.type) as? FloatType else {
       fatalError("non-float floatexpr?")
     }
     return type.constant(expr.value)
   }
   
-  func visitBoolExpr(_ expr: BoolExpr) -> Result {
+  public func visitBoolExpr(_ expr: BoolExpr) -> Result {
     return expr.value
   }
   
-  func visitArrayExpr(_ expr: ArrayExpr) -> Result {
+  public func visitArrayExpr(_ expr: ArrayExpr) -> Result {
     guard case .array(let fieldTy, _) = expr.type else {
       fatalError("invalid array type")
     }
@@ -65,7 +71,7 @@ extension IRGenerator {
     return initial
   }
   
-  func visitTupleExpr(_ expr: TupleExpr) -> Result {
+  public func visitTupleExpr(_ expr: TupleExpr) -> Result {
     let type = resolveLLVMType(expr.type)
     guard case .tuple(let tupleTypes) = expr.type else {
       fatalError("invalid tuple type")
@@ -85,18 +91,18 @@ extension IRGenerator {
     return initial
   }
   
-  func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
+  public func visitTupleFieldLookupExpr(_ expr: TupleFieldLookupExpr) -> Result {
     let ptr = resolvePtr(expr.lhs)
     let gep = builder.buildStructGEP(ptr, index: expr.field, name: "tuple-gep")
     return builder.buildLoad(gep, name: "tuple-load")
   }
   
-  func visitVarExpr(_ expr: VarExpr) -> Result {
+  public func visitVarExpr(_ expr: VarExpr) -> Result {
     guard let binding = resolveVarBinding(expr) else { return nil }
     return binding.read()
   }
   
-  func visitSizeofExpr(_ expr: SizeofExpr) -> Result {
+  public func visitSizeofExpr(_ expr: SizeofExpr) -> Result {
     return byteSize(of: expr.valueType!)
   }
   
@@ -110,11 +116,11 @@ extension IRGenerator {
                                        type: IntType.int64)
   }
   
-  func visitVoidExpr(_ expr: VoidExpr) -> Result {
+  public func visitVoidExpr(_ expr: VoidExpr) -> Result {
     return nil
   }
   
-  func visitNilExpr(_ expr: NilExpr) -> Result {
+  public func visitNilExpr(_ expr: NilExpr) -> Result {
     let type = resolveLLVMType(expr.type)
     return type.null()
   }
@@ -152,7 +158,7 @@ extension IRGenerator {
     }
   }
   
-  func visitStringExpr(_ expr: StringExpr) -> Result {
+  public func visitStringExpr(_ expr: StringExpr) -> Result {
     let globalString = codegenGlobalStringPtr(expr.value)
     if case .pointer(type: DataType.int8) = expr.type {
       return globalString.ptr
@@ -166,7 +172,7 @@ extension IRGenerator {
     return builder.buildCall(function, args: [globalString.ptr, globalString.length], name: "string-init")
   }
   
-  func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) -> Result {
+  public func visitStringInterpolationExpr(_ expr: StringInterpolationExpr) -> Result {
     guard let stringInitializer = context.stdlib?.staticStringInterpolationSegmentsInitializer else {
       fatalError("attempting to codegen String w/ interpolation segments without stdlib")
     }
@@ -192,7 +198,7 @@ extension IRGenerator {
     return builder.buildCall(function, args: [alloca.read()], name: "string-interpolation-init")
   }
   
-  func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
+  public func visitSubscriptExpr(_ expr: SubscriptExpr) -> Result {
     if expr.decl == nil {
       let ptr = resolvePtr(expr)
       return builder.buildLoad(ptr, name: "subscript-load")
@@ -317,21 +323,21 @@ extension IRGenerator {
     return result.read()
   }
   
-  func visitParenExpr(_ expr: ParenExpr) -> Result {
+  public func visitParenExpr(_ expr: ParenExpr) -> Result {
     return visit(expr.value)
   }
 
-  func visitIsExpr(_ expr: IsExpr) -> Result {
+  public func visitIsExpr(_ expr: IsExpr) -> Result {
     let lhs = visit(expr.lhs)!
     return codegenTypeCheck(lhs, type: expr.rhs.type)
   }
 
-  func visitCoercionExpr(_ expr: CoercionExpr) -> Result {
+  public func visitCoercionExpr(_ expr: CoercionExpr) -> Result {
     let lhs = visit(expr.lhs)!
     return coerce(lhs, from: expr.lhs.type, to: expr.type)
   }
   
-  func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
+  public func visitInfixOperatorExpr(_ expr: InfixOperatorExpr) -> Result {
     if [.and, .or].contains(expr.op) {
       return codegenShortCircuit(expr)
     }
@@ -369,11 +375,11 @@ extension IRGenerator {
     return codegen(expr.decl!, lhs: lhs, rhs: rhs, type: expr.lhs.type)
   }
   
-  func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {
+  public func visitPoundFunctionExpr(_ expr: PoundFunctionExpr) -> Result {
     return visitStringExpr(expr) // It should have a value by now.
   }
   
-  func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) -> Result {
+  public func visitPrefixOperatorExpr(_ expr: PrefixOperatorExpr) -> Result {
     switch expr.op {
     case .minus:
       let val = visit(expr.rhs)!
@@ -394,7 +400,7 @@ extension IRGenerator {
     }
   }
   
-  func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
+  public func visitTernaryExpr(_ expr: TernaryExpr) -> Result {
     guard let function = currentFunction?.functionRef else { fatalError("no function") }
     let irType = resolveLLVMType(expr.type)
     let cond = visit(expr.condition)!

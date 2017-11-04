@@ -1,12 +1,18 @@
-//
-//  RuntimeIRGen.swift
-//  Trill
-//
+///
+/// RuntimeIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
 import Foundation
+import LLVM
 
 extension IRGenerator {
-  
+
   func codegenIntrinsic(named name: String) -> Function {
     let identifier = Identifier(name: name)
     let matchingDecls = context.functions(named: identifier)
@@ -18,7 +24,7 @@ extension IRGenerator {
     }
     return codegenFunctionPrototype(decl)
   }
-  
+
   @discardableResult
   func codegenOnceCall(function: IRValue) -> (token: IRValue, call: IRValue) {
     var token = builder.addGlobal("once_token", type: IntType.int64)
@@ -27,7 +33,7 @@ extension IRGenerator {
                                  args: [token, function])
     return (token: token, call: call)
   }
-  
+
   func codegenPromoteToAny(value: IRValue, type: DataType) -> IRValue {
     if case .any = type {
       if storage(for: type) == .reference {
@@ -35,7 +41,7 @@ extension IRGenerator {
         // thread it through.
         return value
       } else {
-        // If we're promoting an existing Any value of a value type, 
+        // If we're promoting an existing Any value of a value type,
         // then this should just be a copy of the existing value.
         return codegenCopyAny(value: value)
       }
@@ -51,12 +57,12 @@ extension IRGenerator {
     builder.buildStore(value, to: valPtr)
     return res
   }
-  
+
   func codegenCopyAny(value: IRValue) -> IRValue {
     return builder.buildCall(codegenIntrinsic(named: "trill_copyAny"),
                              args: [value], name: "copy-any")
   }
-  
+
   func codegenAnyValuePtr(_ binding: IRValue, type: DataType) -> IRValue {
     let irType = resolveLLVMType(type)
     let pointerType = PointerType(pointee: irType)
@@ -64,7 +70,7 @@ extension IRGenerator {
                                      args: [binding])
     return builder.buildBitCast(ptrValue, type: pointerType, name: "cast-ptr")
   }
-  
+
   /// Creates a runtime type check expression between an Any expression and
   /// a data type
   ///
@@ -80,7 +86,7 @@ extension IRGenerator {
     let result = builder.buildCall(typeCheck, args: [binding, castMeta])
     return builder.buildICmp(result, IntType.int8.zero(), .notEqual, name: "type-check-result")
   }
-  
+
   func codegenCheckedCast(binding: IRValue, type: DataType) -> IRValue {
     let checkedCast = codegenIntrinsic(named: "trill_checkedCast")
     let meta = codegenTypeMetadata(type)
@@ -94,7 +100,7 @@ extension IRGenerator {
                                           name: "cast-result")
     return builder.buildLoad(castResult, name: "cast-load")
   }
-  
+
   /// Allocates a heap box in the garbage collector, and registers a finalizer
   /// specified by that type's deinit.
   func codegenAlloc(type: DataType) -> VarBinding {
@@ -110,7 +116,7 @@ extension IRGenerator {
     if type != .pointer(type: .int8) {
       res = builder.buildBitCast(res, type: irType, name: "alloc-cast")
     }
-    
+
     if let deinitializer = typeDecl.deinitializer {
       let deinitializerTy = FunctionType(argTypes: [PointerType.toVoid],
                                          returnType: VoidType())
@@ -125,6 +131,6 @@ extension IRGenerator {
                       read: { self.builder.buildLoad(res) },
                       write: { self.builder.buildStore($0, to: res) })
   }
-    
-  
+
+
 }

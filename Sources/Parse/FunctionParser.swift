@@ -1,9 +1,15 @@
-//
-//  FunctionParser.swift
-//  Trill
-//
+///
+/// FunctionParser.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
 import Foundation
+import Source
 
 /// Distinguishes the different kinds of functions in the language.
 enum FunctionKind {

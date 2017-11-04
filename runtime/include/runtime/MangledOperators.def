@@ -1,0 +1,31 @@
+//
+//  demangle.def
+//  Trill
+//
+
+#ifndef MANGLED_OPERATOR
+  #error Must define MANGLED_OPERATOR before including MangledOperators.def
+#endif
+
+MANGLED_OPERATOR('p', "+")
+MANGLED_OPERATOR('m', "-")
+MANGLED_OPERATOR('t', "*")
+MANGLED_OPERATOR('d', "/")
+MANGLED_OPERATOR('M', "%")
+MANGLED_OPERATOR('e', "==")
+MANGLED_OPERATOR('n', "!=")
+MANGLED_OPERATOR('l', "<")
+MANGLED_OPERATOR('L', "<=")
+MANGLED_OPERATOR('g', ">")
+MANGLED_OPERATOR('G', ">=")
+MANGLED_OPERATOR('a', "&&")
+MANGLED_OPERATOR('o', "||")
+MANGLED_OPERATOR('x', "^")
+MANGLED_OPERATOR('A', "&")
+MANGLED_OPERATOR('O', "|")
+MANGLED_OPERATOR('N', "!")
+MANGLED_OPERATOR('B', "~")
+MANGLED_OPERATOR('s', "<<")
+MANGLED_OPERATOR('S', ">>")
+
+#undef MANGLED_OPERATOR

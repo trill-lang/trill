@@ -1,20 +1,18 @@
 machine:
   xcode:
-    version: 8.3
+    version: 9.0
   environment:
     LC_CTYPE: en_US.UTF-8
-
-checkout:
-  post:
-    - git submodule update --init --recursive --remote
+    PATH: /usr/local/opt/llvm/bin:$PATH
 
 dependencies:
   override:
     - brew update
-    - brew install llvm
-    - sudo gem install xcpretty
+    - brew install llvm cmake pkg-config
+    - pip install pkgconfig
+    - pip install git+https://github.com/kronenthaler/mod-pbxproj.git@python3-support
+    - utils/build --pkgconfig
 
 test:
   override:
-    - xcodebuild -scheme Trill -IDECustomDerivedDataLocation=build/DerivedData | xcpretty
-    - swift utils/run-examples.swift
+    - utils/build --test

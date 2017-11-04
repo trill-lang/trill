@@ -1,12 +1,15 @@
-//
-//  BuiltinIRGen.swift
-//  Trill
-//
-//  Created by Harlan Haskins on 9/2/16.
-//  Copyright © 2016 Harlan. All rights reserved.
-//
+///
+/// BuiltinIRGen.swift
+///
+/// Copyright 2016-2017 the Trill project authors.
+/// Licensed under the MIT License.
+///
+/// Full license text available at https://github.com/trill-lang/trill
+///
 
+import AST
 import Foundation
+import LLVM
 
 extension IRGenerator {
   func codegenTypeOfCall(_ expr: FuncCallExpr) -> Result {

@@ -1,8 +1,0 @@
-[submodule "LLVMSwift"]
-	path = LLVMSwift
-	url = git@github.com:trill-lang/LLVMSwift.git
-  branch = master
-
-[submodule "TinyGC"]
-	path = TinyGC
-	url = https://github.com/ivmai/tinygc.git
