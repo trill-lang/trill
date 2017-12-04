@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 type Foo {
   let bar: Int
   let baz: Bool

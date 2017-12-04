@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 func pred(_ n: Int) -> Int {
   return n - 1
 }

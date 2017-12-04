@@ -425,8 +425,8 @@ public final class ClangImporter: Pass {
     for (suffix, suffixType) in suffixTypeMap {
       if token.hasSuffix(suffix) {
         type = suffixType
-        let suffixStartIndex = token.characters.index(token.endIndex,
-                                                      offsetBy: -suffix.characters.count)
+        let suffixStartIndex = token.index(token.endIndex,
+                                                      offsetBy: -suffix.count)
         token.removeSubrange(suffixStartIndex..<token.endIndex)
         break
       }

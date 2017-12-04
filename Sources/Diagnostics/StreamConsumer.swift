@@ -63,7 +63,7 @@ public class StreamConsumer<StreamType: ColoredStream>: DiagnosticConsumer {
             }
             stream.write("\n")
             let lineStr = "\(loc.line)"
-            let indentation = "\(indent(lineStr.characters.count))"
+            let indentation = "\(indent(lineStr.count))"
             stream.write(" \(indentation)|\n", with: [.cyan])
             if let prior = file?.lines[safe: loc.line - 2] {
               stream.write(" \(indentation)| ", with: [.cyan])

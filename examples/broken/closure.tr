@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 foreign type Console {
   foreign func log(_: ...)
 }

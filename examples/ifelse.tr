@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func maybe() -> Bool {
   return false
 }

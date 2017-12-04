@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 type Job {
   var salary: Int;
   var isExecutive: Bool;

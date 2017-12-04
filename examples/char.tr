@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func main() {
   putchar('\x{7}' as Int32)
 }

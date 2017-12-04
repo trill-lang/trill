@@ -10,7 +10,7 @@ dependencies:
     - brew update
     - brew install llvm cmake pkg-config
     - pip install pkgconfig
-    - pip install git+https://github.com/kronenthaler/mod-pbxproj.git@python3-support
+    - pip install git+https://github.com/kronenthaler/mod-pbxproj.git
     - utils/build --pkgconfig
 
 test:

@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func main(argc: Int, argv: **Int8) {
   var dict = AnyDictionary()
   for var i = 0; i < argc; i += 1 {

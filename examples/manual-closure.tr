@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 indirect type Context {
     var a: Int
     var b: *Int8

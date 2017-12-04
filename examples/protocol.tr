@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 protocol Debuggable {
   func debugDescription() -> String
 }

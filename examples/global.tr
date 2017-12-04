@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 let foo = 10
 let bar = garbage()
 

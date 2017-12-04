@@ -1,3 +1,5 @@
+// RUN: %trill --run %s --args %s %S/bf.bf
+
 foreign func sleep(_: Int)
 
 func usage() {

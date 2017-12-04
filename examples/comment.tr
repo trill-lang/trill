@@ -1,3 +1,4 @@
+// RUN: %trill --run %s
 /*
  * Does a thing!
  */

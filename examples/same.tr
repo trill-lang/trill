@@ -1,3 +1,5 @@
+// RUN: %trill --run %s --args %s
+
 foreign func usleep(_: Int)
 
 let SEEK_END = 2 as Int32

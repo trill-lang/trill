@@ -1,3 +1,5 @@
+// RUN: %trill --run %s %S/file2.tr
+
 extension Int {
     func toString() -> String {
         let length = floor(log10(labs(self) as Double)) as Int + 2

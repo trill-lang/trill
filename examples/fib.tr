@@ -1,3 +1,5 @@
+// RUN: %trill --run %s --args 11
+
 func fib(_ n: Int) -> Int {
     var prev = 0
     var curr = 1

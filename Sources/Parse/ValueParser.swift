@@ -361,7 +361,7 @@ extension Parser {
       return false
     }
     let newTokDesc = String(tokDesc[tokDesc.index(after: tokDesc.startIndex)...])
-    if newTokDesc.characters.count > 0 {
+    if newTokDesc.count > 0 {
       var newStart = tok.range.start
       newStart.charOffset += 1
       newStart.column += 1

@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func println(_ n: Int8) {
   printf("%d\n", n)
 }

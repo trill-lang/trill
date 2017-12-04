@@ -1,3 +1,5 @@
+// RUN: %trill --run %s -emit ast
+
 foreign func isprint(_: Int8) -> Int
 
 var SEEK_SET = 0 as Int32

@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func takesFunc(_ i: Int, _ f: (Int) -> Void) {
   if i > 1000 { return }
   f(i + 1)

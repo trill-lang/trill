@@ -126,6 +126,7 @@ class Build(object):
         self.swiftpm_dir = path.join(self.build_dir, 'swiftpm')
         self.bin_dir = path.join(self.build_dir, 'bin')
         self.trill_exec = path.join(self.bin_dir, 'trill')
+        self.lite_exec = path.join(self.bin_dir, 'lite')
         self.trill_demangle_exec = path.join(self.bin_dir, 'trill-demangle')
 
         if args.swift:
@@ -202,6 +203,7 @@ class Build(object):
         swiftpm_config_dir = path.join(self.swiftpm_dir,
                                        'release' if self.is_release else 'debug')
         swiftpm_bin = path.join(swiftpm_config_dir, 'trill')
+        lite_bin = path.join(swiftpm_config_dir, 'lite')
         swiftpm_demangle_bin = path.join(swiftpm_config_dir, 'trill-demangle')
 
         self.try_make_dir(bin_dir)
@@ -213,6 +215,7 @@ class Build(object):
 
         log('moving built trill into ./bin')
         shutil.copy(swiftpm_bin, self.trill_exec)
+        shutil.copy(lite_bin, self.lite_exec)
         shutil.copy(swiftpm_demangle_bin, self.trill_demangle_exec)
 
         log('copying runtime')
@@ -297,13 +300,10 @@ LD_RUNPATH_SEARCH_PATHS = {runpath_search_paths} $(inherited)
 
     def test(self):
         """
-        Runs the run-examples test suite.
+        Runs the `lite` test suite.
         """
-        run_examples_script = path.join(self.source_dir, 'utils',
-                                        'run-examples.swift')
         examples_dir = path.join(self.source_dir, 'examples')
-        call_or_panic([self.swift, run_examples_script,
-                       self.trill_exec, examples_dir])
+        call_or_panic([self.lite_exec, '-d', examples_dir])
 
     def run(self):
         """

@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 #error "After the war I went back to New York"
 
 #warning "A-after the war, I went back to New York"

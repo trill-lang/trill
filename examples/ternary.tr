@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func inferenceAsAny() {
   let a: Any = rand() != 0 ? 0 : "true"
   print(a)

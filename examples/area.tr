@@ -1,3 +1,5 @@
+// RUN: %trill --run %s -emit ast
+
 type Point {
     let x: Double
     let y: Double

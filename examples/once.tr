@@ -1,5 +1,9 @@
+// RUN: %trill --run %s
+
+var counter = 0
+
 func onlyCalledOnce() {
-  printf("This function will only actually be called one time!\n")
+  counter += 1
 }
 
 let onceToken = 0 as UInt
@@ -8,4 +12,5 @@ func main() {
   for var i = 0; i < 100; i += 1 {
     trill_once(&onceToken, onlyCalledOnce)
   }
+  assert(counter == 1)
 }

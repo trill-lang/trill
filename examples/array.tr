@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 func takesArray(_ vals: [Int], length: Int) {
   for var i = 0; i < length; i += 1 {
     printf("val: %d\n", vals[i])

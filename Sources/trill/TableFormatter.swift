@@ -16,9 +16,9 @@ struct Column {
     self.title = title
   }
   var width: Int {
-    var longest = self.title.characters.count
-    for row in self.rows where row.characters.count > longest {
-      longest = row.characters.count
+    var longest = self.title.count
+    for row in self.rows where row.count > longest {
+      longest = row.count
     }
     return longest
   }
@@ -68,7 +68,7 @@ class TableFormatter<StreamType: TextOutputStream> {
 
 extension String {
   func padded(to length: Int, with padding: String = " ") -> String {
-    let padded = String(repeating: padding, count: length - self.characters.count)
+    let padded = String(repeating: padding, count: length - self.count)
     return self + padded
   }
 }

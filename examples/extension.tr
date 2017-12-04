@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 extension Bool {
   func toInt() -> Int {
     return self ? 1 : 0

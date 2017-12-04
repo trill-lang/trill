@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 type Foo = Bar
 type Bar = Baz
 type Baz = Foo

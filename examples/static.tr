@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 type Foo {
   func bar() -> Int {
     return Foo.bar()

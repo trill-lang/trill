@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 foreign func sleep(_: Int)
 
 func _Thread_invoke(_ thread: *Void) -> *Void {

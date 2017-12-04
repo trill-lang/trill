@@ -202,7 +202,7 @@ extension Parser {
       // HACK
       case .unknown(let char):
         var pointerLevel = 0
-        for c in char.characters {
+        for c in char {
           if c != "*" {
             throw unexpectedToken()
           }

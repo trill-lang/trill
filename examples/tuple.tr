@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 let nested = (1, (2, 3), (4, 5, (6, 7)))
 let large = (3, 4, 5, true, "Hello, World!", true, 3, nested)
 extension Bool {

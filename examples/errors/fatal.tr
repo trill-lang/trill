@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 func buildStack(_ n: Int) {
   if n == 0 {
     trill_fatalError("Stack exploded!")

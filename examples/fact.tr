@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 // fact :: Z+ -> Z+
 // fact 0 = 1
 // fact n = n * fact (n - 1)

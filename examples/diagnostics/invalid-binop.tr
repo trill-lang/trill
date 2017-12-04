@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 func +(lhs: Int, rhs: *Int8) -> Int {
   return lhs + rhs[0] as Int
 }

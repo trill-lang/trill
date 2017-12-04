@@ -11,6 +11,8 @@ let package = Package(name: "trill",
     .package(url: "https://github.com/trill-lang/LLVMSwift.git", .branch("master")),
     .package(url: "https://github.com/trill-lang/cllvm.git", from: "0.0.3"),
     .package(url: "https://github.com/trill-lang/ClangSwift.git", from: "0.0.4"),
+    .package(url: "https://github.com/silt-lang/Lite.git", from: "0.0.3"),
+    .package(url: "https://github.com/silt-lang/Symbolic.git", from: "0.0.1"),
     .package(url: "https://github.com/jatoben/CommandLine.git", .branch("master"))
   ],
   targets: [
@@ -37,5 +39,8 @@ let package = Package(name: "trill",
       "AST", "ClangImporter", "Diagnostics", "Driver",
       "IRGen", "LLVMWrappers", "Options", "Parse", "Sema", "Source",
       "trillRuntime"
-    ])
+    ]),
+    .target(name: "lite", dependencies: [
+      "Diagnostics", "LiteSupport", "Symbolic", "CommandLine"
+    ]),
   ])

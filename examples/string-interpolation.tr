@@ -1,3 +1,5 @@
+// RUN: %trill --run %s
+
 type CustomType {
   var x: String
   var y: Int

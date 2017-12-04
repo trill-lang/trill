@@ -1,3 +1,5 @@
+// RUN-NOT: %trill --run %s
+
 type Foo {
   let bar: (Bool, Any)
   let baz: [Any]

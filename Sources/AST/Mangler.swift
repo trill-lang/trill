@@ -12,7 +12,7 @@ import Source
 
 extension String {
   var withCount: String {
-    return "\(self.characters.count)\(self)"
+    return "\(self.count)\(self)"
   }
 }
 
