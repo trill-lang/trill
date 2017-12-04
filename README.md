@@ -45,7 +45,7 @@ To install the build script dependencies:
 
 ```bash
 pip install pkgconfig
-pip install git+https://github.com/kronenthaler/mod-pbxproj.git@python3-support
+pip install git+https://github.com/kronenthaler/mod-pbxproj.git
 ```
 
 Then, you should be able to run our build script. Just running the build script gets you a build of `trill` in the `.build/debug` folder.
