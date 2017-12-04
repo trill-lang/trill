@@ -1,4 +1,4 @@
-// RUN: %trill --run %s -emit ast
+// RUN: %trill --run %s --emit ast
 
 foreign func isprint(_: Int8) -> Int
 

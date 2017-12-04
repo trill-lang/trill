@@ -1,4 +1,4 @@
-// RUN: %trill --run %s -emit ast
+// RUN: %trill --run %s --emit ast
 
 type Point {
     let x: Double
