@@ -28,7 +28,7 @@ std::string demangle(std::string symbol) {
   std::string out;
   if (demangle(symbol, out))
     return out;
-  
+
   int status;
   if (auto result = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, &status)) {
     out = result;
@@ -38,7 +38,7 @@ std::string demangle(std::string symbol) {
   out = symbol;
   return out;
 }
-    
+
 void trill_once(uint64_t *predicate, void (*initializer)()) {
     std::call_once(*reinterpret_cast<std::once_flag *>(predicate), initializer);
 }
@@ -56,7 +56,7 @@ void trill_printStackTrace() {
     auto copy = strdup(handle.dli_fname); // need to un-const this value
     auto base = basename(copy);
     free(copy);
-    
+
     auto symbol = demangle(handle.dli_sname);
     fprintf(stderr, "%-4d %-34s 0x%016" PRIxPTR " %s + %ld\n", i, base,
             reinterpret_cast<long>(handle.dli_saddr), symbol.c_str(),
@@ -82,14 +82,10 @@ void trill_assertionFailure(const char *NONNULL message, const char *NONNULL fil
   fprintf(stderr, "%s:%d: %s: Assertion failure: %s\n", file, line, function, message);
   crash();
 }
-  
+
 __attribute__((always_inline))
 static void *trill_malloc(size_t size) {
-#if TRILL_ENABLE_GC
-  return GC_malloc(size);
-#else
   return malloc(size);
-#endif
 }
 
 void *trill_alloc(size_t size) {
@@ -102,21 +98,15 @@ void *trill_alloc(size_t size) {
 }
 
 void trill_registerDeinitializer(void *object, void (*deinitializer)(void *)) {
-#if TRILL_ENABLE_GC
-  GC_register_finalizer_no_order(object, reinterpret_cast<GC_finalization_proc>(deinitializer), NULL, NULL, NULL);
-#endif
 }
-  
+
 void trill_handleSignal(int signal) {
   trill_fatalError(strsignal(signal));
 }
-  
+
 void trill_init() {
   signal(SIGSEGV, trill_handleSignal);
   signal(SIGILL, trill_handleSignal);
-#if TRILL_ENABLE_GC
-  GC_INIT();
-#endif
 }
 
 }
