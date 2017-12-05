@@ -1,4 +1,4 @@
-// RUN-XFAIL: %trill --run %s --args %S/bf.bf
+// RUN-XFAIL: %trill -run %s -args %S/bf.bf
 
 let SEEK_END = 2 as Int32
 let SEEK_SET = 0 as Int32

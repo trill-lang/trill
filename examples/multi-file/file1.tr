@@ -1,4 +1,4 @@
-// RUN: %trill --run %s %S/file2.tr
+// RUN: %trill -run %s %S/file2.tr
 
 extension Int {
     func toString() -> String {

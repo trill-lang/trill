@@ -8,13 +8,31 @@
 ///
 
 import Foundation
-import CommandLineKit
+import Basic
+import Utility
 
-public enum OptimizationLevel: String {
+public enum OptimizationLevel: String, ArgumentKind {
   case none = "0"
   case less = "1"
   case `default` = "2"
   case aggressive = "3"
+
+  public init(argument: String) throws {
+    guard let level = OptimizationLevel(rawValue: argument) else {
+      throw ArgumentParserError.invalidValue(argument: argument,
+                                             error: .unknown(value: argument))
+    }
+    self = level
+  }
+
+  public static var completion: ShellCompletion {
+    return ShellCompletion.values([
+      (value: "O0", description: "Perform no optimizations."),
+      (value: "O1", description: "Perform a small set of optimizations."),
+      (value: "O2", description: "Perform the default set of optimizations."),
+      (value: "O3", description: "Perform aggressive optimizations.")
+    ])
+  }
 }
 
 public struct Options {
@@ -38,81 +56,98 @@ public struct Options {
   }
 
   public static func parseCommandLine() throws -> Options {
-    let cli = CommandLineKit.CommandLine()
-    let help = BoolOption(shortFlag: "h", longFlag: "help",
-                          helpMessage: "Prints a help message.")
-    let targetTriple = StringOption(longFlag: "target",
-          helpMessage: "Override the target triple for cross-compilation.")
-    let outputFilename = StringOption(shortFlag: "o", longFlag: "output-file",
-          helpMessage: "The file to write the resulting output to.")
-    let noImportC = BoolOption(longFlag: "no-import",
-          helpMessage: "Disable importing C declarations.")
-    let emitTiming = BoolOption(longFlag: "debug-print-timing",
-          helpMessage: "Print times for each pass (for debugging).")
-    let jsonDiagnostics = BoolOption(longFlag: "json-diagnostics",
-          helpMessage: "Emit diagnostics as JSON instead of strings.")
-    let parseOnly = BoolOption(longFlag: "parse-only",
-          helpMessage: "Only parse the input file(s); do not typecheck.")
-    let showImports = BoolOption(longFlag: "show-imports",
-          helpMessage: "Whether to show imported declarations in AST dumps.")
-    let noStdlib = BoolOption(longFlag: "no-stdlib",
-          helpMessage: "Do not compile the standard library.")
-    let jitArgs = MultiStringOption(longFlag: "args",
-          helpMessage: "The arguments to pass to the JIT.")
-    let linkerFlags = MultiStringOption(longFlag: "Xlinker",
-          helpMessage: "Flags to pass to the linker when linking.")
-    let clangFlags = MultiStringOption(longFlag: "Xclang",
-          helpMessage: "Flags to pass to clang.")
+    let parser = ArgumentParser(commandName: "trill",
+                                usage: "[options] <input-files>",
+                                overview: "")
+    let help =
+      parser.add(option: "-help", shortName: "-h", kind: Bool.self,
+                 usage: "Prints this help message.")
+    let targetTriple =
+      parser.add(option: "-target", kind: String.self,
+                 usage: "Override the target triple for cross-compilation.")
+    let outputFilename =
+      parser.add(option: "-output-file", shortName: "-o", kind: String.self,
+                 usage: "The file to write the resulting output to.")
+    let noImportC =
+      parser.add(option: "-no-import", kind: Bool.self,
+                 usage: "Disable importing C declarations.")
+    let emitTiming =
+      parser.add(option: "-debug-print-timing", kind: Bool.self,
+                 usage: "Print times for each pass (for debugging).")
+    let jsonDiagnostics =
+      parser.add(option: "-json-diagnostics",
+                 kind: Bool.self,
+                 usage: "Emit diagnostics as JSON instead of strings.")
+    let parseOnly =
+      parser.add(option: "-parse-only", kind: Bool.self,
+                 usage: "Only parse the input file(s); do not typecheck.")
+    let showImports =
+      parser.add(option: "-show-imports", kind: Bool.self,
+                 usage: "Whether to show imported declarations in AST dumps.")
+    let noStdlib =
+      parser.add(option: "-no-stdlib", kind: Bool.self,
+                 usage: "Do not compile the standard library.")
+    let linkerFlags =
+      parser.add(option: "-Xlinker", kind: [String].self, strategy: .oneByOne,
+                 usage: "Flags to pass to the linker when linking.")
+    let clangFlags =
+      parser.add(option: "-Xclang", kind: [String].self,
+                 strategy: .oneByOne, usage: "Flags to pass to clang.")
+    let optimizationLevel =
+      parser.add(option: "-O", kind: OptimizationLevel.self,
+                 usage: "The optimization level to apply to the program.")
+    let outputFormat =
+      parser.add(option: "-emit", kind: OutputFormat.self,
+                 usage: "The kind of file to emit. Defaults to binary.")
+    let onlyDiagnostics =
+      parser.add(option: "-only-diagnostics", kind: Bool.self,
+                 usage: "Only print diagnostics, no other output.")
+    let files =
+      parser.add(positional: "", kind: [String].self)
 
-    let optimizationLevel = EnumOption<OptimizationLevel>(shortFlag: "O",
-          helpMessage: "The optimization level to apply to the program.")
+    let jit = parser.add(option: "-run", kind: Bool.self,
+                         usage: "JIT the specified files.")
+    let jitArgs = parser.add(option: "-args", kind: [String].self,
+                             strategy: .remaining)
 
-    let outputFormat = EnumOption<OutputFormat>(longFlag: "emit",
-          helpMessage: "The kind of file to emit. Defaults to binary.")
-    let jit = BoolOption(longFlag: "run",
-          helpMessage: "JIT the specified files.")
-    let onlyDiagnostics = BoolOption(longFlag: "only-diagnostics",
-          helpMessage: "Only print diagnostics, no other output.")
+    let args: ArgumentParser.Result
 
-    cli.addOptions(help, targetTriple, outputFilename, noImportC, emitTiming,
-                   jsonDiagnostics, parseOnly, showImports, noStdlib,
-                   optimizationLevel, jitArgs, linkerFlags, clangFlags,
-                   outputFormat, jit, onlyDiagnostics)
     do {
-      try cli.parse()
-      if help.value {
-        cli.printUsage()
+      let commandLineArgs = Array(CommandLine.arguments.dropFirst())
+      args = try parser.parse(commandLineArgs)
+      if args.get(help) != nil {
+        parser.printUsage(on: Basic.stdoutStream)
         exit(0)
       }
     } catch {
-      cli.printUsage(error)
+      parser.printUsage(on: Basic.stdoutStream)
       exit(-1)
     }
 
     let mode: Mode
-    if let format = outputFormat.value {
+    if let format = args.get(outputFormat) {
       mode = .emit(format)
-    } else if jit.value {
+    } else if args.get(jit) != nil {
       mode = .jit
-    } else if onlyDiagnostics.value {
+    } else if args.get(onlyDiagnostics) != nil {
       mode = .onlyDiagnostics
     } else {
       mode = .emit(.binary)
     }
 
-    return Options(filenames: cli.unparsedArguments,
-                   targetTriple: targetTriple.value,
-                   outputFilename: outputFilename.value,
+    return Options(filenames: args.get(files) ?? [],
+                   targetTriple: args.get(targetTriple),
+                   outputFilename: args.get(outputFilename),
                    mode: mode,
-                   importC: !noImportC.value,
-                   emitTiming: emitTiming.value,
-                   jsonDiagnostics: jsonDiagnostics.value,
-                   parseOnly: parseOnly.value,
-                   showImports: showImports.value,
-                   includeStdlib: !noStdlib.value,
-                   optimizationLevel: optimizationLevel.value ?? .none,
-                   jitArgs: jitArgs.value ?? [],
-                   linkerFlags: linkerFlags.value ?? [],
-                   clangFlags: clangFlags.value ?? [])
+                   importC: !(args.get(noImportC) ?? false),
+                   emitTiming: args.get(emitTiming) ?? false,
+                   jsonDiagnostics: args.get(jsonDiagnostics) ?? false,
+                   parseOnly: args.get(parseOnly) ?? false,
+                   showImports: args.get(showImports) ?? false,
+                   includeStdlib: !(args.get(noStdlib) ?? false),
+                   optimizationLevel: args.get(optimizationLevel) ?? .none,
+                   jitArgs: args.get(jitArgs) ?? [],
+                   linkerFlags: args.get(linkerFlags) ?? [],
+                   clangFlags: args.get(clangFlags) ?? [])
   }
 }

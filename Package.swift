@@ -13,7 +13,7 @@ let package = Package(name: "trill",
     .package(url: "https://github.com/trill-lang/ClangSwift.git", from: "0.0.4"),
     .package(url: "https://github.com/silt-lang/Lite.git", from: "0.0.3"),
     .package(url: "https://github.com/silt-lang/Symbolic.git", from: "0.0.1"),
-    .package(url: "https://github.com/jatoben/CommandLine.git", .branch("master"))
+    .package(url: "https://github.com/apple/swift-package-manager.git", from: "0.1.0"),
   ],
   targets: [
     .target(name: "AST", dependencies: [
@@ -28,7 +28,7 @@ let package = Package(name: "trill",
       "AST", "LLVM", "LLVMWrappers", "Options", "Runtime"
     ]),
     .target(name: "LLVMWrappers"),
-    .target(name: "Options", dependencies: ["CommandLine"]),
+    .target(name: "Options", dependencies: ["Utility"]),
     .target(name: "Parse", dependencies: ["AST"]),
     .target(name: "Sema", dependencies: ["AST"]),
     .target(name: "Source"),
@@ -41,6 +41,6 @@ let package = Package(name: "trill",
       "trillRuntime"
     ]),
     .target(name: "lite", dependencies: [
-      "Diagnostics", "LiteSupport", "Symbolic", "CommandLine"
+      "Diagnostics", "LiteSupport", "Symbolic", "Utility"
     ]),
   ])

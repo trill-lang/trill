@@ -271,32 +271,32 @@ LD_RUNPATH_SEARCH_PATHS = {runpath_search_paths} $(inherited)
             '--xcconfig-overrides', xcconfig_path
         ])
 
-        pbxproj = XcodeProject.load(path.join(self.build_dir, 'trill.xcodeproj', 'project.pbxproj'))
-        for build_config in pbxproj.objects.get_objects_in_section('XCBuildConfiguration'):
-            runpath_search_paths = 'LD_RUNPATH_SEARCH_PATHS'
-            if build_config.buildSettings[runpath_search_paths] is not None:
-                build_config.add_search_paths(runpath_search_paths, '$(inherited)')
-        for target in pbxproj.objects.get_objects_in_section('PBXNativeTarget'):
-            if target.name == 'trillRuntime':
-                target.productType = 'com.apple.product-type.library.static'
-            if target.name == 'trill':
-                def add_copy_phase(target, name, files, path = ''):
-                    build_phases = target.get_or_create_build_phase('PBXCopyFilesBuildPhase', search_parameters={'name':name}, create_parameters=(name, [], path))
-                    for build_phase in build_phases:
-                        for file in files:
-                            build_file = PBXNoCommentBuildFile.create(file, None)
-                            pbxproj.objects[build_file.get_id()] = build_file
-                            build_phase.add_build_file(build_file)
+        # pbxproj = XcodeProject.load(path.join(self.build_dir, 'trill.xcodeproj', 'project.pbxproj'))
+        # for build_config in pbxproj.objects.get_objects_in_section('XCBuildConfiguration'):
+        #     runpath_search_paths = 'LD_RUNPATH_SEARCH_PATHS'
+        #     if build_config.buildSettings[runpath_search_paths] is not None:
+        #         build_config.add_search_paths(runpath_search_paths, '$(inherited)')
+        # for target in pbxproj.objects.get_objects_in_section('PBXNativeTarget'):
+        #     if target.name == 'trillRuntime':
+        #         target.productType = 'com.apple.product-type.library.static'
+        #     if target.name == 'trill':
+        #         def add_copy_phase(target, name, files, path = ''):
+        #             build_phases = target.get_or_create_build_phase('PBXCopyFilesBuildPhase', search_parameters={'name':name}, create_parameters=(name, [], path))
+        #             for build_phase in build_phases:
+        #                 for file in files:
+        #                     build_file = PBXNoCommentBuildFile.create(file, None)
+        #                     pbxproj.objects[build_file.get_id()] = build_file
+        #                     build_phase.add_build_file(build_file)
 
-                for file in pbxproj.objects.get_objects_in_section('PBXFileReference'):
-                    if file.path == 'stdlib' and file.sourceTree == 'SOURCE_ROOT':
-                        add_copy_phase(target, 'Copy Standard Library', [file], path = '../..')
-                    if file.path == 'trillRuntime.framework' and file.sourceTree == 'BUILT_PRODUCTS_DIR':
-                        file.path = 'libtrillRuntime.a'
-                        add_copy_phase(target, 'Copy Runtime', [file], path = '../../lib')
-                target.get_or_create_build_phase('PBXShellScriptBuildPhase', create_parameters=('rm -fr "$BUILT_PRODUCTS_DIR/../../include"; cp -r "$SRCROOT/runtime/include" "$BUILT_PRODUCTS_DIR/../../include"',))[0]['name'] = 'Copy Runtime Headers'
+        #         for file in pbxproj.objects.get_objects_in_section('PBXFileReference'):
+        #             if file.path == 'stdlib' and file.sourceTree == 'SOURCE_ROOT':
+        #                 add_copy_phase(target, 'Copy Standard Library', [file], path = '../..')
+        #             if file.path == 'trillRuntime.framework' and file.sourceTree == 'BUILT_PRODUCTS_DIR':
+        #                 file.path = 'libtrillRuntime.a'
+        #                 add_copy_phase(target, 'Copy Runtime', [file], path = '../../lib')
+        #         target.get_or_create_build_phase('PBXShellScriptBuildPhase', create_parameters=('rm -fr "$BUILT_PRODUCTS_DIR/../../include"; cp -r "$SRCROOT/runtime/include" "$BUILT_PRODUCTS_DIR/../../include"',))[0]['name'] = 'Copy Runtime Headers'
 
-        pbxproj.save()
+        # pbxproj.save()
 
     def test(self):
         """

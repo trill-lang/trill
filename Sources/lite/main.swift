@@ -2,11 +2,11 @@ import Diagnostics
 import Foundation
 import LiteSupport
 import Symbolic
-import CommandLineKit
-
+import Basic
+import Utility
 
 #if os(Linux)
-  import Glibc
+import Glibc
 #endif
 
 enum LiteRunError: Error, CustomStringConvertible {
@@ -20,23 +20,26 @@ enum LiteRunError: Error, CustomStringConvertible {
 }
 
 func run() -> Int {
+  let parser =
+    ArgumentParser(commandName: "lite",
+                   usage: "[-d|-test-dir] [-trill]",
+                   overview: "Runs all tests in the provided test directory")
   let testDir =
-    StringOption(shortFlag: "d",
-                 longFlag: "test-dir",
-      helpMessage: "The top-level directory containing tests to run. " +
-                   "Defaults to the current working directory.")
+    parser.add(option: "-test-dir", shortName: "-d", kind: String.self,
+               usage: "The top-level directory containing tests to run. " +
+                      "Defaults to the current working directory.")
 
-  let trillExe = StringOption(longFlag: "trill",
-    helpMessage: "The path to the `trill` executable. " +
-                 "Defaults to the executable next to `lite`.")
+  let trillExe = parser.add(option: "-trill", kind: String.self,
+                            usage: "The path to the `trill` executable. " +
+                                   "Defaults to the executable next to `lite`.")
 
-  let cli = CommandLineKit.CommandLine()
-  cli.addOptions(testDir, trillExe)
 
+  let args: ArgumentParser.Result
   do {
-    try cli.parse()
+    let commandLineArgs = Array(CommandLine.arguments.dropFirst())
+    args = try parser.parse(commandLineArgs)
   } catch {
-    cli.printUsage()
+    parser.printUsage(on: Basic.stdoutStream)
     return -1
   }
 
@@ -48,7 +51,7 @@ func run() -> Int {
   engine.register(StreamConsumer(stream: &stderrStream))
 
   let trillExeURL =
-    trillExe.value.map(URL.init(fileURLWithPath:)) ?? findTrillExecutable()
+    args.get(trillExe).map(URL.init(fileURLWithPath:)) ?? findTrillExecutable()
 
   guard let url = trillExeURL else {
     engine.add(.error(LiteRunError.couldNotInferPath))
@@ -58,7 +61,7 @@ func run() -> Int {
   do {
     let allPassed = try runLite(substitutions: [("trill", url.path)],
                                 pathExtensions: ["tr", "trill"],
-                                testDirPath: testDir.value,
+                                testDirPath: args.get(testDir),
                                 testLinePrefix: "//")
     return allPassed ? 0 : -1
   } catch {
