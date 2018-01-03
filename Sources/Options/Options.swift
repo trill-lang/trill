@@ -60,54 +60,54 @@ public struct Options {
                                 usage: "[options] <input-files>",
                                 overview: "")
     let help =
-      parser.add(option: "-help", shortName: "-h", kind: Bool.self,
+      parser.add(option: "--help", shortName: "-h", kind: Bool.self,
                  usage: "Prints this help message.")
     let targetTriple =
-      parser.add(option: "-target", kind: String.self,
+      parser.add(option: "--target", kind: String.self,
                  usage: "Override the target triple for cross-compilation.")
     let outputFilename =
-      parser.add(option: "-output-file", shortName: "-o", kind: String.self,
+      parser.add(option: "--output-file", shortName: "-o", kind: String.self,
                  usage: "The file to write the resulting output to.")
     let noImportC =
-      parser.add(option: "-no-import", kind: Bool.self,
+      parser.add(option: "--no-import", kind: Bool.self,
                  usage: "Disable importing C declarations.")
     let emitTiming =
-      parser.add(option: "-debug-print-timing", kind: Bool.self,
+      parser.add(option: "--debug-print-timing", kind: Bool.self,
                  usage: "Print times for each pass (for debugging).")
     let jsonDiagnostics =
-      parser.add(option: "-json-diagnostics",
+      parser.add(option: "--json-diagnostics",
                  kind: Bool.self,
                  usage: "Emit diagnostics as JSON instead of strings.")
     let parseOnly =
-      parser.add(option: "-parse-only", kind: Bool.self,
+      parser.add(option: "--parse-only", kind: Bool.self,
                  usage: "Only parse the input file(s); do not typecheck.")
     let showImports =
-      parser.add(option: "-show-imports", kind: Bool.self,
+      parser.add(option: "--show-imports", kind: Bool.self,
                  usage: "Whether to show imported declarations in AST dumps.")
     let noStdlib =
-      parser.add(option: "-no-stdlib", kind: Bool.self,
+      parser.add(option: "--no-stdlib", kind: Bool.self,
                  usage: "Do not compile the standard library.")
     let linkerFlags =
-      parser.add(option: "-Xlinker", kind: [String].self, strategy: .oneByOne,
+      parser.add(option: "--Xlinker", kind: [String].self, strategy: .oneByOne,
                  usage: "Flags to pass to the linker when linking.")
     let clangFlags =
-      parser.add(option: "-Xclang", kind: [String].self,
+      parser.add(option: "--Xclang", kind: [String].self,
                  strategy: .oneByOne, usage: "Flags to pass to clang.")
     let optimizationLevel =
-      parser.add(option: "-O", kind: OptimizationLevel.self,
+      parser.add(option: "--O", kind: OptimizationLevel.self,
                  usage: "The optimization level to apply to the program.")
     let outputFormat =
-      parser.add(option: "-emit", kind: OutputFormat.self,
+      parser.add(option: "--emit", kind: OutputFormat.self,
                  usage: "The kind of file to emit. Defaults to binary.")
     let onlyDiagnostics =
-      parser.add(option: "-only-diagnostics", kind: Bool.self,
+      parser.add(option: "--only-diagnostics", kind: Bool.self,
                  usage: "Only print diagnostics, no other output.")
     let files =
       parser.add(positional: "", kind: [String].self)
 
-    let jit = parser.add(option: "-run", kind: Bool.self,
+    let jit = parser.add(option: "--run", kind: Bool.self,
                          usage: "JIT the specified files.")
-    let jitArgs = parser.add(option: "-args", kind: [String].self,
+    let jitArgs = parser.add(option: "--args", kind: [String].self,
                              strategy: .remaining)
 
     let args: ArgumentParser.Result

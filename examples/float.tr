@@ -1,4 +1,4 @@
-// RUN: %trill -run %s
+// RUN: %trill --run %s
 
 func takesFloat(_ f: Double) {
     printf("[%s]: %f\n", #function, f)

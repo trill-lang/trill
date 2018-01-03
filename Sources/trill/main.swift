@@ -31,11 +31,9 @@ func populate(driver: Driver, options: Options,
               isATTY: Bool,
               context: ASTContext) throws {
   let runtimeLocation = try RuntimeLocator.findRuntime(forAddress: #dsohandle)
-  var stderrStream = ColoredANSIStream(&stderr, colored: isATTY)
-  let fatalErrorConsumer = StreamConsumer(stream: &stderrStream)
   let gen = try IRGenerator(context: context, options: options,
                             runtimeLocation: runtimeLocation,
-                            fatalErrorConsumer: fatalErrorConsumer)
+                            fatalErrorHandler: { context.error($0) })
   driver.add("Lexing and Parsing") { context in
     lexAndParse(sourceFiles: sourceFiles, into: context)
   }
@@ -53,8 +51,8 @@ func populate(driver: Driver, options: Options,
       let stdlibContext = StdLibASTContext(diagnosticEngine: context.diag)
       let stdlibPath = runtimeLocation.stdlib.path
       let allStdlibFiles = FileManager.default.recursiveChildren(of: stdlibPath)!
-      let stdlibFiles = allStdlibFiles.filter {  $0.hasSuffix(".tr") }
-      let stdlibSourceFiles = try _sourceFiles(from: stdlibFiles, context: context)
+      let stdlibFiles = allStdlibFiles.filter { $0.hasSuffix(".tr") }
+      let stdlibSourceFiles = _sourceFiles(from: stdlibFiles, context: context)
       lexAndParse(sourceFiles: stdlibSourceFiles, into: stdlibContext)
       context.stdlib = stdlibContext
       context.merge(stdlibContext)
@@ -109,19 +107,19 @@ func populate(driver: Driver, options: Options,
   }
 }
 
-func sourceFiles(options: Options, context: ASTContext) throws -> [SourceFile] {
+func sourceFiles(options: Options, context: ASTContext) -> [SourceFile] {
   if options.isStdin {
-    let file = try SourceFile(path: .stdin, sourceFileManager: context.sourceFileManager)
+    let file = SourceFile(path: .stdin)
     return [file]
   } else {
-    return try _sourceFiles(from: options.filenames, context: context)
+    return _sourceFiles(from: options.filenames, context: context)
   }
 }
 
-func _sourceFiles(from filenames: [String], context: ASTContext) throws -> [SourceFile] {
-  return try filenames.map { path in
+func _sourceFiles(from filenames: [String], context: ASTContext) -> [SourceFile] {
+  return filenames.map { path in
     let url = URL(fileURLWithPath: path)
-    return try SourceFile(path: .file(url), sourceFileManager: context.sourceFileManager)
+    return SourceFile(path: .file(url))
   }
 }
 
@@ -142,7 +140,8 @@ func lexAndParse(sourceFiles: [SourceFile], into context: ASTContext) {
   let group = DispatchGroup()
   for file in sourceFiles {
     DispatchQueue.global().async(group: group) {
-      let newCtx = ASTContext(diagnosticEngine: context.diag)
+      let newCtx = ASTContext(diagnosticEngine: context.diag,
+                              sourceFileManager: context.sourceFileManager)
       newCtx.add(file)
       Parser.parse(file, into: context)
       add(newCtx)
@@ -154,27 +153,27 @@ func lexAndParse(sourceFiles: [SourceFile], into context: ASTContext) {
   }
 }
 
-func performCompile(diag: DiagnosticEngine, options: Options) {
-  let context = ASTContext(diagnosticEngine: diag)
+func performCompile(context: ASTContext, options: Options) {
   let driver = Driver(context: context)
 
   if options.jsonDiagnostics {
     let consumer = JSONDiagnosticConsumer(stream: &stderr)
-    diag.register(consumer)
+    context.diag.register(consumer)
   } else {
     var stream = ColoredANSIStream(&stderr, colored: ansiEscapeSupportedOnStdErr)
-    let consumer = StreamConsumer(stream: &stream)
-    diag.register(consumer)
+    let consumer = StreamConsumer(stream: &stream,
+                                  sourceFileManager: context.sourceFileManager)
+    context.diag.register(consumer)
   }
 
   if options.filenames.isEmpty {
-    diag.error("no input files provided")
+     context.diag.error("no input files provided")
     return
   }
 
   var files = [SourceFile]()
   do {
-    files = try sourceFiles(options: options, context: context)
+    files = sourceFiles(options: options, context: context)
 
     try populate(driver: driver,
                  options: options,
@@ -183,7 +182,7 @@ func performCompile(diag: DiagnosticEngine, options: Options) {
                  context: context)
     driver.run(in: context)
   } catch {
-    diag.error(error)
+    context.diag.error(error)
   }
 
   if options.emitTiming {
@@ -198,18 +197,18 @@ func performCompile(diag: DiagnosticEngine, options: Options) {
 }
 
 func main() -> Int32 {
-  let diag = DiagnosticEngine()
+  let context = ASTContext()
 
   do {
     let options = try Options.parseCommandLine()
-    performCompile(diag: diag, options: options)
+    performCompile(context: context, options: options)
   } catch {
-    diag.error(error)
+    context.error(error)
   }
 
-  diag.consumeDiagnostics()
+  context.diag.consumeDiagnostics()
 
-  return diag.hasErrors ? -1 : 0
+  return context.diag.hasErrors ? -1 : 0
 }
 
 exit(main())

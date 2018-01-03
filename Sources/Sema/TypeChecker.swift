@@ -8,6 +8,7 @@
 ///
 
 import AST
+import BigInt
 import Foundation
 
 enum TypeCheckError: Error, CustomStringConvertible {
@@ -25,7 +26,7 @@ enum TypeCheckError: Error, CustomStringConvertible {
   case nonBoolCondition(got: DataType?)
   case overflow(raw: String, type: DataType)
   case underflow(raw: String, type: DataType)
-  case shiftPastBitWidth(type: DataType, shiftWidth: Int64)
+  case shiftPastBitWidth(type: DataType, shiftWidth: BigInt)
 
   var description: String {
     switch self {
@@ -299,14 +300,12 @@ public class TypeChecker: ASTTransformer, Pass {
         ])
       return
     } else if [.leftShift, .rightShift, .leftShiftAssign, .rightShiftAssign].contains(expr.op),
-      let num = expr.rhs as? NumExpr,
+      let num = expr.rhs.semanticsProvidingExpr as? NumExpr,
       case .int(let width, _) = expr.type,
-      num.value >= Int64(width) {
+      num.value.bitWidth > width {
       error(TypeCheckError.shiftPastBitWidth(type: expr.type, shiftWidth: num.value),
             loc: num.startLoc,
-            highlights: [
-              num.sourceRange
-        ])
+            highlights: [num.sourceRange])
       return
     }
   }

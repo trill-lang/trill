@@ -1,10 +1,5 @@
-// RUN: %trill -run %s
+// RUN: %trill --run %s
 
-func assert(_ condition: Bool, _ msg: *Int8) {
-    if !condition {
-        trill_fatalError(msg)
-    }
-}
 indirect type IntList {
     let value: Int
     let next: IntList

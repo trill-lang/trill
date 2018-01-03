@@ -7,6 +7,7 @@
 /// Full license text available at https://github.com/trill-lang/trill
 ///
 
+import AST
 import Source
 import Diagnostics
 import Foundation

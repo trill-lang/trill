@@ -1,4 +1,4 @@
-// RUN-NOT: %trill -run %s
+// RUN-NOT: %trill --run %s
 
 func buildStack(_ n: Int) {
   if n == 0 {

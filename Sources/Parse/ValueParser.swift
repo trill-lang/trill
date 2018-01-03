@@ -8,6 +8,7 @@
 ///
 
 import AST
+import BigInt
 import Diagnostics
 import Foundation
 import Source
@@ -105,7 +106,7 @@ extension Parser {
                               sourceRange: tok.range)
     case .poundLine:
       consumeToken()
-      valExpr = NumExpr(value: Int64(sourceLoc.line),
+      valExpr = NumExpr(value: BigInt(sourceLoc.line),
                         raw: "\(sourceLoc.line)",
                         sourceRange: tok.range)
     case .poundFunction:

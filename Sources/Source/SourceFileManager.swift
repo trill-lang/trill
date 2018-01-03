@@ -12,7 +12,7 @@ import Dispatch
 public final class SourceFileManager {
   private let cacheQueue = DispatchQueue(label: "SourceFileManager")
   private var contentsCache = [SourceFile: String]()
-  private var linesCache = [SourceFile: [String]]()
+  private var linesCache = [SourceFile: [Substring]]()
 
   public init() {}
 
@@ -25,11 +25,11 @@ public final class SourceFileManager {
     }
   }
 
-  public func lines(in file: SourceFile) throws -> [String] {
+  public func lines(in file: SourceFile) throws -> [Substring] {
     let contents = try self.contents(of: file)
     return cacheQueue.sync {
       if let lines = linesCache[file] { return lines }
-      let lines = contents.components(separatedBy: .newlines)
+      let lines = contents.split(separator: "\n")
       linesCache[file] = lines
       return lines
     }

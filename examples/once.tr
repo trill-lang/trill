@@ -1,4 +1,4 @@
-// RUN: %trill -run %s
+// RUN: %trill --run %s
 
 var counter = 0
 
@@ -12,5 +12,5 @@ func main() {
   for var i = 0; i < 100; i += 1 {
     trill_once(&onceToken, onlyCalledOnce)
   }
-  assert(counter == 1)
+  assert(counter == 1, "counter must equal 1")
 }

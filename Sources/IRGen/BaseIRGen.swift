@@ -16,7 +16,7 @@ import LLVM
 import LLVMWrappers
 import Runtime
 
-private var _fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil
+private var _globalLLVMFatalErrorHandler: ((Error) -> Void)?
 
 /// An error that represents a problem with LLVM IR generation or JITting.
 enum LLVMError: Error, CustomStringConvertible {
@@ -160,7 +160,7 @@ public class IRGenerator: ASTVisitor, Pass {
   public init(context: ASTContext,
               options: Options,
               runtimeLocation: RuntimeLocation,
-              fatalErrorConsumer: StreamConsumer<ColoredANSIStream<FileHandle>>? = nil) throws {
+              fatalErrorHandler: @escaping (Error) -> Void) throws {
     self.options = options
 
     llvmContext = Context.global
@@ -170,11 +170,14 @@ public class IRGenerator: ASTVisitor, Pass {
     passManager.addPasses(for: options.optimizationLevel)
 
     LLVMEnablePrettyStackTrace()
-    if let consumer = fatalErrorConsumer {
-        _fatalErrorConsumer = consumer
-        LLVMInstallFatalErrorHandler {
-          _fatalErrorConsumer?.consume(.error(LLVMError.llvmError(String(cString: $0!))))
-        }
+
+    // The LLVM fatal error handler cannot capture local variables, so
+    // store the handler routine as a global variable. This unfortunately
+    // makes IRBuilder not thread safe.
+    _globalLLVMFatalErrorHandler = fatalErrorHandler
+    LLVMInstallFatalErrorHandler {
+      let err = LLVMError.llvmError(String(cString: $0!))
+      _globalLLVMFatalErrorHandler?(err)
     }
     LLVMInitializeNativeAsmPrinter()
     LLVMInitializeNativeTarget()

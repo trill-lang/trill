@@ -1,4 +1,4 @@
-// RUN-XFAIL: %trill -run %s
+// RUN: %trill --run %s
 
 func duplicate(_ v: Any) -> Any {
   return (v as Int) * 2

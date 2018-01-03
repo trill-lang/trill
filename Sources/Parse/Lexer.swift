@@ -8,12 +8,13 @@
 ///
 
 import AST
+import BigInt
 import Diagnostics
 import Foundation
 import Source
 
 public enum TokenKind: Equatable {
-  case number(value: Int64, raw: String)
+  case number(value: BigInt, raw: String)
   case float(value: Double)
   case identifier(String)
   case unknown(String)
@@ -606,16 +607,16 @@ extension String {
     return self.replacingOccurrences(of: string, with: "")
   }
   
-  public func asNumber() -> Int64? {
+  public func asNumber() -> BigInt? {
     let prefixMap = ["0x": 16, "0b": 2, "0o": 8]
-    if characters.count <= 2 {
-      return Int64(self, radix: 10)
+    if count <= 2 {
+      return BigInt(self, radix: 10)
     }
-    let prefix = String(self[..<characters.index(startIndex, offsetBy: 2)])
+    let prefix = String(self[..<index(startIndex, offsetBy: 2)])
     guard let radix = prefixMap[prefix] else {
-      return Int64(removing("_"), radix: 10)
+      return BigInt(removing("_"), radix: 10)
     }
-    let suffix = String(removing("_")[characters.index(startIndex, offsetBy: 2)...])
-    return Int64(suffix, radix: radix)
+    let suffix = String(removing("_")[index(startIndex, offsetBy: 2)...])
+    return BigInt(suffix, radix: radix)
   }
 }

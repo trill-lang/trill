@@ -1,0 +1,9 @@
+func assert(_ fact: Bool, _ message: String) {
+    if !fact {
+        fatalError(message)
+    }
+}
+
+func fatalError(_ message: String) {
+  trill_fatalError(message.cString)
+}

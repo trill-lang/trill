@@ -63,15 +63,7 @@ extension SourceRange: Equatable {
 }
 
 extension SourceRange {
-  private var contents: String { return start.file.contents }
-
   public var length: Int {
     return end.charOffset - start.charOffset
-  }
-
-  public var source: String {
-    let startIndex = contents.index(contents.startIndex, offsetBy: start.charOffset)
-    let endIndex = contents.index(startIndex, offsetBy: length)
-    return String(contents[startIndex...endIndex])
   }
 }

@@ -233,6 +233,3 @@ func +(lhs: String, rhs: String) -> String {
   return copy
 }
 
-func fatalError(_ message: String) {
-  trill_fatalError(message.cString)
-}

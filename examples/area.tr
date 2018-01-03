@@ -1,14 +1,8 @@
-// RUN: %trill -run %s -emit ast
+// RUN: %trill --run %s --emit ast
 
 type Point {
     let x: Double
     let y: Double
-}
-
-func assert(_ fact: Bool, _ message: *Int8) {
-    if !fact {
-        trill_fatalError(message)
-    }
 }
 
 type PointArray {

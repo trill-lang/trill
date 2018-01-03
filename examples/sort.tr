@@ -1,4 +1,4 @@
-// RUN: %trill -run %s
+// RUN: %trill --run %s
 
 func compare(_ _a: *Void, _ _b: *Void) -> Int32 {
   let a = *(_a as *Int)

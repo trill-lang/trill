@@ -108,6 +108,11 @@ class Build(object):
         self.should_reconfigure = args.reconfigure
         self.run_tests = args.test
         self.make_pkgconfig = args.pkgconfig
+        self.verbose_test = args.verbose
+        self.enable_asan = args.asan
+
+        if args.verbose and not args.test:
+            error('--verbose is only available when testing')
 
         dir_pieces = []
         if args.xcodeproj:
@@ -118,6 +123,8 @@ class Build(object):
             dir_pieces.append('Xcode')
 
         dir_pieces.append('Release' if self.is_release else 'Debug')
+        if args.asan:
+            dir_pieces.append('ASan')
         self.build_config = '-'.join(dir_pieces)
         self.source_dir = os.path.abspath(path.join(path.split(__file__)[0],
                                                     os.pardir))
@@ -179,6 +186,12 @@ class Build(object):
         if sys.platform == 'darwin':
             swift_args += [
                 '-Xswiftc', '-target', '-Xswiftc', 'x86_64-apple-macosx10.12'
+            ]
+
+        if self.enable_asan:
+            swift_args += [
+                '-Xswiftc', '-sanitize=address',
+                '-Xcxx', '-fsanitize=address'
             ]
 
         llvm = LinkDependency.find_from_pkgconfig('cllvm', 'LLVM')
@@ -271,39 +284,43 @@ LD_RUNPATH_SEARCH_PATHS = {runpath_search_paths} $(inherited)
             '--xcconfig-overrides', xcconfig_path
         ])
 
-        # pbxproj = XcodeProject.load(path.join(self.build_dir, 'trill.xcodeproj', 'project.pbxproj'))
-        # for build_config in pbxproj.objects.get_objects_in_section('XCBuildConfiguration'):
-        #     runpath_search_paths = 'LD_RUNPATH_SEARCH_PATHS'
-        #     if build_config.buildSettings[runpath_search_paths] is not None:
-        #         build_config.add_search_paths(runpath_search_paths, '$(inherited)')
-        # for target in pbxproj.objects.get_objects_in_section('PBXNativeTarget'):
-        #     if target.name == 'trillRuntime':
-        #         target.productType = 'com.apple.product-type.library.static'
-        #     if target.name == 'trill':
-        #         def add_copy_phase(target, name, files, path = ''):
-        #             build_phases = target.get_or_create_build_phase('PBXCopyFilesBuildPhase', search_parameters={'name':name}, create_parameters=(name, [], path))
-        #             for build_phase in build_phases:
-        #                 for file in files:
-        #                     build_file = PBXNoCommentBuildFile.create(file, None)
-        #                     pbxproj.objects[build_file.get_id()] = build_file
-        #                     build_phase.add_build_file(build_file)
+        pbxproj = XcodeProject.load(path.join(self.build_dir, 'trill.xcodeproj', 'project.pbxproj'))
+        for build_config in pbxproj.objects.get_objects_in_section('XCBuildConfiguration'):
+            runpath_search_paths = 'LD_RUNPATH_SEARCH_PATHS'
+            if build_config.buildSettings[runpath_search_paths] is not None:
+                build_config.add_search_paths(runpath_search_paths, '$(inherited)')
+        for target in pbxproj.objects.get_objects_in_section('PBXNativeTarget'):
+            if target.name == 'trillRuntime':
+                target.productType = 'com.apple.product-type.library.static'
+            if target.name == 'trill':
+                def add_copy_phase(target, name, files, path = ''):
+                    build_phases = target.get_or_create_build_phase('PBXCopyFilesBuildPhase', search_parameters={'name':name}, create_parameters=(name, [], path))
+                    for build_phase in build_phases:
+                        for file in files:
+                            build_file = PBXNoCommentBuildFile.create(file, None)
+                            pbxproj.objects[build_file.get_id()] = build_file
+                            build_phase.add_build_file(build_file)
 
-        #         for file in pbxproj.objects.get_objects_in_section('PBXFileReference'):
-        #             if file.path == 'stdlib' and file.sourceTree == 'SOURCE_ROOT':
-        #                 add_copy_phase(target, 'Copy Standard Library', [file], path = '../..')
-        #             if file.path == 'trillRuntime.framework' and file.sourceTree == 'BUILT_PRODUCTS_DIR':
-        #                 file.path = 'libtrillRuntime.a'
-        #                 add_copy_phase(target, 'Copy Runtime', [file], path = '../../lib')
-        #         target.get_or_create_build_phase('PBXShellScriptBuildPhase', create_parameters=('rm -fr "$BUILT_PRODUCTS_DIR/../../include"; cp -r "$SRCROOT/runtime/include" "$BUILT_PRODUCTS_DIR/../../include"',))[0]['name'] = 'Copy Runtime Headers'
+                for file in pbxproj.objects.get_objects_in_section('PBXFileReference'):
+                    if file.path == 'stdlib' and file.sourceTree == 'SOURCE_ROOT':
+                        add_copy_phase(target, 'Copy Standard Library', [file], path = '../..')
+                    if file.path == 'trillRuntime.framework' and file.sourceTree == 'BUILT_PRODUCTS_DIR':
+                        file.path = 'libtrillRuntime.a'
+                        add_copy_phase(target, 'Copy Runtime', [file], path = '../../lib')
+                target.get_or_create_build_phase('PBXShellScriptBuildPhase', create_parameters=('rm -fr "$BUILT_PRODUCTS_DIR/../../include"; cp -r "$SRCROOT/runtime/include" "$BUILT_PRODUCTS_DIR/../../include"',))[0]['name'] = 'Copy Runtime Headers'
 
-        # pbxproj.save()
+        pbxproj.save()
 
     def test(self):
         """
         Runs the `lite` test suite.
         """
         examples_dir = path.join(self.source_dir, 'examples')
-        call_or_panic([self.lite_exec, '-d', examples_dir])
+        args = [self.lite_exec, '-d', examples_dir]
+        if self.verbose_test:
+            args.append('-v')
+
+        call_or_panic(args)
 
     def run(self):
         """
@@ -343,10 +360,14 @@ def main():
                         'configuration')
     parser.add_argument('-x', '--xcodeproj', action='store_true',
                         help='Build an Xcode project for the trill compiler.')
+    parser.add_argument('-v', '--verbose', help='Use verbose test output.',
+                        action='store_true')
     parser.add_argument('-t', '--test', help='Run the trill test suite.',
                         action='store_true')
     parser.add_argument('--reconfigure', action='store_true',
                         help='Delete the existing CMake files and start over')
+    parser.add_argument('--asan', action='store_true',
+                        help='Build with Address Sanitizer enabled')
     parser.add_argument('--pkgconfig', action='store_true',
                         help='Make pkgconfig files for trill\'s dependencies')
 

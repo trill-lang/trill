@@ -70,9 +70,11 @@ public struct MainFuncFlags: OptionSet {
 public class ASTContext {
 
   public let diag: DiagnosticEngine
+  public let sourceFileManager: SourceFileManager
 
-  public init(diagnosticEngine: DiagnosticEngine) {
-    self.diag = diagnosticEngine
+  public init(diagnosticEngine: DiagnosticEngine? = nil, sourceFileManager: SourceFileManager? = nil) {
+    self.diag = diagnosticEngine ?? DiagnosticEngine()
+    self.sourceFileManager = sourceFileManager ?? SourceFileManager()
   }
 
   public func error(_ err: Error, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
@@ -94,8 +96,6 @@ public class ASTContext {
   public func note(_ msg: String, loc: SourceLocation? = nil, highlights: [SourceRange?] = []) {
     diag.note(msg, loc: loc, highlights: highlights)
   }
-
-  public let sourceFileManager = SourceFileManager()
 
   public var sourceFiles = [SourceFile]()
   public var functions = [FuncDecl]()

@@ -1,4 +1,4 @@
-// RUN: %trill -run %s
+// RUN: %trill --run %s
 
 func main(argc: Int, argv: **Int8) -> Int {
   var argv = argv

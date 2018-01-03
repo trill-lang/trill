@@ -1,3 +1,4 @@
+import Source
 import Diagnostics
 import Foundation
 import LiteSupport
@@ -33,7 +34,6 @@ func run() -> Int {
                             usage: "The path to the `trill` executable. " +
                                    "Defaults to the executable next to `lite`.")
 
-
   let args: ArgumentParser.Result
   do {
     let commandLineArgs = Array(CommandLine.arguments.dropFirst())
@@ -48,7 +48,8 @@ func run() -> Int {
   var stderrStream = ColoredANSIStream(&stderr, colored: true)
 
   let engine = DiagnosticEngine()
-  engine.register(StreamConsumer(stream: &stderrStream))
+  engine.register(StreamConsumer(stream: &stderrStream,
+                                 sourceFileManager: SourceFileManager()))
 
   let trillExeURL =
     args.get(trillExe).map(URL.init(fileURLWithPath:)) ?? findTrillExecutable()
@@ -62,7 +63,8 @@ func run() -> Int {
     let allPassed = try runLite(substitutions: [("trill", url.path)],
                                 pathExtensions: ["tr", "trill"],
                                 testDirPath: args.get(testDir),
-                                testLinePrefix: "//")
+                                testLinePrefix: "//",
+                                parallelismLevel: .automatic)
     return allPassed ? 0 : -1
   } catch {
     engine.add(.error(error))

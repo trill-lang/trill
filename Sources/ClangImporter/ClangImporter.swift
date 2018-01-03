@@ -409,12 +409,6 @@ public final class ClangImporter: Pass {
   //        it, poorly.
   func simpleParseIntegerLiteralToken(_ rawToken: String) throws -> NumExpr? {
     var token = rawToken.lowercased()
-    // HACK: harcoded UInt64.max
-    if token == "18446744073709551615ul" || token == "18446744073709551615ull" {
-      let expr = NumExpr(value: Int64(bitPattern: UInt64.max), raw: rawToken)
-      expr.type = .uint64
-      return expr
-    }
     let suffixTypeMap: [(String, DataType)] = [
       ("ull", .uint64), ("ul", .uint64), ("ll", .int64),
       ("u", .uint32), ("l", .int64)
@@ -482,12 +476,8 @@ public final class ClangImporter: Pass {
   }
 
   func importDeclarations(for path: String, in context: ASTContext) {
-    do {
-      let file = try SourceFile(path: .file(URL(fileURLWithPath: path)), sourceFileManager: context.sourceFileManager)
-      context.add(file)
-    } catch {
-      // do nothing
-    }
+    let file = SourceFile(path: .file(URL(fileURLWithPath: path)))
+    context.add(file)
     let tu: CXTranslationUnit
     do {
       tu = try translationUnit(for: path)
@@ -706,9 +696,9 @@ public final class ClangImporter: Pass {
     } else {
       if fileName != "<none>" {
         let fileURL = URL(fileURLWithPath: fileName)
-        sourceFile = try! SourceFile(path: .file(fileURL), sourceFileManager: context.sourceFileManager)
+        sourceFile = SourceFile(path: .file(fileURL))
       } else {
-        sourceFile = try! SourceFile(path: .none, sourceFileManager: context.sourceFileManager)
+        sourceFile = SourceFile(path: .none)
       }
       files[fileName] = sourceFile
     }

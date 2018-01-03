@@ -1,9 +1,3 @@
-func assert(_ condition: Bool, _ message: String) {
-  if !condition {
-    fatalError(message)
-  }
-}
-
 indirect type ByteArray {
   var bytes: *Int8
   var length: Int

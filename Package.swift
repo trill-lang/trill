@@ -11,13 +11,14 @@ let package = Package(name: "trill",
     .package(url: "https://github.com/trill-lang/LLVMSwift.git", .branch("master")),
     .package(url: "https://github.com/trill-lang/cllvm.git", from: "0.0.3"),
     .package(url: "https://github.com/trill-lang/ClangSwift.git", from: "0.0.4"),
-    .package(url: "https://github.com/silt-lang/Lite.git", from: "0.0.3"),
+    .package(url: "https://github.com/silt-lang/Lite", from: "0.0.4"),
     .package(url: "https://github.com/silt-lang/Symbolic.git", from: "0.0.1"),
     .package(url: "https://github.com/apple/swift-package-manager.git", from: "0.1.0"),
+    .package(url: "https://github.com/attaswift/BigInt.git", from: "3.0.2"),
   ],
   targets: [
     .target(name: "AST", dependencies: [
-      "Source", "Diagnostics"
+      "Source", "Diagnostics", "BigInt"
     ]),
     .target(name: "ClangImporter", dependencies: [
       "AST", "Clang", "LLVMWrappers", "Parse", "Runtime"
@@ -41,6 +42,6 @@ let package = Package(name: "trill",
       "trillRuntime"
     ]),
     .target(name: "lite", dependencies: [
-      "Diagnostics", "LiteSupport", "Symbolic", "Utility"
+      "Diagnostics", "LiteSupport", "Source", "Symbolic", "Utility"
     ]),
   ])

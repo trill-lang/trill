@@ -9,16 +9,6 @@
 
 import Foundation
 
-extension Diagnostic.DiagnosticType {
-  public var color: ANSIColor {
-    switch self {
-    case .error: return .red
-    case .warning: return .magenta
-    case .note: return .green
-    }
-  }
-}
-
 public protocol DiagnosticConsumer: class {
   func consume(_ diagnostic: Diagnostic)
   func finalize()

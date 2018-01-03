@@ -7,6 +7,7 @@
 /// Full license text available at https://github.com/trill-lang/trill
 ///
 
+import BigInt
 import Foundation
 import Source
 
@@ -50,9 +51,9 @@ public class NilExpr: ConstantExpr {
 }
 
 public class NumExpr: ConstantExpr { // 1234567
-  public let value: Int64
+  public let value: BigInt
   public let raw: String
-  public init(value: Int64, raw: String, sourceRange: SourceRange? = nil) {
+  public init(value: BigInt, raw: String, sourceRange: SourceRange? = nil) {
     self.value = value
     self.raw = raw
     super.init(sourceRange: sourceRange)
