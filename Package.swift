@@ -8,12 +8,12 @@ let package = Package(name: "trill",
     .library(name: "trillRuntime", type: .static, targets: ["trillRuntime"])
   ],
   dependencies: [
-    .package(url: "https://github.com/trill-lang/LLVMSwift.git", .branch("master")),
-    .package(url: "https://github.com/trill-lang/cllvm.git", from: "0.0.3"),
-    .package(url: "https://github.com/trill-lang/ClangSwift.git", from: "0.0.4"),
-    .package(url: "https://github.com/silt-lang/Lite.git", from: "0.0.3"),
-    .package(url: "https://github.com/silt-lang/Symbolic.git", from: "0.0.1"),
     .package(url: "https://github.com/apple/swift-package-manager.git", from: "0.1.0"),
+    .package(url: "https://github.com/llvm-swift/ClangSwift.git", .branch("master")),
+    .package(url: "https://github.com/llvm-swift/cllvm.git", from: "0.0.3"),
+    .package(url: "https://github.com/llvm-swift/Lite.git", from: "0.0.3"),
+    .package(url: "https://github.com/llvm-swift/LLVMSwift.git", .branch("master")),
+    .package(url: "https://github.com/llvm-swift/Symbolic.git", from: "0.0.1"),
   ],
   targets: [
     .target(name: "AST", dependencies: [
