@@ -608,14 +608,14 @@ extension String {
   
   public func asNumber() -> Int64? {
     let prefixMap = ["0x": 16, "0b": 2, "0o": 8]
-    if characters.count <= 2 {
+    if self.count <= 2 {
       return Int64(self, radix: 10)
     }
-    let prefix = String(self[..<characters.index(startIndex, offsetBy: 2)])
+    let prefix = String(self[..<self.index(startIndex, offsetBy: 2)])
     guard let radix = prefixMap[prefix] else {
       return Int64(removing("_"), radix: 10)
     }
-    let suffix = String(removing("_")[characters.index(startIndex, offsetBy: 2)...])
+    let suffix = String(removing("_")[self.index(startIndex, offsetBy: 2)...])
     return Int64(suffix, radix: radix)
   }
 }

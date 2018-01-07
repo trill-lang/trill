@@ -9,10 +9,10 @@
 
 import Foundation
 
-extension String {
+extension StringProtocol {
   public func escaped() -> String {
     var s = ""
-    for c in characters {
+    for c in self {
       switch c {
       case "\n": s += "\\n"
       case "\t": s += "\\t"
@@ -26,7 +26,7 @@ extension String {
   public func unescaped() -> String {
     var s = ""
     var nextCharIsEscaped = false
-    for c in characters {
+    for c in self {
       if c == "\\" {
         nextCharIsEscaped = true
         continue
