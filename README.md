@@ -4,6 +4,8 @@
 
 Trill is a simple, type-safe, compiled programming language. Partially inspired by Swift, Trill has most simple language features one would expect (functions, structures, pointers) and some more high-level language features, like types with methods, garbage collected types, overloading,  tuples/multiple returns, and closures.
 
+Trill is not to be confused with [Microsoft/Trill](https://github.com/Microsoft/trill), an engine for streaming data processing.
+
 ## Example
 
 The following program finds the `n` th Fibonacci number:
