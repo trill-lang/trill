@@ -17,7 +17,7 @@ extension IRGenerator {
     if let binding = globalVarIRBindings[decl.name] { return binding }
     let type = resolveLLVMType(decl.type)
     var global = builder.addGlobal(decl.name.name, type: type)
-    global.alignment = 8
+    global.alignment = Alignment(8)
     let binding = VarBinding(ref: global,
                              storage: .value,
                              read: {
@@ -38,7 +38,7 @@ extension IRGenerator {
 
  func visitGlobal(_ decl: VarAssignDecl) -> VarBinding {
     let binding = codegenGlobalPrototype(decl)
-    guard var global = binding.ref as? Global else {
+    guard let global = binding.ref as? Global else {
       fatalError("global binding is not a Global?")
     }
     if decl.has(attribute: .foreign) {

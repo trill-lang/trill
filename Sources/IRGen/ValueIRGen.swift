@@ -59,7 +59,7 @@ extension IRGenerator {
       fatalError("invalid array type")
     }
     let irType = resolveLLVMType(expr.type)
-    var initial = irType.null()
+    var initial = irType.undef()
     for (idx, value) in expr.values.enumerated() {
       var irValue = visit(value)!
       let index = IntType.int64.constant(idx)
@@ -76,7 +76,7 @@ extension IRGenerator {
     guard case .tuple(let tupleTypes) = expr.type else {
       fatalError("invalid tuple type")
     }
-    var initial = type.null()
+    var initial = type.undef()
     for (idx, field) in expr.values.enumerated() {
       var val = visit(field)!
       let canTupleTy = context.canonicalType(tupleTypes[idx])

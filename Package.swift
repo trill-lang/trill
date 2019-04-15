@@ -10,9 +10,8 @@ let package = Package(name: "trill",
   dependencies: [
     .package(url: "https://github.com/apple/swift-package-manager.git", from: "0.1.0"),
     .package(url: "https://github.com/llvm-swift/ClangSwift.git", .branch("master")),
-    .package(url: "https://github.com/llvm-swift/cllvm.git", from: "0.0.3"),
     .package(url: "https://github.com/llvm-swift/Lite.git", from: "0.0.3"),
-    .package(url: "https://github.com/llvm-swift/LLVMSwift.git", .branch("master")),
+    .package(url: "https://github.com/llvm-swift/LLVMSwift.git", from: "0.5.0"),
     .package(url: "https://github.com/llvm-swift/Symbolic.git", from: "0.0.1"),
   ],
   targets: [

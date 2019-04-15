@@ -83,7 +83,7 @@ extension IRGenerator {
     if typeDecl.isIndirect {
       retLLVMType = (retLLVMType as! PointerType).pointee
     }
-    var initial = retLLVMType.null()
+    var initial = retLLVMType.undef()
     for (idx, arg) in decl.args.enumerated() {
       var param = function.parameter(at: idx)!
       param.name = arg.name.name
